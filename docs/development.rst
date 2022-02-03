@@ -31,14 +31,14 @@ General contribution guidelines
 Code style guide
 ----------------
 
-* We follow `PEP8 Python Style Guide`_
+* We follow `The Black code style`_ and automatically enforce it for all the
+  new code using black tool. You can re-format your code using black by
+  running ``black`` tox target (``tox -eblack``).
 * Use 4 spaces for a tab
-* Use 79 characters in a line
+* Use 100 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
-* You can verify that your modifications don't break any rules by running the
-  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py`` or
-  ``tox -e lint``.
-  Second command will run flake8 on all the files in the repository.
+* You can verify that your changes don't break any rules by running the
+  following tox targets - ``lint,pylint,black`` - ``tox -elint,pylint,black``.
 
 And most importantly, follow the existing style in the file you are editing and
 **be consistent**.
@@ -279,6 +279,49 @@ For more information and examples, please refer to the following links:
 * Sphinx Documentation - http://sphinx-doc.org/markup/desc.html#info-field-lists
 * Example Libcloud module with documentation - https://github.com/apache/libcloud/blob/trunk/libcloud/compute/base.py
 
+Updating compute node sizing data
+---------------------------------
+
+Node sizing data for most providers is stored in-line as a module level
+constant in the corresponding provide module.
+
+An exception to that is AWS EC2 which sizing data is automatically generated
+and scraped from AWS API as documented below.
+
+Updating EC2 sizing and supported regions data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To update EC2 sizing data, you just need to run ``scrape-ec2-sizes`` tox target
+and commit the changed files
+(``libcloud/compute/constants/ec2_instance_types.py``,
+``libcloud/compute/constants/ec2_region_details_complete.py``).
+
+To add a new region update ``contrib/scrape-ec2-prices.py`` and
+``contrib/scrape-ec2-sizes.py`` file (example
+https://github.com/apache/libcloud/commit/762f0e5623b6f9837204ffe27d825b236c9c9970)
+and then re-run corresponding tox targets as shown below:
+
+.. sourcecode:: bash
+
+    tox -escrape-ec2-sizes,scrape-ec2-prices
+
+Updating compute node pricing data
+----------------------------------
+
+Pricing data for some provides is automatically scraped using
+``scrape-and-publish-provider-prices`` tox target (this target required valid
+AWS and Google Cloud API keys to be set for it to work).
+
+This tox target is ran before making a new release which means that each
+release includes pricing data which has been updated on the day of the release.
+
+In addition to that, that tox target runs daily as part of our CI/CD system
+and the latest version of that file is published to a public read-only S3
+bucket.
+
+For more information on how to utilize that pricing data, please see
+:doc:`Pricing </compute/pricing>` page.
+
 Contribution workflow
 ---------------------
 
@@ -392,3 +435,4 @@ code work with multiple versions on the following link -
 .. _`Apache website`: https://www.apache.org/licenses/#clas
 .. _`Lessons learned while porting Libcloud to Python 3`: http://www.tomaz.me/2011/12/03/lessons-learned-while-porting-libcloud-to-python-3.html
 .. _`squashing commits with rebase`: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
+.. _`The Black code style`: https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html

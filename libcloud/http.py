@@ -28,15 +28,15 @@ import libcloud.security
 from libcloud.utils.py3 import urlparse, PY3
 
 
-__all__ = [
-    'LibcloudBaseConnection',
-    'LibcloudConnection'
-]
+__all__ = ["LibcloudBaseConnection", "LibcloudConnection"]
 
 ALLOW_REDIRECTS = 1
 
-HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
-HTTPS_PROXY_ENV_VARIABLE_NAME = 'https_proxy'
+# Default timeout for HTTP requests in seconds
+DEFAULT_REQUEST_TIMEOUT = 60
+
+HTTP_PROXY_ENV_VARIABLE_NAME = "http_proxy"
+HTTPS_PROXY_ENV_VARIABLE_NAME = "https_proxy"
 
 
 class SignedHTTPSAdapter(HTTPAdapter):
@@ -47,10 +47,12 @@ class SignedHTTPSAdapter(HTTPAdapter):
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(
-            num_pools=connections, maxsize=maxsize,
+            num_pools=connections,
+            maxsize=maxsize,
             block=block,
             cert_file=self.cert_file,
-            key_file=self.key_file)
+            key_file=self.key_file,
+        )
 
 
 class LibcloudBaseConnection(object):
@@ -102,8 +104,8 @@ class LibcloudBaseConnection(object):
         self.http_proxy_used = True
 
         self.session.proxies = {
-            'http': proxy_url,
-            'https': proxy_url,
+            "http": proxy_url,
+            "https": proxy_url,
         }
 
     def _parse_proxy_url(self, proxy_url):
@@ -117,50 +119,52 @@ class LibcloudBaseConnection(object):
         """
         parsed = urlparse.urlparse(proxy_url)
 
-        if parsed.scheme not in ('http', 'https'):
-            raise ValueError('Only http and https proxies are supported')
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("Only http and https proxies are supported")
 
         if not parsed.hostname or not parsed.port:
-            raise ValueError('proxy_url must be in the following format: '
-                             '<scheme>://<proxy host>:<proxy port>')
+            raise ValueError(
+                "proxy_url must be in the following format: "
+                "<scheme>://<proxy host>:<proxy port>"
+            )
 
         proxy_scheme = parsed.scheme
         proxy_host, proxy_port = parsed.hostname, parsed.port
 
         netloc = parsed.netloc
 
-        if '@' in netloc:
-            username_password = netloc.split('@', 1)[0]
-            split = username_password.split(':', 1)
+        if "@" in netloc:
+            username_password = netloc.split("@", 1)[0]
+            split = username_password.split(":", 1)
 
             if len(split) < 2:
-                raise ValueError('URL is in an invalid format')
+                raise ValueError("URL is in an invalid format")
 
             proxy_username, proxy_password = split[0], split[1]
         else:
             proxy_username = None
             proxy_password = None
 
-        return (proxy_scheme, proxy_host, proxy_port, proxy_username,
-                proxy_password)
+        return (proxy_scheme, proxy_host, proxy_port, proxy_username, proxy_password)
 
     def _setup_verify(self):
         self.verify = libcloud.security.VERIFY_SSL_CERT
 
     def _setup_ca_cert(self, **kwargs):
         # simulating keyword-only argument in Python 2
-        ca_certs_path = kwargs.get('ca_cert', libcloud.security.CA_CERTS_PATH)
+        ca_certs_path = kwargs.get("ca_cert", libcloud.security.CA_CERTS_PATH)
 
         if self.verify is False:
             pass
         else:
             if isinstance(ca_certs_path, list):
                 msg = (
-                    'Providing a list of CA trusts is no longer supported '
-                    'since libcloud 2.0. Using the first element in the list. '
-                    'See http://libcloud.readthedocs.io/en/latest/other/'
-                    'changes_in_2_0.html#providing-a-list-of-ca-trusts-is-no-'
-                    'longer-supported')
+                    "Providing a list of CA trusts is no longer supported "
+                    "since libcloud 2.0. Using the first element in the list. "
+                    "See http://libcloud.readthedocs.io/en/latest/other/"
+                    "changes_in_2_0.html#providing-a-list-of-ca-trusts-is-no-"
+                    "longer-supported"
+                )
                 warnings.warn(msg, DeprecationWarning)
                 self.ca_cert = ca_certs_path[0]
             else:
@@ -171,7 +175,7 @@ class LibcloudBaseConnection(object):
         Setup request signing by mounting a signing
         adapter to the session
         """
-        self.session.mount('https://', SignedHTTPSAdapter(cert_file, key_file))
+        self.session.mount("https://", SignedHTTPSAdapter(cert_file, key_file))
 
 
 class LibcloudConnection(LibcloudBaseConnection):
@@ -180,31 +184,31 @@ class LibcloudConnection(LibcloudBaseConnection):
     response = None
 
     def __init__(self, host, port, secure=None, **kwargs):
-        scheme = 'https' if secure is not None and secure else 'http'
-        self.host = '{0}://{1}{2}'.format(
-            'https' if port == 443 else scheme,
+        scheme = "https" if secure is not None and secure else "http"
+        self.host = "{0}://{1}{2}".format(
+            "https" if port == 443 else scheme,
             host,
-            ":{0}".format(port) if port not in (80, 443) else ""
+            ":{0}".format(port) if port not in (80, 443) else "",
         )
 
         # Support for HTTP(s) proxy
         # NOTE: We always only use a single proxy (either HTTP or HTTPS)
-        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME,
-                                             None)
-        http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME,
-                                            https_proxy_url_env)
+        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME, None)
+        http_proxy_url_env = os.environ.get(
+            HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env
+        )
 
         # Connection argument has precedence over environment variables
-        proxy_url = kwargs.pop('proxy_url', http_proxy_url_env)
+        proxy_url = kwargs.pop("proxy_url", http_proxy_url_env)
 
         self._setup_verify()
         self._setup_ca_cert()
 
         LibcloudBaseConnection.__init__(self)
 
-        self.session.timeout = kwargs.pop('timeout', 60)
+        self.session.timeout = kwargs.pop("timeout", DEFAULT_REQUEST_TIMEOUT)
 
-        if 'cert_file' in kwargs or 'key_file' in kwargs:
+        if "cert_file" in kwargs or "key_file" in kwargs:
             self._setup_signing(**kwargs)
 
         if proxy_url:
@@ -217,8 +221,9 @@ class LibcloudConnection(LibcloudBaseConnection):
         """
         return self.ca_cert if self.ca_cert is not None else self.verify
 
-    def request(self, method, url, body=None, headers=None, raw=False,
-                stream=False):
+    def request(
+        self, method, url, body=None, headers=None, raw=False, stream=False, hooks=None
+    ):
         url = urlparse.urljoin(self.host, url)
         headers = self._normalize_headers(headers=headers)
 
@@ -229,22 +234,27 @@ class LibcloudConnection(LibcloudBaseConnection):
             headers=headers,
             allow_redirects=ALLOW_REDIRECTS,
             stream=stream,
-            verify=self.verification
+            verify=self.verification,
+            timeout=self.session.timeout,
+            hooks=hooks,
         )
 
-    def prepared_request(self, method, url, body=None,
-                         headers=None, raw=False, stream=False):
+    def prepared_request(
+        self, method, url, body=None, headers=None, raw=False, stream=False
+    ):
         headers = self._normalize_headers(headers=headers)
 
-        req = requests.Request(method, ''.join([self.host, url]),
-                               data=body, headers=headers)
+        req = requests.Request(
+            method, "".join([self.host, url]), data=body, headers=headers
+        )
 
         prepped = self.session.prepare_request(req)
 
         self.response = self.session.send(
             prepped,
             stream=stream,
-            verify=self.ca_cert if self.ca_cert is not None else self.verify)
+            verify=self.ca_cert if self.ca_cert is not None else self.verify,
+        )
 
     def getresponse(self):
         return self.response
@@ -253,8 +263,8 @@ class LibcloudConnection(LibcloudBaseConnection):
         # urlib decoded response body, libcloud has a bug
         # and will not check if content is gzipped, so let's
         # remove headers indicating compressed content.
-        if 'content-encoding' in self.response.headers:
-            del self.response.headers['content-encoding']
+        if "content-encoding" in self.response.headers:
+            del self.response.headers["content-encoding"]
         return self.response.headers
 
     @property
@@ -291,6 +301,7 @@ class HttpLibResponseProxy(object):
     Provides a proxy pattern around the :class:`requests.Reponse`
     object to a :class:`httplib.HTTPResponse` object
     """
+
     def __init__(self, response):
         self._response = response
 
@@ -327,7 +338,7 @@ class HttpLibResponseProxy(object):
     @property
     def version(self):
         # requests doesn't expose this
-        return '11'
+        return "11"
 
     @property
     def body(self):

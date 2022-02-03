@@ -3,4 +3,4 @@ from libcloud.compute.type import Provider
 
 driver = get_driver(Provider.GRIDSCALE)
 
-driver = driver('USER-UUID', 'API-TOKEN')
+driver = driver("USER-UUID", "API-TOKEN")

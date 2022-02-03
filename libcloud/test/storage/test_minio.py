@@ -27,12 +27,11 @@ from libcloud.test.secrets import STORAGE_S3_PARAMS
 class MinIOStorageDriverTestCase(unittest.TestCase):
     driver_type = MinIOStorageDriver
     driver_args = STORAGE_S3_PARAMS
-    default_host = 'localhost'
+    default_host = "localhost"
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(*self.driver_args,
-                                host=self.default_host)
+        return self.driver_type(*self.driver_args, host=self.default_host)
 
     def setUp(self):
         self.driver = self.create_driver()
@@ -47,24 +46,26 @@ class MinIOStorageDriverTestCase(unittest.TestCase):
     def test_connection_class_host_port_secure(self):
         host = "127.0.0.3"
         port = 9000
-        driver = self.driver_type(*self.driver_args,
-                                host=host, port=port, secure=False)
+        driver = self.driver_type(*self.driver_args, host=host, port=port, secure=False)
         self.assertEqual(driver.connectionCls.host, host)
         self.assertEqual(driver.connection.port, 9000)
         self.assertEqual(driver.connection.secure, False)
 
         host = "127.0.0.4"
         port = 9000
-        driver = self.driver_type(*self.driver_args,
-                                host=host, port=port, secure=True)
+        driver = self.driver_type(*self.driver_args, host=host, port=port, secure=True)
         self.assertEqual(driver.connectionCls.host, host)
         self.assertEqual(driver.connection.port, 9000)
         self.assertEqual(driver.connection.secure, True)
 
     def test_empty_host_error(self):
-        self.assertRaisesRegex(LibcloudError, "host argument is required",
-                               self.driver_type, *self.driver_args)
+        self.assertRaisesRegex(
+            LibcloudError,
+            "host argument is required",
+            self.driver_type,
+            *self.driver_args,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

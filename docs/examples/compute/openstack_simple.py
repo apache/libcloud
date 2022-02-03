@@ -10,6 +10,9 @@ import libcloud.security
 libcloud.security.VERIFY_SSL_CERT = False
 
 OpenStack = get_driver(Provider.OPENSTACK)
-driver = OpenStack('your_auth_username', 'your_auth_password',
-                   ex_force_auth_url='http://192.168.1.101:5000',
-                   ex_force_auth_version='2.0_password')
+driver = OpenStack(
+    "your_auth_username",
+    "your_auth_password",
+    ex_force_auth_url="http://192.168.1.101:5000",
+    ex_force_auth_version="2.0_password",
+)

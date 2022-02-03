@@ -33,13 +33,12 @@ from libcloud.common.base import XmlResponse
 from libcloud.common.base import BaseDriver
 
 # The time format for headers in Azure requests
-AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
+AZURE_TIME_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 
 
 class AzureRedirectException(Exception):
-
     def __init__(self, response):
-        self.location = response.headers['location']
+        self.location = response.headers["location"]
 
 
 class AzureResponse(XmlResponse):
@@ -52,7 +51,7 @@ class AzureResponse(XmlResponse):
         # sent by azure instead of a success or fail response
         httplib.TEMPORARY_REDIRECT,
         # Used by Azure Blobs range downloads
-        httplib.PARTIAL_CONTENT
+        httplib.PARTIAL_CONTENT,
     ]
 
     def success(self):
@@ -60,7 +59,7 @@ class AzureResponse(XmlResponse):
         return 200 <= i <= 299 or i in self.valid_response_codes
 
     def parse_error(self, msg=None):
-        error_msg = 'Unknown error'
+        error_msg = "Unknown error"
 
         try:
             # Azure does give some meaningful errors, but is inconsistent
@@ -69,23 +68,22 @@ class AzureResponse(XmlResponse):
 
             # pylint: disable=no-member
             if type(body) == ET.Element:
-                code = body.findtext(fixxpath(xpath='Code'))
-                message = body.findtext(fixxpath(xpath='Message'))
-                message = message.split('\n')[0]
-                error_msg = '%s: %s' % (code, message)
+                code = body.findtext(fixxpath(xpath="Code"))
+                message = body.findtext(fixxpath(xpath="Message"))
+                message = message.split("\n")[0]
+                error_msg = "%s: %s" % (code, message)
 
         except MalformedResponseError:
             pass
 
         if msg:
-            error_msg = '%s - %s' % (msg, error_msg)
+            error_msg = "%s - %s" % (msg, error_msg)
 
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
             raise InvalidCredsError(error_msg)
 
         raise LibcloudError(
-            '%s Status code: %d.' % (error_msg, self.status),
-            driver=self
+            "%s Status code: %d." % (error_msg, self.status), driver=self
         )
 
     def parse_body(self):
@@ -109,7 +107,7 @@ class AzureConnection(ConnectionUserAndKey):
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
 
-    API_VERSION = '2012-02-12'
+    API_VERSION = "2012-02-12"
 
     def add_default_params(self, params):
         return params
@@ -118,31 +116,27 @@ class AzureConnection(ConnectionUserAndKey):
         headers = copy.deepcopy(headers)
 
         # We have to add a date header in GMT
-        headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
-        headers['x-ms-version'] = self.API_VERSION
+        headers["x-ms-date"] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
+        headers["x-ms-version"] = self.API_VERSION
 
         # Add the authorization header
-        headers['Authorization'] = self._get_azure_auth_signature(
+        headers["Authorization"] = self._get_azure_auth_signature(
             method=self.method,
             headers=headers,
             params=params,
             account=self.user_id,
             secret_key=self.key,
-            path=self.action
+            path=self.action,
         )
 
         # Azure cribs about this in 'raw' connections
-        headers.pop('Host', None)
+        headers.pop("Host", None)
 
         return params, headers
 
-    def _get_azure_auth_signature(self,
-                                  method,
-                                  headers,
-                                  params,
-                                  account,
-                                  secret_key,
-                                  path='/'):
+    def _get_azure_auth_signature(
+        self, method, headers, params, account, secret_key, path="/"
+    ):
         """
         Signature = Base64( HMAC-SHA1( YourSecretAccessKeyID,
                             UTF-8-Encoding-Of( StringToSign ) ) ) );
@@ -171,14 +165,13 @@ class AzureConnection(ConnectionUserAndKey):
         for header, value in headers.items():
             header = header.lower()
             value = str(value).strip()
-            if header.startswith('x-ms-'):
+            if header.startswith("x-ms-"):
                 xms_header_values.append((header, value))
             else:
                 headers_copy[header] = value
 
         # Get the values for the headers in the specific order
-        special_header_values = self._format_special_header_values(
-            headers_copy, method)
+        special_header_values = self._format_special_header_values(headers_copy, method)
 
         # Prepare the first section of the string to be signed
         values_to_sign = [method] + special_header_values
@@ -188,10 +181,10 @@ class AzureConnection(ConnectionUserAndKey):
         xms_header_values.sort()
 
         for header, value in xms_header_values:
-            values_to_sign.append('%s:%s' % (header, value))
+            values_to_sign.append("%s:%s" % (header, value))
 
         # Add the canonicalized path
-        values_to_sign.append('/%s%s' % (account, path))
+        values_to_sign.append("/%s%s" % (account, path))
 
         # URL query parameters (sorted and lower case)
         for key, value in params.items():
@@ -200,32 +193,32 @@ class AzureConnection(ConnectionUserAndKey):
         param_list.sort()
 
         for key, value in param_list:
-            values_to_sign.append('%s:%s' % (key, value))
+            values_to_sign.append("%s:%s" % (key, value))
 
-        string_to_sign = b('\n'.join(values_to_sign))
+        string_to_sign = b("\n".join(values_to_sign))
         secret_key = b(secret_key)
         b64_hmac = base64.b64encode(
             hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
         )
 
-        return 'SharedKey %s:%s' % (self.user_id, b64_hmac.decode('utf-8'))
+        return "SharedKey %s:%s" % (self.user_id, b64_hmac.decode("utf-8"))
 
     def _format_special_header_values(self, headers, method):
-        is_change = method not in ('GET', 'HEAD')
-        is_old_api = self.API_VERSION <= '2014-02-14'
+        is_change = method not in ("GET", "HEAD")
+        is_old_api = self.API_VERSION <= "2014-02-14"
 
         special_header_keys = [
-            'content-encoding',
-            'content-language',
-            'content-length',
-            'content-md5',
-            'content-type',
-            'date',
-            'if-modified-since',
-            'if-match',
-            'if-none-match',
-            'if-unmodified-since',
-            'range'
+            "content-encoding",
+            "content-language",
+            "content-length",
+            "content-md5",
+            "content-type",
+            "date",
+            "if-modified-since",
+            "if-match",
+            "if-none-match",
+            "if-unmodified-since",
+            "range",
         ]
 
         special_header_values = []
@@ -234,12 +227,12 @@ class AzureConnection(ConnectionUserAndKey):
             header = header.lower()  # Just for safety
             if header in headers:
                 special_header_values.append(headers[header])
-            elif header == 'content-length' and is_change and is_old_api:
+            elif header == "content-length" and is_change and is_old_api:
                 # For old API versions, the Content-Length header must be '0'
                 # https://docs.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key#content-length-header-in-version-2014-02-14-and-earlier
-                special_header_values.append('0')
+                special_header_values.append("0")
             else:
-                special_header_values.append('')
+                special_header_values.append("")
 
         return special_header_values
 
@@ -263,8 +256,8 @@ class AzureServiceManagementConnection(CertificateConnection):
     driver = AzureBaseDriver
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
-    name = 'Azure Service Management API Connection'
-    host = 'management.core.windows.net'
+    name = "Azure Service Management API Connection"
+    host = "management.core.windows.net"
     keyfile = ""
 
     def __init__(self, subscription_id, key_file, *args, **kwargs):
@@ -280,9 +273,7 @@ class AzureServiceManagementConnection(CertificateConnection):
         """
 
         super(AzureServiceManagementConnection, self).__init__(
-            key_file,
-            *args,
-            **kwargs
+            key_file, *args, **kwargs
         )
 
         self.subscription_id = subscription_id
@@ -292,8 +283,8 @@ class AzureServiceManagementConnection(CertificateConnection):
         is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
         if not is_file_path:
             raise InvalidCredsError(
-                'You need an certificate PEM file to authenticate with '
-                'Microsoft Azure. This can be found in the portal.'
+                "You need an certificate PEM file to authenticate with "
+                "Microsoft Azure. This can be found in the portal."
             )
         self.key_file = key_file
 
@@ -302,7 +293,7 @@ class AzureServiceManagementConnection(CertificateConnection):
         @inherits: :class:`Connection.add_default_headers`
         TODO: move to constant..
         """
-        headers['x-ms-version'] = "2014-05-01"
-        headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
+        headers["x-ms-version"] = "2014-05-01"
+        headers["x-ms-date"] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
         #  headers['host'] = self.host
         return headers

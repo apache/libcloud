@@ -33,23 +33,21 @@ from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node
 from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
 
-__all__ = [
-    "KubeVirtNodeDriver"
-]
-ROOT_URL = '/api/v1/'
-KUBEVIRT_URL = '/apis/kubevirt.io/v1alpha3/'
+__all__ = ["KubeVirtNodeDriver"]
+ROOT_URL = "/api/v1/"
+KUBEVIRT_URL = "/apis/kubevirt.io/v1alpha3/"
 
 
 class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     type = Provider.KUBEVIRT
     name = "kubevirt"
-    website = 'https://www.kubevirt.io'
+    website = "https://www.kubevirt.io"
     connectionCls = KubernetesBasicAuthConnection
 
     NODE_STATE_MAP = {
-        'pending': NodeState.PENDING,
-        'running': NodeState.RUNNING,
-        'stopped': NodeState.STOPPED
+        "pending": NodeState.PENDING,
+        "running": NodeState.RUNNING,
+        "stopped": NodeState.STOPPED,
     }
 
     def list_nodes(self, location=None):
@@ -63,14 +61,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         dormant = []
         live = []
         for ns in namespaces:
-            req = KUBEVIRT_URL + 'namespaces/' + ns + \
-                "/virtualmachines"
+            req = KUBEVIRT_URL + "namespaces/" + ns + "/virtualmachines"
             result = self.connection.request(req)
             if result.status != 200:
                 continue
             result = result.object
-            for item in result['items']:
-                if not item['spec']['running']:
+            for item in result["items"]:
+                if not item["spec"]["running"]:
                     dormant.append(item)
                 else:
                     live.append(item)
@@ -89,11 +86,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise ValueError("This method needs id or name to be specified")
         nodes = self.list_nodes()
         if id:
-            node_gen = filter(lambda x: x.id == id,
-                              nodes)
+            node_gen = filter(lambda x: x.id == id, nodes)
         if name:
-            node_gen = filter(lambda x: x.name == name,
-                              nodes)
+            node_gen = filter(lambda x: x.name == name, nodes)
 
         try:
             return next(node_gen)
@@ -105,15 +100,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         if node.state is NodeState.RUNNING:
             return True
         name = node.name
-        namespace = node.extra['namespace']
-        req = KUBEVIRT_URL + 'namespaces/' + namespace +\
-            '/virtualmachines/' + name
+        namespace = node.extra["namespace"]
+        req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/" + name
         data = {"spec": {"running": True}}
         headers = {"Content-Type": "application/merge-patch+json"}
         try:
-            result = self.connection.request(req, method="PATCH",
-                                             data=json.dumps(data),
-                                             headers=headers)
+            result = self.connection.request(
+                req, method="PATCH", data=json.dumps(data), headers=headers
+            )
 
             return result.status in VALID_RESPONSE_CODES
 
@@ -125,15 +119,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         if node.state is NodeState.STOPPED:
             return True
         name = node.name
-        namespace = node.extra['namespace']
-        req = KUBEVIRT_URL + 'namespaces/' + namespace + \
-            '/virtualmachines/' + name
+        namespace = node.extra["namespace"]
+        req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/" + name
         headers = {"Content-Type": "application/merge-patch+json"}
         data = {"spec": {"running": False}}
         try:
-            result = self.connection.request(req, method="PATCH",
-                                             data=json.dumps(data),
-                                             headers=headers)
+            result = self.connection.request(
+                req, method="PATCH", data=json.dumps(data), headers=headers
+            )
 
             return result.status in VALID_RESPONSE_CODES
 
@@ -144,15 +137,18 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
         Rebooting a node.
         """
-        namespace = node.extra['namespace']
+        namespace = node.extra["namespace"]
         name = node.name
-        method = 'DELETE'
+        method = "DELETE"
         try:
-            result = self.connection.request(KUBEVIRT_URL + 'namespaces/' +
-                                             namespace +
-                                             '/virtualmachineinstances/' +
-                                             name,
-                                             method=method)
+            result = self.connection.request(
+                KUBEVIRT_URL
+                + "namespaces/"
+                + namespace
+                + "/virtualmachineinstances/"
+                + name,
+                method=method,
+            )
 
             return result.status in VALID_RESPONSE_CODES
         except Exception:
@@ -163,31 +159,37 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
         Terminating a VMI and deleting the VM resource backing it
         """
-        namespace = node.extra['namespace']
+        namespace = node.extra["namespace"]
         name = node.name
         # find and delete services for this VM only
         services = self.ex_list_services(namespace=namespace, node_name=name)
         for service in services:
-            service_name = service['metadata']['name']
-            self.ex_delete_service(namespace=namespace,
-                                   service_name=service_name)
+            service_name = service["metadata"]["name"]
+            self.ex_delete_service(namespace=namespace, service_name=service_name)
         # stop the vmi
         self.stop_node(node)
         try:
-            result = self.connection.request(KUBEVIRT_URL +
-                                             'namespaces/' +
-                                             namespace +
-                                             '/virtualmachines/' + name,
-                                             method='DELETE')
+            result = self.connection.request(
+                KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/" + name,
+                method="DELETE",
+            )
             return result.status in VALID_RESPONSE_CODES
         except Exception:
             raise
 
     # only has container disk support atm with no persistency
-    def create_node(self, name, image, location=None, ex_memory=128, ex_cpu=1,
-                    ex_disks=None, ex_network=None,
-                    ex_termination_grace_period=0,
-                    ports=None):
+    def create_node(
+        self,
+        name,
+        image,
+        location=None,
+        ex_memory=128,
+        ex_cpu=1,
+        ex_disks=None,
+        ex_network=None,
+        ex_termination_grace_period=0,
+        ports=None,
+    ):
         """
         Creating a VM with a containerDisk.
         :param name: A name to give the VM. The VM will be identified by
@@ -275,33 +277,32 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                       'ports_udp`: `list` of `int`
         """
         # all valid disk types for which support will be added in the future
-        DISK_TYPES = {'containerDisk', 'ephemeral', 'configMap', 'dataVolume',
-                      'cloudInitNoCloud', 'persistentVolumeClaim', 'emptyDisk',
-                      'cloudInitConfigDrive', 'hostDisk'}
+        DISK_TYPES = {
+            "containerDisk",
+            "ephemeral",
+            "configMap",
+            "dataVolume",
+            "cloudInitNoCloud",
+            "persistentVolumeClaim",
+            "emptyDisk",
+            "cloudInitConfigDrive",
+            "hostDisk",
+        }
 
         if location is not None:
             namespace = location.name
         else:
-            namespace = 'default'
+            namespace = "default"
 
         # vm template to be populated
         vm = {
             "apiVersion": "kubevirt.io/v1alpha3",
             "kind": "VirtualMachine",
-            "metadata": {
-                "labels": {
-                    "kubevirt.io/vm": name
-                },
-                "name": name
-            },
+            "metadata": {"labels": {"kubevirt.io/vm": name}, "name": name},
             "spec": {
                 "running": False,
                 "template": {
-                    "metadata": {
-                        "labels": {
-                            "kubevirt.io/vm": name
-                        }
-                    },
+                    "metadata": {"labels": {"kubevirt.io/vm": name}},
                     "spec": {
                         "domain": {
                             "devices": {
@@ -309,113 +310,115 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                                 "interfaces": [],
                                 "networkInterfaceMultiqueue": False,
                             },
-                            "machine": {
-                                "type": ""
-                            },
-                            "resources": {
-                                "requests": {},
-                                "limits": {}
-                            },
+                            "machine": {"type": ""},
+                            "resources": {"requests": {}, "limits": {}},
                         },
                         "networks": [],
-                        "terminationGracePeriodSeconds": ex_termination_grace_period, # NOQA
-                        "volumes": []
-                    }
-                }
-            }
+                        "terminationGracePeriodSeconds": ex_termination_grace_period,  # NOQA
+                        "volumes": [],
+                    },
+                },
+            },
         }
         memory = str(ex_memory) + "Mi"
-        vm['spec']['template']['spec']['domain']['resources'][
-            'requests']['memory'] = memory
-        vm['spec']['template']['spec']['domain']['resources'][
-            'limits']['memory'] = memory
+        vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
+            "memory"
+        ] = memory
+        vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"][
+            "memory"
+        ] = memory
         if ex_cpu < 10:
             cpu = int(ex_cpu)
-            vm['spec']['template']['spec']['domain'][
-                'resources']['requests']['cpu'] = cpu
-            vm['spec']['template']['spec']['domain'][
-                'resources']['limits']['cpu'] = cpu
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
+                "cpu"
+            ] = cpu
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
         else:
             cpu = str(ex_cpu) + "m"
-            vm['spec']['template']['spec']['domain']['resources'][
-                'requests']['cpu'] = cpu
-            vm['spec']['template']['spec']['domain']['resources'][
-                'limits']['cpu'] = cpu
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
+                "cpu"
+            ] = cpu
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
         i = 0
         for disk in ex_disks:
-            disk_type = disk.get('disk_type')
-            bus = disk.get('bus', 'virtio')
-            disk_name = disk.get('name', 'disk{}'.format(i))
+            disk_type = disk.get("disk_type")
+            bus = disk.get("bus", "virtio")
+            disk_name = disk.get("name", "disk{}".format(i))
             i += 1
-            device = disk.get('device', 'disk')
+            device = disk.get("device", "disk")
             if disk_type not in DISK_TYPES:
-                raise ValueError("The possible values for this "
-                                 "parameter are: ", DISK_TYPES)
+                raise ValueError(
+                    "The possible values for this " "parameter are: ", DISK_TYPES
+                )
             # depending on disk_type, in the future,
             # when more will be supported,
             # additional elif should be added
             if disk_type == "containerDisk":
                 try:
-                    image = disk['image']
+                    image = disk["image"]
                 except KeyError:
-                    raise KeyError('A container disk needs a '
-                                   'containerized image')
+                    raise KeyError("A container disk needs a " "containerized image")
 
-                volumes_dict = {'containerDisk': {'image': image},
-                                'name': disk_name}
+                volumes_dict = {"containerDisk": {"image": image}, "name": disk_name}
 
             if disk_type == "persistentVolumeClaim":
-                if 'claim_name' in disk:
-                    claimName = disk['claim_name']
+                if "claim_name" in disk:
+                    claimName = disk["claim_name"]
                     if claimName not in self.ex_list_persistent_volume_claims(
                         namespace=namespace
                     ):
-                        if ('size' not in disk or "storage_class_name"
-                                not in disk):
-                            msg = ("disk['size'] and "
-                                   "disk['storage_class_name'] "
-                                   "are both required to create "
-                                   "a new claim.")
+                        if "size" not in disk or "storage_class_name" not in disk:
+                            msg = (
+                                "disk['size'] and "
+                                "disk['storage_class_name'] "
+                                "are both required to create "
+                                "a new claim."
+                            )
                             raise KeyError(msg)
-                        size = disk['size']
-                        storage_class = disk['storage_class_name']
-                        volume_mode = disk.get('volume_mode', 'Filesystem')
-                        access_mode = disk.get('access_mode', 'ReadWriteOnce')
-                        self.create_volume(size=size, name=claimName,
-                                           location=location,
-                                           ex_storage_class_name=storage_class,
-                                           ex_volume_mode=volume_mode,
-                                           ex_access_mode=access_mode)
+                        size = disk["size"]
+                        storage_class = disk["storage_class_name"]
+                        volume_mode = disk.get("volume_mode", "Filesystem")
+                        access_mode = disk.get("access_mode", "ReadWriteOnce")
+                        self.create_volume(
+                            size=size,
+                            name=claimName,
+                            location=location,
+                            ex_storage_class_name=storage_class,
+                            ex_volume_mode=volume_mode,
+                            ex_access_mode=access_mode,
+                        )
 
                 else:
-                    msg = ("You must provide either a claim_name of an "
-                           "existing claim or if you want one to be "
-                           "created you must additionally provide size "
-                           "and the storage_class_name of the "
-                           "cluster, which allows dynamic provisioning, "
-                           "so a Persistent Volume Claim can be created. "
-                           "In the latter case please provide the desired "
-                           "size as well.")
+                    msg = (
+                        "You must provide either a claim_name of an "
+                        "existing claim or if you want one to be "
+                        "created you must additionally provide size "
+                        "and the storage_class_name of the "
+                        "cluster, which allows dynamic provisioning, "
+                        "so a Persistent Volume Claim can be created. "
+                        "In the latter case please provide the desired "
+                        "size as well."
+                    )
                     raise KeyError(msg)
 
-                volumes_dict = {'persistentVolumeClaim': {
-                                'claimName': claimName},
-                                'name': disk_name}
-            disk_dict = {device: {'bus': bus}, 'name': disk_name}
-            vm['spec']['template']['spec']['domain'][
-                'devices']['disks'].append(disk_dict)
-            vm['spec']['template']['spec']['volumes'].append(volumes_dict)
+                volumes_dict = {
+                    "persistentVolumeClaim": {"claimName": claimName},
+                    "name": disk_name,
+                }
+            disk_dict = {device: {"bus": bus}, "name": disk_name}
+            vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(
+                disk_dict
+            )
+            vm["spec"]["template"]["spec"]["volumes"].append(volumes_dict)
 
         # adding image in a container Disk
         if isinstance(image, NodeImage):
             image = image.name
 
-        volumes_dict = {'containerDisk': {'image': image},
-                        'name': 'boot-disk'}
-        disk_dict = {'disk': {'bus': 'virtio'}, 'name': 'boot-disk'}
-        vm['spec']['template']['spec']['domain'][
-            'devices']['disks'].append(disk_dict)
-        vm['spec']['template']['spec']['volumes'].append(volumes_dict)
+        volumes_dict = {"containerDisk": {"image": image}, "name": "boot-disk"}
+        disk_dict = {"disk": {"bus": "virtio"}, "name": "boot-disk"}
+        vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
+        vm["spec"]["template"]["spec"]["volumes"].append(volumes_dict)
 
         # network
         if ex_network:
@@ -424,36 +427,26 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             network_type = ex_network[0]
         # add a default network
         else:
-            interface = 'masquerade'
+            interface = "masquerade"
             network_name = "netw1"
             network_type = "pod"
-        network_dict = {network_type: {}, 'name': network_name}
-        interface_dict = {interface: {}, 'name': network_name}
+        network_dict = {network_type: {}, "name": network_name}
+        interface_dict = {interface: {}, "name": network_name}
         ports = ports or {}
-        if ports.get('ports_tcp'):
+        if ports.get("ports_tcp"):
             ports_to_expose = []
-            for port in ports['ports_tcp']:
-                ports_to_expose.append(
-                    {
-                        'port': port,
-                        'protocol': 'TCP'
-                    }
-                )
-            interface_dict[interface]['ports'] = ports_to_expose
-        if ports.get('ports_udp'):
-            ports_to_expose = interface_dict[interface].get('ports', [])
-            for port in ports.get('ports_udp'):
-                ports_to_expose.append(
-                    {
-                        'port': port,
-                        'protocol': 'UDP'
-                    }
-                )
-            interface_dict[interface]['ports'] = ports_to_expose
-        vm['spec']['template']['spec'][
-            'networks'].append(network_dict)
-        vm['spec']['template']['spec']['domain']['devices'][
-            'interfaces'].append(interface_dict)
+            for port in ports["ports_tcp"]:
+                ports_to_expose.append({"port": port, "protocol": "TCP"})
+            interface_dict[interface]["ports"] = ports_to_expose
+        if ports.get("ports_udp"):
+            ports_to_expose = interface_dict[interface].get("ports", [])
+            for port in ports.get("ports_udp"):
+                ports_to_expose.append({"port": port, "protocol": "UDP"})
+            interface_dict[interface]["ports"] = ports_to_expose
+        vm["spec"]["template"]["spec"]["networks"].append(network_dict)
+        vm["spec"]["template"]["spec"]["domain"]["devices"]["interfaces"].append(
+            interface_dict
+        )
 
         method = "POST"
         data = json.dumps(vm)
@@ -479,8 +472,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         nodes = self.list_nodes()
         if location:
             namespace = location.name
-            nodes = list(filter(lambda x: x['extra'][
-                                'namespace'] == namespace, nodes))
+            nodes = list(filter(lambda x: x["extra"]["namespace"] == namespace, nodes))
         name_set = set()
         images = []
         for node in nodes:
@@ -499,17 +491,19 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         namespaces = []
         result = self.connection.request(req).object
-        for item in result['items']:
-            name = item['metadata']['name']
-            ID = item['metadata']['uid']
-            namespaces.append(NodeLocation(id=ID, name=name,
-                                           country='',
-                                           driver=self.connection.driver))
+        for item in result["items"]:
+            name = item["metadata"]["name"]
+            ID = item["metadata"]["uid"]
+            namespaces.append(
+                NodeLocation(
+                    id=ID, name=name, country="", driver=self.connection.driver
+                )
+            )
         return namespaces
 
     def list_sizes(self, location=None):
 
-        namespace = ''
+        namespace = ""
         if location:
             namespace = location.name
         nodes = self.list_nodes()
@@ -517,21 +511,24 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         for node in nodes:
             if not namespace:
                 sizes.append(node.size)
-            elif namespace == node.extra['namespace']:
+            elif namespace == node.extra["namespace"]:
                 sizes.append(node.size)
 
         return sizes
 
-    def create_volume(self, size, name,
-                      location=None,
-                      ex_storage_class_name='',
-                      ex_volume_mode='Filesystem',
-                      ex_access_mode='ReadWriteOnce',
-                      ex_dynamic=True,
-                      ex_reclaim_policy='Recycle',
-                      ex_volume_type=None,
-                      ex_volume_params=None,
-                      ):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        ex_storage_class_name="",
+        ex_volume_mode="Filesystem",
+        ex_access_mode="ReadWriteOnce",
+        ex_dynamic=True,
+        ex_reclaim_policy="Recycle",
+        ex_volume_type=None,
+        ex_volume_params=None,
+    ):
         """
         :param size: The size in Gigabytes
         :type size: `int`
@@ -587,36 +584,35 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 storage_class_name=ex_storage_class_name,
                 namespace=location.name,
                 volume_mode=ex_volume_mode,
-                access_mode=ex_access_mode)
+                access_mode=ex_access_mode,
+            )
             return vol
         else:
             if ex_volume_type is None or ex_volume_params is None:
-                msg = ("An ex_volume_type must be provided from the list "
-                       "of supported clouds, as well as the ex_volume_params "
-                       "necessesary for your volume type choice.")
+                msg = (
+                    "An ex_volume_type must be provided from the list "
+                    "of supported clouds, as well as the ex_volume_params "
+                    "necessesary for your volume type choice."
+                )
                 raise ValueError(msg)
 
         pv = {
-            'apiVersion': 'v1',
-            'kind': 'PersistentVolume',
-            'metadata': {
-                'name': name,
-            },
-            'spec': {
-                'capacity': {
-                    'storage': str(size) + 'Gi'
-                },
-                'volumeMode': ex_volume_mode,
-                'accessModes': [ex_access_mode],
-                'persistentVolumeReclaimPolicy': ex_reclaim_policy,
-                'storageClassName': ex_storage_class_name,
-                'mountOptions': [],  # beta, to add in the future
+            "apiVersion": "v1",
+            "kind": "PersistentVolume",
+            "metadata": {"name": name},
+            "spec": {
+                "capacity": {"storage": str(size) + "Gi"},
+                "volumeMode": ex_volume_mode,
+                "accessModes": [ex_access_mode],
+                "persistentVolumeReclaimPolicy": ex_reclaim_policy,
+                "storageClassName": ex_storage_class_name,
+                "mountOptions": [],  # beta, to add in the future
                 ex_volume_type: ex_volume_params,
-            }
+            },
         }
 
         req = ROOT_URL + "persistentvolumes/"
-        method = 'POST'
+        method = "POST"
         data = json.dumps(pv)
         try:
             self.connection.request(req, method=method, data=data)
@@ -629,9 +625,15 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             if volume.name == name:
                 return volume
 
-    def _create_volume_dynamic(self, size, name, storage_class_name,
-                               volume_mode='Filesystem', namespace='default',
-                               access_mode='ReadWriteOnce'):
+    def _create_volume_dynamic(
+        self,
+        size,
+        name,
+        storage_class_name,
+        volume_mode="Filesystem",
+        namespace="default",
+        access_mode="ReadWriteOnce",
+    ):
         """
         Method to create a Persistent Volume Claim for storage,
         thus storage is required in the arguments.
@@ -661,31 +663,27 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :type matchLabels: `dict` with keys `str` and values `str`
         """
         pvc = {
-            'apiVersion': 'v1',
-            'kind': 'PersistentVolumeClaim',
-            'metadata': {
-                'name': name
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {"name": name},
+            "spec": {
+                "accessModes": [],
+                "volumeMode": volume_mode,
+                "resources": {"requests": {"storage": ""}},
             },
-            'spec': {
-                'accessModes': [],
-                'volumeMode': volume_mode,
-                'resources': {
-                    'requests': {
-                        'storage': ''
-                    }
-                },
-            }
         }
 
-        pvc['spec']['accessModes'].append(access_mode)
+        pvc["spec"]["accessModes"].append(access_mode)
 
         if storage_class_name is not None:
-            pvc['spec']['storageClassName'] = storage_class_name
+            pvc["spec"]["storageClassName"] = storage_class_name
         else:
-            raise ValueError("The storage class name must be provided of a"
-                             "storage class which allows for dynamic "
-                             "provisioning")
-        pvc['spec']['resources']['requests']['storage'] = str(size) + 'Gi'
+            raise ValueError(
+                "The storage class name must be provided of a"
+                "storage class which allows for dynamic "
+                "provisioning"
+            )
+        pvc["spec"]["resources"]["requests"]["storage"] = str(size) + "Gi"
 
         method = "POST"
         req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims"
@@ -694,55 +692,64 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(req, method=method, data=data)
         except Exception:
             raise
-        if result.object['status']['phase'] != "Bound":
+        if result.object["status"]["phase"] != "Bound":
             for _ in range(3):
 
-                req = ROOT_URL + "namespaces/" + namespace + \
-                    "/persistentvolumeclaims/" + name
+                req = (
+                    ROOT_URL
+                    + "namespaces/"
+                    + namespace
+                    + "/persistentvolumeclaims/"
+                    + name
+                )
                 try:
                     result = self.connection.request(req).object
                 except Exception:
                     raise
-                if result['status']['phase'] == "Bound":
+                if result["status"]["phase"] == "Bound":
                     break
                 time.sleep(3)
 
         # check that the pv was created and bound
         volumes = self.list_volumes()
         for volume in volumes:
-            if volume.extra['pvc']['name'] == name:
+            if volume.extra["pvc"]["name"] == name:
                 return volume
 
-    def _bind_volume(self, volume, namespace='default'):
+    def _bind_volume(self, volume, namespace="default"):
         """
         This method is for unbound volumes that were statically made.
         It will bind them to a pvc so they can be used by
         a kubernetes resource.
         """
-        if volume.extra['is_bound']:
+        if volume.extra["is_bound"]:
             return  # volume already bound
 
-        storage_class = volume.extra['storage_class_name']
+        storage_class = volume.extra["storage_class_name"]
         size = volume.size
         name = volume.name + "-pvc"
-        volume_mode = volume.extra['volume_mode']
-        access_mode = volume.extra['access_modes'][0]
+        volume_mode = volume.extra["volume_mode"]
+        access_mode = volume.extra["access_modes"][0]
 
-        vol = self._create_volume_dynamic(size=size, name=name,
-                                          storage_class_name=storage_class,
-                                          volume_mode=volume_mode,
-                                          namespace=namespace,
-                                          access_mode=access_mode)
+        vol = self._create_volume_dynamic(
+            size=size,
+            name=name,
+            storage_class_name=storage_class,
+            volume_mode=volume_mode,
+            namespace=namespace,
+            access_mode=access_mode,
+        )
         return vol
 
     def destroy_volume(self, volume):
         # first delete the pvc
-        method = 'DELETE'
-        if volume.extra['is_bound']:
-            pvc = volume.extra['pvc']['name']
-            namespace = volume.extra['pvc']['namespace']
-            req = ROOT_URL + "namespaces/" + namespace + \
-                "/persistentvolumeclaims/" + pvc
+        method = "DELETE"
+        if volume.extra["is_bound"]:
+            pvc = volume.extra["pvc"]["name"]
+            namespace = volume.extra["pvc"]["namespace"]
+            req = (
+                ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + pvc
+            )
             try:
                 result = self.connection.request(req, method=method)
 
@@ -758,69 +765,65 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         except Exception:
             raise
 
-    def attach_volume(self, node, volume, device='disk',
-                      ex_bus='virtio', ex_name=None):
+    def attach_volume(self, node, volume, device="disk", ex_bus="virtio", ex_name=None):
         """
         params: bus, name , device (disk or lun)
         """
         # volume must be bound to a claim
-        if not volume.extra['is_bound']:
-            volume = self._bind_volume(volume, node.extra['namespace'])
+        if not volume.extra["is_bound"]:
+            volume = self._bind_volume(volume, node.extra["namespace"])
             if volume is None:
-                raise LibcloudError("Selected Volume (PV) could not be bound "
-                                    "(to a PVC), please select another volume",
-                                    driver=self)
+                raise LibcloudError(
+                    "Selected Volume (PV) could not be bound "
+                    "(to a PVC), please select another volume",
+                    driver=self,
+                )
 
-        claimName = volume.extra['pvc']['name']
+        claimName = volume.extra["pvc"]["name"]
         if ex_name is None:
             name = claimName
         else:
             name = ex_name
-        namespace = volume.extra['pvc']['namespace']
+        namespace = volume.extra["pvc"]["namespace"]
         # check if vm is stopped
         self.stop_node(node)
         # check if it is the same namespace
-        if node.extra['namespace'] != namespace:
+        if node.extra["namespace"] != namespace:
             msg = "The PVC and the VM must be in the same namespace"
             raise ValueError(msg)
         vm = node.name
-        req = KUBEVIRT_URL + 'namespaces/' + namespace + '/virtualmachines/'\
-            + vm
-        disk_dict = {device: {'bus': ex_bus}, 'name': name}
-        volumes_dict = {'persistentVolumeClaim': {'claimName': claimName},
-                        'name': name}
+        req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/" + vm
+        disk_dict = {device: {"bus": ex_bus}, "name": name}
+        volumes_dict = {"persistentVolumeClaim": {"claimName": claimName}, "name": name}
         # Get all the volumes of the vm
         try:
             result = self.connection.request(req).object
         except Exception:
             raise
-        disks = result['spec']['template']['spec']['domain'][
-            'devices']['disks']
-        volumes = result['spec']['template']['spec']['volumes']
+        disks = result["spec"]["template"]["spec"]["domain"]["devices"]["disks"]
+        volumes = result["spec"]["template"]["spec"]["volumes"]
         disks.append(disk_dict)
         volumes.append(volumes_dict)
         # now patch the new volumes and disks lists into the resource
         headers = {"Content-Type": "application/merge-patch+json"}
-        data = {'spec': {
-            'template': {
-                'spec': {
-                    'volumes': volumes,
-                    'domain': {
-                        'devices':
-                        {'disks': disks}
+        data = {
+            "spec": {
+                "template": {
+                    "spec": {
+                        "volumes": volumes,
+                        "domain": {"devices": {"disks": disks}},
                     }
                 }
             }
         }
-        }
         try:
-            result = self.connection.request(req, method="PATCH",
-                                             data=json.dumps(data),
-                                             headers=headers)
-            if 'pvcs' in node.extra:
-                node.extra['pvcs'].append(claimName)
+            result = self.connection.request(
+                req, method="PATCH", data=json.dumps(data), headers=headers
+            )
+            if "pvcs" in node.extra:
+                node.extra["pvcs"].append(claimName)
             else:
-                node.extra['pvcs'] = [claimName]
+                node.extra["pvcs"] = [claimName]
             return result in VALID_RESPONSE_CODES
         except Exception:
             raise
@@ -833,11 +836,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         # vmi must be stopped
         self.stop_node(ex_node)
 
-        claimName = volume.extra['pvc']['name']
+        claimName = volume.extra["pvc"]["name"]
         name = ex_node.name
-        namespace = ex_node.extra['namespace']
-        req = KUBEVIRT_URL + 'namespaces/' + namespace + '/virtualmachines/'\
-            + name
+        namespace = ex_node.extra["namespace"]
+        req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/" + name
         headers = {"Content-Type": "application/merge-patch+json"}
         # Get all the volumes of the vm
 
@@ -845,14 +847,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(req).object
         except Exception:
             raise
-        disks = result['spec']['template']['spec']['domain'][
-            'devices']['disks']
-        volumes = result['spec']['template']['spec']['volumes']
+        disks = result["spec"]["template"]["spec"]["domain"]["devices"]["disks"]
+        volumes = result["spec"]["template"]["spec"]["volumes"]
         to_delete = None
         for volume in volumes:
-            if 'persistentVolumeClaim' in volume:
-                if volume['persistentVolumeClaim']['claimName'] == claimName:
-                    to_delete = volume['name']
+            if "persistentVolumeClaim" in volume:
+                if volume["persistentVolumeClaim"]["claimName"] == claimName:
+                    to_delete = volume["name"]
                     volumes.remove(volume)
                     break
         if not to_delete:
@@ -860,40 +861,37 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise ValueError(msg)
 
         for disk in disks:
-            if disk['name'] == to_delete:
+            if disk["name"] == to_delete:
                 disks.remove(disk)
                 break
         # now patch the new volumes and disks lists into the resource
-        data = {'spec': {
-            'template': {
-                'spec': {
-                    'volumes': volumes,
-                    'domain': {
-                        'devices':
-                        {'disks': disks}
+        data = {
+            "spec": {
+                "template": {
+                    "spec": {
+                        "volumes": volumes,
+                        "domain": {"devices": {"disks": disks}},
                     }
                 }
             }
         }
-        }
         try:
-            result = self.connection.request(req, method="PATCH",
-                                             data=json.dumps(data),
-                                             headers=headers)
-            ex_node.extra['pvcs'].remove(claimName)
+            result = self.connection.request(
+                req, method="PATCH", data=json.dumps(data), headers=headers
+            )
+            ex_node.extra["pvcs"].remove(claimName)
             return result in VALID_RESPONSE_CODES
         except Exception:
             raise
 
     def ex_list_persistent_volume_claims(self, namespace="default"):
 
-        pvc_req = ROOT_URL + "namespaces/" + namespace + \
-            "/persistentvolumeclaims"
+        pvc_req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims"
         try:
             result = self.connection.request(pvc_req).object
         except Exception:
             raise
-        pvcs = [item['metadata']['name'] for item in result['items']]
+        pvcs = [item["metadata"]["name"] for item in result["items"]]
         return pvcs
 
     def ex_list_storage_classes(self):
@@ -904,7 +902,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(sc_req).object
         except Exception:
             raise
-        scs = [item['metadata']['name'] for item in result['items']]
+        scs = [item["metadata"]["name"] for item in result["items"]]
 
         return scs
 
@@ -921,206 +919,243 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         except Exception:
             raise
 
-        for item in result['items']:
-            if item['status']['phase'] not in {'Available', 'Bound'}:
+        for item in result["items"]:
+            if item["status"]["phase"] not in {"Available", "Bound"}:
                 continue
-            ID = item['metadata']['uid']
-            size = item['spec']['capacity']['storage']
-            size = int(size.rstrip('Gi'))
-            extra = {'pvc': {}}
-            extra['storage_class_name'] = item['spec']['storageClassName']
-            extra['is_bound'] = item['status']['phase'] == "Bound"
-            extra['access_modes'] = item['spec']['accessModes']
-            extra['volume_mode'] = item['spec']['volumeMode']
-            if extra['is_bound']:
-                extra['pvc']['name'] = item['spec']['claimRef']['name']
-                extra['pvc']['namespace'] = item['spec']['claimRef'][
-                    'namespace']
-                extra['pvc']['uid'] = item['spec']['claimRef']['uid']
-                name = extra['pvc']['name']
+            ID = item["metadata"]["uid"]
+            size = item["spec"]["capacity"]["storage"]
+            size = int(size.rstrip("Gi"))
+            extra = {"pvc": {}}
+            extra["storage_class_name"] = item["spec"]["storageClassName"]
+            extra["is_bound"] = item["status"]["phase"] == "Bound"
+            extra["access_modes"] = item["spec"]["accessModes"]
+            extra["volume_mode"] = item["spec"]["volumeMode"]
+            if extra["is_bound"]:
+                extra["pvc"]["name"] = item["spec"]["claimRef"]["name"]
+                extra["pvc"]["namespace"] = item["spec"]["claimRef"]["namespace"]
+                extra["pvc"]["uid"] = item["spec"]["claimRef"]["uid"]
+                name = extra["pvc"]["name"]
             else:
-                name = item['metadata']['name']
-            volume = StorageVolume(id=ID, name=name, size=size,
-                                   driver=self.connection.driver,
-                                   extra=extra)
+                name = item["metadata"]["name"]
+            volume = StorageVolume(
+                id=ID, name=name, size=size, driver=self.connection.driver, extra=extra
+            )
             volumes.append(volume)
 
         return volumes
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
-        if hasattr(self, 'key_file'):
-            kwargs['key_file'] = self.key_file
-        if hasattr(self, 'cert_file'):
-            kwargs['cert_file'] = self.cert_file
+        if hasattr(self, "key_file"):
+            kwargs["key_file"] = self.key_file
+        if hasattr(self, "cert_file"):
+            kwargs["cert_file"] = self.cert_file
         return kwargs
 
     def _to_node(self, vm, is_stopped=False):
-        """
-        """
-        ID = vm['metadata']['uid']
-        name = vm['metadata']['name']
+        """ """
+        ID = vm["metadata"]["uid"]
+        name = vm["metadata"]["name"]
         driver = self.connection.driver
-        extra = {'namespace': vm['metadata']['namespace']}
-        extra['pvcs'] = []
+        extra = {"namespace": vm["metadata"]["namespace"]}
+        extra["pvcs"] = []
         memory = 0
-        if 'limits' in vm['spec']['template']['spec'][
-                'domain']['resources']:
-            if 'memory' in vm['spec']['template']['spec'][
-                    'domain']['resources']['limits']:
-                memory = vm['spec']['template']['spec'][
-                    'domain']['resources']['limits']['memory']
-        elif vm['spec']['template']['spec']['domain']['resources'].get(
-                'requests', None):
+        if "limits" in vm["spec"]["template"]["spec"]["domain"]["resources"]:
+            if (
+                "memory"
+                in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]
+            ):
+                memory = vm["spec"]["template"]["spec"]["domain"]["resources"][
+                    "limits"
+                ]["memory"]
+        elif vm["spec"]["template"]["spec"]["domain"]["resources"].get(
+            "requests", None
+        ):
 
-            if vm['spec']['template']['spec'][
-               'domain']['resources']['requests'].get('memory', None):
-                memory = vm['spec']['template']['spec'][
-                    'domain']['resources']['requests']['memory']
+            if vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"].get(
+                "memory", None
+            ):
+                memory = vm["spec"]["template"]["spec"]["domain"]["resources"][
+                    "requests"
+                ]["memory"]
         if not isinstance(memory, int):
-            if 'M' in memory or 'Mi' in memory:
-                memory = memory.rstrip('M')
-                memory = memory.rstrip('Mi')
+            if "M" in memory or "Mi" in memory:
+                memory = memory.rstrip("M")
+                memory = memory.rstrip("Mi")
                 memory = int(memory)
-            elif 'G' in memory:
-                memory = memory.rstrip('G')
+            elif "G" in memory:
+                memory = memory.rstrip("G")
                 memory = int(memory) // 1000
-            elif 'Gi' in memory:
-                memory = memory.rstrip('Gi')
+            elif "Gi" in memory:
+                memory = memory.rstrip("Gi")
                 memory = int(memory) // 1024
         cpu = 1
-        if vm['spec']['template']['spec'][
-                'domain']['resources'].get('limits', None):
-            if vm['spec']['template']['spec']['domain']['resources'][
-               'limits'].get('cpu', None):
-                cpu = vm['spec']['template']['spec'][
-                    'domain']['resources']['limits']['cpu']
-        elif vm['spec']['template']['spec'][
-            'domain']['resources'].get('requests', None) and vm[
-                'spec']['template']['spec'][
-                'domain']['resources']['requests'].get('cpu', None):
-            cpu = vm['spec']['template']['spec'][
-                'domain']['resources']['requests']['cpu']
-        elif vm['spec']['template']['spec']['domain'].get('cpu', None):
-            cpu = vm['spec']['template']['spec']['domain'][
-                'cpu'].get('cores', 1)
+        if vm["spec"]["template"]["spec"]["domain"]["resources"].get("limits", None):
+            if vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"].get(
+                "cpu", None
+            ):
+                cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"][
+                    "cpu"
+                ]
+        elif vm["spec"]["template"]["spec"]["domain"]["resources"].get(
+            "requests", None
+        ) and vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"].get(
+            "cpu", None
+        ):
+            cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
+                "cpu"
+            ]
+        elif vm["spec"]["template"]["spec"]["domain"].get("cpu", None):
+            cpu = vm["spec"]["template"]["spec"]["domain"]["cpu"].get("cores", 1)
         if not isinstance(cpu, int):
-            cpu = int(cpu.rstrip('m'))
-        extra_size = {'cpus': cpu}
+            cpu = int(cpu.rstrip("m"))
+        extra_size = {"cpus": cpu}
         size_name = "{} vCPUs, {}MB Ram".format(str(cpu), str(memory))
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
-        size = NodeSize(id=size_id, name=size_name, ram=memory,
-                        disk=0, bandwidth=0, price=0,
-                        driver=driver, extra=extra_size)
-        extra['memory'] = memory
-        extra['cpu'] = cpu
+        size = NodeSize(
+            id=size_id,
+            name=size_name,
+            ram=memory,
+            disk=0,
+            bandwidth=0,
+            price=0,
+            driver=driver,
+            extra=extra_size,
+        )
+        extra["memory"] = memory
+        extra["cpu"] = cpu
         image_name = "undefined"
-        for volume in vm['spec']['template'][
-                'spec']['volumes']:
+        for volume in vm["spec"]["template"]["spec"]["volumes"]:
             for k, v in volume.items():
                 if type(v) is dict:
-                    if 'image' in v:
-                        image_name = v['image']
+                    if "image" in v:
+                        image_name = v["image"]
         image = NodeImage(image_name, image_name, driver)
-        if 'volumes' in vm['spec']['template']['spec']:
-            for volume in vm['spec']['template']['spec']['volumes']:
-                if 'persistentVolumeClaim' in volume:
-                    extra['pvcs'].append(volume[
-                        'persistentVolumeClaim']['claimName'])
+        if "volumes" in vm["spec"]["template"]["spec"]:
+            for volume in vm["spec"]["template"]["spec"]["volumes"]:
+                if "persistentVolumeClaim" in volume:
+                    extra["pvcs"].append(volume["persistentVolumeClaim"]["claimName"])
         port_forwards = []
-        services = self.ex_list_services(namespace=extra['namespace'],
-                                         node_name=name)
+        services = self.ex_list_services(namespace=extra["namespace"], node_name=name)
         for service in services:
-            service_type = service['spec'].get('type')
-            for port_pair in service['spec']['ports']:
-                protocol = port_pair.get('protocol')
-                public_port = port_pair.get('port')
-                local_port = port_pair.get('targetPort')
+            service_type = service["spec"].get("type")
+            for port_pair in service["spec"]["ports"]:
+                protocol = port_pair.get("protocol")
+                public_port = port_pair.get("port")
+                local_port = port_pair.get("targetPort")
                 try:
                     int(local_port)
                 except ValueError:
                     local_port = public_port
-                port_forwards.append({
-                    'local_port': local_port,
-                    'public_port': public_port,
-                    'protocol': protocol,
-                    'service_type': service_type
-                })
-        extra['port_forwards'] = port_forwards
+                port_forwards.append(
+                    {
+                        "local_port": local_port,
+                        "public_port": public_port,
+                        "protocol": protocol,
+                        "service_type": service_type,
+                    }
+                )
+        extra["port_forwards"] = port_forwards
         if is_stopped:
             state = NodeState.STOPPED
             public_ips = None
             private_ips = None
-            return Node(id=ID, name=name, state=state,
-                        public_ips=public_ips,
-                        private_ips=private_ips,
-                        driver=driver, size=size,
-                        image=image, extra=extra)
+            return Node(
+                id=ID,
+                name=name,
+                state=state,
+                public_ips=public_ips,
+                private_ips=private_ips,
+                driver=driver,
+                size=size,
+                image=image,
+                extra=extra,
+            )
 
         # getting image and image_ID from the container
-        req = ROOT_URL + "namespaces/" + extra['namespace'] + "/pods"
+        req = ROOT_URL + "namespaces/" + extra["namespace"] + "/pods"
         result = self.connection.request(req).object
         pod = None
-        for pd in result['items']:
-            if 'metadata' in pd and 'ownerReferences' in pd['metadata']:
-                if pd['metadata']['ownerReferences'][0]['name'] == name:
+        for pd in result["items"]:
+            if "metadata" in pd and "ownerReferences" in pd["metadata"]:
+                if pd["metadata"]["ownerReferences"][0]["name"] == name:
                     pod = pd
-        if pod is None or 'containerStatuses' not in pod['status']:
+        if pod is None or "containerStatuses" not in pod["status"]:
             state = NodeState.PENDING
             public_ips = None
             private_ips = None
-            return Node(id=ID, name=name, state=state,
-                        public_ips=public_ips,
-                        private_ips=private_ips,
-                        driver=driver, size=size,
-                        image=image, extra=extra)
-        extra['pod'] = {'name': pod['metadata']['name']}
-        for cont_status in pod['status']['containerStatuses']:
+            return Node(
+                id=ID,
+                name=name,
+                state=state,
+                public_ips=public_ips,
+                private_ips=private_ips,
+                driver=driver,
+                size=size,
+                image=image,
+                extra=extra,
+            )
+        extra["pod"] = {"name": pod["metadata"]["name"]}
+        for cont_status in pod["status"]["containerStatuses"]:
             # only 2 containers are present the launcher and the vmi
-            if cont_status['name'] != 'compute':
-                image = NodeImage(ID, cont_status['image'],
-                                  driver)
-                state = NodeState.RUNNING if "running" in cont_status[
-                    'state'] else NodeState.PENDING
+            if cont_status["name"] != "compute":
+                image = NodeImage(ID, cont_status["image"], driver)
+                state = (
+                    NodeState.RUNNING
+                    if "running" in cont_status["state"]
+                    else NodeState.PENDING
+                )
         public_ips = None
-        created_at = datetime.strptime(vm['metadata']['creationTimestamp'],
-                                       '%Y-%m-%dT%H:%M:%SZ')
+        created_at = datetime.strptime(
+            vm["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
+        )
 
-        if 'podIPs' in pod['status']:
-            private_ips = [ip['ip'] for ip in pod['status']['podIPs']]
+        if "podIPs" in pod["status"]:
+            private_ips = [ip["ip"] for ip in pod["status"]["podIPs"]]
         else:
             private_ips = []
 
-        return Node(id=ID, name=name, state=state,
-                    public_ips=public_ips,
-                    private_ips=private_ips,
-                    driver=driver, size=size,
-                    image=image, extra=extra,
-                    created_at=created_at)
+        return Node(
+            id=ID,
+            name=name,
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=driver,
+            size=size,
+            image=image,
+            extra=extra,
+            created_at=created_at,
+        )
 
-    def ex_list_services(self, namespace='default', node_name=None,
-                         service_name=None):
-        '''
+    def ex_list_services(self, namespace="default", node_name=None, service_name=None):
+        """
         If node_name is given then the services returned will be those that
         concern the node
-        '''
+        """
         params = None
         if service_name is not None:
-            params = {'fieldSelector': 'metadata.name={}'.format(service_name)}
-        req = ROOT_URL + '/namespaces/{}/services'.format(namespace)
-        result = self.connection.request(req, params=params).object['items']
+            params = {"fieldSelector": "metadata.name={}".format(service_name)}
+        req = ROOT_URL + "/namespaces/{}/services".format(namespace)
+        result = self.connection.request(req, params=params).object["items"]
         if node_name:
             res = []
             for service in result:
-                if node_name in service['metadata'].get('name', ""):
+                if node_name in service["metadata"].get("name", ""):
                     res.append(service)
             return res
         return result
 
-    def ex_create_service(self, node, ports, service_type="NodePort",
-                          cluster_ip=None, load_balancer_ip=None,
-                          override_existing_ports=False):
-        '''
+    def ex_create_service(
+        self,
+        node,
+        ports,
+        service_type="NodePort",
+        cluster_ip=None,
+        load_balancer_ip=None,
+        override_existing_ports=False,
+    ):
+        """
         Each node has a single service of one type on which the exposed ports
         are described. If a service exists then the port declared will be
         exposed alongside the existing ones, set override_existing_ports=True
@@ -1162,95 +1197,94 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                                        service already exists the ports will be
                                        added to the existing ones.
         type  override_existing_ports: `boolean`
-        '''
+        """
         # check if service exists first
-        namespace = node.extra.get('namespace', 'default')
-        service_name = 'service-{}-{}'.format(service_type.lower(), node.name)
-        service_list = self.ex_list_services(namespace=namespace,
-                                             service_name=service_name)
+        namespace = node.extra.get("namespace", "default")
+        service_name = "service-{}-{}".format(service_type.lower(), node.name)
+        service_list = self.ex_list_services(
+            namespace=namespace, service_name=service_name
+        )
 
         ports_to_expose = []
         # if ports has a falsey value like None or 0
         if not ports:
             ports = []
         for port_group in ports:
-            if not port_group.get('target_port', None):
-                port_group['target_port'] = port_group['port']
-            if not port_group.get('name', ""):
-                port_group['name'] = 'port-{}'.format(port_group['port'])
+            if not port_group.get("target_port", None):
+                port_group["target_port"] = port_group["port"]
+            if not port_group.get("name", ""):
+                port_group["name"] = "port-{}".format(port_group["port"])
             ports_to_expose.append(
-                {'protocol': port_group.get('protocol', 'TCP'),
-                 'port': int(port_group['port']),
-                 'targetPort': int(port_group['target_port']),
-                 'name': port_group['name']})
+                {
+                    "protocol": port_group.get("protocol", "TCP"),
+                    "port": int(port_group["port"]),
+                    "targetPort": int(port_group["target_port"]),
+                    "name": port_group["name"],
+                }
+            )
         headers = None
         data = None
         if len(service_list) > 0:
             if not ports:
                 result = True
                 for service in service_list:
-                    service_name = service['metadata']['name']
+                    service_name = service["metadata"]["name"]
                     result = result and self.ex_delete_service(
-                        namespace=namespace,
-                        service_name=service_name)
+                        namespace=namespace, service_name=service_name
+                    )
                 return result
             else:
-                method = 'PATCH'
-                spec = {'ports': ports_to_expose}
+                method = "PATCH"
+                spec = {"ports": ports_to_expose}
                 if not override_existing_ports:
-                    existing_ports = service_list[0]['spec']['ports']
-                    spec = {'ports': existing_ports.extend(ports_to_expose)}
-                data = json.dumps({'spec': spec})
+                    existing_ports = service_list[0]["spec"]["ports"]
+                    spec = {"ports": existing_ports.extend(ports_to_expose)}
+                data = json.dumps({"spec": spec})
                 headers = {"Content-Type": "application/merge-patch+json"}
             req = "{}/namespaces/{}/services/{}".format(
                 ROOT_URL, namespace, service_name
             )
         else:
             if not ports:
-                raise ValueError("Argument ports is empty but there is no "
-                                 "service of {} type to be deleted".format(
-                                     service_type
-                                 ))
-            method = 'POST'
+                raise ValueError(
+                    "Argument ports is empty but there is no "
+                    "service of {} type to be deleted".format(service_type)
+                )
+            method = "POST"
             service = {
-                'kind': 'Service',
-                'apiVersion': 'v1',
-                'metadata': {
-                    'name': service_name,
-                    'labels': {
-                        'service': 'kubevirt.io'
-                    }
+                "kind": "Service",
+                "apiVersion": "v1",
+                "metadata": {
+                    "name": service_name,
+                    "labels": {"service": "kubevirt.io"},
                 },
-                'spec': {
-                    'type': "",
-                    'selector': {
-                        "kubevirt.io/vm": node.name
-                    },
-                    'ports': []
+                "spec": {
+                    "type": "",
+                    "selector": {"kubevirt.io/vm": node.name},
+                    "ports": [],
                 },
             }
-            service['spec']['ports'] = ports_to_expose
-            service['spec']['type'] = service_type
+            service["spec"]["ports"] = ports_to_expose
+            service["spec"]["type"] = service_type
             if cluster_ip is not None:
-                service['spec']['clusterIP'] = cluster_ip
+                service["spec"]["clusterIP"] = cluster_ip
             if service_type == "LoadBalancer" and load_balancer_ip is not None:
-                service['spec']['loadBalancerIP'] = load_balancer_ip
+                service["spec"]["loadBalancerIP"] = load_balancer_ip
             data = json.dumps(service)
             req = "{}/namespaces/{}/services".format(ROOT_URL, namespace)
         try:
-            result = self.connection.request(req, method=method, data=data,
-                                             headers=headers)
+            result = self.connection.request(
+                req, method=method, data=data, headers=headers
+            )
         except Exception:
             raise
         return result.status in VALID_RESPONSE_CODES
 
     def ex_delete_service(self, namespace, service_name):
-        req = "{}/namespaces/{}/services/{}".format(ROOT_URL, namespace,
-                                                    service_name)
+        req = "{}/namespaces/{}/services/{}".format(ROOT_URL, namespace, service_name)
         headers = {"Content-Type": "application/yaml"}
         try:
-            result = self.connection.request(req, method="DELETE",
-                                             headers=headers)
+            result = self.connection.request(req, method="DELETE", headers=headers)
         except Exception:
             raise
         return result.status in VALID_RESPONSE_CODES

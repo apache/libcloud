@@ -35,71 +35,78 @@ from libcloud.common.exceptions import BaseHTTPError
 from collections import defaultdict
 
 __all__ = [
-    'API_VERSION',
-    'API_HOST',
-    'ProfitBricksNodeDriver',
-    'Datacenter',
-    'ProfitBricksNetworkInterface',
-    'ProfitBricksFirewallRule',
-    'ProfitBricksLan',
-    'ProfitBricksIPFailover',
-    'ProfitBricksLoadBalancer',
-    'ProfitBricksAvailabilityZone',
-    'ProfitBricksIPBlock'
+    "API_VERSION",
+    "API_HOST",
+    "ProfitBricksNodeDriver",
+    "Datacenter",
+    "ProfitBricksNetworkInterface",
+    "ProfitBricksFirewallRule",
+    "ProfitBricksLan",
+    "ProfitBricksIPFailover",
+    "ProfitBricksLoadBalancer",
+    "ProfitBricksAvailabilityZone",
+    "ProfitBricksIPBlock",
 ]
 
-API_HOST = 'api.profitbricks.com'
-API_VERSION = '/cloudapi/v4/'
+API_HOST = "api.profitbricks.com"
+API_VERSION = "/cloudapi/v4/"
 
 
 class ProfitBricksResponse(JsonResponse):
     """
     ProfitBricks response parsing.
     """
+
     def parse_error(self):
         http_code = None
         fault_code = None
         message = None
         try:
             body = json.loads(self.body)
-            if 'httpStatus' in body:
-                http_code = body['httpStatus']
+            if "httpStatus" in body:
+                http_code = body["httpStatus"]
             else:
-                http_code = 'unknown'
+                http_code = "unknown"
 
-            if 'messages' in body:
-                message = ', '.join(list(map(
-                    lambda item: item['message'], body['messages'])))
-                fault_code = ', '.join(list(map(
-                    lambda item: item['errorCode'], body['messages'])))
+            if "messages" in body:
+                message = ", ".join(
+                    list(map(lambda item: item["message"], body["messages"]))
+                )
+                fault_code = ", ".join(
+                    list(map(lambda item: item["errorCode"], body["messages"]))
+                )
             else:
-                message = 'No messages returned.'
-                fault_code = 'unknown'
+                message = "No messages returned."
+                fault_code = "unknown"
         except Exception:
-            raise MalformedResponseError('Failed to parse Json',
-                                         body=self.body,
-                                         driver=ProfitBricksNodeDriver)
+            raise MalformedResponseError(
+                "Failed to parse Json", body=self.body, driver=ProfitBricksNodeDriver
+            )
 
         return LibcloudError(
-            '''
+            """
                 HTTP Code: %s,
                 Fault Code(s): %s,
                 Message(s): %s
-            '''
-            % (http_code, fault_code, message), driver=self)
+            """
+            % (http_code, fault_code, message),
+            driver=self,
+        )
 
 
 class ProfitBricksConnection(ConnectionUserAndKey):
     """
     Represents a single connection to the ProfitBricks endpoint.
     """
+
     host = API_HOST
     api_prefix = API_VERSION
     responseCls = ProfitBricksResponse
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = 'Basic %s' % (base64.b64encode(
-            b('%s:%s' % (self.user_id, self.key))).decode('utf-8'))
+        headers["Authorization"] = "Basic %s" % (
+            base64.b64encode(b("%s:%s" % (self.user_id, self.key))).decode("utf-8")
+        )
 
         return headers
 
@@ -116,10 +123,18 @@ class ProfitBricksConnection(ConnectionUserAndKey):
             return json.dumps(data)
 
         else:
-            return ''
+            return ""
 
-    def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, with_full_url=False):
+    def request(
+        self,
+        action,
+        params=None,
+        data=None,
+        headers=None,
+        method="GET",
+        raw=False,
+        with_full_url=False,
+    ):
 
         """
         Some requests will use the href attribute directly.
@@ -129,12 +144,9 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         host and protocol components.
         """
         if not with_full_url or with_full_url is False:
-            action = self.api_prefix + action.lstrip('/')
+            action = self.api_prefix + action.lstrip("/")
         else:
-            action = action.replace(
-                'https://{host}'.format(host=self.host),
-                ''
-            )
+            action = action.replace("https://{host}".format(host=self.host), "")
 
         return super(ProfitBricksConnection, self).request(
             action=action,
@@ -142,7 +154,7 @@ class ProfitBricksConnection(ConnectionUserAndKey):
             data=data,
             headers=headers,
             method=method,
-            raw=raw
+            raw=raw,
         )
 
 
@@ -171,6 +183,7 @@ class Datacenter(UuidMixin):
 
     Note: This class is ProfitBricks specific.
     """
+
     def __init__(self, id, href, name, version, driver, extra=None):
         self.id = str(id)
         self.href = href
@@ -181,10 +194,13 @@ class Datacenter(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return ((
-            '<Datacenter: id=%s, href=%s name=%s, version=%s, driver=%s> ...>')
-            % (self.id, self.href, self.name, self.version,
-                self.driver.name))
+        return ("<Datacenter: id=%s, href=%s name=%s, version=%s, driver=%s> ...>") % (
+            self.id,
+            self.href,
+            self.name,
+            self.version,
+            self.driver.name,
+        )
 
 
 class ProfitBricksNetworkInterface(object):
@@ -209,6 +225,7 @@ class ProfitBricksNetworkInterface(object):
 
     Note: This class is ProfitBricks specific.
     """
+
     def __init__(self, id, name, href, state, extra=None):
         self.id = id
         self.name = name
@@ -217,8 +234,11 @@ class ProfitBricksNetworkInterface(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ProfitBricksNetworkInterface: id=%s, name=%s, href=%s>')
-                % (self.id, self.name, self.href))
+        return ("<ProfitBricksNetworkInterface: id=%s, name=%s, href=%s>") % (
+            self.id,
+            self.name,
+            self.href,
+        )
 
 
 class ProfitBricksFirewallRule(object):
@@ -253,8 +273,11 @@ class ProfitBricksFirewallRule(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ProfitBricksFirewallRule: id=%s, name=%s, href=%s>')
-                % (self.id, self.name, self.href))
+        return ("<ProfitBricksFirewallRule: id=%s, name=%s, href=%s>") % (
+            self.id,
+            self.name,
+            self.href,
+        )
 
 
 class ProfitBricksLan(object):
@@ -294,8 +317,11 @@ class ProfitBricksLan(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ProfitBricksLan: id=%s, name=%s, href=%s>')
-                % (self.id, self.name, self.href))
+        return ("<ProfitBricksLan: id=%s, name=%s, href=%s>") % (
+            self.id,
+            self.name,
+            self.href,
+        )
 
 
 class ProfitBricksIPFailover(object):
@@ -318,8 +344,10 @@ class ProfitBricksIPFailover(object):
         self.nic_uuid = nic_uuid
 
     def __repr__(self):
-        return (('<ProfitBricksIPFailover: ip=%s, nic_uuid=%s>')
-                % (self.ip, self.nic_uuid))
+        return ("<ProfitBricksIPFailover: ip=%s, nic_uuid=%s>") % (
+            self.ip,
+            self.nic_uuid,
+        )
 
 
 class ProfitBricksLoadBalancer(object):
@@ -355,8 +383,11 @@ class ProfitBricksLoadBalancer(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('ProfitBricksLoadbalancer: id=%s, name=%s, href=%s>')
-                % (self.id, self.name, self.href))
+        return ("ProfitBricksLoadbalancer: id=%s, name=%s, href=%s>") % (
+            self.id,
+            self.name,
+            self.href,
+        )
 
 
 class ProfitBricksAvailabilityZone(object):
@@ -374,8 +405,7 @@ class ProfitBricksAvailabilityZone(object):
         self.name = name
 
     def __repr__(self):
-        return (('<ProfitBricksAvailabilityZone: name=%s>')
-                % (self.name))
+        return ("<ProfitBricksAvailabilityZone: name=%s>") % (self.name)
 
 
 class ProfitBricksIPBlock(object):
@@ -410,11 +440,7 @@ class ProfitBricksIPBlock(object):
     Note: This class is ProfitBricks specific
     """
 
-    def __init__(
-        self, id, name, href, location,
-        size, ips, state, driver,
-        extra=None
-    ):
+    def __init__(self, id, name, href, location, size, ips, state, driver, extra=None):
 
         self.id = id
         self.name = name
@@ -428,45 +454,42 @@ class ProfitBricksIPBlock(object):
 
     def __repr__(self):
         return (
-            (
-                '<ProfitBricksIPBlock: id=%s,'
-                'name=%s, href=%s,location=%s, size=%s>'
-            )
-            % (self.id, self.name, self.href, self.location, self.size)
-        )
+            "<ProfitBricksIPBlock: id=%s," "name=%s, href=%s,location=%s, size=%s>"
+        ) % (self.id, self.name, self.href, self.location, self.size)
 
 
 class ProfitBricksNodeDriver(NodeDriver):
     """
     Base ProfitBricks node driver.
     """
+
     connectionCls = ProfitBricksConnection
-    name = 'ProfitBricks'
-    website = 'http://www.profitbricks.com'
+    name = "ProfitBricks"
+    website = "http://www.profitbricks.com"
     type = Provider.PROFIT_BRICKS
 
     PROVISIONING_STATE = {
-        'AVAILABLE': NodeState.RUNNING,
-        'BUSY': NodeState.PENDING,
-        'INACTIVE': NodeState.PENDING
+        "AVAILABLE": NodeState.RUNNING,
+        "BUSY": NodeState.PENDING,
+        "INACTIVE": NodeState.PENDING,
     }
 
     NODE_STATE_MAP = {
-        'NOSTATE': NodeState.UNKNOWN,
-        'RUNNING': NodeState.RUNNING,
-        'BLOCKED': NodeState.STOPPED,
-        'PAUSE': NodeState.PAUSED,
-        'SHUTDOWN': NodeState.STOPPING,
-        'SHUTOFF': NodeState.STOPPED,
-        'CRASHED': NodeState.ERROR,
-        'AVAILABLE': NodeState.RUNNING,
-        'BUSY': NodeState.PENDING
+        "NOSTATE": NodeState.UNKNOWN,
+        "RUNNING": NodeState.RUNNING,
+        "BLOCKED": NodeState.STOPPED,
+        "PAUSE": NodeState.PAUSED,
+        "SHUTDOWN": NodeState.STOPPING,
+        "SHUTOFF": NodeState.STOPPED,
+        "CRASHED": NodeState.ERROR,
+        "AVAILABLE": NodeState.RUNNING,
+        "BUSY": NodeState.PENDING,
     }
 
     AVAILABILITY_ZONE = {
-        '1': {'name': 'AUTO'},
-        '2': {'name': 'ZONE_1'},
-        '3': {'name': 'ZONE_2'},
+        "1": {"name": "AUTO"},
+        "2": {"name": "ZONE_1"},
+        "3": {"name": "ZONE_2"},
     }
 
     """
@@ -480,55 +503,37 @@ class ProfitBricksNodeDriver(NodeDriver):
     """
 
     PROFIT_BRICKS_GENERIC_SIZES = {
-        '1': {
-            'id': '1',
-            'name': 'Micro',
-            'ram': 1024,
-            'disk': 50,
-            'cores': 1
+        "1": {"id": "1", "name": "Micro", "ram": 1024, "disk": 50, "cores": 1},
+        "2": {"id": "2", "name": "Small Instance", "ram": 2048, "disk": 50, "cores": 1},
+        "3": {
+            "id": "3",
+            "name": "Medium Instance",
+            "ram": 4096,
+            "disk": 50,
+            "cores": 2,
         },
-        '2': {
-            'id': '2',
-            'name': 'Small Instance',
-            'ram': 2048,
-            'disk': 50,
-            'cores': 1
+        "4": {"id": "4", "name": "Large Instance", "ram": 7168, "disk": 50, "cores": 4},
+        "5": {
+            "id": "5",
+            "name": "ExtraLarge Instance",
+            "ram": 14336,
+            "disk": 50,
+            "cores": 8,
         },
-        '3': {
-            'id': '3',
-            'name': 'Medium Instance',
-            'ram': 4096,
-            'disk': 50,
-            'cores': 2
+        "6": {
+            "id": "6",
+            "name": "Memory Intensive Instance Medium",
+            "ram": 28672,
+            "disk": 50,
+            "cores": 4,
         },
-        '4': {
-            'id': '4',
-            'name': 'Large Instance',
-            'ram': 7168,
-            'disk': 50,
-            'cores': 4
+        "7": {
+            "id": "7",
+            "name": "Memory Intensive Instance Large",
+            "ram": 57344,
+            "disk": 50,
+            "cores": 8,
         },
-        '5': {
-            'id': '5',
-            'name': 'ExtraLarge Instance',
-            'ram': 14336,
-            'disk': 50,
-            'cores': 8
-        },
-        '6': {
-            'id': '6',
-            'name': 'Memory Intensive Instance Medium',
-            'ram': 28672,
-            'disk': 50,
-            'cores': 4
-        },
-        '7': {
-            'id': '7',
-            'name': 'Memory Intensive Instance Large',
-            'ram': 57344,
-            'disk': 50,
-            'cores': 8
-        }
     }
 
     """
@@ -564,9 +569,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype: ``list``
         """
         response = self.connection.request(
-            action='images',
-            params={'depth': 1},
-            method='GET'
+            action="images", params={"depth": 1}, method="GET"
         )
 
         return self._to_images(response.object, image_type, is_public)
@@ -578,10 +581,10 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return: ``list`` of :class:`NodeLocation`
         :rtype: ``list``
         """
-        return self._to_locations(self.connection.request(
-            action='locations',
-            params={'depth': 1},
-            method='GET').object
+        return self._to_locations(
+            self.connection.request(
+                action="locations", params={"depth": 1}, method="GET"
+            ).object
         )
 
     """
@@ -599,12 +602,12 @@ class ProfitBricksNodeDriver(NodeDriver):
         nodes = list()
 
         for datacenter in datacenters:
-            servers_href = datacenter.extra['entities']['servers']['href']
+            servers_href = datacenter.extra["entities"]["servers"]["href"]
             response = self.connection.request(
                 action=servers_href,
-                params={'depth': 3},
-                method='GET',
-                with_full_url=True
+                params={"depth": 3},
+                method="GET",
+                with_full_url=True,
             )
 
             mapped_nodes = self._to_nodes(response.object)
@@ -618,24 +621,34 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        action = node.extra['href'] + '/reboot'
+        action = node.extra["href"] + "/reboot"
 
-        self.connection.request(
-            action=action,
-            method='POST',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="POST", with_full_url=True)
 
         return True
 
     def create_node(
-        self, name, image=None, size=None, location=None,
-        ex_cpu_family=None, volume=None, ex_datacenter=None,
-        ex_network_interface=True, ex_internet_access=True,
-        ex_exposed_public_ports=[], ex_exposed_private_ports=[22],
-        ex_availability_zone=None, ex_ram=None, ex_cores=None,
-        ex_disk=None, ex_password=None, ex_ssh_keys=None,
-        ex_bus_type=None, ex_disk_type=None, **kwargs
+        self,
+        name,
+        image=None,
+        size=None,
+        location=None,
+        ex_cpu_family=None,
+        volume=None,
+        ex_datacenter=None,
+        ex_network_interface=True,
+        ex_internet_access=True,
+        ex_exposed_public_ports=[],
+        ex_exposed_private_ports=[22],
+        ex_availability_zone=None,
+        ex_ram=None,
+        ex_cores=None,
+        ex_disk=None,
+        ex_password=None,
+        ex_ssh_keys=None,
+        ex_bus_type=None,
+        ex_disk_type=None,
+        **kwargs,
     ):
         """
         Creates a node.
@@ -717,149 +730,140 @@ class ProfitBricksNodeDriver(NodeDriver):
         that it belongs to and set accordingly.
         """
         if volume is not None:
-            dc_url_pruned = volume.extra['href'].split('/')[:-2]
-            dc_url = '/'.join(item for item in dc_url_pruned)
-            ex_datacenter = self.ex_describe_datacenter(
-                ex_href=dc_url
-            )
+            dc_url_pruned = volume.extra["href"].split("/")[:-2]
+            dc_url = "/".join(item for item in dc_url_pruned)
+            ex_datacenter = self.ex_describe_datacenter(ex_href=dc_url)
 
         if not ex_datacenter:
-            '''
+            """
             Determine location for new DC by
             getting the location of the image.
-            '''
+            """
             if not location:
                 if image is not None:
                     location = self.ex_describe_location(
-                        ex_location_id=image.extra['location']
+                        ex_location_id=image.extra["location"]
                     )
 
-            '''
+            """
             Creating a Datacenter for the node
             since one was not provided.
-            '''
+            """
             new_datacenter = self._create_new_datacenter_for_node(
-                name=name,
-                location=location
+                name=name, location=location
             )
 
-            '''
+            """
             Then wait for the operation to finish,
             assigning the full data center on completion.
-            '''
-            ex_datacenter = self._wait_for_datacenter_state(
-                datacenter=new_datacenter
-            )
+            """
+            ex_datacenter = self._wait_for_datacenter_state(datacenter=new_datacenter)
 
         if not size:
             if not ex_ram:
-                raise ValueError('You need to either pass a '
-                                 'NodeSize or specify ex_ram as '
-                                 'an extra parameter.')
+                raise ValueError(
+                    "You need to either pass a "
+                    "NodeSize or specify ex_ram as "
+                    "an extra parameter."
+                )
             if not ex_cores:
-                raise ValueError('You need to either pass a '
-                                 'NodeSize or specify ex_cores as '
-                                 'an extra parameter.')
+                raise ValueError(
+                    "You need to either pass a "
+                    "NodeSize or specify ex_cores as "
+                    "an extra parameter."
+                )
 
-        '''
+        """
         If passing in an image we need
         to enforce a password or ssh keys.
-        '''
+        """
         if not volume and image is not None:
             if ex_password is None and ex_ssh_keys is None:
                 raise ValueError(
                     (
-                        'When creating a server without a '
-                        'volume, you need to specify either an '
-                        'array of SSH keys or a volume password.'
+                        "When creating a server without a "
+                        "volume, you need to specify either an "
+                        "array of SSH keys or a volume password."
                     )
                 )
 
             if not size:
                 if not ex_disk:
-                    raise ValueError('You need to either pass a '
-                                     'StorageVolume, a NodeSize, or specify '
-                                     'ex_disk as an extra parameter.')
+                    raise ValueError(
+                        "You need to either pass a "
+                        "StorageVolume, a NodeSize, or specify "
+                        "ex_disk as an extra parameter."
+                    )
 
-        '''
+        """
         You can override the suggested sizes by passing in unique
         values for ram, cores, and disk allowing you to size it
         for your specific use.
-        '''
+        """
 
         if image is not None:
             if not ex_disk:
                 ex_disk = size.disk
 
         if not ex_disk_type:
-            ex_disk_type = 'HDD'
+            ex_disk_type = "HDD"
 
         if not ex_bus_type:
-            ex_bus_type = 'VIRTIO'
+            ex_bus_type = "VIRTIO"
 
         if not ex_ram:
             ex_ram = size.ram
 
         if not ex_cores:
-            ex_cores = size.extra['cores']
+            ex_cores = size.extra["cores"]
 
-        action = ex_datacenter.href + '/servers'
+        action = ex_datacenter.href + "/servers"
         body = {
-            'properties': {
-                'name': name,
-                'ram': ex_ram,
-                'cores': ex_cores
-            },
-            'entities': {
-                'volumes': {
-                    'items': []
-                }
-            }
+            "properties": {"name": name, "ram": ex_ram, "cores": ex_cores},
+            "entities": {"volumes": {"items": []}},
         }
 
-        '''
+        """
         If we are using a pre-existing storage volume.
-        '''
+        """
         if volume is not None:
-            body['entities']['volumes']['items'].append({'id': volume.id})
+            body["entities"]["volumes"]["items"].append({"id": volume.id})
         elif image is not None:
             new_volume = {
-                'properties': {
-                    'size': ex_disk,
-                    'name': name + ' - volume',
-                    'image': image.id,
-                    'type': ex_disk_type,
-                    'bus': ex_bus_type
+                "properties": {
+                    "size": ex_disk,
+                    "name": name + " - volume",
+                    "image": image.id,
+                    "type": ex_disk_type,
+                    "bus": ex_bus_type,
                 }
             }
 
             if ex_password is not None:
                 if isinstance(ex_password, NodeAuthPassword):
-                    new_volume['properties']['imagePassword'] = \
-                        ex_password.password
+                    new_volume["properties"]["imagePassword"] = ex_password.password
                 else:
-                    new_volume['properties']['imagePassword'] = ex_password
+                    new_volume["properties"]["imagePassword"] = ex_password
 
             if ex_ssh_keys is not None:
                 if isinstance(ex_ssh_keys[0], NodeAuthSSHKey):
-                    new_volume['properties']['sshKeys'] = \
-                        [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+                    new_volume["properties"]["sshKeys"] = [
+                        ssh_key.pubkey for ssh_key in ex_ssh_keys
+                    ]
                 else:
-                    new_volume['properties']['sshKeys'] = ex_ssh_keys
+                    new_volume["properties"]["sshKeys"] = ex_ssh_keys
 
-            body['entities']['volumes']['items'].append(new_volume)
+            body["entities"]["volumes"]["items"].append(new_volume)
 
         if ex_network_interface is True:
-            body['entities']['nics'] = {}
-            body['entities']['nics']['items'] = list()
+            body["entities"]["nics"] = {}
+            body["entities"]["nics"]["items"] = list()
 
-            '''
+            """
             Get the LANs for the data center this node
             will be provisioned at.
-            '''
-            dc_lans = self.ex_list_lans(
-                datacenter=ex_datacenter
-            )
+            """
+            dc_lans = self.ex_list_lans(datacenter=ex_datacenter)
 
             private_lans = [lan for lan in dc_lans if lan.is_public is False]
             private_lan = None
@@ -869,34 +873,30 @@ class ProfitBricksNodeDriver(NodeDriver):
 
             if private_lan is not None:
                 private_nic = {
-                    'properties': {
-                        'name': name + ' - private nic',
-                        'lan': private_lan.id,
+                    "properties": {
+                        "name": name + " - private nic",
+                        "lan": private_lan.id,
                     },
-                    'entities': {
-                        'firewallrules': {
-                            'items': []
-                        }
-                    }
+                    "entities": {"firewallrules": {"items": []}},
                 }
 
                 for port in ex_exposed_private_ports:
-                    private_nic['entities']['firewallrules']['items'].append(
+                    private_nic["entities"]["firewallrules"]["items"].append(
                         {
-                            'properties': {
-                                'name': (
-                                    '{name} - firewall rule:{port}'.format(
+                            "properties": {
+                                "name": (
+                                    "{name} - firewall rule:{port}".format(
                                         name=name, port=port
                                     )
                                 ),
-                                'protocol': 'TCP',
-                                'portRangeStart': port,
-                                'portRangeEnd': port
+                                "protocol": "TCP",
+                                "portRangeStart": port,
+                                "portRangeEnd": port,
                             }
                         }
                     )
 
-                body['entities']['nics']['items'].append(private_nic)
+                body["entities"]["nics"]["items"].append(private_nic)
 
             if ex_internet_access is not None and ex_internet_access is True:
                 public_lans = [lan for lan in dc_lans if lan.is_public]
@@ -907,49 +907,43 @@ class ProfitBricksNodeDriver(NodeDriver):
 
                 if public_lan is not None:
                     pub_nic = {
-                        'properties': {
-                            'name': name + ' - public nic',
-                            'lan': public_lan.id,
+                        "properties": {
+                            "name": name + " - public nic",
+                            "lan": public_lan.id,
                         },
-                        'entities': {
-                            'firewallrules': {
-                                'items': []
-                            }
-                        }
+                        "entities": {"firewallrules": {"items": []}},
                     }
 
                     for port in ex_exposed_public_ports:
-                        pub_nic['entities']['firewallrules']['items'].append(
+                        pub_nic["entities"]["firewallrules"]["items"].append(
                             {
-                                'properties': {
-                                    'name': (
-                                        '{name} - firewall rule:{port}'.format(
+                                "properties": {
+                                    "name": (
+                                        "{name} - firewall rule:{port}".format(
                                             name=name, port=port
                                         )
                                     ),
-                                    'protocol': 'TCP',
-                                    'portRangeStart': port,
-                                    'portRangeEnd': port
+                                    "protocol": "TCP",
+                                    "portRangeStart": port,
+                                    "portRangeEnd": port,
                                 }
                             }
                         )
 
-                    body['entities']['nics']['items'].append(pub_nic)
+                    body["entities"]["nics"]["items"].append(pub_nic)
 
         if ex_cpu_family is not None:
-            body['properties']['cpuFamily'] = ex_cpu_family
+            body["properties"]["cpuFamily"] = ex_cpu_family
 
         if ex_availability_zone is not None:
-            body['properties']['availabilityZone'] = ex_availability_zone.name
+            body["properties"]["availabilityZone"] = ex_availability_zone.name
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_node(response.object, response.headers)
@@ -971,13 +965,9 @@ class ProfitBricksNodeDriver(NodeDriver):
             for volume in self.ex_list_attached_volumes(node):
                 self.destroy_volume(volume)
 
-        action = node.extra['href']
+        action = node.extra["href"]
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -990,13 +980,9 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        action = node.extra['href'] + '/start'
+        action = node.extra["href"] + "/start"
 
-        self.connection.request(
-            action=action,
-            method='POST',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="POST", with_full_url=True)
         return True
 
     def stop_node(self, node):
@@ -1010,13 +996,9 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype:     : ``bool``
         """
-        action = node.extra['href'] + '/stop'
+        action = node.extra["href"] + "/stop"
 
-        self.connection.request(
-            action=action,
-            method='POST',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="POST", with_full_url=True)
 
         return True
 
@@ -1035,13 +1017,13 @@ class ProfitBricksNodeDriver(NodeDriver):
         volumes = list()
 
         for datacenter in datacenters:
-            volumes_href = datacenter.extra['entities']['volumes']['href']
+            volumes_href = datacenter.extra["entities"]["volumes"]["href"]
 
             response = self.connection.request(
                 action=volumes_href,
-                params={'depth': 3},
-                method='GET',
-                with_full_url=True
+                params={"depth": 3},
+                method="GET",
+                with_full_url=True,
             )
 
             mapped_volumes = self._to_volumes(response.object)
@@ -1062,19 +1044,15 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    Instance of class ``StorageVolume``
         :rtype:     :class:`StorageVolume`
         """
-        action = node.extra['href'] + '/volumes'
-        body = {
-            'id': volume.id
-        }
+        action = node.extra["href"] + "/volumes"
+        body = {"id": volume.id}
 
         data = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_volume(data.object, data.headers)
@@ -1090,7 +1068,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         ex_bus_type=None,
         ex_ssh_keys=None,
         ex_password=None,
-        ex_availability_zone=None
+        ex_availability_zone=None,
     ):
         """
         Creates a volume.
@@ -1133,74 +1111,73 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         if not ex_datacenter:
-            raise ValueError('You need to specify a data center'
-                             ' to attach this volume to.')
+            raise ValueError(
+                "You need to specify a data center" " to attach this volume to."
+            )
 
         if image is not None:
-            if image.extra['image_type'] != 'HDD':
-                raise ValueError('Invalid type of {image_type} specified for '
-                                 '{image_name}, which needs to be of type HDD'
-                                 .format(image_type=image.extra['image_type'],
-                                         image_name=image.name))
-
-            if ex_datacenter.extra['location'] != image.extra['location']:
+            if image.extra["image_type"] != "HDD":
                 raise ValueError(
-                    'The image {image_name} '
-                    '(location: {image_location}) you specified '
-                    'is not available at the data center '
-                    '{datacenter_name} '
-                    '(location: {datacenter_location}).'
-                    .format(
-                        image_name=image.extra['name'],
-                        datacenter_name=ex_datacenter.extra['name'],
-                        image_location=image.extra['location'],
-                        datacenter_location=ex_datacenter.extra['location']
+                    "Invalid type of {image_type} specified for "
+                    "{image_name}, which needs to be of type HDD".format(
+                        image_type=image.extra["image_type"], image_name=image.name
+                    )
+                )
+
+            if ex_datacenter.extra["location"] != image.extra["location"]:
+                raise ValueError(
+                    "The image {image_name} "
+                    "(location: {image_location}) you specified "
+                    "is not available at the data center "
+                    "{datacenter_name} "
+                    "(location: {datacenter_location}).".format(
+                        image_name=image.extra["name"],
+                        datacenter_name=ex_datacenter.extra["name"],
+                        image_location=image.extra["location"],
+                        datacenter_location=ex_datacenter.extra["location"],
                     )
                 )
         else:
             if not ex_image_alias:
-                raise ValueError('You need to specify an image or image alias'
-                                 ' to create this volume from.')
+                raise ValueError(
+                    "You need to specify an image or image alias"
+                    " to create this volume from."
+                )
 
-        action = ex_datacenter.href + '/volumes'
-        body = {
-            'properties': {
-                'size': size
-            }
-        }
+        action = ex_datacenter.href + "/volumes"
+        body = {"properties": {"size": size}}
 
         if image is not None:
-            body['properties']['image'] = image.id
+            body["properties"]["image"] = image.id
         else:
-            body['properties']['imageAlias'] = ex_image_alias
+            body["properties"]["imageAlias"] = ex_image_alias
         if name is not None:
-            body['properties']['name'] = name
+            body["properties"]["name"] = name
         if ex_type is not None:
-            body['properties']['type'] = ex_type
+            body["properties"]["type"] = ex_type
         if ex_bus_type is not None:
-            body['properties']['bus'] = ex_bus_type
+            body["properties"]["bus"] = ex_bus_type
         if ex_ssh_keys is not None:
             if isinstance(ex_ssh_keys[0], NodeAuthSSHKey):
-                body['properties']['sshKeys'] = \
-                    [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+                body["properties"]["sshKeys"] = [
+                    ssh_key.pubkey for ssh_key in ex_ssh_keys
+                ]
             else:
-                body['properties']['sshKeys'] = ex_ssh_keys
+                body["properties"]["sshKeys"] = ex_ssh_keys
         if ex_password is not None:
             if isinstance(ex_password, NodeAuthPassword):
-                body['properties']['imagePassword'] = ex_password.password
+                body["properties"]["imagePassword"] = ex_password.password
             else:
-                body['properties']['imagePassword'] = ex_password
+                body["properties"]["imagePassword"] = ex_password
         if ex_availability_zone is not None:
-            body['properties']['availabilityZone'] = ex_availability_zone
+            body["properties"]["availabilityZone"] = ex_availability_zone
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_volume(response.object, response.headers)
@@ -1218,15 +1195,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :``bool``
         """
 
-        action = node.extra['href'] + '/volumes/{volume_id}'.format(
-            volume_id=volume.id
-        )
+        action = node.extra["href"] + "/volumes/{volume_id}".format(volume_id=volume.id)
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -1239,13 +1210,9 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype:     : ``bool``
         """
-        action = volume.extra['href']
+        action = volume.extra["href"]
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -1262,9 +1229,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action='snapshots',
-            params={'depth': 3},
-            method='GET'
+            action="snapshots", params={"depth": 3}, method="GET"
         )
 
         return self._to_snapshots(response.object)
@@ -1280,15 +1245,13 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`VolumeSnapshot`
         """
 
-        action = volume.extra['href'] + '/create-snapshot'
+        action = volume.extra["href"] + "/create-snapshot"
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            method='POST',
-            with_full_url=True
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_snapshot(response.object, response.headers)
@@ -1303,13 +1266,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype  ``bool``
         """
 
-        action = snapshot.extra['href']
+        action = snapshot.extra["href"]
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -1346,9 +1305,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         for key, values in self.AVAILABILITY_ZONE.items():
             name = copy.deepcopy(values)["name"]
 
-            availability_zone = ProfitBricksAvailabilityZone(
-                name=name
-            )
+            availability_zone = ProfitBricksAvailabilityZone(name=name)
             availability_zones.append(availability_zone)
 
         return availability_zones
@@ -1363,22 +1320,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    ``list`` of :class:`StorageVolume`
         :rtype:     ``list``
         """
-        action = node.extra['entities']['volumes']['href']
+        action = node.extra["entities"]["volumes"]["href"]
         response = self.connection.request(
-            action=action,
-            params={'depth': 3},
-            method='GET',
-            with_full_url=True
+            action=action, params={"depth": 3}, method="GET", with_full_url=True
         )
 
         return self._to_volumes(response.object)
 
-    def ex_describe_node(
-        self,
-        ex_href=None,
-        ex_datacenter_id=None,
-        ex_node_id=None
-    ):
+    def ex_describe_node(self, ex_href=None, ex_datacenter_id=None, ex_node_id=None):
         """
         Fetches a node directly by href or
         by a combination of the datacenter
@@ -1401,32 +1350,34 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_datacenter_id is None or ex_node_id is None:
-                raise ValueError(
-                    'IDs for the data center and node are required.'
-                )
+                raise ValueError("IDs for the data center and node are required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'datacenters/{datacenter_id}/'
-                    'servers/{server_id}'
-                ).format(
-                    datacenter_id=ex_datacenter_id,
-                    server_id=ex_node_id
+                ex_href = ("datacenters/{datacenter_id}/" "servers/{server_id}").format(
+                    datacenter_id=ex_datacenter_id, server_id=ex_node_id
                 )
 
         response = self.connection.request(
             action=ex_href,
-            method='GET',
-            params={'depth': 3},
-            with_full_url=use_full_url
+            method="GET",
+            params={"depth": 3},
+            with_full_url=use_full_url,
         )
 
         return self._to_node(response.object)
 
-    def ex_update_node(self, node, name=None, cores=None,
-                       ram=None, availability_zone=None,
-                       ex_licence_type=None, ex_boot_volume=None,
-                       ex_boot_cdrom=None, ex_cpu_family=None):
+    def ex_update_node(
+        self,
+        node,
+        name=None,
+        cores=None,
+        ram=None,
+        availability_zone=None,
+        ex_licence_type=None,
+        ex_boot_volume=None,
+        ex_boot_cdrom=None,
+        ex_cpu_family=None,
+    ):
         """
         Updates a node.
 
@@ -1461,43 +1412,40 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    Instance of class ``Node``
         :rtype:     :class: `Node`
         """
-        action = node.extra['href']
+        action = node.extra["href"]
         body = {}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if cores is not None:
-            body['cores'] = cores
+            body["cores"] = cores
 
         if ram is not None:
-            body['ram'] = ram
+            body["ram"] = ram
 
         if availability_zone is not None:
-            body['availabilityZone'] = availability_zone.name
+            body["availabilityZone"] = availability_zone.name
 
         if ex_licence_type is not None:
-            body['licencetype'] = ex_licence_type
+            body["licencetype"] = ex_licence_type
 
         if ex_boot_volume is not None:
-            body['bootVolume'] = ex_boot_volume.id
+            body["bootVolume"] = ex_boot_volume.id
 
         if ex_boot_cdrom is not None:
-            body['bootCdrom'] = ex_boot_cdrom.id
+            body["bootCdrom"] = ex_boot_cdrom.id
 
         if ex_cpu_family is not None:
-            body['allowReboot'] = True
-            body['cpuFamily'] = ex_cpu_family
+            body["allowReboot"] = True
+            body["cpuFamily"] = ex_cpu_family
 
         response = self.connection.request(
             action=action,
             data=body,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
-            method='PATCH',
-            with_full_url=True
+            headers={"Content-Type": "application/json"},
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_node(response.object, response.headers)
@@ -1506,12 +1454,7 @@ class ProfitBricksNodeDriver(NodeDriver):
     Data center Extension Functions
     """
 
-    def ex_create_datacenter(
-        self,
-        name,
-        location,
-        description=None
-    ):
+    def ex_create_datacenter(self, name, location, description=None):
         """
         Creates a datacenter.
 
@@ -1531,39 +1474,22 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    Instance of class ``Datacenter``
         :rtype:     :class:`Datacenter`
         """
-        body = {
-            'properties': {
-                'name': name,
-                'location': location.id
-            }
-        }
+        body = {"properties": {"name": name, "location": location.id}}
 
         if description is not None:
-            body['properties']['description'] = description
+            body["properties"]["description"] = description
 
-        body['entities'] = defaultdict(dict)
-        body['entities']['lans']['items'] = [
-            {
-                'properties': {
-                    'name': name + ' - public lan',
-                    'public': True
-                }
-            },
-            {
-                'properties': {
-                    'name': name + ' - private lan',
-                    'public': False
-                }
-            }
+        body["entities"] = defaultdict(dict)
+        body["entities"]["lans"]["items"] = [
+            {"properties": {"name": name + " - public lan", "public": True}},
+            {"properties": {"name": name + " - private lan", "public": False}},
         ]
 
         response = self.connection.request(
-            action='datacenters',
-            headers={
-                'Content-Type': 'application/json'
-            },
+            action="datacenters",
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST'
+            method="POST",
         )
 
         return self._to_datacenter(response.object, response.headers)
@@ -1579,11 +1505,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         action = datacenter.href
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -1607,22 +1529,18 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_datacenter_id is None:
-                raise ValueError(
-                    'The data center ID is required.'
-                )
+                raise ValueError("The data center ID is required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'datacenters/{datacenter_id}'
-                ).format(
+                ex_href = ("datacenters/{datacenter_id}").format(
                     datacenter_id=ex_datacenter_id
                 )
 
         response = self.connection.request(
             action=ex_href,
-            method='GET',
-            params={'depth': 3},
-            with_full_url=use_full_url
+            method="GET",
+            params={"depth": 3},
+            with_full_url=use_full_url,
         )
 
         return self._to_datacenter(response.object)
@@ -1635,9 +1553,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype: ``list``
         """
         response = self.connection.request(
-            action='datacenters',
-            params={'depth': 2},
-            method='GET'
+            action="datacenters", params={"depth": 2}, method="GET"
         )
 
         return self._to_datacenters(response.object)
@@ -1656,19 +1572,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`Datacenter`
         """
         action = datacenter.href
-        body = {
-            'name': name
-        }
+        body = {"name": name}
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_datacenter(response.object, response.headers)
@@ -1695,21 +1606,13 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_image_id is None:
-                raise ValueError(
-                    'The image ID is required.'
-                )
+                raise ValueError("The image ID is required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'images/{image_id}'
-                ).format(
-                    image_id=ex_image_id
-                )
+                ex_href = ("images/{image_id}").format(image_id=ex_image_id)
 
         response = self.connection.request(
-            action=ex_href,
-            method='GET',
-            with_full_url=use_full_url
+            action=ex_href, method="GET", with_full_url=use_full_url
         )
 
         return self._to_image(response.object)
@@ -1725,21 +1628,27 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         self.connection.request(
-            action=image.extra['href'],
-            method='DELETE',
-            with_full_url=True
+            action=image.extra["href"], method="DELETE", with_full_url=True
         )
 
         return True
 
     def ex_update_image(
-        self, image, name=None, description=None,
-        licence_type=None, cpu_hot_plug=None,
-        cpu_hot_unplug=None, ram_hot_plug=None,
-        ram_hot_unplug=None, nic_hot_plug=None,
-        nic_hot_unplug=None, disc_virtio_hot_plug=None,
-        disc_virtio_hot_unplug=None, disc_scsi_hot_plug=None,
-        disc_scsi_hot_unplug=None
+        self,
+        image,
+        name=None,
+        description=None,
+        licence_type=None,
+        cpu_hot_plug=None,
+        cpu_hot_unplug=None,
+        ram_hot_plug=None,
+        ram_hot_unplug=None,
+        nic_hot_plug=None,
+        nic_hot_unplug=None,
+        disc_virtio_hot_plug=None,
+        disc_virtio_hot_unplug=None,
+        disc_scsi_hot_plug=None,
+        disc_scsi_hot_unplug=None,
     ):
         """
         Update a private image
@@ -1750,57 +1659,54 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    Instance of class ``Image``
         :rtype:     :class:`Image`
         """
-        action = image.extra['href']
+        action = image.extra["href"]
         body = {}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if description is not None:
-            body['description'] = description
+            body["description"] = description
 
         if licence_type is not None:
-            body['licenceType'] = licence_type
+            body["licenceType"] = licence_type
 
         if cpu_hot_plug is not None:
-            body['cpuHotPlug'] = cpu_hot_plug
+            body["cpuHotPlug"] = cpu_hot_plug
 
         if cpu_hot_unplug is not None:
-            body['cpuHotUnplug'] = cpu_hot_unplug
+            body["cpuHotUnplug"] = cpu_hot_unplug
 
         if ram_hot_plug is not None:
-            body['ramHotPlug'] = ram_hot_plug
+            body["ramHotPlug"] = ram_hot_plug
 
         if ram_hot_unplug is not None:
-            body['ramHotUnplug'] = ram_hot_unplug
+            body["ramHotUnplug"] = ram_hot_unplug
 
         if nic_hot_plug is not None:
-            body['nicHotPlug'] = nic_hot_plug
+            body["nicHotPlug"] = nic_hot_plug
 
         if nic_hot_unplug is not None:
-            body['nicHotUnplug'] = nic_hot_unplug
+            body["nicHotUnplug"] = nic_hot_unplug
 
         if disc_virtio_hot_plug is not None:
-            body['discVirtioHotPlug'] = disc_virtio_hot_plug
+            body["discVirtioHotPlug"] = disc_virtio_hot_plug
 
         if disc_virtio_hot_unplug is not None:
-            body['discVirtioHotUnplug'] = disc_virtio_hot_unplug
+            body["discVirtioHotUnplug"] = disc_virtio_hot_unplug
 
         if disc_scsi_hot_plug is not None:
-            body['discScsiHotPlug'] = disc_scsi_hot_plug
+            body["discScsiHotPlug"] = disc_scsi_hot_plug
 
         if disc_scsi_hot_unplug is not None:
-            body['discScsiHotUnplug'] = disc_scsi_hot_unplug
+            body["discScsiHotUnplug"] = disc_scsi_hot_unplug
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-type':
-                'application/json'
-            },
+            headers={"Content-type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_image(response.object, response.headers)
@@ -1829,21 +1735,13 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_location_id is None:
-                raise ValueError(
-                    'The location ID is required.'
-                )
+                raise ValueError("The location ID is required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'locations/{location_id}'
-                ).format(
-                    location_id=ex_location_id
-                )
+                ex_href = ("locations/{location_id}").format(location_id=ex_location_id)
 
         response = self.connection.request(
-            action=ex_href,
-            method='GET',
-            with_full_url=use_full_url
+            action=ex_href, method="GET", with_full_url=use_full_url
         )
 
         return self._to_location(response.object)
@@ -1863,23 +1761,17 @@ class ProfitBricksNodeDriver(NodeDriver):
         nics = list()
 
         for node in nodes:
-            action = node.extra['entities']['nics']['href']
+            action = node.extra["entities"]["nics"]["href"]
             nics += self._to_interfaces(
                 self.connection.request(
-                    action=action,
-                    params={'depth': 1},
-                    method='GET',
-                    with_full_url=True
-                ).object)
+                    action=action, params={"depth": 1}, method="GET", with_full_url=True
+                ).object
+            )
 
         return nics
 
     def ex_describe_network_interface(
-        self,
-        ex_href=None,
-        ex_datacenter_id=None,
-        ex_server_id=None,
-        ex_nic_id=None
+        self, ex_href=None, ex_datacenter_id=None, ex_server_id=None, ex_nic_id=None
     ):
         """
         Fetch information on a network interface.
@@ -1904,40 +1796,34 @@ class ProfitBricksNodeDriver(NodeDriver):
         use_full_url = True
 
         if ex_href is None:
-            if (
-                ex_datacenter_id is None or
-                ex_server_id is None or
-                ex_nic_id is None
-            ):
+            if ex_datacenter_id is None or ex_server_id is None or ex_nic_id is None:
                 raise ValueError(
                     (
-                        'IDs are required for the data center',
-                        'server and network interface.'
+                        "IDs are required for the data center",
+                        "server and network interface.",
                     )
                 )
             else:
                 use_full_url = False
                 ex_href = (
-                    'datacenters/{datacenter_id}'
-                    '/servers/{server_id}'
-                    '/nics/{nic_id}'
+                    "datacenters/{datacenter_id}"
+                    "/servers/{server_id}"
+                    "/nics/{nic_id}"
                 ).format(
                     datacenter_id=ex_datacenter_id,
                     server_id=ex_server_id,
-                    nic_id=ex_nic_id
+                    nic_id=ex_nic_id,
                 )
 
         response = self.connection.request(
-            action=ex_href,
-            method='GET',
-            with_full_url=use_full_url
+            action=ex_href, method="GET", with_full_url=use_full_url
         )
 
         return self._to_interface(response.object)
 
-    def ex_create_network_interface(self, node,
-                                    lan_id=None, ips=None, nic_name=None,
-                                    dhcp_active=True):
+    def ex_create_network_interface(
+        self, node, lan_id=None, ips=None, nic_name=None, dhcp_active=True
+    ):
         """
         Creates a network interface.
 
@@ -1963,35 +1849,28 @@ class ProfitBricksNodeDriver(NodeDriver):
         else:
             lan_id = str(1)
 
-        action = node.extra['href'] + '/nics'
-        body = {
-            'properties': {
-                'lan': lan_id,
-                'dhcp': dhcp_active
-            }
-        }
+        action = node.extra["href"] + "/nics"
+        body = {"properties": {"lan": lan_id, "dhcp": dhcp_active}}
 
         if ips is not None:
-            body['properties']['ips'] = ips
+            body["properties"]["ips"] = ips
 
         if nic_name is not None:
-            body['properties']['name'] = nic_name
+            body["properties"]["name"] = nic_name
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_interface(response.object, response.headers)
 
-    def ex_update_network_interface(self, network_interface, name=None,
-                                    lan_id=None, ips=None,
-                                    dhcp_active=None):
+    def ex_update_network_interface(
+        self, network_interface, name=None, lan_id=None, ips=None, dhcp_active=None
+    ):
         """
         Updates a network interface.
 
@@ -2021,26 +1900,23 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if lan_id is not None:
-            body['lan'] = str(lan_id)
+            body["lan"] = str(lan_id)
 
         if ips is not None:
-            body['ips'] = ips
+            body["ips"] = ips
 
         if dhcp_active is not None:
-            body['dhcp'] = dhcp_active
+            body["dhcp"] = dhcp_active
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_interface(response.object, response.headers)
@@ -2057,11 +1933,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         action = network_interface.href
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -2077,19 +1949,14 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         action = network_interface.href
-        body = {
-            'nat': internet_access
-        }
+        body = {"nat": internet_access}
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_interface(response.object, response.headers)
@@ -2108,12 +1975,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    ``list`` of class ``ProfitBricksFirewallRule``
         :rtype:     `list`
         """
-        action = network_interface.href + '/firewallrules'
+        action = network_interface.href + "/firewallrules"
         response = self.connection.request(
-            action=action,
-            method='GET',
-            params={'depth': 3},
-            with_full_url=True
+            action=action, method="GET", params={"depth": 3}, with_full_url=True
         )
 
         return self._to_firewall_rules(response.object)
@@ -2124,7 +1988,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         ex_datacenter_id=None,
         ex_server_id=None,
         ex_nic_id=None,
-        ex_firewall_rule_id=None
+        ex_firewall_rule_id=None,
     ):
         """
         Fetch data for a firewall rule.
@@ -2153,45 +2017,51 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if (
-                ex_datacenter_id is None or
-                ex_server_id is None or
-                ex_nic_id is None or
-                ex_firewall_rule_id is None
+                ex_datacenter_id is None
+                or ex_server_id is None
+                or ex_nic_id is None
+                or ex_firewall_rule_id is None
             ):
                 raise ValueError(
                     (
-                        'IDs are required for the data '
-                        'center, server, network interface',
-                        'and firewall rule.'
+                        "IDs are required for the data "
+                        "center, server, network interface",
+                        "and firewall rule.",
                     )
                 )
             else:
                 use_full_url = False
                 ex_href = (
-                    'datacenters/{datacenter_id}'
-                    '/servers/{server_id}'
-                    '/nics/{nic_id}'
-                    '/firewallrules/{firewall_rule_id}'
+                    "datacenters/{datacenter_id}"
+                    "/servers/{server_id}"
+                    "/nics/{nic_id}"
+                    "/firewallrules/{firewall_rule_id}"
                 ).format(
                     datacenter_id=ex_datacenter_id,
                     server_id=ex_server_id,
                     nic_id=ex_nic_id,
-                    firewall_rule_id=ex_firewall_rule_id
+                    firewall_rule_id=ex_firewall_rule_id,
                 )
 
         response = self.connection.request(
-            action=ex_href,
-            method='GET',
-            with_full_url=use_full_url
+            action=ex_href, method="GET", with_full_url=use_full_url
         )
 
         return self._to_firewall_rule(response.object)
 
-    def ex_create_firewall_rule(self, network_interface, protocol,
-                                name=None, source_mac=None,
-                                source_ip=None, target_ip=None,
-                                port_range_start=None, port_range_end=None,
-                                icmp_type=None, icmp_code=None):
+    def ex_create_firewall_rule(
+        self,
+        network_interface,
+        protocol,
+        name=None,
+        source_mac=None,
+        source_ip=None,
+        target_ip=None,
+        port_range_start=None,
+        port_range_end=None,
+        icmp_type=None,
+        icmp_code=None,
+    ):
         """
         Create a firewall rule for a network interface.
 
@@ -2245,54 +2115,55 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`ProfitBricksFirewallRule`
         """
 
-        action = network_interface.href + '/firewallrules'
-        body = {
-            'properties': {
-                'protocol': protocol
-            }
-        }
+        action = network_interface.href + "/firewallrules"
+        body = {"properties": {"protocol": protocol}}
 
         if name is not None:
-            body['properties']['name'] = name
+            body["properties"]["name"] = name
 
         if source_mac is not None:
-            body['properties']['sourceMac'] = source_mac
+            body["properties"]["sourceMac"] = source_mac
 
         if source_ip is not None:
-            body['properties']['sourceIp'] = source_ip
+            body["properties"]["sourceIp"] = source_ip
 
         if target_ip is not None:
-            body['properties']['targetIp'] = target_ip
+            body["properties"]["targetIp"] = target_ip
 
         if port_range_start is not None:
-            body['properties']['portRangeStart'] = str(port_range_start)
+            body["properties"]["portRangeStart"] = str(port_range_start)
 
         if port_range_end is not None:
-            body['properties']['portRangeEnd'] = str(port_range_end)
+            body["properties"]["portRangeEnd"] = str(port_range_end)
 
         if icmp_type is not None:
-            body['properties']['icmpType'] = str(icmp_type)
+            body["properties"]["icmpType"] = str(icmp_type)
 
         if icmp_code is not None:
-            body['properties']['icmpType'] = str(icmp_code)
+            body["properties"]["icmpType"] = str(icmp_code)
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_firewall_rule(response.object, response.headers)
 
-    def ex_update_firewall_rule(self, firewall_rule,
-                                name=None, source_mac=None,
-                                source_ip=None, target_ip=None,
-                                port_range_start=None, port_range_end=None,
-                                icmp_type=None, icmp_code=None):
+    def ex_update_firewall_rule(
+        self,
+        firewall_rule,
+        name=None,
+        source_mac=None,
+        source_ip=None,
+        target_ip=None,
+        port_range_start=None,
+        port_range_end=None,
+        icmp_type=None,
+        icmp_code=None,
+    ):
         """
         Update a firewall rule
 
@@ -2346,38 +2217,35 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if source_mac is not None:
-            body['sourceMac'] = source_mac
+            body["sourceMac"] = source_mac
 
         if source_ip is not None:
-            body['sourceIp'] = source_ip
+            body["sourceIp"] = source_ip
 
         if target_ip is not None:
-            body['targetIp'] = target_ip
+            body["targetIp"] = target_ip
 
         if port_range_start is not None:
-            body['portRangeStart'] = str(port_range_start)
+            body["portRangeStart"] = str(port_range_start)
 
         if port_range_end is not None:
-            body['portRangeEnd'] = str(port_range_end)
+            body["portRangeEnd"] = str(port_range_end)
 
         if icmp_type is not None:
-            body['icmpType'] = str(icmp_type)
+            body["icmpType"] = str(icmp_type)
 
         if icmp_code is not None:
-            body['icmpType'] = str(icmp_code)
+            body["icmpType"] = str(icmp_code)
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_firewall_rule(response.object, response.headers)
@@ -2393,11 +2261,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         action = firewall_rule.href
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -2418,12 +2282,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     `list`
         """
         if datacenter is not None:
-            action = datacenter.extra['entities']['lans']['href']
+            action = datacenter.extra["entities"]["lans"]["href"]
             request = self.connection.request(
-                action=action,
-                params={'depth': 3},
-                method='GET',
-                with_full_url=True
+                action=action, params={"depth": 3}, method="GET", with_full_url=True
             )
             lans = self._to_lans(request.object)
 
@@ -2431,12 +2292,9 @@ class ProfitBricksNodeDriver(NodeDriver):
             datacenters = self.ex_list_datacenters()
             lans = []
             for datacenter in datacenters:
-                action = datacenter.extra['entities']['lans']['href']
+                action = datacenter.extra["entities"]["lans"]["href"]
                 request = self.connection.request(
-                    action=action,
-                    params={'depth': 3},
-                    method='GET',
-                    with_full_url=True
+                    action=action, params={"depth": 3}, method="GET", with_full_url=True
                 )
                 lans += self._to_lans(request.object)
 
@@ -2462,42 +2320,30 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`ProfitBricksLan`
         """
 
-        action = datacenter.extra['entities']['lans']['href']
+        action = datacenter.extra["entities"]["lans"]["href"]
         body = {
-            'properties': {
-                'name':
-                name or
-                'LAN - {datacenter_name}'.format(
-                    datacenter_name=datacenter.name
-                ),
-                'public': is_public
+            "properties": {
+                "name": name
+                or "LAN - {datacenter_name}".format(datacenter_name=datacenter.name),
+                "public": is_public,
             }
         }
 
         if nics is not None:
-            body['entities'] = defaultdict(dict)
-            body['entities']['nics']['items'] = [
-                {'id': nic.id} for nic in nics
-            ]
+            body["entities"] = defaultdict(dict)
+            body["entities"]["nics"]["items"] = [{"id": nic.id} for nic in nics]
 
         request = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_lan(request.object, request.headers)
 
-    def ex_describe_lan(
-        self,
-        ex_href=None,
-        ex_datacenter_id=None,
-        ex_lan_id=None
-    ):
+    def ex_describe_lan(self, ex_href=None, ex_datacenter_id=None, ex_lan_id=None):
         """
         Fetch data on a local area network
 
@@ -2519,24 +2365,18 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_datacenter_id is None or ex_lan_id is None:
-                raise ValueError(
-                    'IDs for the data center and LAN are required.'
-                )
+                raise ValueError("IDs for the data center and LAN are required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'datacenters/{datacenter_id}/'
-                    'lans/{lan_id}'
-                ).format(
-                    datacenter_id=ex_datacenter_id,
-                    lan_id=ex_lan_id
+                ex_href = ("datacenters/{datacenter_id}/" "lans/{lan_id}").format(
+                    datacenter_id=ex_datacenter_id, lan_id=ex_lan_id
                 )
 
         response = self.connection.request(
             action=ex_href,
-            method='GET',
-            params={'depth': 1},
-            with_full_url=use_full_url
+            method="GET",
+            params={"depth": 1},
+            with_full_url=use_full_url,
         )
 
         return self._to_lan(response.object)
@@ -2562,26 +2402,22 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`ProfitBricksLan`
         """
         action = lan.href
-        body = {
-            'public': is_public
-        }
+        body = {"public": is_public}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if ip_failover is not None:
-            body['ipFailover'] = [{'ip': item.ip, 'nicUuid': item.nic_uuid}
-                                  for item in ip_failover]
+            body["ipFailover"] = [
+                {"ip": item.ip, "nicUuid": item.nic_uuid} for item in ip_failover
+            ]
 
         request = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_lan(request.object, request.headers)
@@ -2598,11 +2434,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         action = lan.href
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -2637,33 +2469,24 @@ class ProfitBricksNodeDriver(NodeDriver):
         if not size:
             size = str(volume.size)
 
-        action = volume.extra['href']
-        body = {
-            'name': ex_storage_name,
-            'size': size
-        }
+        action = volume.extra["href"]
+        body = {"name": ex_storage_name, "size": size}
 
         if ex_bus_type is not None:
-            body['bus'] = ex_bus_type
+            body["bus"] = ex_bus_type
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_volume(response.object, response.headers)
 
     def ex_describe_volume(
-        self,
-        ex_href=None,
-        ex_datacenter_id=None,
-        ex_volume_id=None
+        self, ex_href=None, ex_datacenter_id=None, ex_volume_id=None
     ):
         """
         Fetches and returns a volume
@@ -2686,24 +2509,18 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_datacenter_id is None or ex_volume_id is None:
-                raise ValueError(
-                    'IDs for the data center and volume are required.'
-                )
+                raise ValueError("IDs for the data center and volume are required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'datacenters/{datacenter_id}/'
-                    'volumes/{volume_id}'
-                ).format(
-                    datacenter_id=ex_datacenter_id,
-                    volume_id=ex_volume_id
+                ex_href = ("datacenters/{datacenter_id}/" "volumes/{volume_id}").format(
+                    datacenter_id=ex_datacenter_id, volume_id=ex_volume_id
                 )
 
         response = self.connection.request(
             action=ex_href,
-            method='GET',
-            params={'depth': 3},
-            with_full_url=use_full_url
+            method="GET",
+            params={"depth": 3},
+            with_full_url=use_full_url,
         )
 
         return self._to_volume(response.object)
@@ -2721,19 +2538,16 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype  ``bool``
         """
 
-        action = volume.extra['href'] + '/restore-snapshot'
-        data = {'snapshotId': snapshot.id}
+        action = volume.extra["href"] + "/restore-snapshot"
+        data = {"snapshotId": snapshot.id}
         body = urlencode(data)
 
         self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/x-www-form-urlencoded'
-            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return True
@@ -2760,32 +2574,36 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_snapshot_id is None:
-                raise ValueError(
-                    'The snapshot ID is required.'
-                )
+                raise ValueError("The snapshot ID is required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'snapshots/{snapshot_id}'
-                ).format(
-                    snapshot_id=ex_snapshot_id
-                )
+                ex_href = ("snapshots/{snapshot_id}").format(snapshot_id=ex_snapshot_id)
 
         response = self.connection.request(
             action=ex_href,
-            params={'depth': 3},
-            method='GET',
-            with_full_url=use_full_url
+            params={"depth": 3},
+            method="GET",
+            with_full_url=use_full_url,
         )
 
         return self._to_snapshot(response.object)
 
     def ex_update_snapshot(
-        self, snapshot, name=None, description=None, cpu_hot_plug=None,
-        cpu_hot_unplug=None, ram_hot_plug=None, ram_hot_unplug=None,
-        nic_hot_plug=None, nic_hot_unplug=None, disc_virtio_hot_plug=None,
-        disc_virtio_hot_unplug=None, disc_scsi_hot_plug=None,
-        disc_scsi_hot_unplug=None, licence_type=None
+        self,
+        snapshot,
+        name=None,
+        description=None,
+        cpu_hot_plug=None,
+        cpu_hot_unplug=None,
+        ram_hot_plug=None,
+        ram_hot_unplug=None,
+        nic_hot_plug=None,
+        nic_hot_unplug=None,
+        disc_virtio_hot_plug=None,
+        disc_virtio_hot_unplug=None,
+        disc_scsi_hot_plug=None,
+        disc_scsi_hot_unplug=None,
+        licence_type=None,
     ):
         """
         Updates a snapshot
@@ -2836,57 +2654,54 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`VolumeSnapshot`
         """
 
-        action = snapshot.extra['href']
+        action = snapshot.extra["href"]
         body = {}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if description is not None:
-            body['description'] = description
+            body["description"] = description
 
         if cpu_hot_plug is not None:
-            body['cpuHotPlug'] = cpu_hot_plug
+            body["cpuHotPlug"] = cpu_hot_plug
 
         if cpu_hot_unplug is not None:
-            body['cpuHotUnplug'] = cpu_hot_unplug
+            body["cpuHotUnplug"] = cpu_hot_unplug
 
         if ram_hot_plug is not None:
-            body['ramHotPlug'] = ram_hot_plug
+            body["ramHotPlug"] = ram_hot_plug
 
         if ram_hot_unplug is not None:
-            body['ramHotUnplug'] = ram_hot_unplug
+            body["ramHotUnplug"] = ram_hot_unplug
 
         if nic_hot_plug is not None:
-            body['nicHotPlug'] = nic_hot_plug
+            body["nicHotPlug"] = nic_hot_plug
 
         if nic_hot_unplug is not None:
-            body['nicHotUnplug'] = nic_hot_unplug
+            body["nicHotUnplug"] = nic_hot_unplug
 
         if disc_virtio_hot_plug is not None:
-            body['discVirtioHotPlug'] = disc_virtio_hot_plug
+            body["discVirtioHotPlug"] = disc_virtio_hot_plug
 
         if disc_virtio_hot_unplug is not None:
-            body['discVirtioHotUnplug'] = disc_virtio_hot_unplug
+            body["discVirtioHotUnplug"] = disc_virtio_hot_unplug
 
         if disc_scsi_hot_plug is not None:
-            body['discScsiHotPlug'] = disc_scsi_hot_plug
+            body["discScsiHotPlug"] = disc_scsi_hot_plug
 
         if disc_scsi_hot_unplug is not None:
-            body['discScsiHotUnplug'] = disc_scsi_hot_unplug
+            body["discScsiHotUnplug"] = disc_scsi_hot_unplug
 
         if licence_type is not None:
-            body['licenceType'] = licence_type
+            body["licenceType"] = licence_type
 
         response = self.connection.request(
             action=action,
-            params={
-                'Content-Type':
-                'application/json'
-            },
+            params={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_snapshot(response.object, response.headers)
@@ -2908,13 +2723,13 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         for datacenter in datacenters:
             extra = datacenter.extra
-            load_balancers_href = extra['entities']['loadbalancers']['href']
+            load_balancers_href = extra["entities"]["loadbalancers"]["href"]
 
             response = self.connection.request(
                 action=load_balancers_href,
-                params={'depth': 3},
-                method='GET',
-                with_full_url=True
+                params={"depth": 3},
+                method="GET",
+                with_full_url=True,
             )
 
             mapped_load_balancers = self._to_load_balancers(response.object)
@@ -2923,10 +2738,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         return load_balancers
 
     def ex_describe_load_balancer(
-        self,
-        ex_href=None,
-        ex_datacenter_id=None,
-        ex_load_balancer_id=None
+        self, ex_href=None, ex_datacenter_id=None, ex_load_balancer_id=None
     ):
         """
         Fetches and returns a load balancer
@@ -2948,38 +2760,29 @@ class ProfitBricksNodeDriver(NodeDriver):
         use_full_url = True
 
         if ex_href is None:
-            if (
-                ex_datacenter_id is None or
-                ex_load_balancer_id is None
-            ):
+            if ex_datacenter_id is None or ex_load_balancer_id is None:
                 raise ValueError(
-                    (
-                        'IDs for the data center and '
-                        'load balancer are required.'
-                    )
+                    ("IDs for the data center and " "load balancer are required.")
                 )
             else:
                 use_full_url = False
                 ex_href = (
-                    'datacenters/{datacenter_id}/'
-                    'loadbalancers/{load_balancer_id}'
+                    "datacenters/{datacenter_id}/" "loadbalancers/{load_balancer_id}"
                 ).format(
-                    datacenter_id=ex_datacenter_id,
-                    load_balancer_id=ex_load_balancer_id
+                    datacenter_id=ex_datacenter_id, load_balancer_id=ex_load_balancer_id
                 )
 
         response = self.connection.request(
             action=ex_href,
-            params={'depth': 3},
-            method='GET',
-            with_full_url=use_full_url
+            params={"depth": 3},
+            method="GET",
+            with_full_url=use_full_url,
         )
 
         return self._to_load_balancer(response.object)
 
     def ex_create_load_balancer(
-        self, datacenter, name=None,
-        ip=None, dhcp=None, nics=None
+        self, datacenter, name=None, ip=None, dhcp=None, nics=None
     ):
         """
         Create and attach a load balancer to a data center.
@@ -3005,44 +2808,37 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`ProfitBricksLoadBalancer`
         """
 
-        action = datacenter.extra['entities']['loadbalancers']['href']
+        action = datacenter.extra["entities"]["loadbalancers"]["href"]
         body = {
-            'properties': {
-                'name':
-                name or
-                'Load Balancer - {datacenter_name}'
-                .format(datacenter_name=datacenter.name)
+            "properties": {
+                "name": name
+                or "Load Balancer - {datacenter_name}".format(
+                    datacenter_name=datacenter.name
+                )
             }
         }
 
         if ip is not None:
-            body['properties']['ip'] = ip
+            body["properties"]["ip"] = ip
 
         if dhcp is not None:
-            body['properties']['dhcp'] = dhcp
+            body["properties"]["dhcp"] = dhcp
 
         if nics is not None:
-            body['entities'] = defaultdict(dict)
-            body['entities']['balancednics']['items'] = [
-                {'id': nic.id} for nic in nics
-            ]
+            body["entities"] = defaultdict(dict)
+            body["entities"]["balancednics"]["items"] = [{"id": nic.id} for nic in nics]
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return self._to_load_balancer(response.object, response.headers)
 
-    def ex_update_load_balancer(
-        self, load_balancer, name=None,
-        ip=None, dhcp=None
-    ):
+    def ex_update_load_balancer(self, load_balancer, name=None, ip=None, dhcp=None):
         """
         Update a load balancer
 
@@ -3066,23 +2862,20 @@ class ProfitBricksNodeDriver(NodeDriver):
         body = {}
 
         if name is not None:
-            body['name'] = name
+            body["name"] = name
 
         if ip is not None:
-            body['ip'] = ip
+            body["ip"] = ip
 
         if dhcp is not None:
-            body['dhcp'] = dhcp
+            body["dhcp"] = dhcp
 
         response = self.connection.request(
             action=action,
-            headers={
-                'Content-Type':
-                'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='PATCH',
-            with_full_url=True
+            method="PATCH",
+            with_full_url=True,
         )
 
         return self._to_load_balancer(response.object, response.headers)
@@ -3097,23 +2890,16 @@ class ProfitBricksNodeDriver(NodeDriver):
         :return:    ``list`` of class ``ProfitBricksNetorkInterface``
         :rtype:     `list`
         """
-        action = load_balancer.extra['entities']['balancednics']['href']
+        action = load_balancer.extra["entities"]["balancednics"]["href"]
 
         response = self.connection.request(
-            action=action,
-            params={'depth': 3},
-            method='GET',
-            with_full_url=True
+            action=action, params={"depth": 3}, method="GET", with_full_url=True
         )
 
         return self._to_interfaces(response.object)
 
     def ex_describe_load_balanced_nic(
-        self,
-        ex_href=None,
-        ex_datacenter_id=None,
-        ex_server_id=None,
-        ex_nic_id=None
+        self, ex_href=None, ex_datacenter_id=None, ex_server_id=None, ex_nic_id=None
     ):
         """
         Fetch information on a load balanced network interface.
@@ -3139,12 +2925,10 @@ class ProfitBricksNodeDriver(NodeDriver):
             ex_href=ex_href,
             ex_datacenter_id=ex_datacenter_id,
             ex_server_id=ex_server_id,
-            ex_nic_id=ex_nic_id
+            ex_nic_id=ex_nic_id,
         )
 
-    def ex_attach_nic_to_load_balancer(
-        self, load_balancer, network_interface
-    ):
+    def ex_attach_nic_to_load_balancer(self, load_balancer, network_interface):
         """
         Attaches a network interface to a load balancer
 
@@ -3158,26 +2942,20 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype  ``bool``
         """
-        action = load_balancer.extra['entities']['balancednics']['href']
-        body = {
-            'id': network_interface.id
-        }
+        action = load_balancer.extra["entities"]["balancednics"]["href"]
+        body = {"id": network_interface.id}
 
         self.connection.request(
             action=action,
-            headers={
-                'Content-Type': 'application/json'
-            },
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST',
-            with_full_url=True
+            method="POST",
+            with_full_url=True,
         )
 
         return True
 
-    def ex_remove_nic_from_load_balancer(
-        self, load_balancer, network_interface
-    ):
+    def ex_remove_nic_from_load_balancer(self, load_balancer, network_interface):
         """
         Removed a network interface from a load balancer
 
@@ -3191,13 +2969,9 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         :rtype  ``bool``
         """
-        action = load_balancer.href + '/balancednics/' + network_interface.id
+        action = load_balancer.href + "/balancednics/" + network_interface.id
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -3213,11 +2987,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         action = load_balancer.href
 
-        self.connection.request(
-            action=action,
-            method='DELETE',
-            with_full_url=True
-        )
+        self.connection.request(action=action, method="DELETE", with_full_url=True)
 
         return True
 
@@ -3234,9 +3004,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action='ipblocks',
-            params={'depth': 3},
-            method='GET'
+            action="ipblocks", params={"depth": 3}, method="GET"
         )
 
         return self._to_ip_blocks(response.object)
@@ -3258,23 +3026,16 @@ class ProfitBricksNodeDriver(NodeDriver):
         :rtype:     :class:`ProfitBricksIPBlock`
         """
 
-        body = {
-            'properties': {
-                'location': location.id,
-                'size': size
-            }
-        }
+        body = {"properties": {"location": location.id, "size": size}}
 
         if name is not None:
-            body['properties']['name'] = name
+            body["properties"]["name"] = name
 
         response = self.connection.request(
-            action='ipblocks',
-            headers={
-                'Content-Type': 'application/json'
-            },
+            action="ipblocks",
+            headers={"Content-Type": "application/json"},
             data=body,
-            method='POST'
+            method="POST",
         )
 
         return self._to_ip_block(response.object, response.headers)
@@ -3297,22 +3058,16 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_ip_block_id is None:
-                raise ValueError(
-                    'The IP block ID is required.'
-                )
+                raise ValueError("The IP block ID is required.")
             else:
                 use_full_url = False
-                ex_href = (
-                    'ipblocks/{ip_block_id}'
-                ).format(
-                    ip_block_id=ex_ip_block_id
-                )
+                ex_href = ("ipblocks/{ip_block_id}").format(ip_block_id=ex_ip_block_id)
 
         response = self.connection.request(
             action=ex_href,
-            params={'depth': 3},
-            method='GET',
-            with_full_url=use_full_url
+            params={"depth": 3},
+            method="GET",
+            with_full_url=use_full_url,
         )
 
         return self._to_ip_block(response.object)
@@ -3328,9 +3083,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         self.connection.request(
-            action=ip_block.href,
-            method='DELETE',
-            with_full_url=True
+            action=ip_block.href, method="DELETE", with_full_url=True
         )
 
         return True
@@ -3340,24 +3093,21 @@ class ProfitBricksNodeDriver(NodeDriver):
     """
 
     def _to_ip_blocks(self, object):
-        return [self._to_ip_block(
-            ip_block) for ip_block in object['items']]
+        return [self._to_ip_block(ip_block) for ip_block in object["items"]]
 
     def _to_ip_block(self, ip_block, headers=None):
-        nested = {
-            'metadata': ip_block['metadata']
-        }
+        nested = {"metadata": ip_block["metadata"]}
 
         extra = {}
 
         MAPPED_ATTRS = {
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
             }
         }
 
@@ -3366,54 +3116,50 @@ class ProfitBricksNodeDriver(NodeDriver):
                 extra[altered_name] = nested[k][original_name]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         state = self.NODE_STATE_MAP.get(
-            ip_block['metadata']['state'],
-            NodeState.UNKNOWN
+            ip_block["metadata"]["state"], NodeState.UNKNOWN
         )
 
         # self, id, name, href, location, size, ips, state, driver, extra=None
 
         return ProfitBricksIPBlock(
-            id=ip_block['id'],
-            name=ip_block['properties']['name'],
-            href=ip_block['href'],
-            location=ip_block['properties']['location'],
-            size=ip_block['properties']['size'],
-            ips=ip_block['properties']['ips'] or [],
+            id=ip_block["id"],
+            name=ip_block["properties"]["name"],
+            href=ip_block["href"],
+            location=ip_block["properties"]["location"],
+            size=ip_block["properties"]["size"],
+            ips=ip_block["properties"]["ips"] or [],
             state=state,
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_load_balancers(self, object):
-        return [self._to_load_balancer(
-            load_balancer) for load_balancer in object['items']]
+        return [
+            self._to_load_balancer(load_balancer) for load_balancer in object["items"]
+        ]
 
     def _to_load_balancer(self, load_balancer, headers=None):
         nested = {
-            'props': load_balancer['properties'],
-            'metadata': load_balancer['metadata']
+            "props": load_balancer["properties"],
+            "metadata": load_balancer["metadata"],
         }
 
         extra = {}
 
         MAPPED_ATTRS = {
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
             },
-            'props': {
-                'name': 'name',
-                'ip': 'ip',
-                'dhcp': 'dhcp'
-            }
+            "props": {"name": "name", "ip": "ip", "dhcp": "dhcp"},
         }
 
         for k, v in MAPPED_ATTRS.items():
@@ -3421,64 +3167,59 @@ class ProfitBricksNodeDriver(NodeDriver):
                 extra[altered_name] = nested[k][original_name]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
-        if 'entities' in load_balancer:
-            extra['entities'] = load_balancer['entities']
+        if "entities" in load_balancer:
+            extra["entities"] = load_balancer["entities"]
 
         state = self.NODE_STATE_MAP.get(
-            load_balancer['metadata']['state'],
-            NodeState.UNKNOWN
+            load_balancer["metadata"]["state"], NodeState.UNKNOWN
         )
 
         return ProfitBricksLoadBalancer(
-            id=load_balancer['id'],
-            name=load_balancer['properties']['name'],
-            href=load_balancer['href'],
+            id=load_balancer["id"],
+            name=load_balancer["properties"]["name"],
+            href=load_balancer["href"],
             state=state,
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_snapshots(self, object):
-        return [self._to_snapshot(
-            snapshot) for snapshot in object['items']]
+        return [self._to_snapshot(snapshot) for snapshot in object["items"]]
 
     def _to_snapshot(self, snapshot, headers=None):
-        nested = {
-            'props': snapshot['properties'],
-            'metadata': snapshot['metadata']
-        }
+        nested = {"props": snapshot["properties"], "metadata": snapshot["metadata"]}
 
         extra = {}
 
         MAPPED_ATTRS = {
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
             },
-            'props': {
-                'name': 'name',
-                'description': 'description',
-                'location': 'location',
-                'size': 'size',
-                'cpuHotPlug': 'cpu_hot_plug',
-                'cpuHotUnplug': 'cpu_hot_unplug',
-                'ramHotPlug': 'ram_hot_plug',
-                'ramHotUnplug': 'ram_hot_unplug',
-                'nicHotPlug': 'nic_hot_plug',
-                'nicHotUnplug': 'nic_hot_unplug',
-                'discVirtioHotPlug': 'disc_virtio_hot_plug',
-                'discVirtioHotUnplug': 'disc_virtio_hot_unplug',
-                'discScsiHotPlug': 'disc_scsi_hot_plug',
-                'discScsiHotUnplug': 'disc_scsi_hot_unplug',
-                'licenceType': 'licence_type'
-            }
+            "props": {
+                "name": "name",
+                "description": "description",
+                "location": "location",
+                "size": "size",
+                "cpuHotPlug": "cpu_hot_plug",
+                "cpuHotUnplug": "cpu_hot_unplug",
+                "ramHotPlug": "ram_hot_plug",
+                "ramHotUnplug": "ram_hot_unplug",
+                "nicHotPlug": "nic_hot_plug",
+                "nicHotUnplug": "nic_hot_unplug",
+                "discVirtioHotPlug": "disc_virtio_hot_plug",
+                "discVirtioHotUnplug": "disc_virtio_hot_unplug",
+                "discScsiHotPlug": "disc_scsi_hot_plug",
+                "discScsiHotUnplug": "disc_scsi_hot_unplug",
+                "licenceType": "licence_type",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
@@ -3486,194 +3227,176 @@ class ProfitBricksNodeDriver(NodeDriver):
                 extra[altered_name] = nested[k][original_name]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         state = self.NODE_STATE_MAP.get(
-            snapshot['metadata']['state'],
-            NodeState.UNKNOWN
+            snapshot["metadata"]["state"], NodeState.UNKNOWN
         )
 
-        extra['href'] = snapshot['href']
+        extra["href"] = snapshot["href"]
 
         return VolumeSnapshot(
-            id=snapshot['id'],
+            id=snapshot["id"],
             driver=self.connection.driver,
-            size=extra['size'],
+            size=extra["size"],
             extra=extra,
-            created=extra['created_date'],
+            created=extra["created_date"],
             state=state,
-            name=extra['name']
+            name=extra["name"],
         )
 
     def _to_lans(self, object):
-        return [self._to_lan(
-            lan) for lan in object['items']]
+        return [self._to_lan(lan) for lan in object["items"]]
 
     def _to_lan(self, lan, headers=None):
-        nested = {
-            'props': lan['properties'],
-            'metadata': lan['metadata']
-        }
+        nested = {"props": lan["properties"], "metadata": lan["metadata"]}
 
         extra = {}
 
         MAPPED_ATTRS = {
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
             },
-            'props': {
-                'name': 'name',
-                'public': 'is_public'
-            }
+            "props": {"name": "name", "public": "is_public"},
         }
 
         for k, v in MAPPED_ATTRS.items():
             for original_name, altered_name in v.items():
                 extra[altered_name] = nested[k][original_name]
 
-        if 'entities' in lan:
-            extra['entities'] = lan['entities']
+        if "entities" in lan:
+            extra["entities"] = lan["entities"]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
-        extra['provisioning_state'] = self.PROVISIONING_STATE.get(
-            lan['metadata']['state'],
-            NodeState.UNKNOWN
+        extra["provisioning_state"] = self.PROVISIONING_STATE.get(
+            lan["metadata"]["state"], NodeState.UNKNOWN
         )
 
-        state = self.NODE_STATE_MAP.get(
-            lan['metadata']['state'],
-            NodeState.UNKNOWN
-        )
+        state = self.NODE_STATE_MAP.get(lan["metadata"]["state"], NodeState.UNKNOWN)
 
         return ProfitBricksLan(
-            id=lan['id'],
-            name=lan['properties']['name'],
-            href=lan['href'],
-            is_public=lan['properties']['public'],
+            id=lan["id"],
+            name=lan["properties"]["name"],
+            href=lan["href"],
+            is_public=lan["properties"]["public"],
             state=state,
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_datacenters(self, object):
-        return [self._to_datacenter(
-            datacenter) for datacenter in object['items']]
+        return [self._to_datacenter(datacenter) for datacenter in object["items"]]
 
     def _to_datacenter(self, datacenter, headers=None):
-        nested = {
-            'props': datacenter['properties'],
-            'metadata': datacenter['metadata']
-        }
+        nested = {"props": datacenter["properties"], "metadata": datacenter["metadata"]}
 
-        if 'entities' in datacenter:
-            nested['entities'] = datacenter['entities']
+        if "entities" in datacenter:
+            nested["entities"] = datacenter["entities"]
 
         extra = {}
 
         MAPPED_ATTRS = {
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
             },
-            'props': {
-                'description': 'description',
-                'features': 'features',
-                'location': 'location',
-                'name': 'name',
-                'version': 'version'
-            }
+            "props": {
+                "description": "description",
+                "features": "features",
+                "location": "location",
+                "name": "name",
+                "version": "version",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
             for original_name, altered_name in v.items():
                 extra[altered_name] = nested[k][original_name]
 
-        if 'entities' in datacenter:
-            extra['entities'] = datacenter['entities']
+        if "entities" in datacenter:
+            extra["entities"] = datacenter["entities"]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
-        extra['provisioning_state'] = self.PROVISIONING_STATE.get(
-            datacenter['metadata']['state'],
-            NodeState.UNKNOWN
+        extra["provisioning_state"] = self.PROVISIONING_STATE.get(
+            datacenter["metadata"]["state"], NodeState.UNKNOWN
         )
 
         return Datacenter(
-            id=datacenter['id'],
-            href=datacenter['href'],
-            name=datacenter['properties']['name'],
-            version=datacenter['properties']['version'],
+            id=datacenter["id"],
+            href=datacenter["href"],
+            name=datacenter["properties"]["name"],
+            version=datacenter["properties"]["version"],
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_images(self, object, image_type=None, is_public=True):
 
         if image_type is not None:
             images = [
-                image for image in object['items']
-                if image['properties']['imageType'] == image_type and
-                image['properties']['public'] == is_public
+                image
+                for image in object["items"]
+                if image["properties"]["imageType"] == image_type
+                and image["properties"]["public"] == is_public
             ]
         else:
             images = [
-                image for image in object['items']
-                if image['properties']['public'] == is_public
+                image
+                for image in object["items"]
+                if image["properties"]["public"] == is_public
             ]
 
         return [self._to_image(image) for image in images]
 
     def _to_image(self, image, headers=None):
-        nested = {
-            'props': image['properties'],
-            'metadata': image['metadata']
-        }
+        nested = {"props": image["properties"], "metadata": image["metadata"]}
         extra = {}
 
         MAPPED_ATTRS = {
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
             },
-            'props': {
-                'name': 'name',
-                'description': 'description',
-                'location': 'location',
-                'size': 'size',
-                'cpuHotPlug': 'cpu_hot_plug',
-                'cpuHotUnplug': 'cpu_hot_unplug',
-                'ramHotPlug': 'ram_hot_plug',
-                'ramHotUnplug': 'ram_hot_unplug',
-                'nicHotPlug': 'nic_hot_plug',
-                'nicHotUnplug': 'nic_hot_unplug',
-                'discVirtioHotPlug': 'disc_virtio_hot_plug',
-                'discVirtioHotUnplug': 'disc_virtio_hot_unplug',
-                'discScsiHotPlug': 'disc_scsi_hot_plug',
-                'discScsiHotUnplug': 'disc_scsi_hot_unplug',
-                'licenceType': 'licence_type',
-                'imageType': 'image_type',
-                'imageAliases': 'image_aliases',
-                'public': 'public'
-            }
+            "props": {
+                "name": "name",
+                "description": "description",
+                "location": "location",
+                "size": "size",
+                "cpuHotPlug": "cpu_hot_plug",
+                "cpuHotUnplug": "cpu_hot_unplug",
+                "ramHotPlug": "ram_hot_plug",
+                "ramHotUnplug": "ram_hot_unplug",
+                "nicHotPlug": "nic_hot_plug",
+                "nicHotUnplug": "nic_hot_unplug",
+                "discVirtioHotPlug": "disc_virtio_hot_plug",
+                "discVirtioHotUnplug": "disc_virtio_hot_unplug",
+                "discScsiHotPlug": "disc_scsi_hot_plug",
+                "discScsiHotUnplug": "disc_scsi_hot_unplug",
+                "licenceType": "licence_type",
+                "imageType": "image_type",
+                "imageAliases": "image_aliases",
+                "public": "public",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
@@ -3681,56 +3404,56 @@ class ProfitBricksNodeDriver(NodeDriver):
                 extra[altered_name] = nested[k][original_name]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         """
         Put the href inside extra
         because we cannot assign
         it to the NodeImage type.
         """
-        extra['href'] = image['href']
+        extra["href"] = image["href"]
 
         return NodeImage(
-            id=image['id'],
-            name=image['properties']['name'],
+            id=image["id"],
+            name=image["properties"]["name"],
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_nodes(self, object):
-        return [self._to_node(n) for n in object['items']]
+        return [self._to_node(n) for n in object["items"]]
 
     def _to_node(self, node, headers=None):
         """
         Convert the request into a node Node
         """
         nested = {
-            'props': node['properties'],
-            'metadata': node['metadata'],
-            'entities': node['entities']
+            "props": node["properties"],
+            "metadata": node["metadata"],
+            "entities": node["entities"],
         }
         extra = {}
 
         MAPPED_ATTRS = {
-            'props': {
-                'name': 'name',
-                'availabilityZone': 'availability_zone',
-                'bootCdrom': 'boot_cdrom',
-                'bootVolume': 'boot_volume',
-                'cores': 'cores',
-                'cpuFamily': 'cpu_family',
-                'ram': 'ram',
-                'vmState': 'vm_state'
+            "props": {
+                "name": "name",
+                "availabilityZone": "availability_zone",
+                "bootCdrom": "boot_cdrom",
+                "bootVolume": "boot_volume",
+                "cores": "cores",
+                "cpuFamily": "cpu_family",
+                "ram": "ram",
+                "vmState": "vm_state",
             },
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedBy': 'last_modified_by',
-                'lastModifiedDate': 'last_modified_date',
-                'state': 'state'
-            }
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedBy": "last_modified_by",
+                "lastModifiedDate": "last_modified_date",
+                "state": "state",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
@@ -3738,195 +3461,185 @@ class ProfitBricksNodeDriver(NodeDriver):
                 extra[altered_name] = nested[k][original_name]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         state = self.NODE_STATE_MAP.get(
-            node['properties']['vmState'],
-            NodeState.UNKNOWN
+            node["properties"]["vmState"], NodeState.UNKNOWN
         )
 
-        extra['entities'] = nested['entities']
-        extra['href'] = node['href']
+        extra["entities"] = nested["entities"]
+        extra["href"] = node["href"]
 
         public_ips = []
         private_ips = []
 
-        if 'nics' in nested['entities']:
-            if 'items' in nested['entities']['nics']:
-                for nic in nested['entities']['nics']['items']:
-                    if nic['properties']['nat'] is True:
-                        public_ips += nic['properties']['ips']
-                    elif nic['properties']['nat'] is False:
-                        private_ips += nic['properties']['ips']
+        if "nics" in nested["entities"]:
+            if "items" in nested["entities"]["nics"]:
+                for nic in nested["entities"]["nics"]["items"]:
+                    if nic["properties"]["nat"] is True:
+                        public_ips += nic["properties"]["ips"]
+                    elif nic["properties"]["nat"] is False:
+                        private_ips += nic["properties"]["ips"]
 
         return Node(
-            id=node['id'],
-            name=nested['props']['name'],
+            id=node["id"],
+            name=nested["props"]["name"],
             state=state,
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_volumes(self, object):
-        return [self._to_volume(
-            volume) for volume in object['items']]
+        return [self._to_volume(volume) for volume in object["items"]]
 
     def _to_volume(self, volume, headers=None):
 
-        nested = {
-            'props': volume['properties'],
-            'metadata': volume['metadata']
-        }
+        nested = {"props": volume["properties"], "metadata": volume["metadata"]}
         extra = {}
 
         MAPPED_ATTRS = {
-            'props': {
-                'bus': 'bus',
-                'size': 'size',
-                'cpuHotPlug': 'cpu_hot_plug',
-                'cpuHotUnplug': 'cpu_hot_unplug',
-                'discScsiHotPlug': 'disc_scsi_hot_plug',
-                'discScsiHotUnplug': 'disc_scsi_hot_unplug',
-                'discVirtioHotPlug': 'disc_virtio_hot_plug',
-                'discVirtioHotUnplug': 'disc_virtio_hot_unplug',
-                'image': 'image',
-                'imagePassword': 'image_password',
-                'licenceType': 'licence_type',
-                'name': 'name',
-                'nicHotPlug': 'nic_hot_plug',
-                'nicHotUnplug': 'nic_hot_unplug',
-                'ramHotPlug': 'ram_hot_plug',
-                'ramHotUnplug': 'ram_hot_unplug',
-                'sshKeys': 'ssh_keys',
-                'type': 'type',
-                'deviceNumber': 'device_number'
+            "props": {
+                "bus": "bus",
+                "size": "size",
+                "cpuHotPlug": "cpu_hot_plug",
+                "cpuHotUnplug": "cpu_hot_unplug",
+                "discScsiHotPlug": "disc_scsi_hot_plug",
+                "discScsiHotUnplug": "disc_scsi_hot_unplug",
+                "discVirtioHotPlug": "disc_virtio_hot_plug",
+                "discVirtioHotUnplug": "disc_virtio_hot_unplug",
+                "image": "image",
+                "imagePassword": "image_password",
+                "licenceType": "licence_type",
+                "name": "name",
+                "nicHotPlug": "nic_hot_plug",
+                "nicHotUnplug": "nic_hot_unplug",
+                "ramHotPlug": "ram_hot_plug",
+                "ramHotUnplug": "ram_hot_unplug",
+                "sshKeys": "ssh_keys",
+                "type": "type",
+                "deviceNumber": "device_number",
             },
-            'metadata': {
-                'createdBy': 'created_by',
-                'createdDate': 'created_date',
-                'etag': 'etag',
-                'lastModifiedBy': 'last_modified_by',
-                'lastModifiedDate': 'last_modified_date',
-                'state': 'state'
-            }
+            "metadata": {
+                "createdBy": "created_by",
+                "createdDate": "created_date",
+                "etag": "etag",
+                "lastModifiedBy": "last_modified_by",
+                "lastModifiedDate": "last_modified_date",
+                "state": "state",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
             for original_name, altered_name in v.items():
                 extra[altered_name] = nested[k][original_name]
 
-        extra['provisioning_state'] = self.PROVISIONING_STATE.get(
-            volume['metadata']['state'],
-            NodeState.UNKNOWN
+        extra["provisioning_state"] = self.PROVISIONING_STATE.get(
+            volume["metadata"]["state"], NodeState.UNKNOWN
         )
 
-        extra['href'] = volume['href']
+        extra["href"] = volume["href"]
 
-        if 'availabilityZone' in volume['properties']:
-            properties = volume['properties']
-            extra['availability_zone'] = properties['availabilityZone']
+        if "availabilityZone" in volume["properties"]:
+            properties = volume["properties"]
+            extra["availability_zone"] = properties["availabilityZone"]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         return StorageVolume(
-            id=volume['id'],
-            name=volume['properties']['name'],
-            size=volume['properties']['size'],
+            id=volume["id"],
+            name=volume["properties"]["name"],
+            size=volume["properties"]["size"],
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def _to_interfaces(self, object):
-        return [self._to_interface(
-            interface) for interface in object['items']]
+        return [self._to_interface(interface) for interface in object["items"]]
 
     def _to_interface(self, interface, headers=None):
-        nested = {
-            'props': interface['properties'],
-            'metadata': interface['metadata']
-        }
+        nested = {"props": interface["properties"], "metadata": interface["metadata"]}
         extra = {}
 
         MAPPED_ATTRS = {
-            'props': {
-                'dhcp': 'dhcp',
-                'firewallActive': 'firewall_active',
-                'ips': 'ips',
-                'lan': 'lan',
-                'mac': 'mac',
-                'name': 'name',
-                'nat': 'nat'
+            "props": {
+                "dhcp": "dhcp",
+                "firewallActive": "firewall_active",
+                "ips": "ips",
+                "lan": "lan",
+                "mac": "mac",
+                "name": "name",
+                "nat": "nat",
             },
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedBy': 'last_modified_by',
-                'lastModifiedDate': 'last_modified_date',
-                'state': 'state'
-            }
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedBy": "last_modified_by",
+                "lastModifiedDate": "last_modified_date",
+                "state": "state",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
             for original_name, altered_name in v.items():
                 extra[altered_name] = nested[k][original_name]
 
-        if 'entities' in interface:
-            extra['entities'] = interface['entities']
+        if "entities" in interface:
+            extra["entities"] = interface["entities"]
 
         state = self.NODE_STATE_MAP.get(
-            interface['metadata']['state'],
-            NodeState.UNKNOWN
+            interface["metadata"]["state"], NodeState.UNKNOWN
         )
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         return ProfitBricksNetworkInterface(
-            id=interface['id'],
-            name=interface['properties']['name'],
-            href=interface['href'],
+            id=interface["id"],
+            name=interface["properties"]["name"],
+            href=interface["href"],
             state=state,
-            extra=extra
+            extra=extra,
         )
 
     def _to_firewall_rules(self, object):
-        return [self._to_firewall_rule(
-            firewall_rule) for firewall_rule in object['items']]
+        return [
+            self._to_firewall_rule(firewall_rule) for firewall_rule in object["items"]
+        ]
 
     def _to_firewall_rule(self, firewallrule, headers=None):
         nested = {
-            'props': firewallrule['properties'],
-            'metadata': firewallrule['metadata']
+            "props": firewallrule["properties"],
+            "metadata": firewallrule["metadata"],
         }
         extra = {}
 
         MAPPED_ATTRS = {
-            'props': {
-                'name': 'name',
-                'protocol': 'protocol',
-                'sourceMac': 'source_mac',
-                'sourceIp': 'source_ip',
-                'targetIp': 'target_ip',
-                'icmpCode': 'icmp_code',
-                'icmpType': 'icmp_type',
-                'portRangeStart': 'port_range_start',
-                'portRangeEnd': 'port_range_end'
+            "props": {
+                "name": "name",
+                "protocol": "protocol",
+                "sourceMac": "source_mac",
+                "sourceIp": "source_ip",
+                "targetIp": "target_ip",
+                "icmpCode": "icmp_code",
+                "icmpType": "icmp_type",
+                "portRangeStart": "port_range_start",
+                "portRangeEnd": "port_range_end",
             },
-            'metadata': {
-                'createdDate': 'created_date',
-                'createdBy': 'created_by',
-                'etag': 'etag',
-                'lastModifiedDate': 'last_modified_date',
-                'lastModifiedBy': 'last_modified_by',
-                'state': 'state'
-            }
+            "metadata": {
+                "createdDate": "created_date",
+                "createdBy": "created_by",
+                "etag": "etag",
+                "lastModifiedDate": "last_modified_date",
+                "lastModifiedBy": "last_modified_by",
+                "state": "state",
+            },
         }
 
         for k, v in MAPPED_ATTRS.items():
@@ -3934,31 +3647,30 @@ class ProfitBricksNodeDriver(NodeDriver):
                 extra[altered_name] = nested[k][original_name]
 
         if headers is not None:
-            if 'location' in headers:
-                extra['status_url'] = headers['location']
+            if "location" in headers:
+                extra["status_url"] = headers["location"]
 
         state = self.NODE_STATE_MAP.get(
-            firewallrule['metadata']['state'],
-            NodeState.UNKNOWN
+            firewallrule["metadata"]["state"], NodeState.UNKNOWN
         )
 
         return ProfitBricksFirewallRule(
-            id=firewallrule['id'],
-            name=firewallrule['properties']['name'],
-            href=firewallrule['href'],
+            id=firewallrule["id"],
+            name=firewallrule["properties"]["name"],
+            href=firewallrule["href"],
             state=state,
-            extra=extra
+            extra=extra,
         )
 
     def _to_locations(self, object):
-        return [self._to_location(location) for location in object['items']]
+        return [self._to_location(location) for location in object["items"]]
 
     def _to_location(self, location):
         return NodeLocation(
-            id=location['id'],
-            name=location['properties']['name'],
-            country=location['id'].split('/')[0],
-            driver=self.connection.driver
+            id=location["id"],
+            name=location["properties"]["name"],
+            country=location["id"].split("/")[0],
+            driver=self.connection.driver,
         )
 
     def _to_node_size(self, data):
@@ -3973,12 +3685,11 @@ class ProfitBricksNodeDriver(NodeDriver):
             bandwidth=None,
             price=None,
             driver=self.connection.driver,
-            extra={'cores': data["cores"]}
+            extra={"cores": data["cores"]},
         )
 
     def _wait_for_datacenter_state(
-        self, datacenter, state=NodeState.RUNNING,
-        timeout=300, interval=5
+        self, datacenter, state=NodeState.RUNNING, timeout=300, interval=5
     ):
         """
         Private function that waits the datacenter
@@ -3994,9 +3705,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         while attempts < 5:
             attempts += 1
             try:
-                datacenter = self.ex_describe_datacenter(
-                    ex_datacenter_id=datacenter.id
-                )
+                datacenter = self.ex_describe_datacenter(ex_datacenter_id=datacenter.id)
                 break
 
             except BaseHTTPError:
@@ -4004,21 +3713,19 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if datacenter is None:
             raise Exception(
-                'Data center was not ready in time to '
-                'complete this operation.'
+                "Data center was not ready in time to " "complete this operation."
             )
 
-        while (datacenter.extra['provisioning_state'] != state):
-            datacenter = \
-                self.ex_describe_datacenter(ex_href=datacenter.href)
+        while datacenter.extra["provisioning_state"] != state:
+            datacenter = self.ex_describe_datacenter(ex_href=datacenter.href)
 
-            if datacenter.extra['provisioning_state'] == state:
+            if datacenter.extra["provisioning_state"] == state:
                 break
 
             if wait_time >= timeout:
                 raise Exception(
-                    'Datacenter didn\'t transition to %s state '
-                    'in %s seconds' % (state, timeout)
+                    "Datacenter didn't transition to %s state "
+                    "in %s seconds" % (state, timeout)
                 )
 
             wait_time += interval
@@ -4026,22 +3733,13 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return datacenter
 
-    def _create_new_datacenter_for_node(
-        self,
-        name,
-        location=None
-    ):
+    def _create_new_datacenter_for_node(self, name, location=None):
         """
         Creates a Datacenter for a node.
         """
-        dc_name = name + '-DC'
+        dc_name = name + "-DC"
 
         if location is None:
-            location = self.ex_describe_location(
-                ex_location_id='us/las'
-            )
+            location = self.ex_describe_location(ex_location_id="us/las")
 
-        return self.ex_create_datacenter(
-            name=dc_name,
-            location=location
-        )
+        return self.ex_create_datacenter(name=dc_name, location=location)

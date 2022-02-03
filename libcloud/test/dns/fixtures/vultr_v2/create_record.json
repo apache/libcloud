@@ -1,0 +1,10 @@
+{
+    "record": {
+        "id": "123",
+        "type": "A",
+        "name": "test1",
+        "data": "192.168.0.11",
+        "priority": 1,
+        "ttl": 300
+    }
+}

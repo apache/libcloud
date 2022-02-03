@@ -8,22 +8,27 @@ def edit_ssl_offload_profile(lbdriver):
     profile_name = "ssl_offload"
     datacenter_id = "EU6"
     profile = lbdriver.ex_list_ssl_offload_profiles(
-        name=profile_name, datacenter_id=datacenter_id)[0]
+        name=profile_name, datacenter_id=datacenter_id
+    )[0]
     # All elements must be passed to the edit method that
     #  would be required in creating a profile as well as what currently exists
     # such as the current ciphers, unless ciphers were to be changed.
     # Here a new description is being added.
     result = lbdriver.ex_edit_ssl_offload_profile(
-        profile.id, profile.name, profile.sslDomainCertificate.id,
+        profile.id,
+        profile.name,
+        profile.sslDomainCertificate.id,
         ciphers=profile.ciphers,
-        description="A test edit of an offload profile")
+        description="A test edit of an offload profile",
+    )
     assert result is True
 
 
 def lbdriver():
-    cls = libcloud.get_driver(libcloud.DriverType.LOADBALANCER,
-                              libcloud.DriverType.LOADBALANCER.NTTCIS)
-    driver = cls('mitchgeo-test', 'Snmpv2c!', region='eu')
+    cls = libcloud.get_driver(
+        libcloud.DriverType.LOADBALANCER, libcloud.DriverType.LOADBALANCER.NTTCIS
+    )
+    driver = cls("mitchgeo-test", "Snmpv2c!", region="eu")
     return driver
 
 

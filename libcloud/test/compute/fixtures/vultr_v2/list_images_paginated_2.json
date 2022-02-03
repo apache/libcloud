@@ -1,0 +1,71 @@
+{
+    "os": [
+        {
+            "id": 240,
+            "name": "Windows 2016 x64",
+            "arch": "x64",
+            "family": "windows"
+        },
+        {
+            "id": 244,
+            "name": "Debian 9 x64 (stretch)",
+            "arch": "x64",
+            "family": "debian"
+        },
+        {
+            "id": 270,
+            "name": "Ubuntu 18.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 327,
+            "name": "FreeBSD 12 x64",
+            "arch": "x64",
+            "family": "freebsd"
+        },
+        {
+            "id": 352,
+            "name": "Debian 10 x64 (buster)",
+            "arch": "x64",
+            "family": "debian"
+        },
+        {
+            "id": 362,
+            "name": "CentOS 8 x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 371,
+            "name": "Windows 2019 x64",
+            "arch": "x64",
+            "family": "windows"
+        },
+        {
+            "id": 381,
+            "name": "CentOS 7 SELinux x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 387,
+            "name": "Ubuntu 20.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 401,
+            "name": "CentOS 8 Stream x64",
+            "arch": "x64",
+            "family": "centos"
+        }
+    ],
+    "meta": {
+        "total": 30,
+        "links": {
+            "next": "bmV4dF9fNDAx",
+            "prev": "cHJldl9fMjQw"
+        }
+    }
+}

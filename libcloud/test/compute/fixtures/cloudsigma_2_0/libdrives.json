@@ -26,7 +26,7 @@
             "owner": null,
             "paid": false,
             "resource_uri": "/api/2.0/libdrives/6eca8d96-44bc-4637-af97-77ccd7ba4144/",
-            "size": 1000000000,
+            "size": 1073741824,
             "status": "unmounted",
             "storage_type": null,
             "tags": [],

@@ -44,13 +44,19 @@ from copy import copy
 from libcloud.utils.py3 import PY3, httplib
 from libcloud.utils.networking import is_private_subnet
 
-from libcloud.common.linode import (API_ROOT, LinodeException,
-                                    LinodeConnection, LinodeConnectionV4,
-                                    LinodeDisk, LinodeIPAddress,
-                                    LinodeExceptionV4,
-                                    LINODE_PLAN_IDS, LINODE_DISK_FILESYSTEMS,
-                                    LINODE_DISK_FILESYSTEMS_V4,
-                                    DEFAULT_API_VERSION)
+from libcloud.common.linode import (
+    API_ROOT,
+    LinodeException,
+    LinodeConnection,
+    LinodeConnectionV4,
+    LinodeDisk,
+    LinodeIPAddress,
+    LinodeExceptionV4,
+    LINODE_PLAN_IDS,
+    LINODE_DISK_FILESYSTEMS,
+    LINODE_DISK_FILESYSTEMS_V4,
+    DEFAULT_API_VERSION,
+)
 from libcloud.compute.types import Provider, NodeState, StorageVolumeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
@@ -58,21 +64,30 @@ from libcloud.compute.base import NodeImage, StorageVolume
 
 
 class LinodeNodeDriver(NodeDriver):
-    name = 'Linode'
-    website = 'http://www.linode.com/'
+    name = "Linode"
+    website = "http://www.linode.com/"
     type = Provider.LINODE
 
-    def __new__(cls, key, secret=None, secure=True, host=None, port=None,
-                api_version=DEFAULT_API_VERSION, region=None, **kwargs):
+    def __new__(
+        cls,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        api_version=DEFAULT_API_VERSION,
+        region=None,
+        **kwargs,
+    ):
         if cls is LinodeNodeDriver:
-            if api_version == '3.0':
+            if api_version == "3.0":
                 cls = LinodeNodeDriverV3
-            elif api_version == '4.0':
+            elif api_version == "4.0":
                 cls = LinodeNodeDriverV4
             else:
                 raise NotImplementedError(
-                    'No Linode driver found for API version: %s' %
-                    (api_version))
+                    "No Linode driver found for API version: %s" % (api_version)
+                )
         return super(LinodeNodeDriver, cls).__new__(cls)
 
 
@@ -98,13 +113,23 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
         http://www.linode.com/api/
     """
+
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
     _linode_disk_filesystems = LINODE_DISK_FILESYSTEMS
-    features = {'create_node': ['ssh_key', 'password']}
+    features = {"create_node": ["ssh_key", "password"]}
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=None, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        api_version=None,
+        region=None,
+        **kwargs,
+    ):
         """Instantiate the driver with the given API key
 
         :param   key: the API key to use (required)
@@ -117,13 +142,13 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
     # Converts Linode's state from DB to a NodeState constant.
     LINODE_STATES = {
-        (-2): NodeState.UNKNOWN,    # Boot Failed
-        (-1): NodeState.PENDING,    # Being Created
-        0: NodeState.PENDING,     # Brand New
-        1: NodeState.RUNNING,     # Running
+        (-2): NodeState.UNKNOWN,  # Boot Failed
+        (-1): NodeState.PENDING,  # Being Created
+        0: NodeState.PENDING,  # Brand New
+        1: NodeState.RUNNING,  # Running
         2: NodeState.STOPPED,  # Powered Off
-        3: NodeState.REBOOTING,   # Shutting Down
-        4: NodeState.UNKNOWN      # Reserved
+        3: NodeState.REBOOTING,  # Shutting Down
+        4: NodeState.UNKNOWN,  # Reserved
     }
 
     def list_nodes(self):
@@ -192,15 +217,31 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
         :rtype: ``bool``
         """
-        params = {"api_action": "linode.delete", "LinodeID": node.id,
-                  "skipChecks": True}
+        params = {
+            "api_action": "linode.delete",
+            "LinodeID": node.id,
+            "skipChecks": True,
+        }
         self.connection.request(API_ROOT, params=params)
         return True
 
-    def create_node(self, name, image, size, auth, location=None, ex_swap=None,
-                    ex_rsize=None, ex_kernel=None, ex_payment=None,
-                    ex_comment=None, ex_private=False, lconfig=None,
-                    lroot=None, lswap=None):
+    def create_node(
+        self,
+        name,
+        image,
+        size,
+        auth,
+        location=None,
+        ex_swap=None,
+        ex_rsize=None,
+        ex_kernel=None,
+        ex_payment=None,
+        ex_comment=None,
+        ex_private=False,
+        lconfig=None,
+        lroot=None,
+        lswap=None,
+    ):
         """Create a new Linode, deploy a Linux distribution, and boot
 
         This call abstracts much of the functionality of provisioning a Linode
@@ -299,22 +340,20 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             raise LinodeException(0xFB, "Need an integer swap size")
 
         # Root partition size
-        imagesize = (size.disk - swap) if not ex_rsize else\
-            int(ex_rsize)
+        imagesize = (size.disk - swap) if not ex_rsize else int(ex_rsize)
         if (imagesize + swap) > size.disk:
             raise LinodeException(0xFB, "Total disk images are too big")
 
         # Distribution ID
         distros = self.list_images()
         if image.id not in [d.id for d in distros]:
-            raise LinodeException(0xFB,
-                                  "Invalid distro -- avail.distributions")
+            raise LinodeException(0xFB, "Invalid distro -- avail.distributions")
 
         # Kernel
         if ex_kernel:
             kernel = ex_kernel
         else:
-            if image.extra['64bit']:
+            if image.extra["64bit"]:
                 # For a list of available kernel ids, see
                 # https://www.linode.com/kernels/
                 kernel = 138
@@ -326,15 +365,18 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             raise LinodeException(0xFB, "Invalid kernel -- avail.kernels")
 
         # Comments
-        comments = "Created by Apache libcloud <https://www.libcloud.org>" if\
-            not ex_comment else ex_comment
+        comments = (
+            "Created by Apache libcloud <https://www.libcloud.org>"
+            if not ex_comment
+            else ex_comment
+        )
 
         # Step 1: linode.create
         params = {
             "api_action": "linode.create",
             "DatacenterID": chosen,
             "PlanID": size.id,
-            "PaymentTerm": payment
+            "PaymentTerm": payment,
         }
         data = self.connection.request(API_ROOT, params=params).objects[0]
         linode = {"id": data["LinodeID"]}
@@ -343,16 +385,13 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         params = {
             "api_action": "linode.update",
             "LinodeID": linode["id"],
-            "Label": name
+            "Label": name,
         }
         self.connection.request(API_ROOT, params=params)
 
         # Step 1c. linode.ip.addprivate if it was requested
         if ex_private:
-            params = {
-                "api_action": "linode.ip.addprivate",
-                "LinodeID": linode["id"]
-            }
+            params = {"api_action": "linode.ip.addprivate", "LinodeID": linode["id"]}
             self.connection.request(API_ROOT, params=params)
 
         # Step 1d. Labels
@@ -361,21 +400,21 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         label = {
             "lconfig": "[%s] Configuration Profile" % linode["id"],
             "lroot": "[%s] %s Disk Image" % (linode["id"], image.name),
-            "lswap": "[%s] Swap Space" % linode["id"]
+            "lswap": "[%s] Swap Space" % linode["id"],
         }
 
         if lconfig:
-            label['lconfig'] = lconfig
+            label["lconfig"] = lconfig
 
         if lroot:
-            label['lroot'] = lroot
+            label["lroot"] = lroot
 
         if lswap:
-            label['lswap'] = lswap
+            label["lswap"] = lswap
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            root = binascii.b2a_base64(os.urandom(8)).decode('ascii').strip()
+            root = binascii.b2a_base64(os.urandom(8)).decode("ascii").strip()
 
         params = {
             "api_action": "linode.disk.createfromdistribution",
@@ -396,7 +435,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             "LinodeID": linode["id"],
             "Label": label["lswap"],
             "Type": "swap",
-            "Size": swap
+            "Size": swap,
         }
         data = self.connection.request(API_ROOT, params=params).objects[0]
         linode["swapimage"] = data["DiskID"]
@@ -409,11 +448,11 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             "KernelID": kernel,
             "Label": label["lconfig"],
             "Comments": comments,
-            "DiskList": disks
+            "DiskList": disks,
         }
         if ex_private:
-            params['helper_network'] = True
-            params['helper_distro'] = True
+            params["helper_network"] = True
+            params["helper_distro"] = True
 
         data = self.connection.request(API_ROOT, params=params).objects[0]
         linode["config"] = data["ConfigID"]
@@ -422,7 +461,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         params = {
             "api_action": "linode.boot",
             "LinodeID": linode["id"],
-            "ConfigID": linode["config"]
+            "ConfigID": linode["config"],
         }
         self.connection.request(API_ROOT, params=params)
 
@@ -434,7 +473,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         if len(nodes) == 1:
             node = nodes[0]
             if getattr(auth, "generated", False):
-                node.extra['password'] = auth.password
+                node.extra["password"] = auth.password
             return node
 
         return None
@@ -449,8 +488,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         After resize is complete the node needs to be booted
         """
 
-        params = {"api_action": "linode.resize", "LinodeID": node.id,
-                  "PlanID": size}
+        params = {"api_action": "linode.resize", "LinodeID": node.id, "PlanID": size}
         self.connection.request(API_ROOT, params=params)
         return True
 
@@ -469,11 +507,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
     def ex_rename_node(self, node, name):
         """Renames a node"""
 
-        params = {
-            "api_action": "linode.update",
-            "LinodeID": node.id,
-            "Label": name
-        }
+        params = {"api_action": "linode.update", "LinodeID": node.id, "Label": name}
         self.connection.request(API_ROOT, params=params)
         return True
 
@@ -494,9 +528,15 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         data = self.connection.request(API_ROOT, params=params).objects[0]
         sizes = []
         for obj in data:
-            n = NodeSize(id=obj["PLANID"], name=obj["LABEL"], ram=obj["RAM"],
-                         disk=(obj["DISK"] * 1024), bandwidth=obj["XFER"],
-                         price=obj["PRICE"], driver=self.connection.driver)
+            n = NodeSize(
+                id=obj["PLANID"],
+                name=obj["LABEL"],
+                ram=obj["RAM"],
+                disk=(obj["DISK"] * 1024),
+                bandwidth=obj["XFER"],
+                price=obj["PRICE"],
+                driver=self.connection.driver,
+            )
             sizes.append(n)
         return sizes
 
@@ -512,11 +552,12 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         data = self.connection.request(API_ROOT, params=params).objects[0]
         distros = []
         for obj in data:
-            i = NodeImage(id=obj["DISTRIBUTIONID"],
-                          name=obj["LABEL"],
-                          driver=self.connection.driver,
-                          extra={'pvops': obj['REQUIRESPVOPSKERNEL'],
-                                 '64bit': obj['IS64BIT']})
+            i = NodeImage(
+                id=obj["DISTRIBUTIONID"],
+                name=obj["LABEL"],
+                driver=self.connection.driver,
+                extra={"pvops": obj["REQUIRESPVOPSKERNEL"], "64bit": obj["IS64BIT"]},
+            )
             distros.append(i)
         return distros
 
@@ -541,10 +582,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
                 country = "JP"
             else:
                 country = "??"
-            nl.append(NodeLocation(dc["DATACENTERID"],
-                                   dc["LOCATION"],
-                                   country,
-                                   self))
+            nl.append(NodeLocation(dc["DATACENTERID"], dc["LOCATION"], country, self))
         return nl
 
     def linode_set_datacenter(self, dc):
@@ -626,7 +664,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             raise LinodeException(0xFD, "Invalid node instance")
 
         # check space available
-        total_space = node.extra['TOTALHD']
+        total_space = node.extra["TOTALHD"]
         existing_volumes = self.ex_list_volumes(node)
         used_space = 0
         for volume in existing_volumes:
@@ -634,8 +672,12 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
         available_space = total_space - used_space
         if available_space < size:
-            raise LinodeException(0xFD, "Volume size too big. Available space\
-                    %d" % available_space)
+            raise LinodeException(
+                0xFD,
+                "Volume size too big. Available space\
+                    %d"
+                % available_space,
+            )
 
         # check filesystem type
         if fs_type not in self._linode_disk_filesystems:
@@ -646,7 +688,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             "LinodeID": node.id,
             "Label": name,
             "Type": fs_type,
-            "Size": size
+            "Size": size,
         }
         data = self.connection.request(API_ROOT, params=params).objects[0]
         volume = data["DiskID"]
@@ -654,7 +696,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         params = {
             "api_action": "linode.disk.list",
             "LinodeID": node.id,
-            "DiskID": volume
+            "DiskID": volume,
         }
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_volumes(data)[0]
@@ -674,10 +716,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeException(0xFD, "Invalid node instance")
 
-        params = {
-            "api_action": "linode.disk.list",
-            "LinodeID": node.id
-        }
+        params = {"api_action": "linode.disk.list", "LinodeID": node.id}
         # Add param if disk_id was specified
         if disk_id is not None:
             params["DiskID"] = disk_id
@@ -698,9 +737,12 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         volumes = {}
         for o in objs:
             vid = o["DISKID"]
-            volumes[vid] = vol = StorageVolume(id=vid, name=o["LABEL"],
-                                               size=int(o["SIZE"]),
-                                               driver=self.connection.driver)
+            volumes[vid] = vol = StorageVolume(
+                id=vid,
+                name=o["LABEL"],
+                size=int(o["SIZE"]),
+                driver=self.connection.driver,
+            )
             vol.extra = copy(o)
         return list(volumes.values())
 
@@ -716,10 +758,14 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         batch = []
         for o in objs:
             lid = o["LINODEID"]
-            nodes[lid] = n = Node(id=lid, name=o["LABEL"], public_ips=[],
-                                  private_ips=[],
-                                  state=self.LINODE_STATES[o["STATUS"]],
-                                  driver=self.connection.driver)
+            nodes[lid] = n = Node(
+                id=lid,
+                name=o["LABEL"],
+                public_ips=[],
+                private_ips=[],
+                state=self.LINODE_STATES[o["STATUS"]],
+                driver=self.connection.driver,
+            )
             n.extra = copy(o)
             n.extra["PLANID"] = self._linode_plan_ids.get(o.get("TOTALRAM"))
             batch.append({"api_action": "linode.ip.list", "LinodeID": lid})
@@ -731,12 +777,14 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         if PY3:
             izip_longest = itertools.zip_longest  # pylint: disable=no-member
         else:
-            izip_longest = getattr(itertools, 'izip_longest', _izip_longest)
+            izip_longest = getattr(itertools, "izip_longest", _izip_longest)
 
         for twenty_five in izip_longest(*args):
             twenty_five = [q for q in twenty_five if q]
-            params = {"api_action": "batch",
-                      "api_requestArray": json.dumps(twenty_five)}
+            params = {
+                "api_action": "batch",
+                "api_requestArray": json.dumps(twenty_five),
+            }
             req = self.connection.request(API_ROOT, params=params)
             if not req.success() or len(req.objects) == 0:
                 return None
@@ -746,8 +794,11 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         for ip_list in ip_answers:
             for ip in ip_list:
                 lid = ip["LINODEID"]
-                which = nodes[lid].public_ips if ip["ISPUBLIC"] == 1 else\
-                    nodes[lid].private_ips
+                which = (
+                    nodes[lid].public_ips
+                    if ip["ISPUBLIC"] == 1
+                    else nodes[lid].private_ips
+                )
                 which.append(ip["IPADDRESS"])
         return list(nodes.values())
 
@@ -758,32 +809,32 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
     _linode_disk_filesystems = LINODE_DISK_FILESYSTEMS_V4
 
     LINODE_STATES = {
-        'running': NodeState.RUNNING,
-        'stopped': NodeState.STOPPED,
-        'provisioning': NodeState.STARTING,
-        'offline': NodeState.STOPPED,
-        'booting': NodeState.STARTING,
-        'rebooting': NodeState.REBOOTING,
-        'shutting_down': NodeState.STOPPING,
-        'deleting': NodeState.PENDING,
-        'migrating': NodeState.MIGRATING,
-        'rebuilding': NodeState.UPDATING,
-        'cloning': NodeState.MIGRATING,
-        'restoring': NodeState.PENDING,
-        'resizing': NodeState.RECONFIGURING
+        "running": NodeState.RUNNING,
+        "stopped": NodeState.STOPPED,
+        "provisioning": NodeState.STARTING,
+        "offline": NodeState.STOPPED,
+        "booting": NodeState.STARTING,
+        "rebooting": NodeState.REBOOTING,
+        "shutting_down": NodeState.STOPPING,
+        "deleting": NodeState.PENDING,
+        "migrating": NodeState.MIGRATING,
+        "rebuilding": NodeState.UPDATING,
+        "cloning": NodeState.MIGRATING,
+        "restoring": NodeState.PENDING,
+        "resizing": NodeState.RECONFIGURING,
     }
 
     LINODE_DISK_STATES = {
-        'ready': StorageVolumeState.AVAILABLE,
-        'not ready': StorageVolumeState.CREATING,
-        'deleting': StorageVolumeState.DELETING
+        "ready": StorageVolumeState.AVAILABLE,
+        "not ready": StorageVolumeState.CREATING,
+        "deleting": StorageVolumeState.DELETING,
     }
 
     LINODE_VOLUME_STATES = {
-        'creating': StorageVolumeState.CREATING,
-        'active': StorageVolumeState.AVAILABLE,
-        'resizing': StorageVolumeState.UPDATING,
-        'contact_support': StorageVolumeState.UNKNOWN
+        "creating": StorageVolumeState.CREATING,
+        "active": StorageVolumeState.AVAILABLE,
+        "resizing": StorageVolumeState.UPDATING,
+        "contact_support": StorageVolumeState.UNKNOWN,
     }
 
     def list_nodes(self):
@@ -795,7 +846,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :rtype: ``list`` of :class:`Node`
         """
 
-        data = self._paginated_request('/v4/linode/instances', 'data')
+        data = self._paginated_request("/v4/linode/instances", "data")
         return [self._to_node(obj) for obj in data]
 
     def list_sizes(self):
@@ -804,7 +855,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         : rtype: ``list`` of :class: `NodeSize`
         """
-        data = self._paginated_request('/v4/linode/types', 'data')
+        data = self._paginated_request("/v4/linode/types", "data")
         return [self._to_size(obj) for obj in data]
 
     def list_images(self):
@@ -813,7 +864,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         :rtype: ``list`` of :class:`NodeImage`
         """
-        data = self._paginated_request('/v4/images', 'data')
+        data = self._paginated_request("/v4/images", "data")
         return [self._to_image(obj) for obj in data]
 
     def list_locations(self):
@@ -822,7 +873,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        data = self._paginated_request('/v4/regions', 'data')
+        data = self._paginated_request("/v4/regions", "data")
         return [self._to_location(obj) for obj in data]
 
     def start_node(self, node):
@@ -836,9 +887,9 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request('/v4/linode/instances/%s/boot'
-                                           % node.id,
-                                           method='POST')
+        response = self.connection.request(
+            "/v4/linode/instances/%s/boot" % node.id, method="POST"
+        )
         return response.status == httplib.OK
 
     def ex_start_node(self, node):
@@ -858,9 +909,9 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request('/v4/linode/instances/%s/shutdown'
-                                           % node.id,
-                                           method='POST')
+        response = self.connection.request(
+            "/v4/linode/instances/%s/shutdown" % node.id, method="POST"
+        )
         return response.status == httplib.OK
 
     def ex_stop_node(self, node):
@@ -880,9 +931,9 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request('/v4/linode/instances/%s'
-                                           % node.id,
-                                           method='DELETE')
+        response = self.connection.request(
+            "/v4/linode/instances/%s" % node.id, method="DELETE"
+        )
         return response.status == httplib.OK
 
     def reboot_node(self, node):
@@ -896,15 +947,24 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request('/v4/linode/instances/%s/reboot'
-                                           % node.id,
-                                           method='POST')
+        response = self.connection.request(
+            "/v4/linode/instances/%s/reboot" % node.id, method="POST"
+        )
         return response.status == httplib.OK
 
-    def create_node(self, location, size, image=None,
-                    name=None, root_pass=None, ex_authorized_keys=None,
-                    ex_authorized_users=None, ex_tags=None,
-                    ex_backups_enabled=False, ex_private_ip=False):
+    def create_node(
+        self,
+        location,
+        size,
+        image=None,
+        name=None,
+        root_pass=None,
+        ex_authorized_keys=None,
+        ex_authorized_users=None,
+        ex_tags=None,
+        ex_backups_enabled=False,
+        ex_private_ip=False,
+    ):
         """Creates a Linode Instance.
         In order for this request to complete successfully,
         the user must have the `add_linodes` grant as this call
@@ -957,34 +1017,36 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(size, NodeSize):
             raise LinodeExceptionV4("Invalid size instance")
 
-        attr = {'region': location.id,
-                'type': size.id,
-                'private_ip': ex_private_ip,
-                'backups_enabled': ex_backups_enabled,
-                }
+        attr = {
+            "region": location.id,
+            "type": size.id,
+            "private_ip": ex_private_ip,
+            "backups_enabled": ex_backups_enabled,
+        }
 
         if image is not None:
             if root_pass is None:
-                raise LinodeExceptionV4("root password required "
-                                        "when providing an image")
-            attr['image'] = image.id
-            attr['root_pass'] = root_pass
+                raise LinodeExceptionV4(
+                    "root password required " "when providing an image"
+                )
+            attr["image"] = image.id
+            attr["root_pass"] = root_pass
 
         if name is not None:
-            valid_name = r'^[a-zA-Z]((?!--|__|\.\.)[a-zA-Z0-9-_.])+$'
+            valid_name = r"^[a-zA-Z]((?!--|__|\.\.)[a-zA-Z0-9-_.])+$"
             if not re.match(valid_name, name):
                 raise LinodeExceptionV4("Invalid name")
-            attr['label'] = name
+            attr["label"] = name
         if ex_authorized_keys is not None:
-            attr['authorized_keys'] = list(ex_authorized_keys)
+            attr["authorized_keys"] = list(ex_authorized_keys)
         if ex_authorized_users is not None:
-            attr['authorized_users'] = list(ex_authorized_users)
+            attr["authorized_users"] = list(ex_authorized_users)
         if ex_tags is not None:
-            attr['tags'] = list(ex_tags)
+            attr["tags"] = list(ex_tags)
 
-        response = self.connection.request('/v4/linode/instances',
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        response = self.connection.request(
+            "/v4/linode/instances", data=json.dumps(attr), method="POST"
+        ).object
         return self._to_node(response)
 
     def ex_get_node(self, node_id):
@@ -997,8 +1059,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :return: Created node
         :rtype  : :class:`Node`
         """
-        response = self.connection.request('/v4/linode/instances/%s'
-                                           % node_id).object
+        response = self.connection.request("/v4/linode/instances/%s" % node_id).object
         return self._to_node(response)
 
     def ex_list_disks(self, node):
@@ -1013,14 +1074,24 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        data = self._paginated_request('/v4/linode/instances/%s/disks'
-                                       % node.id, 'data')
+        data = self._paginated_request(
+            "/v4/linode/instances/%s/disks" % node.id, "data"
+        )
 
         return [self._to_disk(obj) for obj in data]
 
-    def ex_create_disk(self, size, name, node, fs_type,
-                       image=None, ex_root_pass=None, ex_authorized_keys=None,
-                       ex_authorized_users=None, ex_read_only=False):
+    def ex_create_disk(
+        self,
+        size,
+        name,
+        node,
+        fs_type,
+        image=None,
+        ex_root_pass=None,
+        ex_authorized_keys=None,
+        ex_authorized_users=None,
+        ex_read_only=False,
+    ):
         """
         Adds a new disk to node
 
@@ -1060,10 +1131,12 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :rtype: :class:`LinodeDisk`
         """
 
-        attr = {'label': str(name),
-                'size': int(size),
-                'filesystem': fs_type,
-                'read_only': ex_read_only}
+        attr = {
+            "label": str(name),
+            "size": int(size),
+            "filesystem": fs_type,
+            "read_only": ex_read_only,
+        }
 
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
@@ -1076,21 +1149,23 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
                 raise LinodeExceptionV4("Invalid image instance")
             # when an image is set, root pass must be set as well
             if ex_root_pass is None:
-                raise LinodeExceptionV4("root_pass is required when "
-                                        "deploying an image")
-            attr['image'] = image.id
-            attr['root_pass'] = ex_root_pass
+                raise LinodeExceptionV4(
+                    "root_pass is required when " "deploying an image"
+                )
+            attr["image"] = image.id
+            attr["root_pass"] = ex_root_pass
 
         if ex_authorized_keys is not None:
-            attr['authorized_keys'] = list(ex_authorized_keys)
+            attr["authorized_keys"] = list(ex_authorized_keys)
 
         if ex_authorized_users is not None:
-            attr['authorized_users'] = list(ex_authorized_users)
+            attr["authorized_users"] = list(ex_authorized_users)
 
-        response = self.connection.request('/v4/linode/instances/%s/disks'
-                                           % node.id,
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        response = self.connection.request(
+            "/v4/linode/instances/%s/disks" % node.id,
+            data=json.dumps(attr),
+            method="POST",
+        ).object
         return self._to_disk(response)
 
     def ex_destroy_disk(self, node, disk):
@@ -1111,20 +1186,21 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(disk, LinodeDisk):
             raise LinodeExceptionV4("Invalid disk instance")
 
-        if node.state != self.LINODE_STATES['stopped']:
-            raise LinodeExceptionV4("Node needs to be stopped"
-                                    " before disk is destroyed")
+        if node.state != self.LINODE_STATES["stopped"]:
+            raise LinodeExceptionV4(
+                "Node needs to be stopped" " before disk is destroyed"
+            )
 
-        response = self.connection.request('/v4/linode/instances/%s/disks/%s'
-                                           % (node.id, disk.id),
-                                           method='DELETE')
+        response = self.connection.request(
+            "/v4/linode/instances/%s/disks/%s" % (node.id, disk.id), method="DELETE"
+        )
         return response.status == httplib.OK
 
     def list_volumes(self):
         """Get all volumes of the account
         :rtype: `list` of :class: `StorageVolume`
         """
-        data = self._paginated_request('/v4/volumes', 'data')
+        data = self._paginated_request("/v4/volumes", "data")
 
         return [self._to_volume(obj) for obj in data]
 
@@ -1155,34 +1231,33 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :rtype: :class: `StorageVolume`
         """
 
-        valid_name = '^[a-zA-Z]((?!--|__)[a-zA-Z0-9-_])+$'
+        valid_name = "^[a-zA-Z]((?!--|__)[a-zA-Z0-9-_])+$"
         if not re.match(valid_name, name):
             raise LinodeExceptionV4("Invalid name")
 
         attr = {
-            'label': name,
-            'size': int(size),
+            "label": name,
+            "size": int(size),
         }
 
         if node is not None:
             if not isinstance(node, Node):
                 raise LinodeExceptionV4("Invalid node instance")
-            attr['linode_id'] = int(node.id)
+            attr["linode_id"] = int(node.id)
         else:
             # location is only required if a node is not given
             if location:
                 if not isinstance(location, NodeLocation):
                     raise LinodeExceptionV4("Invalid location instance")
-                attr['region'] = location.id
+                attr["region"] = location.id
             else:
-                raise LinodeExceptionV4("Region must be provided "
-                                        "when node is not")
+                raise LinodeExceptionV4("Region must be provided " "when node is not")
         if tags is not None:
-            attr['tags'] = list(tags)
+            attr["tags"] = list(tags)
 
-        response = self.connection.request('/v4/volumes',
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        response = self.connection.request(
+            "/v4/volumes", data=json.dumps(attr), method="POST"
+        ).object
         return self._to_volume(response)
 
     def attach_volume(self, node, volume, persist_across_boots=True):
@@ -1207,22 +1282,17 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        if volume.extra['linode_id'] is not None:
+        if volume.extra["linode_id"] is not None:
             raise LinodeExceptionV4("Volume is already attached to a node")
 
-        if node.extra['location'] != volume.extra['location']:
-            raise LinodeExceptionV4("Volume and node "
-                                    "must be on the same region")
+        if node.extra["location"] != volume.extra["location"]:
+            raise LinodeExceptionV4("Volume and node " "must be on the same region")
 
-        attr = {
-            'linode_id': int(node.id),
-            'persist_across_boots': persist_across_boots
-        }
+        attr = {"linode_id": int(node.id), "persist_across_boots": persist_across_boots}
 
-        response = self.connection.request('/v4/volumes/%s/attach'
-                                           % volume.id,
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        response = self.connection.request(
+            "/v4/volumes/%s/attach" % volume.id, data=json.dumps(attr), method="POST"
+        ).object
         return self._to_volume(response)
 
     def detach_volume(self, volume):
@@ -1236,12 +1306,12 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(volume, StorageVolume):
             raise LinodeExceptionV4("Invalid volume instance")
 
-        if volume.extra['linode_id'] is None:
+        if volume.extra["linode_id"] is None:
             raise LinodeExceptionV4("Volume is already detached")
 
-        response = self.connection.request('/v4/volumes/%s/detach'
-                                           % volume.id,
-                                           method='POST')
+        response = self.connection.request(
+            "/v4/volumes/%s/detach" % volume.id, method="POST"
+        )
         return response.status == httplib.OK
 
     def destroy_volume(self, volume):
@@ -1255,12 +1325,13 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(volume, StorageVolume):
             raise LinodeExceptionV4("Invalid volume instance")
 
-        if volume.extra['linode_id'] is not None:
-            raise LinodeExceptionV4("Volume must be detached"
-                                    " before it can be deleted.")
-        response = self.connection.request('/v4/volumes/%s'
-                                           % volume.id,
-                                           method='DELETE')
+        if volume.extra["linode_id"] is not None:
+            raise LinodeExceptionV4(
+                "Volume must be detached" " before it can be deleted."
+            )
+        response = self.connection.request(
+            "/v4/volumes/%s" % volume.id, method="DELETE"
+        )
         return response.status == httplib.OK
 
     def ex_resize_volume(self, volume, size):
@@ -1280,14 +1351,11 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         if volume.size >= size:
             raise LinodeExceptionV4("Volumes can only be resized up")
-        attr = {
-            'size': size
-        }
+        attr = {"size": size}
 
-        response = self.connection.request('/v4/volumes/%s/resize'
-                                           % volume.id,
-                                           data=json.dumps(attr),
-                                           method='POST')
+        response = self.connection.request(
+            "/v4/volumes/%s/resize" % volume.id, data=json.dumps(attr), method="POST"
+        )
         return response.status == httplib.OK
 
     def ex_clone_volume(self, volume, name):
@@ -1305,13 +1373,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(volume, StorageVolume):
             raise LinodeExceptionV4("Invalid volume instance")
 
-        attr = {
-            'label': name
-        }
-        response = self.connection.request('/v4/volumes/%s/clone'
-                                           % volume.id,
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        attr = {"label": name}
+        response = self.connection.request(
+            "/v4/volumes/%s/clone" % volume.id, data=json.dumps(attr), method="POST"
+        ).object
 
         return self._to_volume(response)
 
@@ -1325,8 +1390,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :return:  A StorageVolume object for the volume
         :rtype:   :class:`StorageVolume`
         """
-        response = self.connection.request('/v4/volumes/%s'
-                                           % volume_id).object
+        response = self.connection.request("/v4/volumes/%s" % volume_id).object
         return self._to_volume(response)
 
     def create_image(self, disk, name=None, description=None):
@@ -1351,15 +1415,11 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(disk, LinodeDisk):
             raise LinodeExceptionV4("Invalid disk instance")
 
-        attr = {
-            'disk_id': int(disk.id),
-            'label': name,
-            'description': description
-        }
+        attr = {"disk_id": int(disk.id), "label": name, "description": description}
 
-        response = self.connection.request('/v4/images',
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        response = self.connection.request(
+            "/v4/images", data=json.dumps(attr), method="POST"
+        ).object
         return self._to_image(response)
 
     def delete_image(self, image):
@@ -1373,9 +1433,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(image, NodeImage):
             raise LinodeExceptionV4("Invalid image instance")
 
-        response = self.connection.request('/v4/images/%s'
-                                           % image.id,
-                                           method='DELETE')
+        response = self.connection.request("/v4/images/%s" % image.id, method="DELETE")
         return response.status == httplib.OK
 
     def ex_list_addresses(self):
@@ -1384,7 +1442,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :return: LinodeIPAddress list
         :rtype: `list` of :class:`LinodeIPAddress`
         """
-        data = self._paginated_request('/v4/networking/ips', 'data')
+        data = self._paginated_request("/v4/networking/ips", "data")
 
         return [self._to_address(obj) for obj in data]
 
@@ -1400,11 +1458,12 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request('/v4/linode/instances/%s/ips'
-                                           % node.id).object
+        response = self.connection.request(
+            "/v4/linode/instances/%s/ips" % node.id
+        ).object
         return self._to_addresses(response)
 
-    def ex_allocate_private_address(self, node, address_type='ipv4'):
+    def ex_allocate_private_address(self, node, address_type="ipv4"):
         """Allocates a private IPv4 address to node.Only ipv4 is currently supported
 
         :param node: Node to attach the IP address
@@ -1420,21 +1479,19 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             raise LinodeExceptionV4("Invalid node instance")
 
         # Only ipv4 is currently supported
-        if address_type != 'ipv4':
+        if address_type != "ipv4":
             raise LinodeExceptionV4("Address type not supported")
         # Only one private IP address can be allocated
         if len(node.private_ips) >= 1:
             raise LinodeExceptionV4("Nodes can have up to one private IP")
 
-        attr = {
-            'public': False,
-            'type': address_type
-        }
+        attr = {"public": False, "type": address_type}
 
-        response = self.connection.request('/v4/linode/instances/%s/ips'
-                                           % node.id,
-                                           data=json.dumps(attr),
-                                           method='POST').object
+        response = self.connection.request(
+            "/v4/linode/instances/%s/ips" % node.id,
+            data=json.dumps(attr),
+            method="POST",
+        ).object
         return self._to_address(response)
 
     def ex_share_address(self, node, addresses):
@@ -1452,17 +1509,16 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        if not all(isinstance(address, LinodeIPAddress)
-                   for address in addresses):
+        if not all(isinstance(address, LinodeIPAddress) for address in addresses):
             raise LinodeExceptionV4("Invalid address instance")
 
         attr = {
-            'ips': [address.inet for address in addresses],
-            'linode_id': int(node.id)
+            "ips": [address.inet for address in addresses],
+            "linode_id": int(node.id),
         }
-        response = self.connection.request('/v4/networking/ipv4/share',
-                                           data=json.dumps(attr),
-                                           method='POST')
+        response = self.connection.request(
+            "/v4/networking/ipv4/share", data=json.dumps(attr), method="POST"
+        )
         return response.status == httplib.OK
 
     def ex_resize_node(self, node, size, allow_auto_disk_resize=False):
@@ -1491,13 +1547,13 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(size, NodeSize):
             raise LinodeExceptionV4("Invalid node size")
 
-        attr = {'type': size.id,
-                'allow_auto_disk_resize': allow_auto_disk_resize}
+        attr = {"type": size.id, "allow_auto_disk_resize": allow_auto_disk_resize}
 
         response = self.connection.request(
-            '/v4/linode/instances/%s/resize' % node.id,
+            "/v4/linode/instances/%s/resize" % node.id,
             data=json.dumps(attr),
-            method='POST')
+            method="POST",
+        )
 
         return response.status == httplib.OK
 
@@ -1516,142 +1572,139 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        attr = {'label': name}
+        attr = {"label": name}
 
         response = self.connection.request(
-            '/v4/linode/instances/%s' % node.id,
-            data=json.dumps(attr),
-            method='PUT').object
+            "/v4/linode/instances/%s" % node.id, data=json.dumps(attr), method="PUT"
+        ).object
 
         return self._to_node(response)
 
     def _to_node(self, data):
         extra = {
-            'tags': data['tags'],
-            'location': data['region'],
-            'ipv6': data['ipv6'],
-            'hypervisor': data['hypervisor'],
-            'specs': data['specs'],
-            'alerts': data['alerts'],
-            'backups': data['backups'],
-            'watchdog_enabled': data['watchdog_enabled']
+            "tags": data["tags"],
+            "location": data["region"],
+            "ipv6": data["ipv6"],
+            "hypervisor": data["hypervisor"],
+            "specs": data["specs"],
+            "alerts": data["alerts"],
+            "backups": data["backups"],
+            "watchdog_enabled": data["watchdog_enabled"],
         }
 
-        public_ips = [ip for ip in data['ipv4'] if not is_private_subnet(ip)]
-        private_ips = [ip for ip in data['ipv4'] if is_private_subnet(ip)]
+        public_ips = [ip for ip in data["ipv4"] if not is_private_subnet(ip)]
+        private_ips = [ip for ip in data["ipv4"] if is_private_subnet(ip)]
         return Node(
-            id=data['id'],
-            name=data['label'],
-            state=self.LINODE_STATES[data['status']],
+            id=data["id"],
+            name=data["label"],
+            state=self.LINODE_STATES[data["status"]],
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self,
-            size=data['type'],
-            image=data['image'],
-            created_at=self._to_datetime(data['created']),
-            extra=extra)
+            size=data["type"],
+            image=data["image"],
+            created_at=self._to_datetime(data["created"]),
+            extra=extra,
+        )
 
     def _to_datetime(self, strtime):
         return datetime.strptime(strtime, "%Y-%m-%dT%H:%M:%S")
 
     def _to_size(self, data):
         extra = {
-            'class': data['class'],
-            'monthly_price': data['price']['monthly'],
-            'addons': data['addons'],
-            'successor': data['successor'],
-            'transfer': data['transfer'],
-            'vcpus': data['vcpus'],
-            'gpus': data['gpus']
+            "class": data["class"],
+            "monthly_price": data["price"]["monthly"],
+            "addons": data["addons"],
+            "successor": data["successor"],
+            "transfer": data["transfer"],
+            "vcpus": data["vcpus"],
+            "gpus": data["gpus"],
         }
         return NodeSize(
-            id=data['id'],
-            name=data['label'],
-            ram=data['memory'],
-            disk=data['disk'],
-            bandwidth=data['network_out'],
-            price=data['price']['hourly'],
+            id=data["id"],
+            name=data["label"],
+            ram=data["memory"],
+            disk=data["disk"],
+            bandwidth=data["network_out"],
+            price=data["price"]["hourly"],
             driver=self,
-            extra=extra
+            extra=extra,
         )
 
     def _to_image(self, data):
         extra = {
-            'type': data['type'],
-            'description': data['description'],
-            'created': self._to_datetime(data['created']),
-            'created_by': data['created_by'],
-            'is_public': data['is_public'],
-            'size': data['size'],
-            'eol': data['eol'],
-            'vendor': data['vendor'],
+            "type": data["type"],
+            "description": data["description"],
+            "created": self._to_datetime(data["created"]),
+            "created_by": data["created_by"],
+            "is_public": data["is_public"],
+            "size": data["size"],
+            "eol": data["eol"],
+            "vendor": data["vendor"],
         }
-        return NodeImage(
-            id=data['id'],
-            name=data['label'],
-            driver=self,
-            extra=extra
-        )
+        return NodeImage(id=data["id"], name=data["label"], driver=self, extra=extra)
 
     def _to_location(self, data):
         extra = {
-            'status': data['status'],
-            'capabilities': data['capabilities'],
-            'resolvers': data['resolvers']
+            "status": data["status"],
+            "capabilities": data["capabilities"],
+            "resolvers": data["resolvers"],
         }
         return NodeLocation(
-            id=data['id'],
-            name=data['id'],
-            country=data['country'].upper(),
+            id=data["id"],
+            name=data["id"],
+            country=data["country"].upper(),
             driver=self,
-            extra=extra)
+            extra=extra,
+        )
 
     def _to_volume(self, data):
         extra = {
-            'created': self._to_datetime(data['created']),
-            'tags': data['tags'],
-            'location': data['region'],
-            'linode_id': data['linode_id'],
-            'linode_label': data['linode_label'],
-            'state': self.LINODE_VOLUME_STATES[data['status']],
-            'filesystem_path': data['filesystem_path']
+            "created": self._to_datetime(data["created"]),
+            "tags": data["tags"],
+            "location": data["region"],
+            "linode_id": data["linode_id"],
+            "linode_label": data["linode_label"],
+            "state": self.LINODE_VOLUME_STATES[data["status"]],
+            "filesystem_path": data["filesystem_path"],
         }
         return StorageVolume(
-            id=str(data['id']),
-            name=data['label'],
-            size=data['size'],
+            id=str(data["id"]),
+            name=data["label"],
+            size=data["size"],
             driver=self,
-            extra=extra)
+            extra=extra,
+        )
 
     def _to_disk(self, data):
         return LinodeDisk(
-            id=data['id'],
-            state=self.LINODE_DISK_STATES[data['status']],
-            name=data['label'],
-            filesystem=data['filesystem'],
-            size=data['size'],
+            id=data["id"],
+            state=self.LINODE_DISK_STATES[data["status"]],
+            name=data["label"],
+            filesystem=data["filesystem"],
+            size=data["size"],
             driver=self,
         )
 
     def _to_address(self, data):
         extra = {
-            'gateway': data['gateway'],
-            'subnet_mask': data['subnet_mask'],
-            'prefix': data['prefix'],
-            'rdns': data['rdns'],
-            'node_id': data['linode_id'],
-            'region': data['region'],
+            "gateway": data["gateway"],
+            "subnet_mask": data["subnet_mask"],
+            "prefix": data["prefix"],
+            "rdns": data["rdns"],
+            "node_id": data["linode_id"],
+            "region": data["region"],
         }
         return LinodeIPAddress(
-            inet=data['address'],
-            public=data['public'],
-            version=data['type'],
+            inet=data["address"],
+            public=data["public"],
+            version=data["type"],
             driver=self,
-            extra=extra
+            extra=extra,
         )
 
     def _to_addresses(self, data):
-        addresses = data['ipv4']['public'] + data['ipv4']['private']
+        addresses = data["ipv4"]["public"] + data["ipv4"]["private"]
         return [self._to_address(address) for address in addresses]
 
     def _paginated_request(self, url, obj, params=None):
@@ -1677,12 +1730,12 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ret = self.connection.request(url, params=params).object
 
         data = list(ret.get(obj, []))
-        current_page = int(ret.get('page', 1))
-        num_of_pages = int(ret.get('pages', 1))
+        current_page = int(ret.get("page", 1))
+        num_of_pages = int(ret.get("pages", 1))
         objects.extend(data)
         for page in range(current_page + 1, num_of_pages + 1):
             # add param to request next page
-            params['page'] = page
+            params["page"] = page
             ret = self.connection.request(url, params=params).object
             data = list(ret.get(obj, []))
             objects.extend(data)
@@ -1695,7 +1748,7 @@ def _izip_longest(*args, **kwds):
     http://docs.python.org/library/itertools.html#itertools.izip
     """
 
-    fillvalue = kwds.get('fillvalue')
+    fillvalue = kwds.get("fillvalue")
 
     def sentinel(counter=([fillvalue] * (len(args) - 1)).pop):
         yield counter()  # yields the fillvalue, or raises IndexError

@@ -15,24 +15,26 @@
 # limitations under the license.
 
 # This script downloads release artifacts from Apache server and PyPi server and
-# verifies that the MD5 checksum of both archives matches.
+# verifies that the SHA512 checksum of both archives matches.
 
 VERSION=$1
 
-if [ ! ${VERSION} ]; then
+if [ ! "${VERSION}" ]; then
     echo "Usage: ${0} <version name>"
-    echo "For example: ${0} apache-libcloud-0.13.2"
+    echo "For example: ${0} apache-libcloud-3.4.0"
     exit 1
 fi
 
-TMP_DIR=`mktemp -d`
+TMP_DIR=$(mktemp -d)
 
-EXTENSIONS[0]="tar.gz"
-EXTENSIONS[1]="tar.bz2"
-EXTENSIONS[2]="zip"
+# TODO: Use json endpoint + jq to parse out the url
+# https://pypi.org/pypi/apache-libcloud/3.4.0/json
+EXTENSIONS[0]=".tar.gz"
+EXTENSIONS[1]="-py2.py3-none-any.whl"
 
 APACHE_MIRROR_URL="http://www.apache.org/dist/libcloud"
-PYPI_MIRROR_URL="https://pypi.python.org/packages/source/a/apache-libcloud"
+PYPI_MIRROR_URL_SOURCE="https://pypi.python.org/packages/source/a/apache-libcloud"
+PYPI_MIRROR_URL_WHEEL="https://files.pythonhosted.org/packages/py2.py3/a/apache-libcloud"
 
 # From http://tldp.org/LDP/abs/html/debugging.html#ASSERT
 function assert ()                 #  If condition false,
@@ -49,7 +51,7 @@ function assert ()                 #  If condition false,
 
   lineno=$2
 
-  if [ ! $1 ]
+  if [ ! "$1" ]
   then
     echo "Assertion failed:  \"$1\""
     echo "File \"$0\", line $lineno"    # Give name of file and line number.
@@ -65,10 +67,20 @@ echo ""
 for (( i = 0 ; i < ${#EXTENSIONS[@]} ; i++ ))
 do
     extension=${EXTENSIONS[$i]}
-    file_name="${VERSION}.${extension}"
+    file_name="${VERSION}${extension}"
+
+    if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
+        file_name=$(echo ${file_name} | sed "s/apache-libcloud/apache_libcloud/g")
+    fi
 
     apache_url="${APACHE_MIRROR_URL}/${file_name}"
     pypi_url="${PYPI_MIRROR_URL}/${file_name}"
+
+    if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
+        pypi_url="${PYPI_MIRROR_URL_WHEEL}/${file_name}"
+    else
+        pypi_url="${PYPI_MIRROR_URL_SOURCE}/${file_name}"
+    fi
 
     assert "${apache_url} != ${pypi_url}", "URLs must be different"
 
@@ -98,17 +110,17 @@ do
         exit 2
     fi
 
-    md5sum_apache=$(md5sum "${file_path_apache}" | awk '{ print $1 }')
-    md5sum_pypi=$(md5sum "${file_path_pypi}"| awk '{ print $1 }')
+    sha512sum_apache=$(sha512sum "${file_path_apache}" | awk '{ print $1 }')
+    sha512sum_pypi=$(sha512sum "${file_path_pypi}"| awk '{ print $1 }')
 
-    if [ ${md5sum_apache} != ${md5sum_pypi} ]; then
-       echo "[ERROR] MD5 sum for file ${file_name} doesn\'t match"
+    if [ ${sha512sum_apache} != ${sha512sum_pypi} ]; then
+       echo "[ERROR] SHA512 sum for file ${file_name} doesn\'t match"
        echo ""
-       echo "${file_name_apache}: ${md5sum_apache}"
-       echo "${file_name_pypi}: ${md5sum_pypi}"
+       echo "${file_name_apache}: ${sha512sum_apache}"
+       echo "${file_name_pypi}: ${sha512sum_pypi}"
        exit 1
    else
-       echo "[OK] MD5 sum for file ${file_name} matches"
+       echo "[OK] SHA512 sum for file ${file_name} matches"
     fi
 
     echo ""

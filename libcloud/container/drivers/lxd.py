@@ -31,8 +31,7 @@ from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.base import KeyCertificateConnection
 from libcloud.common.types import InvalidCredsError
 
-from libcloud.container.base import (Container, ContainerDriver,
-                                     ContainerImage)
+from libcloud.container.base import Container, ContainerDriver, ContainerImage
 from libcloud.common.exceptions import BaseHTTPError
 
 from libcloud.compute.base import StorageVolume
@@ -41,19 +40,19 @@ from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
 # Acceptable success strings comping from LXD API
-LXD_API_SUCCESS_STATUS = ['Success']
-LXD_API_STATE_ACTIONS = ['stop', 'start', 'restart', 'freeze', 'unfreeze']
+LXD_API_SUCCESS_STATUS = ["Success"]
+LXD_API_STATE_ACTIONS = ["stop", "start", "restart", "freeze", "unfreeze"]
 LXD_API_IMAGE_SOURCE_TYPE = ["image", "migration", "copy", "none"]
 
 # the wording used by LXD to indicate that an error
 # occurred for a request
-LXD_ERROR_STATUS_RESP = 'error'
+LXD_ERROR_STATUS_RESP = "error"
 
 
 # helpers
 def strip_http_prefix(host):
     # strip the prefix
-    prefixes = ['http://', 'https://']
+    prefixes = ["http://", "https://"]
     for prefix in prefixes:
         if host.startswith(prefix):
             host = host.strip(prefix)
@@ -67,46 +66,60 @@ def check_certificates(key_file, cert_file, **kwargs):
 
     # there is no point attempting to connect if either is missing
     if key_file is None or cert_file is None:
-        raise InvalidCredsError("TLS Connection requires specification "
-                                "of a key file and a certificate file")
+        raise InvalidCredsError(
+            "TLS Connection requires specification "
+            "of a key file and a certificate file"
+        )
 
     # if they are not none they may be empty strings
     # or certificates that are not appropriate
-    if key_file == '' or cert_file == '':
-        raise InvalidCredsError("TLS Connection requires specification "
-                                "of a key file and a certificate file")
+    if key_file == "" or cert_file == "":
+        raise InvalidCredsError(
+            "TLS Connection requires specification "
+            "of a key file and a certificate file"
+        )
 
     # if none of the above check the types
-    if 'key_files_allowed' in kwargs.keys():
-        key_file_suffix = key_file.split('.')
+    if "key_files_allowed" in kwargs.keys():
+        key_file_suffix = key_file.split(".")
 
-        if key_file_suffix[-1] not in kwargs['key_files_allowed']:
-            raise InvalidCredsError("Valid key files are: " +
-                                    str(kwargs['key_files_allowed']) +
-                                    "you provided: " + key_file_suffix[-1])
+        if key_file_suffix[-1] not in kwargs["key_files_allowed"]:
+            raise InvalidCredsError(
+                "Valid key files are: "
+                + str(kwargs["key_files_allowed"])
+                + "you provided: "
+                + key_file_suffix[-1]
+            )
 
             # if none of the above check the types
-    if 'cert_files_allowed' in kwargs.keys():
-        cert_file_suffix = cert_file.split('.')
+    if "cert_files_allowed" in kwargs.keys():
+        cert_file_suffix = cert_file.split(".")
 
-        if cert_file_suffix[-1] not in kwargs['cert_files_allowed']:
-            raise InvalidCredsError("Valid certification files are: " +
-                                    str(kwargs['cert_files_allowed']) +
-                                    "you provided: " + cert_file_suffix[-1])
+        if cert_file_suffix[-1] not in kwargs["cert_files_allowed"]:
+            raise InvalidCredsError(
+                "Valid certification files are: "
+                + str(kwargs["cert_files_allowed"])
+                + "you provided: "
+                + cert_file_suffix[-1]
+            )
 
     # if all these are good check the paths
     keypath = os.path.expanduser(key_file)
     is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
     if not is_file_path:
-        raise InvalidCredsError('You need a key file to authenticate with '
-                                'LXD tls. This can be found in the server.')
+        raise InvalidCredsError(
+            "You need a key file to authenticate with "
+            "LXD tls. This can be found in the server."
+        )
 
     certpath = os.path.expanduser(cert_file)
     is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
     if not is_file_path:
-        raise InvalidCredsError('You need a certificate file to '
-                                'authenticate with LXD tls. '
-                                'This can be found in the server.')
+        raise InvalidCredsError(
+            "You need a certificate file to "
+            "authenticate with LXD tls. "
+            "This can be found in the server."
+        )
 
 
 def assert_response(response_dict, status_code):
@@ -116,18 +129,20 @@ def assert_response(response_dict, status_code):
     """
 
     # if the type of the response is an error
-    if response_dict['type'] == LXD_ERROR_STATUS_RESP:
+    if response_dict["type"] == LXD_ERROR_STATUS_RESP:
         # an error returned
-        raise LXDAPIException(message="response type is error",
-                              response_dict=response_dict)
+        raise LXDAPIException(
+            message="response type is error", response_dict=response_dict
+        )
 
     # anything else apart from the status_code given should be treated as error
-    if response_dict['status_code'] != status_code:
+    if response_dict["status_code"] != status_code:
         # we have an unknown error
         msg = "Status code should be {0}\
-         but is {1}".format(status_code, response_dict['status_code'])
-        raise LXDAPIException(message=msg,
-                              response_dict=response_dict)
+         but is {1}".format(
+            status_code, response_dict["status_code"]
+        )
+        raise LXDAPIException(message=msg, response_dict=response_dict)
 
 
 class LXDAPIException(Exception):
@@ -136,8 +151,9 @@ class LXDAPIException(Exception):
     returns with some kind of error
     """
 
-    def __init__(self, message="Unknown Error Occurred", response_dict=None,
-                 error_type=""):
+    def __init__(
+        self, message="Unknown Error Occurred", response_dict=None, error_type=""
+    ):
         self.message = message
         self.response_dict = response_dict
         self.type = error_type
@@ -153,6 +169,7 @@ class LXDStoragePool(object):
     Utility class representing an LXD storage pool
     https://lxd.readthedocs.io/en/latest/storage/
     """
+
     def __init__(self, name, driver, used_by, config, managed):
 
         # the name of the storage pool
@@ -248,25 +265,30 @@ class LXDServerInfo(object):
         self.public = None
 
     def __str__(self):
-        return str(self.api_extensions) + str(self.api_status) + \
-            str(self.api_version) + str(self.auth) + str(self.config) + \
-            str(self.environment) + \
-            str(self.public)
+        return (
+            str(self.api_extensions)
+            + str(self.api_status)
+            + str(self.api_version)
+            + str(self.auth)
+            + str(self.config)
+            + str(self.environment)
+            + str(self.public)
+        )
 
 
-LXDContainerExecuteResult = collections.namedtuple('LXDContainerExecuteResult',
-                                                   ['uuid',
-                                                    'secret_0',
-                                                    'secret_1',
-                                                    'secret_2',
-                                                    'control',
-                                                    'output',
-                                                    'result'])
+LXDContainerExecuteResult = collections.namedtuple(
+    "LXDContainerExecuteResult",
+    ["uuid", "secret_0", "secret_1", "secret_2", "control", "output", "result"],
+)
 
 
 class LXDResponse(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
+    valid_response_codes = [
+        httplib.OK,
+        httplib.ACCEPTED,
+        httplib.CREATED,
+        httplib.NO_CONTENT,
+    ]
 
     def parse_body(self):
 
@@ -274,12 +296,16 @@ class LXDResponse(JsonResponse):
             return self.body
 
         try:
-            content_type = self.headers.get('content-type', 'application/json')
-            if content_type == 'application/json' or content_type == '':
-                if self.headers.get('transfer-encoding') == 'chunked' and \
-                        'fromImage' in self.request.url:
-                    body = [json.loads(chunk) for chunk in
-                            self.body.strip().replace('\r', '').split('\n')]
+            content_type = self.headers.get("content-type", "application/json")
+            if content_type == "application/json" or content_type == "":
+                if (
+                    self.headers.get("transfer-encoding") == "chunked"
+                    and "fromImage" in self.request.url
+                ):
+                    body = [
+                        json.loads(chunk)
+                        for chunk in self.body.strip().replace("\r", "").split("\n")
+                    ]
                 else:
                     body = json.loads(self.body)
             else:
@@ -290,14 +316,15 @@ class LXDResponse(JsonResponse):
                 error_msg = m.group(1)
                 raise Exception(error_msg)
             else:
-                msg = ('ConnectionError: Failed to parse JSON response '
-                       '(body=%s)' % (self.body))
+                msg = "ConnectionError: Failed to parse JSON response " "(body=%s)" % (
+                    self.body
+                )
                 raise Exception(msg)
         return body
 
     def parse_error(self):
         if self.status == 401:
-            raise InvalidCredsError('Invalid credentials')
+            raise InvalidCredsError("Invalid credentials")
         return self.body
 
     def success(self):
@@ -314,10 +341,10 @@ class LXDConnection(ConnectionUserAndKey):
         If user and password are specified, include a base http auth
         header
         """
-        headers['Content-Type'] = 'application/json'
+        headers["Content-Type"] = "application/json"
         if self.user_id and self.key:
-            user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
+            user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+            headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
 
@@ -325,30 +352,43 @@ class LXDtlsConnection(KeyCertificateConnection):
 
     responseCls = LXDResponse
 
-    def __init__(self, key, secret, secure=True,
-                 host='localhost', port=8443, ca_cert='',
-                 key_file=None, cert_file=None,
-                 certificate_validator=None, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret,
+        secure=True,
+        host="localhost",
+        port=8443,
+        ca_cert="",
+        key_file=None,
+        cert_file=None,
+        certificate_validator=None,
+        **kwargs,
+    ):
 
         if certificate_validator is not None:
             certificate_validator(key_file=key_file, cert_file=cert_file)
         else:
-            check_certificates(key_file=key_file,
-                               cert_file=cert_file, **kwargs)
+            check_certificates(key_file=key_file, cert_file=cert_file, **kwargs)
 
-        super(LXDtlsConnection, self).__init__(key_file=key_file,
-                                               cert_file=cert_file,
-                                               secure=secure, host=host,
-                                               port=port, url=None,
-                                               proxy_url=None,
-                                               timeout=None, backoff=None,
-                                               retry_delay=None)
+        super(LXDtlsConnection, self).__init__(
+            key_file=key_file,
+            cert_file=cert_file,
+            secure=secure,
+            host=host,
+            port=port,
+            url=None,
+            proxy_url=None,
+            timeout=None,
+            backoff=None,
+            retry_delay=None,
+        )
 
         self.key_file = key_file
         self.cert_file = cert_file
 
     def add_default_headers(self, headers):
-        headers['Content-Type'] = 'application/json'
+        headers["Content-Type"] = "application/json"
         return headers
 
 
@@ -358,15 +398,16 @@ class LXDContainerDriver(ContainerDriver):
     https://lxd.readthedocs.io/en/stable-2.0/rest-api/
     https://github.com/lxc/lxd/blob/master/doc/rest-api.md
     """
+
     type = Provider.LXD
-    name = 'LXD'
-    website = 'https://linuxcontainers.org/'
+    name = "LXD"
+    website = "https://linuxcontainers.org/"
     connectionCls = LXDConnection
 
     # LXD supports clustering but still the functionality
     # is not implemented yet on our side
     supports_clusters = False
-    version = '1.0'
+    version = "1.0"
     default_time_out = 30
 
     # default configuration when creating a container
@@ -374,17 +415,25 @@ class LXDContainerDriver(ContainerDriver):
     # by the client code then the underlying
     # host architecture should be picked up by
     # LXC.
-    default_architecture = ''
-    default_profiles = 'default'
+    default_architecture = ""
+    default_profiles = "default"
 
     # An ephemeral container means that it
     # will be restroyed once it is stopped
     default_ephemeral = False
 
-    def __init__(self, key='', secret='', secure=False,
-                 host='localhost', port=8443, key_file=None,
-                 cert_file=None, ca_cert=None,
-                 certificate_validator=check_certificates):
+    def __init__(
+        self,
+        key="",
+        secret="",
+        secure=False,
+        host="localhost",
+        port=8443,
+        key_file=None,
+        cert_file=None,
+        ca_cert=None,
+        certificate_validator=check_certificates,
+    ):
 
         if key_file:
 
@@ -394,9 +443,11 @@ class LXDContainerDriver(ContainerDriver):
                 # private key and cert_file with the certificate
                 # libcloud will handle them through LibcloudHTTPSConnection
 
-                raise LXDAPIException(message='Need both private key and'
-                                              ' certificate files for '
-                                              'tls authentication')
+                raise LXDAPIException(
+                    message="Need both private key and"
+                    " certificate files for "
+                    "tls authentication"
+                )
 
             self.connectionCls = LXDtlsConnection
             self.key_file = key_file
@@ -404,16 +455,20 @@ class LXDContainerDriver(ContainerDriver):
             self.certificate_validator = certificate_validator
             secure = True
 
-        if host.startswith('https://'):
+        if host.startswith("https://"):
             secure = True
 
         host = strip_http_prefix(host=host)
 
-        super(LXDContainerDriver, self).__init__(key=key, secret=secret,
-                                                 secure=secure, host=host,
-                                                 port=port,
-                                                 key_file=key_file,
-                                                 cert_file=cert_file)
+        super(LXDContainerDriver, self).__init__(
+            key=key,
+            secret=secret,
+            secure=secure,
+            host=host,
+            port=port,
+            key_file=key_file,
+            cert_file=cert_file,
+        )
 
         if ca_cert:
             self.connection.connection.ca_cert = ca_cert
@@ -428,11 +483,13 @@ class LXDContainerDriver(ContainerDriver):
 
     def build_operation_websocket_url(self, uuid, w_secret):
 
-        uri = 'wss://%s:%s/%s/operations/%s/' \
-              'websocket?secret=%s' % (self.connection.host,
-                                       self.connection.port,
-                                       self.version,
-                                       uuid, w_secret)
+        uri = "wss://%s:%s/%s/operations/%s/" "websocket?secret=%s" % (
+            self.connection.host,
+            self.connection.port,
+            self.version,
+            uuid,
+            w_secret,
+        )
         return uri
 
     def ex_get_api_endpoints(self):
@@ -467,14 +524,21 @@ class LXDContainerDriver(ContainerDriver):
         meta = response_dict["metadata"]
         return LXDServerInfo.build_from_response(metadata=meta)
 
-    def deploy_container(self, name, image, cluster=None,
-                         parameters=None, start=True,
-                         ex_architecture=default_architecture,
-                         ex_profiles=None,
-                         ex_ephemeral=default_ephemeral,
-                         ex_config=None, ex_devices=None,
-                         ex_instance_type=None,
-                         ex_timeout=default_time_out):
+    def deploy_container(
+        self,
+        name,
+        image,
+        cluster=None,
+        parameters=None,
+        start=True,
+        ex_architecture=default_architecture,
+        ex_profiles=None,
+        ex_ephemeral=default_ephemeral,
+        ex_config=None,
+        ex_devices=None,
+        ex_instance_type=None,
+        ex_timeout=default_time_out,
+    ):
 
         """
         Create a new container
@@ -533,33 +597,42 @@ class LXDContainerDriver(ContainerDriver):
 
                 try:
                     # this means the image must be downloaded
-                    image = self.install_image(path=None,
-                                               ex_timeout=ex_timeout,
-                                               **parameters)
+                    image = self.install_image(
+                        path=None, ex_timeout=ex_timeout, **parameters
+                    )
                 except Exception as e:
-                    raise LXDAPIException(message='Deploying '
-                                                  'container failed:  '
-                                                  'Image could not '
-                                                  'be installed. %r' % e)
+                    raise LXDAPIException(
+                        message="Deploying "
+                        "container failed:  "
+                        "Image could not "
+                        "be installed. %r" % e
+                    )
 
                 # if the image was installed then we need to change
                 # how parameters are structured
-                parameters = {"source": {"type": "image",
-                                         "fingerprint":
-                                             image.extra['fingerprint']}}
+                parameters = {
+                    "source": {
+                        "type": "image",
+                        "fingerprint": image.extra["fingerprint"],
+                    }
+                }
 
-        cont_params = \
-            LXDContainerDriver._fix_cont_params(architecture=ex_architecture,
-                                                profiles=ex_profiles,
-                                                ephemeral=ex_ephemeral,
-                                                config=ex_config,
-                                                devices=ex_devices,
-                                                instance_type=ex_instance_type)
+        cont_params = LXDContainerDriver._fix_cont_params(
+            architecture=ex_architecture,
+            profiles=ex_profiles,
+            ephemeral=ex_ephemeral,
+            config=ex_config,
+            devices=ex_devices,
+            instance_type=ex_instance_type,
+        )
 
-        container = self._deploy_container_from_image(name=name, image=image,
-                                                      parameters=parameters,
-                                                      cont_params=cont_params,
-                                                      timeout=ex_timeout)
+        container = self._deploy_container_from_image(
+            name=name,
+            image=image,
+            parameters=parameters,
+            cont_params=cont_params,
+            timeout=ex_timeout,
+        )
 
         if start:
             container.start()
@@ -607,8 +680,9 @@ class LXDContainerDriver(ContainerDriver):
         metadata.update({"ips": ips})
         return self._to_container(metadata=metadata)
 
-    def start_container(self, container, ex_timeout=default_time_out,
-                        ex_force=True, ex_stateful=True):
+    def start_container(
+        self, container, ex_timeout=default_time_out, ex_force=True, ex_stateful=True
+    ):
         """
         Start a container
 
@@ -626,12 +700,17 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        return self._do_container_action(container=container, action='start',
-                                         timeout=ex_timeout,
-                                         force=ex_force, stateful=ex_stateful)
+        return self._do_container_action(
+            container=container,
+            action="start",
+            timeout=ex_timeout,
+            force=ex_force,
+            stateful=ex_stateful,
+        )
 
-    def stop_container(self, container, ex_timeout=default_time_out,
-                       ex_force=True, ex_stateful=True):
+    def stop_container(
+        self, container, ex_timeout=default_time_out, ex_force=True, ex_stateful=True
+    ):
         """
         Stop the given container
 
@@ -649,12 +728,17 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container
         """
-        return self._do_container_action(container=container, action='stop',
-                                         timeout=ex_timeout,
-                                         force=ex_force, stateful=ex_stateful)
+        return self._do_container_action(
+            container=container,
+            action="stop",
+            timeout=ex_timeout,
+            force=ex_force,
+            stateful=ex_stateful,
+        )
 
-    def restart_container(self, container, ex_timeout=default_time_out,
-                          ex_force=True, ex_stateful=True):
+    def restart_container(
+        self, container, ex_timeout=default_time_out, ex_force=True, ex_stateful=True
+    ):
         """
         Restart a deployed container
 
@@ -672,9 +756,13 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container
         """
-        return self._do_container_action(container=container, action='restart',
-                                         timeout=ex_timeout,
-                                         force=ex_force, stateful=ex_stateful)
+        return self._do_container_action(
+            container=container,
+            action="restart",
+            timeout=ex_timeout,
+            force=ex_force,
+            stateful=ex_stateful,
+        )
 
     def ex_freeze_container(self, container, ex_timeout=default_time_out):
 
@@ -690,10 +778,13 @@ class LXDContainerDriver(ContainerDriver):
         :rtype :class: `libcloud.container.base.Container
         """
 
-        return self._do_container_action(container=container,
-                                         action='freeze',
-                                         timeout=ex_timeout,
-                                         force=True, stateful=True)
+        return self._do_container_action(
+            container=container,
+            action="freeze",
+            timeout=ex_timeout,
+            force=True,
+            stateful=True,
+        )
 
     def ex_unfreeze_container(self, container, ex_timeout=default_time_out):
 
@@ -709,10 +800,13 @@ class LXDContainerDriver(ContainerDriver):
         :rtype :class: `libcloud.container.base.Container
         """
 
-        return self._do_container_action(container=container,
-                                         action='unfreeze',
-                                         timeout=ex_timeout,
-                                         force=True, stateful=True)
+        return self._do_container_action(
+            container=container,
+            action="unfreeze",
+            timeout=ex_timeout,
+            force=True,
+            stateful=True,
+        )
 
     def destroy_container(self, container, ex_timeout=default_time_out):
         """
@@ -730,10 +824,10 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         # Return: background operation or standard error
-        req = '/%s/containers/%s' % (self.version, container.name)
+        req = "/%s/containers/%s" % (self.version, container.name)
 
         try:
-            response = self.connection.request(req, method='DELETE')
+            response = self.connection.request(req, method="DELETE")
 
             response_dict = response.parse_body()
             assert_response(response_dict=response_dict, status_code=100)
@@ -745,10 +839,8 @@ class LXDContainerDriver(ContainerDriver):
 
             # wait until the timeout...but util getting here the operation
             # may have finished already
-            id = response_dict['metadata']['id']
-            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
-                                                         id,
-                                                         ex_timeout)
+            id = response_dict["metadata"]["id"]
+            req = "/%s/operations/%s/wait?timeout=%s" % (self.version, id, ex_timeout)
             response = self.connection.request(req)
         except BaseHTTPError as err:
 
@@ -761,11 +853,15 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict, status_code=200)
 
         # return a dummy container
-        container = Container(driver=self, name=container.name,
-                              id=container.name,
-                              state=ContainerState.TERMINATED,
-                              image=None, ip_addresses=[],
-                              extra=None)
+        container = Container(
+            driver=self,
+            name=container.name,
+            id=container.name,
+            state=ContainerState.TERMINATED,
+            image=None,
+            ip_addresses=[],
+            extra=None,
+        )
         return container
 
     def ex_execute_cmd_on_container(self, cont_id, command, **config):
@@ -858,49 +954,58 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=100)
 
-        fds = response_dict['metadata']['metadata']['fds']
-        uuid = response_dict['metadata']['id']
+        fds = response_dict["metadata"]["metadata"]["fds"]
+        uuid = response_dict["metadata"]["id"]
 
-        if input["wait-for-websocket"] is True and\
-                input["interactive"] is False:
-            return LXDContainerExecuteResult(uuid=uuid,
-                                             secret_0=fds["0"],
-                                             secret_1=fds["1"],
-                                             secret_2=fds["2"],
-                                             control=fds["control"],
-                                             output={}, result=None)
+        if input["wait-for-websocket"] is True and input["interactive"] is False:
+            return LXDContainerExecuteResult(
+                uuid=uuid,
+                secret_0=fds["0"],
+                secret_1=fds["1"],
+                secret_2=fds["2"],
+                control=fds["control"],
+                output={},
+                result=None,
+            )
 
-        elif input["wait-for-websocket"] is True and\
-                input["interactive"] is True:
+        elif input["wait-for-websocket"] is True and input["interactive"] is True:
 
-            return LXDContainerExecuteResult(uuid=uuid,
-                                             secret_0=fds["0"],
-                                             secret_1=None,
-                                             secret_2=None,
-                                             control=fds["control"],
-                                             output={}, result=None)
+            return LXDContainerExecuteResult(
+                uuid=uuid,
+                secret_0=fds["0"],
+                secret_1=None,
+                secret_2=None,
+                control=fds["control"],
+                output={},
+                result=None,
+            )
 
-        elif input["interactive"] is False and\
-                input["record-output"] is True:
+        elif input["interactive"] is False and input["record-output"] is True:
 
-            output = response_dict['metadata']['metadata']['output']
-            result = response_dict['metadata']['metadata']['result']
-            return LXDContainerExecuteResult(uuid=uuid,
-                                             secret_0=None,
-                                             secret_1=None,
-                                             secret_2=None,
-                                             control=None,
-                                             output=output, result=result)
+            output = response_dict["metadata"]["metadata"]["output"]
+            result = response_dict["metadata"]["metadata"]["result"]
+            return LXDContainerExecuteResult(
+                uuid=uuid,
+                secret_0=None,
+                secret_1=None,
+                secret_2=None,
+                control=None,
+                output=output,
+                result=result,
+            )
 
         else:
 
-            result = response_dict['metadata']['metadata']['result']
-            return LXDContainerExecuteResult(uuid=uuid,
-                                             secret_0=None,
-                                             secret_1=None,
-                                             secret_2=None,
-                                             control=None,
-                                             output={}, result=result)
+            result = response_dict["metadata"]["metadata"]["result"]
+            return LXDContainerExecuteResult(
+                uuid=uuid,
+                secret_0=None,
+                secret_1=None,
+                secret_2=None,
+                control=None,
+                output={},
+                result=result,
+            )
 
     def list_containers(self, image=None, cluster=None, ex_detailed=True):
         """
@@ -921,22 +1026,26 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: ``list`` of :class:`libcloud.container.base.Container
         """
 
-        result = self.connection.request('/%s/containers' % self.version)
+        result = self.connection.request("/%s/containers" % self.version)
         result = result.parse_body()
 
         # how to treat the errors????
         assert_response(response_dict=result, status_code=200)
 
-        meta = result['metadata']
+        meta = result["metadata"]
         containers = []
         for item in meta:
-            container_id = item.split('/')[-1]
+            container_id = item.split("/")[-1]
             if not ex_detailed:
-                container = Container(driver=self, name=container_id,
-                                      state=ContainerState.UNKNOWN,
-                                      id=container_id,
-                                      image=image, ip_addresses=[],
-                                      extra={})
+                container = Container(
+                    driver=self,
+                    name=container_id,
+                    state=ContainerState.UNKNOWN,
+                    id=container_id,
+                    image=image,
+                    ip_addresses=[],
+                    extra={},
+                )
             else:
                 container = self.get_container(id=container_id)
             containers.append(container)
@@ -952,17 +1061,16 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`.ContainerImage`
         """
-        req = '/%s/images/%s' % (self.version, fingerprint)
+        req = "/%s/images/%s" % (self.version, fingerprint)
         response = self.connection.request(req)
 
         #  parse the LXDResponse into a dictionary
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        return self._to_image(metadata=response_dict['metadata'])
+        return self._to_image(metadata=response_dict["metadata"])
 
-    def install_image(self, path, ex_timeout=default_time_out,
-                      **ex_img_data):
+    def install_image(self, path, ex_timeout=default_time_out, **ex_img_data):
 
         """
         Install a container image from a remote path. Not that the
@@ -983,29 +1091,25 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not ex_img_data:
-            msg = "Install an image for LXD requires " \
-                  "specification of image_data"
+            msg = "Install an image for LXD requires " "specification of image_data"
             raise LXDAPIException(message=msg)
 
         # Return: background operation or standard error
-        data = ex_img_data['source']
+        data = ex_img_data["source"]
 
         config = {
-            'public': data.get('public', True),
-            'auto_update': data.get('auto_update', False),
-            'aliases': [data.get('aliases', {})],
-            'source': {
-                'type': 'url',
-                'mode': 'pull',
-                'url': data['url']
-            }
+            "public": data.get("public", True),
+            "auto_update": data.get("auto_update", False),
+            "aliases": [data.get("aliases", {})],
+            "source": {"type": "url", "mode": "pull", "url": data["url"]},
         }
 
         config = json.dumps(config)
 
         # background operation or standard error
-        response = self.connection.request('/%s/images' % (self.version),
-                                           method='POST', data=config)
+        response = self.connection.request(
+            "/%s/images" % (self.version), method="POST", data=config
+        )
 
         response_dict = response.parse_body()
 
@@ -1017,10 +1121,8 @@ class LXDContainerDriver(ContainerDriver):
 
             # wait until the timeout...but until getting here the operation
             # may have finished already
-            id = response_dict['metadata']['id']
-            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
-                                                         id,
-                                                         ex_timeout)
+            id = response_dict["metadata"]["id"]
+            req = "/%s/operations/%s/wait?timeout=%s" % (self.version, id, ex_timeout)
             response = self.connection.request(req)
         except BaseHTTPError as err:
 
@@ -1032,16 +1134,16 @@ class LXDContainerDriver(ContainerDriver):
         config = json.loads(config)
 
         # let's see if the image exists
-        if len(config['aliases']) != 0 and \
-                'name' in config['aliases'][0]:
-            image_alias = config['aliases'][0]['name']
+        if len(config["aliases"]) != 0 and "name" in config["aliases"][0]:
+            image_alias = config["aliases"][0]["name"]
         else:
-            image_alias = config['source']['url'].split('/')[-1]
+            image_alias = config["source"]["url"].split("/")[-1]
 
         has, fingerprint = self.ex_has_image(alias=image_alias)
         if not has:
-            raise LXDAPIException(message="Image %s was "
-                                          "not installed " % image_alias)
+            raise LXDAPIException(
+                message="Image %s was " "not installed " % image_alias
+            )
 
         return self.ex_get_image(fingerprint=fingerprint)
 
@@ -1051,14 +1153,14 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`.ContainerImage`
         """
-        response = self.connection.request('/%s/images' % (self.version))
+        response = self.connection.request("/%s/images" % (self.version))
 
         #  parse the LXDResponse into a dictionary
         response_dict = response.parse_body()
 
         assert_response(response_dict=response_dict, status_code=200)
 
-        metadata = response_dict['metadata']
+        metadata = response_dict["metadata"]
         images = []
 
         for image in metadata:
@@ -1080,9 +1182,10 @@ class LXDContainerDriver(ContainerDriver):
         # get all the images existing on the host
         try:
             response = self.connection.request(
-                '/{}/images/aliases/{}'.format(self.version, alias))
-            metadata = response.object['metadata']
-            return True, metadata.get('target')
+                "/{}/images/aliases/{}".format(self.version, alias)
+            )
+            metadata = response.object["metadata"]
+            return True, metadata.get("target")
         except BaseHTTPError as err:
             lxd_exception = self._get_lxd_api_exception_for_error(err)
             if lxd_exception.message == "not found":
@@ -1110,16 +1213,22 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict, status_code=200)
 
         pools = []
-        for pool_item in response_dict['metadata']:
-            pool_name = pool_item.split('/')[-1]
+        for pool_item in response_dict["metadata"]:
+            pool_name = pool_item.split("/")[-1]
 
             if not detailed:
                 # attempt to create a minimal StoragePool
-                pools.append(self._to_storage_pool({"name": pool_name,
-                                                    "driver": None,
-                                                    "used_by": None,
-                                                    "config": None,
-                                                    "managed": None}))
+                pools.append(
+                    self._to_storage_pool(
+                        {
+                            "name": pool_name,
+                            "driver": None,
+                            "used_by": None,
+                            "config": None,
+                            "managed": None,
+                        }
+                    )
+                )
             else:
                 pools.append(self.ex_get_storage_pool(id=pool_name))
 
@@ -1139,11 +1248,11 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        if not response_dict['metadata']:
+        if not response_dict["metadata"]:
             msg = "Storage pool with name {0} has no data".format(id)
             raise LXDAPIException(message=msg)
 
-        return self._to_storage_pool(data=response_dict['metadata'])
+        return self._to_storage_pool(data=response_dict["metadata"])
 
     def ex_create_storage_pool(self, definition):
 
@@ -1187,14 +1296,16 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not definition:
-            raise LXDAPIException("Cannot create a storage pool "
-                                  " without a definition")
+            raise LXDAPIException(
+                "Cannot create a storage pool " " without a definition"
+            )
 
         data = json.dumps(definition)
 
         # Return: standard return value or standard error
-        response = self.connection.request("/%s/storage-pools" % self.version,
-                                           method='POST', data=data)
+        response = self.connection.request(
+            "/%s/storage-pools" % self.version, method="POST", data=data
+        )
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
@@ -1214,7 +1325,7 @@ class LXDContainerDriver(ContainerDriver):
 
         # Return: standard return value or standard error
         req = "/%s/storage-pools/%s" % (self.version, id)
-        response = self.connection.request(req, method='DELETE')
+        response = self.connection.request(req, method="DELETE")
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
@@ -1244,20 +1355,26 @@ class LXDContainerDriver(ContainerDriver):
 
         volumes = []
 
-        for volume in response_dict['metadata']:
+        for volume in response_dict["metadata"]:
             volume = volume.split("/")
             name = volume[-1]
             type = volume[-2]
 
             if not detailed:
 
-                metadata = {'config': {'size': None}, "name": name,
-                            "type": type, "used_by": None}
-                volumes.append(self._to_storage_volume(pool_id=pool_id,
-                                                       metadata=metadata))
+                metadata = {
+                    "config": {"size": None},
+                    "name": name,
+                    "type": type,
+                    "used_by": None,
+                }
+                volumes.append(
+                    self._to_storage_volume(pool_id=pool_id, metadata=metadata)
+                )
             else:
-                volume = self.ex_get_storage_pool_volume(pool_id=pool_id,
-                                                         type=type, name=name)
+                volume = self.ex_get_storage_pool_volume(
+                    pool_id=pool_id, type=type, name=name
+                )
                 volumes.append(volume)
 
         return volumes
@@ -1271,15 +1388,14 @@ class LXDContainerDriver(ContainerDriver):
         Operation: sync
         Return: A StorageVolume  representing a storage volume
         """
-        req = "/%s/storage-pools/%s/volumes/%s/%s" % (self.version,
-                                                      pool_id,
-                                                      type, name)
+        req = "/%s/storage-pools/%s/volumes/%s/%s" % (self.version, pool_id, type, name)
         response = self.connection.request(req)
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        return self._to_storage_volume(pool_id=pool_id,
-                                       metadata=response_dict["metadata"])
+        return self._to_storage_volume(
+            pool_id=pool_id, metadata=response_dict["metadata"]
+        )
 
     def ex_get_volume_by_name(self, name, vol_type="custom"):
         """
@@ -1298,16 +1414,16 @@ class LXDContainerDriver(ContainerDriver):
         :return: A StorageVolume  representing a storage volume
         """
 
-        req = '/%s/storage-pools' % self.version
+        req = "/%s/storage-pools" % self.version
         response = self.connection.request(req)
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        pools = response_dict['metadata']
+        pools = response_dict["metadata"]
 
         for pool in pools:
 
-            pool_id = pool.split('/')[-1]
+            pool_id = pool.split("/")[-1]
 
             volumes = self.ex_list_storage_pool_volumes(pool_id=pool_id)
 
@@ -1326,29 +1442,33 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not definition:
-            raise LXDAPIException("Cannot create a storage volume "
-                                  "without a definition")
+            raise LXDAPIException(
+                "Cannot create a storage volume " "without a definition"
+            )
 
-        size_type = definition.pop('size_type')
-        definition['config']['size'] = \
-            str(LXDContainerDriver._to_bytes(definition['config']['size'],
-                                             size_type=size_type))
+        size_type = definition.pop("size_type")
+        definition["config"]["size"] = str(
+            LXDContainerDriver._to_bytes(
+                definition["config"]["size"], size_type=size_type
+            )
+        )
 
         data = json.dumps(definition)
 
         # Return: standard return value or standard error
         req = "/%s/storage-pools/%s/volumes" % (self.version, pool_id)
-        response = self.connection.request(req, method='POST', data=data)
+        response = self.connection.request(req, method="POST", data=data)
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        return self.ex_get_storage_pool_volume(pool_id=pool_id,
-                                               type=definition["type"],
-                                               name=definition["name"])
+        return self.ex_get_storage_pool_volume(
+            pool_id=pool_id, type=definition["type"], name=definition["name"]
+        )
 
-    def attach_volume(self, container_id, volume_id,
-                      pool_id, name, path, ex_timeout=default_time_out):
+    def attach_volume(
+        self, container_id, volume_id, pool_id, name, path, ex_timeout=default_time_out
+    ):
         """
         Attach the volume with id volume_id
         to the container with id container_id
@@ -1357,21 +1477,14 @@ class LXDContainerDriver(ContainerDriver):
         config = container.extra
 
         # expand the devices for the container
-        config['devices'] = {
-
-            name: {"path": path,
-                   "type": "disk",
-                   "source": volume_id,
-                   "pool": pool_id
-                   }
+        config["devices"] = {
+            name: {"path": path, "type": "disk", "source": volume_id, "pool": pool_id}
         }
 
         data = json.dumps(config)
 
         req = "/%s/containers/%s" % (self.version, container_id)
-        response = self.connection.request(req,
-                                           method="PUT",
-                                           data=data)
+        response = self.connection.request(req, method="PUT", data=data)
 
         response_dict = response.parse_body()
 
@@ -1383,10 +1496,8 @@ class LXDContainerDriver(ContainerDriver):
 
             # wait until the timeout...but util getting here the operation
             # may have finished already
-            oid = response_dict['metadata']['id']
-            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
-                                                         oid,
-                                                         ex_timeout)
+            oid = response_dict["metadata"]["id"]
+            req = "/%s/operations/%s/wait?timeout=%s" % (self.version, oid, ex_timeout)
             response = self.connection.request(req)
         except BaseHTTPError as err:
 
@@ -1399,8 +1510,7 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict, status_code=200)
         return self.get_container(id=container_id, ex_get_ip_addr=True)
 
-    def ex_replace_storage_volume_config(self, pool_id, type,
-                                         name, definition):
+    def ex_replace_storage_volume_config(self, pool_id, type, name, definition):
         """
         Replace the storage volume information
         :param pool_id:
@@ -1410,19 +1520,20 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not definition:
-            raise LXDAPIException("Cannot create a storage "
-                                  "volume without a definition")
+            raise LXDAPIException(
+                "Cannot create a storage " "volume without a definition"
+            )
 
         data = json.dumps(definition)
-        response = self.connection.request("/%s/storage-pools/%s/volumes/%s/%s"
-                                           % (self.version, pool_id,
-                                              type, name),
-                                           method="PUT", data=data)
+        response = self.connection.request(
+            "/%s/storage-pools/%s/volumes/%s/%s" % (self.version, pool_id, type, name),
+            method="PUT",
+            data=data,
+        )
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
-        return self.ex_get_storage_pool_volume(pool_id=pool_id,
-                                               type=type, name=name)
+        return self.ex_get_storage_pool_volume(pool_id=pool_id, type=type, name=name)
 
     def ex_delete_storage_pool_volume(self, pool_id, type, name):
         """
@@ -1442,10 +1553,12 @@ class LXDContainerDriver(ContainerDriver):
 
         try:
 
-            req = "/%s/storage-pools/%s/volumes/%s/%s" % (self.version,
-                                                          pool_id,
-                                                          type,
-                                                          name)
+            req = "/%s/storage-pools/%s/volumes/%s/%s" % (
+                self.version,
+                pool_id,
+                type,
+                name,
+            )
             response = self.connection.request(req, method="DELETE")
 
             response_dict = response.parse_body()
@@ -1474,7 +1587,7 @@ class LXDContainerDriver(ContainerDriver):
         nets = response_dict["metadata"]
         networks = []
         for net in nets:
-            name = net.split('/')[-1]
+            name = net.split("/")[-1]
             networks.append(self.ex_get_network(name=name))
         return networks
 
@@ -1491,7 +1604,7 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: LXDNetwork
         """
-        req = '/%s/networks/%s' % (self.version, name)
+        req = "/%s/networks/%s" % (self.version, name)
         response = self.connection.request(req)
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
@@ -1510,9 +1623,9 @@ class LXDContainerDriver(ContainerDriver):
         :type  name: str
         """
 
-        kwargs['name'] = name
+        kwargs["name"] = name
         data = json.dumps(kwargs)
-        req = '/%s/networks' % self.version
+        req = "/%s/networks" % self.version
         # Return: standard return value or standard error
         response = self.connection.request(req, method="POST", data=data)
         response_dict = response.parse_body()
@@ -1531,8 +1644,8 @@ class LXDContainerDriver(ContainerDriver):
         :return: True is successfully deleted the network
         """
 
-        req = '/%s/networks/%s' % (self.version, name)
-        response = self.connection.request(req, method='DELETE')
+        req = "/%s/networks/%s" % (self.version, name)
+        response = self.connection.request(req, method="DELETE")
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
@@ -1548,32 +1661,43 @@ class LXDContainerDriver(ContainerDriver):
         :rtype :class:`libcloud.container.base.Container
         """
 
-        name = metadata['name']
-        state = metadata['status']
+        name = metadata["name"]
+        state = metadata["status"]
 
-        if state == 'Running':
+        if state == "Running":
             state = ContainerState.RUNNING
-        elif state == 'Frozen':
+        elif state == "Frozen":
             state = ContainerState.PAUSED
         else:
             state = ContainerState.STOPPED
 
         extra = metadata
-        img_id = metadata['config'].get('volatile.base_image', None)
-        img_version = metadata['config'].get('image.version', None)
+        img_id = metadata["config"].get("volatile.base_image", None)
+        img_version = metadata["config"].get("image.version", None)
         ips = metadata["ips"]
 
-        image = ContainerImage(id=img_id, name=img_id, path=None,
-                               version=img_version, driver=self, extra=None)
+        image = ContainerImage(
+            id=img_id,
+            name=img_id,
+            path=None,
+            version=img_version,
+            driver=self,
+            extra=None,
+        )
 
-        container = Container(driver=self, name=name, id=name,
-                              state=state, image=image,
-                              ip_addresses=ips, extra=extra)
+        container = Container(
+            driver=self,
+            name=name,
+            id=name,
+            state=state,
+            image=image,
+            ip_addresses=ips,
+            extra=extra,
+        )
 
         return container
 
-    def _do_container_action(self, container, action,
-                             timeout, force, stateful):
+    def _do_container_action(self, container, action, timeout, force, stateful):
         """
         change the container state by performing the given action
         action may be either stop, start, restart, freeze or unfreeze
@@ -1593,23 +1717,21 @@ class LXDContainerDriver(ContainerDriver):
         # looks like we are getting "err":"Unable to perform
         # container live migration. CRIU isn't installed"
         # in the response when stateful is True so remove it for now
-        req = '/%s/containers/%s/state' % (self.version, container.name)
-        response = self.connection.request(req, method='PUT', data=data)
+        req = "/%s/containers/%s/state" % (self.version, container.name)
+        response = self.connection.request(req, method="PUT", data=data)
 
         response_dict = response.parse_body()
 
         # a background operation is expected to
         # be returned status_code = 100 --> Operation created
-        assert_response(response_dict=response_dict,
-                        status_code=100)
+        assert_response(response_dict=response_dict, status_code=100)
 
         if not timeout:
             timeout = LXDContainerDriver.default_time_out
 
         try:
-            id = response_dict['metadata']['id']
-            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
-                                                         id, timeout)
+            id = response_dict["metadata"]["id"]
+            req = "/%s/operations/%s/wait?timeout=%s" % (self.version, id, timeout)
             response = self.connection.request(req)
 
         except BaseHTTPError as err:
@@ -1620,13 +1742,21 @@ class LXDContainerDriver(ContainerDriver):
 
         # if the container is ephemeral and the action is to stop
         # then the container is removed so return sth dummy
-        if state == ContainerState.RUNNING and\
-                container.extra['ephemeral'] and action == 'stop':
+        if (
+            state == ContainerState.RUNNING
+            and container.extra["ephemeral"]
+            and action == "stop"
+        ):
             # return a dummy container otherwise we get 404 error
-            container = Container(driver=self, name=container.name,
-                                  id=container.name,
-                                  state=ContainerState.TERMINATED, image=None,
-                                  ip_addresses=[], extra=None)
+            container = Container(
+                driver=self,
+                name=container.name,
+                id=container.name,
+                state=ContainerState.TERMINATED,
+                image=None,
+                ip_addresses=[],
+                extra=None,
+            )
             return container
 
         return self.get_container(id=container.name)
@@ -1640,20 +1770,25 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`.ContainerImage`
         """
-        fingerprint = metadata.get('fingerprint')
-        aliases = metadata.get('aliases', [])
+        fingerprint = metadata.get("fingerprint")
+        aliases = metadata.get("aliases", [])
 
         if aliases:
-            name = metadata.get('aliases')[0].get('name')
+            name = metadata.get("aliases")[0].get("name")
         else:
-            name = metadata.get('properties', {}).get('description') \
-                or fingerprint
+            name = metadata.get("properties", {}).get("description") or fingerprint
 
-        version = metadata.get('update_source', {}).get('alias')
+        version = metadata.get("update_source", {}).get("alias")
         extra = metadata
 
-        return ContainerImage(id=fingerprint, name=name, path=None,
-                              version=version, driver=self, extra=extra)
+        return ContainerImage(
+            id=fingerprint,
+            name=name,
+            path=None,
+            version=version,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_storage_pool(self, data):
         """
@@ -1663,13 +1798,17 @@ class LXDContainerDriver(ContainerDriver):
         :return: :class: .StoragePool
         """
 
-        return LXDStoragePool(name=data['name'], driver=data['driver'],
-                              used_by=data['used_by'], config=['config'],
-                              managed=False)
+        return LXDStoragePool(
+            name=data["name"],
+            driver=data["driver"],
+            used_by=data["used_by"],
+            config=["config"],
+            managed=False,
+        )
 
-    def _deploy_container_from_image(self, name, image, parameters,
-                                     cont_params,
-                                     timeout=default_time_out):
+    def _deploy_container_from_image(
+        self, name, image, parameters, cont_params, timeout=default_time_out
+    ):
         """
         Deploy a new container from the given image
 
@@ -1689,18 +1828,17 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if cont_params is None:
-            raise LXDAPIException(message="cont_params "
-                                          "must be a valid dict")
+            raise LXDAPIException(message="cont_params " "must be a valid dict")
 
         # container without a pre-populated rootfs
         # see https://github.com/lxc/lxd/blob/master/doc/rest-api.md
         # can be "image", "migration", "copy" or "none"
-        data = {'name': name, 'source': {'type': 'none'}}
+        data = {"name": name, "source": {"type": "none"}}
 
         if parameters:
-            data['source'].update(parameters["source"])
+            data["source"].update(parameters["source"])
 
-        if data['source']['type'] not in LXD_API_IMAGE_SOURCE_TYPE:
+        if data["source"]["type"] not in LXD_API_IMAGE_SOURCE_TYPE:
             msg = "source type must in " + str(LXD_API_IMAGE_SOURCE_TYPE)
             raise LXDAPIException(message=msg)
 
@@ -1710,8 +1848,9 @@ class LXDContainerDriver(ContainerDriver):
         data = json.dumps(data)
 
         # Return: background operation or standard error
-        response = self.connection.request('/%s/containers' % self.version,
-                                           method='POST', data=data)
+        response = self.connection.request(
+            "/%s/containers" % self.version, method="POST", data=data
+        )
         response_dict = response.parse_body()
 
         # a background operation is expected to
@@ -1726,10 +1865,8 @@ class LXDContainerDriver(ContainerDriver):
         try:
             # wait untitl the timeout...but util getting here the operation
             # may have finished already
-            id = response_dict['metadata']['id']
-            req_str = '/%s/operations/%s/wait?timeout=%s' % (self.version,
-                                                             id,
-                                                             timeout)
+            id = response_dict["metadata"]["id"]
+            req_str = "/%s/operations/%s/wait?timeout=%s" % (self.version, id, timeout)
             response = self.connection.request(req_str)
         except BaseHTTPError as err:
             lxd_exception = self._get_lxd_api_exception_for_error(err)
@@ -1746,16 +1883,23 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         size = 0
-        if "size" in metadata['config'].keys():
-            size = LXDContainerDriver._to_gb(metadata['config'].pop('size'))
+        if "size" in metadata["config"].keys():
+            size = LXDContainerDriver._to_gb(metadata["config"].pop("size"))
 
-        extra = {"pool_id": pool_id,
-                 "type": metadata["type"],
-                 "used_by": metadata["used_by"],
-                 "config": metadata['config']}
+        extra = {
+            "pool_id": pool_id,
+            "type": metadata["type"],
+            "used_by": metadata["used_by"],
+            "config": metadata["config"],
+        }
 
-        return StorageVolume(id=metadata['name'], name=metadata['name'],
-                             driver=self, size=size, extra=extra)
+        return StorageVolume(
+            id=metadata["name"],
+            name=metadata["name"],
+            driver=self,
+            size=size,
+            extra=extra,
+        )
 
     def _get_api_version(self):
         """
@@ -1770,9 +1914,11 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if hasattr(self, "key_file") and hasattr(self, "cert_file"):
-            return {"key_file": self.key_file,
-                    "cert_file": self.cert_file,
-                    "certificate_validator": self.certificate_validator}
+            return {
+                "key_file": self.key_file,
+                "cert_file": self.cert_file,
+                "certificate_validator": self.certificate_validator,
+            }
         return super(LXDContainerDriver, self)._ex_connection_class_kwargs()
 
     @staticmethod
@@ -1816,9 +1962,9 @@ class LXDContainerDriver(ContainerDriver):
         return input
 
     @staticmethod
-    def _fix_cont_params(architecture, profiles,
-                         ephemeral, config,
-                         devices, instance_type):
+    def _fix_cont_params(
+        architecture, profiles, ephemeral, config, devices, instance_type
+    ):
         """
         Returns a dict with the container parameters
         """
@@ -1827,7 +1973,7 @@ class LXDContainerDriver(ContainerDriver):
 
         # add also the other container parameters
         if architecture is not None:
-            cont_params['architecture'] = architecture
+            cont_params["architecture"] = architecture
 
         if profiles is not None:
             cont_params["profiles"] = profiles
@@ -1852,9 +1998,8 @@ class LXDContainerDriver(ContainerDriver):
 
     def _get_lxd_api_exception_for_error(self, error):
         error_dict = json.loads(error.message)
-        message = error_dict.get('error')
-        return LXDAPIException(message=message,
-                               error_type=error_dict.get('type', ''))
+        message = error_dict.get("error")
+        return LXDAPIException(message=message, error_type=error_dict.get("type", ""))
 
     @staticmethod
     def _to_gb(size):
@@ -1867,14 +2012,14 @@ class LXDContainerDriver(ContainerDriver):
         return size // 10**9
 
     @staticmethod
-    def _to_bytes(size, size_type='GB'):
+    def _to_bytes(size, size_type="GB"):
         """
         convert the given size in GB to bytes
         :param size: in GBs
         :return: int representing bytes
         """
         size = int(size)
-        if size_type == 'GB':
+        if size_type == "GB":
             return size * 10**9
-        elif size_type == 'MB':
-            return size * 10 ** 6
+        elif size_type == "MB":
+            return size * 10**6

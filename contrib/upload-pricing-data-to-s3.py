@@ -27,9 +27,7 @@ import sys
 from libcloud.storage.types import Provider
 from libcloud.storage.providers import get_driver
 
-BUCKET_NAME = os.environ.get(
-    "PRICING_DATA_BUCKET_NAME", "libcloud-pricing-data"
-)
+BUCKET_NAME = os.environ.get("PRICING_DATA_BUCKET_NAME", "libcloud-pricing-data")
 
 ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", None)
 ACCESS_KEY_SECRET = os.environ.get("AWS_ACCESS_KEY_SECRET", None)
@@ -53,8 +51,8 @@ def upload_file(file_path):
 
     file_paths = [
         file_path,
-        '%s.sha256' % (file_path),
-        '%s.sha512' % (file_path),
+        "%s.sha256" % (file_path),
+        "%s.sha512" % (file_path),
     ]
 
     for file_path in file_paths:

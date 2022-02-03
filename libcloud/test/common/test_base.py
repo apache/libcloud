@@ -24,7 +24,6 @@ from libcloud.test import LibcloudTestCase
 
 
 class LazyObjectTest(LibcloudTestCase):
-
     class A(LazyObject):
         def __init__(self, x, y=None):
             self.x = x
@@ -36,8 +35,7 @@ class LazyObjectTest(LibcloudTestCase):
         self.assertTrue(isinstance(a, self.A))
 
         # Test lazy init
-        with mock.patch.object(self.A,
-                               '__init__', return_value=None) as mock_init:
+        with mock.patch.object(self.A, "__init__", return_value=None) as mock_init:
             a = self.A.lazy(3, y=4)
             self.assertTrue(isinstance(a, self.A))  # Proxy is a subclass of A
             mock_init.assert_not_called()
@@ -49,11 +47,11 @@ class LazyObjectTest(LibcloudTestCase):
             mock_init.assert_called_once_with(3, y=4)
 
     def test_setattr(self):
-        a = self.A.lazy('foo', y='bar')
-        a.z = 'baz'
-        wrapped_lazy_obj = object.__getattribute__(a, '_lazy_obj')
-        self.assertEqual(a.z, 'baz')
-        self.assertEqual(wrapped_lazy_obj.z, 'baz')
+        a = self.A.lazy("foo", y="bar")
+        a.z = "baz"
+        wrapped_lazy_obj = object.__getattribute__(a, "_lazy_obj")
+        self.assertEqual(a.z, "baz")
+        self.assertEqual(wrapped_lazy_obj.z, "baz")
 
 
 class ErrorResponseTest(LibcloudTestCase):
@@ -66,7 +64,7 @@ class ErrorResponseTest(LibcloudTestCase):
         return m
 
     def test_rate_limit_response(self):
-        resp_mock = self.mock_response(429, {'Retry-After': '120'})
+        resp_mock = self.mock_response(429, {"Retry-After": "120"})
         try:
             Response(resp_mock, mock.MagicMock())
         except RateLimitReachedError as e:
@@ -80,31 +78,31 @@ class ErrorResponseTest(LibcloudTestCase):
 
     def test_error_with_retry_after(self):
         # 503 Service Unavailable may include Retry-After header
-        resp_mock = self.mock_response(503, {'Retry-After': '300'})
+        resp_mock = self.mock_response(503, {"Retry-After": "300"})
         try:
             Response(resp_mock, mock.MagicMock())
         except BaseHTTPError as e:
-            self.assertIn('retry-after', e.headers)
-            self.assertEqual(e.headers['retry-after'], '300')
+            self.assertIn("retry-after", e.headers)
+            self.assertEqual(e.headers["retry-after"], "300")
         else:
             # We should have got an exception
             self.fail("HTTP Status 503 response didn't raised an exception")
 
-    @mock.patch('time.time', return_value=1231006505)
+    @mock.patch("time.time", return_value=1231006505)
     def test_error_with_retry_after_http_date_format(self, time_mock):
-        retry_after = 'Sat, 03 Jan 2009 18:20:05 -0000'
+        retry_after = "Sat, 03 Jan 2009 18:20:05 -0000"
         # 503 Service Unavailable may include Retry-After header
-        resp_mock = self.mock_response(503, {'Retry-After': retry_after})
+        resp_mock = self.mock_response(503, {"Retry-After": retry_after})
         try:
             Response(resp_mock, mock.MagicMock())
         except BaseHTTPError as e:
-            self.assertIn('retry-after', e.headers)
+            self.assertIn("retry-after", e.headers)
             # HTTP-date got translated to delay-secs
-            self.assertEqual(e.headers['retry-after'], '300')
+            self.assertEqual(e.headers["retry-after"], "300")
         else:
             # We should have got an exception
             self.fail("HTTP Status 503 response didn't raised an exception")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

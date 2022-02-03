@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'BaseRangeDownloadMockHttp'
-]
+__all__ = ["BaseRangeDownloadMockHttp"]
 
 from typing import Tuple
 
@@ -30,8 +28,8 @@ class BaseRangeDownloadMockHttp(MockHttp):
 
     def _get_start_and_end_bytes_from_range_str(self, range_str, body):
         # type: (str, str) -> Tuple[int, int]
-        range_str = range_str.split('bytes=')[1]
-        range_str = range_str.split('-')
+        range_str = range_str.split("bytes=")[1]
+        range_str = range_str.split("-")
         range_str = [value for value in range_str if value.strip()]
         start_bytes = int(range_str[0])
 

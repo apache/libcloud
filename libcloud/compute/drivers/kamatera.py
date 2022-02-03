@@ -33,8 +33,8 @@ class KamateraResponse(JsonResponse):
 
     def parse_error(self):
         data = self.parse_body()
-        if 'message' in data:
-            return data['message']
+        if "message" in data:
+            return data["message"]
         else:
             return json.dumps(data)
 
@@ -44,15 +44,15 @@ class KamateraConnection(ConnectionUserAndKey):
     Connection class for KamateraDriver
     """
 
-    host = 'cloudcli.cloudwm.com'
+    host = "cloudcli.cloudwm.com"
     responseCls = KamateraResponse
 
     def add_default_headers(self, headers):
         """Adds headers that are needed for all requests"""
-        headers['AuthClientId'] = self.user_id
-        headers['AuthSecret'] = self.key
-        headers['Accept'] = 'application/json'
-        headers['Content-Type'] = 'application/json'
+        headers["AuthClientId"] = self.user_id
+        headers["AuthSecret"] = self.key
+        headers["Accept"] = "application/json"
+        headers["Content-Type"] = "application/json"
         return headers
 
 
@@ -68,13 +68,13 @@ class KamateraNodeDriver(NodeDriver):
     """
 
     type = Provider.KAMATERA
-    name = 'Kamatera'
-    website = 'https://www.kamatera.com/'
+    name = "Kamatera"
+    website = "https://www.kamatera.com/"
     connectionCls = KamateraConnection
-    features = {'create_node': ['password', 'generates_password', 'ssh_key']}
+    features = {"create_node": ["password", "generates_password", "ssh_key"]}
 
-    EX_BILLINGCYCLE_HOURLY = 'hourly'
-    EX_BILLINGCYCLE_MONTHLY = 'monthly'
+    EX_BILLINGCYCLE_HOURLY = "hourly"
+    EX_BILLINGCYCLE_MONTHLY = "monthly"
 
     def list_locations(self):
         """
@@ -82,10 +82,13 @@ class KamateraNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        response = self.connection.request('service/server?datacenter=1')
-        return [self.ex_get_location(
-            datacenter['id'], datacenter['subCategory'], datacenter['name']
-        ) for datacenter in response.object]
+        response = self.connection.request("service/server?datacenter=1")
+        return [
+            self.ex_get_location(
+                datacenter["id"], datacenter["subCategory"], datacenter["name"]
+            )
+            for datacenter in response.object
+        ]
 
     def list_sizes(self, location):
         """
@@ -97,16 +100,20 @@ class KamateraNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.list_sizes`
         """
         response = self.connection.request(
-            'service/server?sizes=1&datacenter=%s' % location.id)
-        return [self.ex_get_size(
-            size['ramMB'],
-            size['diskSizeGB'],
-            size['cpuType'],
-            size['cpuCores'],
-            extraDiskSizesGB=[],
-            monthlyTrafficPackage=size['monthlyTrafficPackage'],
-            id=size['id']
-        ) for size in response.object]
+            "service/server?sizes=1&datacenter=%s" % location.id
+        )
+        return [
+            self.ex_get_size(
+                size["ramMB"],
+                size["diskSizeGB"],
+                size["cpuType"],
+                size["cpuCores"],
+                extraDiskSizesGB=[],
+                monthlyTrafficPackage=size["monthlyTrafficPackage"],
+                id=size["id"],
+            )
+            for size in response.object
+        ]
 
     def list_images(self, location):
         """
@@ -119,20 +126,30 @@ class KamateraNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`NodeImage`
         """
         response = self.connection.request(
-            'service/server?images=1&datacenter=%s' % location.id)
+            "service/server?images=1&datacenter=%s" % location.id
+        )
         images = []
         for image in response.object:
-            extra = self._copy_dict(('datacenter', 'os', 'code',
-                                     'osDiskSizeGB', 'ramMBMin'), image)
-            images.append(self.ex_get_image(image['name'],
-                                            image['id'], extra))
+            extra = self._copy_dict(
+                ("datacenter", "os", "code", "osDiskSizeGB", "ramMBMin"), image
+            )
+            images.append(self.ex_get_image(image["name"], image["id"], extra))
         return images
 
-    def create_node(self, name, size, image, location, auth=None,
-                    ex_networks=None, ex_dailybackup=False,
-                    ex_managed=False, ex_billingcycle=EX_BILLINGCYCLE_HOURLY,
-                    ex_poweronaftercreate=True,
-                    ex_wait=True):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location,
+        auth=None,
+        ex_networks=None,
+        ex_dailybackup=False,
+        ex_managed=False,
+        ex_billingcycle=EX_BILLINGCYCLE_HOURLY,
+        ex_poweronaftercreate=True,
+        ex_wait=True,
+    ):
         """
         Creates a Kamatera node.
 
@@ -181,84 +198,97 @@ class KamateraNodeDriver(NodeDriver):
             password = auth
         else:
             auth_obj = self._get_and_check_auth(auth)
-            if getattr(auth_obj, 'generated', False):
-                password = '__generate__'
+            if getattr(auth_obj, "generated", False):
+                password = "__generate__"
                 generate_password = True
-            elif hasattr(auth_obj, 'password'):
+            elif hasattr(auth_obj, "password"):
                 password = auth_obj.password
                 generate_password = False
-            elif hasattr(auth_obj, 'pubkey'):
+            elif hasattr(auth_obj, "pubkey"):
                 pubkey = auth_obj.pubkey
         if not ex_networks:
-            ex_networks = [{'name': 'wan', 'ip': 'auto'}]
+            ex_networks = [{"name": "wan", "ip": "auto"}]
         request_data = {
             "name": name,
-            "password": password or '',
-            "passwordValidate": password or '',
-            'ssh-key': pubkey or '',
+            "password": password or "",
+            "passwordValidate": password or "",
+            "ssh-key": pubkey or "",
             "datacenter": location.id,
             "image": image.id,
-            "cpu": '%s%s' % (size.extra['cpuCores'], size.extra['cpuType']),
+            "cpu": "%s%s" % (size.extra["cpuCores"], size.extra["cpuType"]),
             "ram": size.ram,
-            "disk": ' '.join([
-                'size=%d' % disksize for disksize
-                in [size.disk] + size.extra['extraDiskSizesGB']]),
-            "dailybackup": 'yes' if ex_dailybackup else 'no',
-            "managed": 'yes' if ex_managed else 'no',
-            "network": ' '.join([','.join([
-                '%s=%s' % (k, v) for k, v
-                in network.items()]) for network in ex_networks]),
+            "disk": " ".join(
+                [
+                    "size=%d" % disksize
+                    for disksize in [size.disk] + size.extra["extraDiskSizesGB"]
+                ]
+            ),
+            "dailybackup": "yes" if ex_dailybackup else "no",
+            "managed": "yes" if ex_managed else "no",
+            "network": " ".join(
+                [
+                    ",".join(["%s=%s" % (k, v) for k, v in network.items()])
+                    for network in ex_networks
+                ]
+            ),
             "quantity": 1,
             "billingcycle": ex_billingcycle,
-            "monthlypackage": size.extra['monthlyTrafficPackage'] or '',
-            "poweronaftercreate": 'yes' if ex_poweronaftercreate else 'no'
+            "monthlypackage": size.extra["monthlyTrafficPackage"] or "",
+            "poweronaftercreate": "yes" if ex_poweronaftercreate else "no",
         }
-        response = self.connection.request('service/server', method='POST',
-                                           data=json.dumps(request_data))
+        response = self.connection.request(
+            "service/server", method="POST", data=json.dumps(request_data)
+        )
         if generate_password:
-            command_ids = response.object['commandIds']
-            generated_password = response.object['password']
+            command_ids = response.object["commandIds"]
+            generated_password = response.object["password"]
         else:
             command_ids = response.object
             generated_password = None
         if len(command_ids) != 1:
-            raise RuntimeError('invalid response')
+            raise RuntimeError("invalid response")
         node = self.ex_get_node(
-            name=name, size=size, image=image, location=location,
-            dailybackup=ex_dailybackup, managed=ex_managed,
+            name=name,
+            size=size,
+            image=image,
+            location=location,
+            dailybackup=ex_dailybackup,
+            managed=ex_managed,
             billingcycle=ex_billingcycle,
             generated_password=generated_password,
             create_command_id=command_ids[0],
-            poweronaftercreate=ex_poweronaftercreate)
+            poweronaftercreate=ex_poweronaftercreate,
+        )
         if ex_wait:
-            if (
-                'create_command_id' not in node.extra
-                or node.state != NodeState.UNKNOWN
-            ):
-                raise ValueError('invalid node for updating create status')
-            command = self.ex_wait_command(node.extra['create_command_id'])
-            node.extra['create_log'] = command.get('log')
-            if node.extra.get('poweronaftercreate'):
+            if "create_command_id" not in node.extra or node.state != NodeState.UNKNOWN:
+                raise ValueError("invalid node for updating create status")
+            command = self.ex_wait_command(node.extra["create_command_id"])
+            node.extra["create_log"] = command.get("log")
+            if node.extra.get("poweronaftercreate"):
                 node.state = NodeState.RUNNING
             else:
                 node.state = NodeState.STOPPED
-            if command.get('completed'):
+            if command.get("completed"):
                 node.created_at = datetime.datetime.strptime(
-                    command['completed'], '%Y-%m-%d %H:%M:%S')
-            name_lines = [line for line
-                          in node.extra['create_log'].split("\n")
-                          if line.startswith('Name: ')]
+                    command["completed"], "%Y-%m-%d %H:%M:%S"
+                )
+            name_lines = [
+                line
+                for line in node.extra["create_log"].split("\n")
+                if line.startswith("Name: ")
+            ]
             if len(name_lines) != 1:
-                raise RuntimeError('Invalid node create log response')
-            node.name = name_lines[0].replace('Name: ', '')
+                raise RuntimeError("Invalid node create log response")
+            node.name = name_lines[0].replace("Name: ", "")
             response = self.connection.request(
-                '/service/server/info', method='POST',
-                data=json.dumps({'name': node.name}))
+                "/service/server/info",
+                method="POST",
+                data=json.dumps({"name": node.name}),
+            )
             self._update_node_from_server_info(node, response.object[0])
         return node
 
-    def list_nodes(self, ex_name_regex=None, ex_full_details=False,
-                   ex_id=None):
+    def list_nodes(self, ex_name_regex=None, ex_full_details=False, ex_id=None):
         """
         List nodes
 
@@ -276,26 +306,33 @@ class KamateraNodeDriver(NodeDriver):
         if ex_name_regex or ex_full_details or ex_id:
             request_data = {}
             if ex_id:
-                request_data['id'] = ex_id
+                request_data["id"] = ex_id
             else:
                 if not ex_name_regex:
-                    ex_name_regex = '.*'
-                request_data['name'] = ex_name_regex
+                    ex_name_regex = ".*"
+                request_data["name"] = ex_name_regex
             response = self.connection.request(
-                '/service/server/info', method='POST',
-                data=json.dumps(request_data))
-            return [self._update_node_from_server_info(
-                self.ex_get_node(), server) for server in response.object]
+                "/service/server/info", method="POST", data=json.dumps(request_data)
+            )
+            return [
+                self._update_node_from_server_info(self.ex_get_node(), server)
+                for server in response.object
+            ]
         else:
-            response = self.connection.request('/service/servers')
+            response = self.connection.request("/service/servers")
             return [
                 self.ex_get_node(
-                    id=server['id'], name=server['name'],
+                    id=server["id"],
+                    name=server["name"],
                     state=(
-                        NodeState.RUNNING if server['power'] == 'on'
-                        else NodeState.STOPPED),
-                    location=self.ex_get_location(server['datacenter'])
-                ) for server in response.object]
+                        NodeState.RUNNING
+                        if server["power"] == "on"
+                        else NodeState.STOPPED
+                    ),
+                    location=self.ex_get_location(server["datacenter"]),
+                )
+                for server in response.object
+            ]
 
     def reboot_node(self, node, ex_wait=True):
         """
@@ -309,7 +346,7 @@ class KamateraNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        return self.ex_node_operation(node, 'reboot', ex_wait)
+        return self.ex_node_operation(node, "reboot", ex_wait)
 
     def destroy_node(self, node, ex_wait=True):
         """
@@ -323,7 +360,7 @@ class KamateraNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        return self.ex_node_operation(node, 'terminate', ex_wait)
+        return self.ex_node_operation(node, "terminate", ex_wait)
 
     def stop_node(self, node, ex_wait=True):
         """
@@ -337,7 +374,7 @@ class KamateraNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        return self.ex_node_operation(node, 'poweroff', ex_wait)
+        return self.ex_node_operation(node, "poweroff", ex_wait)
 
     def start_node(self, node, ex_wait=True):
         """
@@ -351,7 +388,7 @@ class KamateraNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        return self.ex_node_operation(node, 'poweron', ex_wait)
+        return self.ex_node_operation(node, "poweron", ex_wait)
 
     def ex_node_operation(self, node, operation, wait=True):
         """
@@ -369,21 +406,24 @@ class KamateraNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         if node.id:
-            request_data = {'id': node.id}
+            request_data = {"id": node.id}
         elif node.name:
-            request_data = {'name': node.name}
+            request_data = {"name": node.name}
         else:
-            raise ValueError('Invalid node for %s node operation: '
-                             'missing id / name' % operation)
-        if operation == 'terminate':
-            request_data['force'] = True
+            raise ValueError(
+                "Invalid node for %s node operation: " "missing id / name" % operation
+            )
+        if operation == "terminate":
+            request_data["force"] = True
         command_id = self.connection.request(
-            '/service/server/%s' % operation, method='POST',
-            data=json.dumps(request_data)).object[0]
+            "/service/server/%s" % operation,
+            method="POST",
+            data=json.dumps(request_data),
+        ).object[0]
         if wait:
             self.ex_wait_command(command_id)
         else:
-            node.extra['%s_command_id' % operation] = command_id
+            node.extra["%s_command_id" % operation] = command_id
         return True
 
     def ex_get_location(self, id, name=None, country=None):
@@ -403,9 +443,17 @@ class KamateraNodeDriver(NodeDriver):
         """
         return NodeLocation(id=id, name=name, country=country, driver=self)
 
-    def ex_get_size(self, ramMB, diskSizeGB, cpuType, cpuCores,
-                    extraDiskSizesGB=None, monthlyTrafficPackage=None,
-                    id=None, name=None):
+    def ex_get_size(
+        self,
+        ramMB,
+        diskSizeGB,
+        cpuType,
+        cpuCores,
+        extraDiskSizesGB=None,
+        monthlyTrafficPackage=None,
+        id=None,
+        name=None,
+    ):
         """
         Get a NodeSize object to use for other methods
 
@@ -439,9 +487,9 @@ class KamateraNodeDriver(NodeDriver):
         """
         if not id:
             id = str(cpuCores) + cpuType
-            id += '-' + str(ramMB) + 'MB-' + str(diskSizeGB) + 'GB'
+            id += "-" + str(ramMB) + "MB-" + str(diskSizeGB) + "GB"
             if monthlyTrafficPackage:
-                id += '-' + monthlyTrafficPackage
+                id += "-" + monthlyTrafficPackage
         if not name:
             name = id
         return NodeSize(
@@ -453,18 +501,17 @@ class KamateraNodeDriver(NodeDriver):
             price=0,
             driver=self.connection.driver,
             extra={
-                'cpuType': cpuType,
-                'cpuCores': cpuCores,
-                'monthlyTrafficPackage': monthlyTrafficPackage,
-                'extraDiskSizesGB': extraDiskSizesGB or []
-            }
+                "cpuType": cpuType,
+                "cpuCores": cpuCores,
+                "monthlyTrafficPackage": monthlyTrafficPackage,
+                "extraDiskSizesGB": extraDiskSizesGB or [],
+            },
         )
 
     def ex_get_image(self, name=None, id=None, extra=None):
         if not id and not name:
-            raise ValueError('either id or name are required for NodeImage')
-        return NodeImage(id=id or name,
-                         name=name or '', driver=self, extra=extra or {})
+            raise ValueError("either id or name are required for NodeImage")
+        return NodeImage(id=id or name, name=name or "", driver=self, extra=extra or {})
 
     def ex_list_capabilities(self, location):
         """
@@ -476,11 +523,10 @@ class KamateraNodeDriver(NodeDriver):
         :return: ``dict``
         """
         return self.connection.request(
-            'service/server?capabilities=1&'
-            'datacenter=%s' % location.id).object
+            "service/server?capabilities=1&" "datacenter=%s" % location.id
+        ).object
 
-    def ex_wait_command(self, command_id, timeout_seconds=600,
-                        poll_interval_seconds=2):
+    def ex_wait_command(self, command_id, timeout_seconds=600, poll_interval_seconds=2):
         """
         Wait for command to complete and return the command status details
 
@@ -498,20 +544,20 @@ class KamateraNodeDriver(NodeDriver):
         start_time = datetime.datetime.now()
         time.sleep(poll_interval_seconds)
         while True:
-            max_time = start_time + datetime.timedelta(
-                seconds=timeout_seconds)
+            max_time = start_time + datetime.timedelta(seconds=timeout_seconds)
             if max_time < datetime.datetime.now():
                 raise TimeoutError(
-                    'Timeout waiting for command '
-                    '(timeout_seconds=%s, command_id=%s)' % (
-                        str(timeout_seconds), str(command_id)))
+                    "Timeout waiting for command "
+                    "(timeout_seconds=%s, command_id=%s)"
+                    % (str(timeout_seconds), str(command_id))
+                )
             time.sleep(poll_interval_seconds)
             command = self.ex_get_command_status(command_id)
-            status = command.get('status')
-            if status == 'complete':
+            status = command.get("status")
+            if status == "complete":
                 return command
-            elif status == 'error':
-                raise RuntimeError('Command failed: ' + command.get('log'))
+            elif status == "error":
+                raise RuntimeError("Command failed: " + command.get("log"))
 
     def ex_get_command_status(self, command_id):
         """
@@ -522,18 +568,29 @@ class KamateraNodeDriver(NodeDriver):
 
         :return: ``dict``
         """
-        response = self.connection.request(
-            '/service/queue?id=' + str(command_id))
+        response = self.connection.request("/service/queue?id=" + str(command_id))
         if len(response.object) != 1:
-            raise RuntimeError('invalid response')
+            raise RuntimeError("invalid response")
         return response.object[0]
 
-    def ex_get_node(self, id=None, name=None, state=NodeState.UNKNOWN,
-                    public_ips=None, private_ips=None, size=None,
-                    image=None, created_at=None, location=None,
-                    dailybackup=None, managed=None, billingcycle=None,
-                    generated_password=None, create_command_id=None,
-                    poweronaftercreate=None):
+    def ex_get_node(
+        self,
+        id=None,
+        name=None,
+        state=NodeState.UNKNOWN,
+        public_ips=None,
+        private_ips=None,
+        size=None,
+        image=None,
+        created_at=None,
+        location=None,
+        dailybackup=None,
+        managed=None,
+        billingcycle=None,
+        generated_password=None,
+        create_command_id=None,
+        poweronaftercreate=None,
+    ):
         """
         Get a Kamatera node object.
 
@@ -587,23 +644,31 @@ class KamateraNodeDriver(NodeDriver):
         """
         extra = {}
         if location:
-            extra['location'] = location
+            extra["location"] = location
         if dailybackup is not None:
-            extra['dailybackup'] = dailybackup
+            extra["dailybackup"] = dailybackup
         if managed is not None:
-            extra['managed'] = managed
+            extra["managed"] = managed
         if billingcycle is not None:
-            extra['billingcycle'] = billingcycle
+            extra["billingcycle"] = billingcycle
         if generated_password is not None:
-            extra['generated_password'] = generated_password
+            extra["generated_password"] = generated_password
         if create_command_id is not None:
-            extra['create_command_id'] = create_command_id
+            extra["create_command_id"] = create_command_id
         if poweronaftercreate is not None:
-            extra['poweronaftercreate'] = poweronaftercreate
-        return Node(id=id, name=name, state=state, public_ips=public_ips,
-                    private_ips=private_ips, driver=self,
-                    size=size, image=image, created_at=created_at,
-                    extra=extra)
+            extra["poweronaftercreate"] = poweronaftercreate
+        return Node(
+            id=id,
+            name=name,
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self,
+            size=size,
+            image=image,
+            created_at=created_at,
+            extra=extra,
+        )
 
     def _copy_dict(self, keys, d):
         extra = {}
@@ -612,28 +677,27 @@ class KamateraNodeDriver(NodeDriver):
         return extra
 
     def _update_node_from_server_info(self, node, server):
-        node.id = server['id']
-        node.name = server['name']
-        if server['power'] == 'on':
+        node.id = server["id"]
+        node.name = server["name"]
+        if server["power"] == "on":
             node.state = NodeState.RUNNING
         else:
             node.state = NodeState.STOPPED
-        for network in server.get('networks', []):
-            if network.get('network').startswith('wan-'):
-                node.public_ips += network.get('ips', [])
+        for network in server.get("networks", []):
+            if network.get("network").startswith("wan-"):
+                node.public_ips += network.get("ips", [])
             else:
-                node.private_ips += network.get('ips', [])
-        billing = server.get('billing',
-                             node.extra.get('billingcycle')).lower()
+                node.private_ips += network.get("ips", [])
+        billing = server.get("billing", node.extra.get("billingcycle")).lower()
         if billing == self.EX_BILLINGCYCLE_HOURLY:
-            node.extra['billingcycle'] = self.EX_BILLINGCYCLE_HOURLY
-            node.extra['priceOn'] = server.get('priceHourlyOn')
-            node.extra['priceOff'] = server.get('priceHourlyOff')
+            node.extra["billingcycle"] = self.EX_BILLINGCYCLE_HOURLY
+            node.extra["priceOn"] = server.get("priceHourlyOn")
+            node.extra["priceOff"] = server.get("priceHourlyOff")
         else:
-            node.extra['billingcycle'] = self.EX_BILLINGCYCLE_MONTHLY
-            node.extra['priceOn'] = server.get('priceMonthlyOn')
-            node.extra['priceOff'] = server.get('priceMonthlyOn')
-        node.extra['location'] = self.ex_get_location(server['datacenter'])
-        node.extra['dailybackup'] = server.get('backup') == "1"
-        node.extra['managed'] = server.get('managed') == "1"
+            node.extra["billingcycle"] = self.EX_BILLINGCYCLE_MONTHLY
+            node.extra["priceOn"] = server.get("priceMonthlyOn")
+            node.extra["priceOff"] = server.get("priceMonthlyOn")
+        node.extra["location"] = self.ex_get_location(server["datacenter"])
+        node.extra["dailybackup"] = server.get("backup") == "1"
+        node.extra["managed"] = server.get("managed") == "1"
         return node

@@ -20,7 +20,7 @@ from libcloud.storage.providers import get_driver
 
 CloudFiles = get_driver(Provider.CLOUDFILES)
 
-driver = CloudFiles('access key id', 'secret key', region='ord')
+driver = CloudFiles("access key id", "secret key", region="ord")
 
 containers = driver.list_containers()
 container_objects = driver.list_container_objects(containers[0])

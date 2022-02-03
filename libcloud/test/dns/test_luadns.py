@@ -28,25 +28,34 @@ from libcloud.dns.base import Zone, Record
 
 
 class LuadnsTests(unittest.TestCase):
-
     def setUp(self):
         LuadnsMockHttp.type = None
         LuadnsDNSDriver.connectionCls.conn_class = LuadnsMockHttp
         self.driver = LuadnsDNSDriver(*DNS_PARAMS_LUADNS)
-        self.test_zone = Zone(id='11', type='master', ttl=None,
-                              domain='example.com', extra={},
-                              driver=self.driver)
-        self.test_record = Record(id='13', type=RecordType.A,
-                                  name='example.com', zone=self.test_zone,
-                                  data='127.0.0.1', driver=self, extra={})
+        self.test_zone = Zone(
+            id="11",
+            type="master",
+            ttl=None,
+            domain="example.com",
+            extra={},
+            driver=self.driver,
+        )
+        self.test_record = Record(
+            id="13",
+            type=RecordType.A,
+            name="example.com",
+            zone=self.test_zone,
+            data="127.0.0.1",
+            driver=self,
+            extra={},
+        )
 
     def assertHasKeys(self, dictionary, keys):
         for key in keys:
-            self.assertTrue(key in dictionary,
-                            'key "%s" not in dictionary' % key)
+            self.assertTrue(key in dictionary, 'key "%s" not in dictionary' % key)
 
     def test_list_zones_empty(self):
-        LuadnsMockHttp.type = 'EMPTY_ZONES_LIST'
+        LuadnsMockHttp.type = "EMPTY_ZONES_LIST"
         zones = self.driver.list_zones()
 
         self.assertEqual(zones, [])
@@ -57,148 +66,150 @@ class LuadnsTests(unittest.TestCase):
         self.assertEqual(len(zones), 2)
 
         zone = zones[0]
-        self.assertEqual(zone.id, '1')
-        self.assertEqual(zone.domain, 'example.com')
+        self.assertEqual(zone.id, "1")
+        self.assertEqual(zone.domain, "example.com")
         self.assertIsNone(zone.type)
         self.assertEqual(zone.driver, self.driver)
         self.assertIsNone(zone.ttl)
 
         second_zone = zones[1]
-        self.assertEqual(second_zone.id, '2')
-        self.assertEqual(second_zone.domain, 'example.net')
+        self.assertEqual(second_zone.id, "2")
+        self.assertEqual(second_zone.domain, "example.net")
         self.assertIsNone(second_zone.type)
         self.assertEqual(second_zone.driver, self.driver)
         self.assertIsNone(second_zone.ttl)
 
     def test_get_zone_zone_does_not_exist(self):
-        LuadnsMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+        LuadnsMockHttp.type = "ZONE_DOES_NOT_EXIST"
         try:
-            self.driver.get_zone(zone_id='13')
+            self.driver.get_zone(zone_id="13")
         except ZoneDoesNotExistError as e:
-            self.assertEqual(e.zone_id, '13')
+            self.assertEqual(e.zone_id, "13")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_get_zone_success(self):
-        LuadnsMockHttp.type = 'GET_ZONE_SUCCESS'
-        zone = self.driver.get_zone(zone_id='31')
+        LuadnsMockHttp.type = "GET_ZONE_SUCCESS"
+        zone = self.driver.get_zone(zone_id="31")
 
-        self.assertEqual(zone.id, '31')
-        self.assertEqual(zone.domain, 'example.org')
+        self.assertEqual(zone.id, "31")
+        self.assertEqual(zone.domain, "example.org")
         self.assertIsNone(zone.type)
         self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_delete_zone_success(self):
-        LuadnsMockHttp.type = 'DELETE_ZONE_SUCCESS'
+        LuadnsMockHttp.type = "DELETE_ZONE_SUCCESS"
         zone = self.test_zone
         status = self.driver.delete_zone(zone=zone)
 
         self.assertEqual(status, True)
 
     def test_delete_zone_zone_does_not_exist(self):
-        LuadnsMockHttp.type = 'DELETE_ZONE_ZONE_DOES_NOT_EXIST'
+        LuadnsMockHttp.type = "DELETE_ZONE_ZONE_DOES_NOT_EXIST"
         zone = self.test_zone
         try:
             self.driver.delete_zone(zone=zone)
         except ZoneDoesNotExistError as e:
-            self.assertEqual(e.zone_id, '11')
+            self.assertEqual(e.zone_id, "11")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_create_zone_success(self):
-        LuadnsMockHttp.type = 'CREATE_ZONE_SUCCESS'
-        zone = self.driver.create_zone(domain='example.org')
+        LuadnsMockHttp.type = "CREATE_ZONE_SUCCESS"
+        zone = self.driver.create_zone(domain="example.org")
 
-        self.assertEqual(zone.id, '3')
-        self.assertEqual(zone.domain, 'example.org')
+        self.assertEqual(zone.id, "3")
+        self.assertEqual(zone.domain, "example.org")
         self.assertIsNone(zone.type)
         self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_create_zone_zone_zone_already_exists(self):
-        LuadnsMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'
+        LuadnsMockHttp.type = "CREATE_ZONE_ZONE_ALREADY_EXISTS"
         try:
-            self.driver.create_zone(domain='test.com')
+            self.driver.create_zone(domain="test.com")
         except ZoneAlreadyExistsError as e:
-            self.assertEqual(e.zone_id, 'test.com')
+            self.assertEqual(e.zone_id, "test.com")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_list_records_empty(self):
-        LuadnsMockHttp.type = 'EMPTY_RECORDS_LIST'
+        LuadnsMockHttp.type = "EMPTY_RECORDS_LIST"
         zone = self.test_zone
         records = self.driver.list_records(zone=zone)
 
         self.assertEqual(records, [])
 
     def test_list_records_success(self):
-        LuadnsMockHttp.type = 'LIST_RECORDS_SUCCESS'
+        LuadnsMockHttp.type = "LIST_RECORDS_SUCCESS"
         zone = self.test_zone
         records = self.driver.list_records(zone=zone)
 
         self.assertEqual(len(records), 2)
 
         record = records[0]
-        self.assertEqual(record.id, '6683')
-        self.assertEqual(record.type, 'NS')
-        self.assertEqual(record.name, 'example.org.')
-        self.assertEqual(record.data, 'b.ns.luadns.net.')
+        self.assertEqual(record.id, "6683")
+        self.assertEqual(record.type, "NS")
+        self.assertEqual(record.name, "example.org.")
+        self.assertEqual(record.data, "b.ns.luadns.net.")
         self.assertEqual(record.zone, self.test_zone)
-        self.assertEqual(record.zone.id, '11')
+        self.assertEqual(record.zone.id, "11")
 
         second_record = records[1]
-        self.assertEqual(second_record.id, '6684')
-        self.assertEqual(second_record.type, 'NS')
-        self.assertEqual(second_record.name, 'example.org.')
-        self.assertEqual(second_record.data, 'a.ns.luadns.net.')
+        self.assertEqual(second_record.id, "6684")
+        self.assertEqual(second_record.type, "NS")
+        self.assertEqual(second_record.name, "example.org.")
+        self.assertEqual(second_record.data, "a.ns.luadns.net.")
         self.assertEqual(second_record.zone, self.test_zone)
 
     def test_get_record_record_does_not_exist(self):
-        LuadnsMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
+        LuadnsMockHttp.type = "GET_RECORD_RECORD_DOES_NOT_EXIST"
         try:
-            self.driver.get_record(zone_id='31', record_id='31')
+            self.driver.get_record(zone_id="31", record_id="31")
         except RecordDoesNotExistError as e:
-            self.assertEqual(e.record_id, '31')
+            self.assertEqual(e.record_id, "31")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_get_record_success(self):
-        LuadnsMockHttp.type = 'GET_RECORD_SUCCESS'
-        record = self.driver.get_record(zone_id='31', record_id='31')
+        LuadnsMockHttp.type = "GET_RECORD_SUCCESS"
+        record = self.driver.get_record(zone_id="31", record_id="31")
 
-        self.assertEqual(record.id, '31')
-        self.assertEqual(record.type, 'MX')
-        self.assertEqual(record.name, 'example.com.')
-        self.assertEqual(record.data, '10 mail.example.com.')
+        self.assertEqual(record.id, "31")
+        self.assertEqual(record.type, "MX")
+        self.assertEqual(record.name, "example.com.")
+        self.assertEqual(record.data, "10 mail.example.com.")
 
     def test_delete_record_success(self):
-        LuadnsMockHttp.type = 'DELETE_RECORD_SUCCESS'
+        LuadnsMockHttp.type = "DELETE_RECORD_SUCCESS"
         record = self.test_record
         status = self.driver.delete_record(record=record)
 
         self.assertEqual(status, True)
 
     def test_delete_record_RECORD_DOES_NOT_EXIST_ERROR(self):
-        LuadnsMockHttp.type = 'DELETE_RECORD_RECORD_DOES_NOT_EXIST'
+        LuadnsMockHttp.type = "DELETE_RECORD_RECORD_DOES_NOT_EXIST"
         record = self.test_record
         try:
             self.driver.delete_record(record=record)
         except RecordDoesNotExistError as e:
-            self.assertEqual(e.record_id, '13')
+            self.assertEqual(e.record_id, "13")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_create_record_success(self):
-        LuadnsMockHttp.type = 'CREATE_RECORD_SUCCESS'
-        record = self.driver.create_record(name='test.com.',
-                                           zone=self.test_zone,
-                                           type='A',
-                                           data='127.0.0.1',
-                                           extra={'ttl': 13})
-        self.assertEqual(record.id, '31')
-        self.assertEqual(record.name, 'test.com.')
-        self.assertEqual(record.data, '127.0.0.1')
+        LuadnsMockHttp.type = "CREATE_RECORD_SUCCESS"
+        record = self.driver.create_record(
+            name="test.com.",
+            zone=self.test_zone,
+            type="A",
+            data="127.0.0.1",
+            extra={"ttl": 13},
+        )
+        self.assertEqual(record.id, "31")
+        self.assertEqual(record.name, "test.com.")
+        self.assertEqual(record.data, "127.0.0.1")
         self.assertIsNone(record.ttl)
 
     def test_record_already_exists_error(self):
@@ -206,110 +217,98 @@ class LuadnsTests(unittest.TestCase):
 
 
 class LuadnsMockHttp(MockHttp):
-    fixtures = DNSFileFixtures('luadns')
+    fixtures = DNSFileFixtures("luadns")
 
     def _v1_zones(self, method, url, body, headers):
-        body = self.fixtures.load('zones_list.json')
+        body = self.fixtures.load("zones_list.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_EMPTY_ZONES_LIST(self, method, url, body,
-                                   headers):
-        body = self.fixtures.load('empty_zones_list.json')
+    def _v1_zones_EMPTY_ZONES_LIST(self, method, url, body, headers):
+        body = self.fixtures.load("empty_zones_list.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_13_ZONE_DOES_NOT_EXIST(self, method, url,
-                                         body, headers):
-        body = self.fixtures.load('zone_does_not_exist.json')
+    def _v1_zones_13_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load("zone_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_31_GET_ZONE_SUCCESS(self, method, url,
-                                      body, headers):
-        body = self.fixtures.load('get_zone.json')
+    def _v1_zones_31_GET_ZONE_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("get_zone.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_11_DELETE_ZONE_SUCCESS(self, method, url,
-                                         body, headers):
-        body = self.fixtures.load('delete_zone_success.json')
+    def _v1_zones_11_DELETE_ZONE_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("delete_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_11_DELETE_ZONE_ZONE_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('zone_does_not_exist.json')
+    def _v1_zones_11_DELETE_ZONE_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load("zone_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_CREATE_ZONE_SUCCESS(self, method, url,
-                                      body, headers):
-        body = self.fixtures.load('create_zone_success.json')
+    def _v1_zones_CREATE_ZONE_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("create_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_CREATE_ZONE_ZONE_ALREADY_EXISTS(
-            self, method, url, body, headers):
-        body = self.fixtures.load('zone_already_exists.json')
+    def _v1_zones_CREATE_ZONE_ZONE_ALREADY_EXISTS(self, method, url, body, headers):
+        body = self.fixtures.load("zone_already_exists.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_11_records_EMPTY_RECORDS_LIST(self, method, url, body,
-                                                headers):
-        body = self.fixtures.load('empty_records_list.json')
+    def _v1_zones_11_records_EMPTY_RECORDS_LIST(self, method, url, body, headers):
+        body = self.fixtures.load("empty_records_list.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_11_records_LIST_RECORDS_SUCCESS(self, method, url,
-                                                  body, headers):
-        body = self.fixtures.load('records_list.json')
+    def _v1_zones_11_records_LIST_RECORDS_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("records_list.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _v1_zones_31_records_31_GET_RECORD_RECORD_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('record_does_not_exist.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("record_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_31_GET_RECORD_RECORD_DOES_NOT_EXIST(
-            self, method, url, body, headers):
+    def _v1_zones_31_GET_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
 
-        body = self.fixtures.load('get_zone.json')
-
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
-
-    def _v1_zones_31_GET_RECORD_SUCCESS(self, method, url,
-                                        body, headers):
-        body = self.fixtures.load('get_zone.json')
+        body = self.fixtures.load("get_zone.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_31_records_31_GET_RECORD_SUCCESS(self, method, url,
-                                                   body, headers):
-        body = self.fixtures.load('get_record.json')
+    def _v1_zones_31_GET_RECORD_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("get_zone.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_11_records_13_DELETE_RECORD_SUCCESS(self, method, url,
-                                                      body, headers):
-        body = self.fixtures.load('delete_record_success.json')
+    def _v1_zones_31_records_31_GET_RECORD_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("get_record.json")
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _v1_zones_11_records_13_DELETE_RECORD_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("delete_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _v1_zones_11_records_13_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('record_does_not_exist.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("record_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_11_records_CREATE_RECORD_SUCCESS(self, method, url,
-                                                   body, headers):
-        body = self.fixtures.load('create_record_success.json')
+    def _v1_zones_11_records_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("create_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

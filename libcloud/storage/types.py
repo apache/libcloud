@@ -16,17 +16,16 @@
 from libcloud.common.types import LibcloudError
 
 __all__ = [
-    'Provider',
-    'ContainerError',
-    'ObjectError',
-    'ContainerAlreadyExistsError',
-    'ContainerDoesNotExistError',
-    'ContainerIsNotEmptyError',
-    'ObjectDoesNotExistError',
-    'ObjectHashMismatchError',
-    'InvalidContainerNameError',
-
-    'OLD_CONSTANT_TO_NEW_MAPPING'
+    "Provider",
+    "ContainerError",
+    "ObjectError",
+    "ContainerAlreadyExistsError",
+    "ContainerDoesNotExistError",
+    "ContainerIsNotEmptyError",
+    "ObjectDoesNotExistError",
+    "ObjectHashMismatchError",
+    "InvalidContainerNameError",
+    "OLD_CONSTANT_TO_NEW_MAPPING",
 ]
 
 
@@ -71,71 +70,76 @@ class Provider(object):
     :cvar S3_RGW: S3 RGW
     :cvar S3_RGW_OUTSCALE: OUTSCALE S3 RGW
     """
-    DUMMY = 'dummy'
-    ALIYUN_OSS = 'aliyun_oss'
-    AURORAOBJECTS = 'auroraobjects'
-    AZURE_BLOBS = 'azure_blobs'
-    BACKBLAZE_B2 = 'backblaze_b2'
-    CLOUDFILES = 'cloudfiles'
-    DIGITALOCEAN_SPACES = 'digitalocean_spaces'
-    GOOGLE_STORAGE = 'google_storage'
-    KTUCLOUD = 'ktucloud'
-    LOCAL = 'local'
-    NIMBUS = 'nimbus'
-    NINEFOLD = 'ninefold'
-    OPENSTACK_SWIFT = 'openstack_swift'
-    S3 = 's3'
-    S3_AP_NORTHEAST = 's3_ap_northeast'
-    S3_AP_NORTHEAST1 = 's3_ap_northeast_1'
-    S3_AP_NORTHEAST2 = 's3_ap_northeast_2'
-    S3_AP_SOUTH = 's3_ap_south'
-    S3_AP_SOUTHEAST = 's3_ap_southeast'
-    S3_AP_SOUTHEAST2 = 's3_ap_southeast2'
-    S3_CA_CENTRAL = 's3_ca_central'
-    S3_CN_NORTH = 's3_cn_north'
-    S3_CN_NORTHWEST = 's3_cn_northwest'
-    S3_EU_WEST = 's3_eu_west'
-    S3_EU_WEST2 = 's3_eu_west_2'
-    S3_EU_CENTRAL = 's3_eu_central'
-    S3_EU_NORTH1 = 's3_eu_north_1'
-    S3_SA_EAST = 's3_sa_east'
-    S3_US_EAST2 = 's3_us_east_2'
-    S3_US_WEST = 's3_us_west'
-    S3_US_WEST_OREGON = 's3_us_west_oregon'
-    S3_US_GOV_WEST = 's3_us_gov_west'
-    S3_RGW = 's3_rgw'
-    S3_RGW_OUTSCALE = 's3_rgw_outscale'
-    MINIO = 'minio'
+
+    DUMMY = "dummy"
+    ALIYUN_OSS = "aliyun_oss"
+    AURORAOBJECTS = "auroraobjects"
+    AZURE_BLOBS = "azure_blobs"
+    BACKBLAZE_B2 = "backblaze_b2"
+    CLOUDFILES = "cloudfiles"
+    DIGITALOCEAN_SPACES = "digitalocean_spaces"
+    GOOGLE_STORAGE = "google_storage"
+    KTUCLOUD = "ktucloud"
+    LOCAL = "local"
+    NIMBUS = "nimbus"
+    NINEFOLD = "ninefold"
+    OPENSTACK_SWIFT = "openstack_swift"
+    S3 = "s3"
+    S3_AP_NORTHEAST = "s3_ap_northeast"
+    S3_AP_NORTHEAST1 = "s3_ap_northeast_1"
+    S3_AP_NORTHEAST2 = "s3_ap_northeast_2"
+    S3_AP_SOUTH = "s3_ap_south"
+    S3_AP_SOUTHEAST = "s3_ap_southeast"
+    S3_AP_SOUTHEAST2 = "s3_ap_southeast2"
+    S3_CA_CENTRAL = "s3_ca_central"
+    S3_CN_NORTH = "s3_cn_north"
+    S3_CN_NORTHWEST = "s3_cn_northwest"
+    S3_EU_WEST = "s3_eu_west"
+    S3_EU_WEST2 = "s3_eu_west_2"
+    S3_EU_CENTRAL = "s3_eu_central"
+    S3_EU_NORTH1 = "s3_eu_north_1"
+    S3_SA_EAST = "s3_sa_east"
+    S3_US_EAST2 = "s3_us_east_2"
+    S3_US_WEST = "s3_us_west"
+    S3_US_WEST_OREGON = "s3_us_west_oregon"
+    S3_US_GOV_WEST = "s3_us_gov_west"
+    S3_RGW = "s3_rgw"
+    S3_RGW_OUTSCALE = "s3_rgw_outscale"
+    MINIO = "minio"
+    SCALEWAY = "scaleway"
 
     # Deperecated
-    CLOUDFILES_US = 'cloudfiles_us'
-    CLOUDFILES_UK = 'cloudfiles_uk'
-    CLOUDFILES_SWIFT = 'cloudfiles_swift'
+    CLOUDFILES_US = "cloudfiles_us"
+    CLOUDFILES_UK = "cloudfiles_uk"
+    CLOUDFILES_SWIFT = "cloudfiles_swift"
 
 
 OLD_CONSTANT_TO_NEW_MAPPING = {
     # CloudFiles
     Provider.CLOUDFILES_US: Provider.CLOUDFILES,
     Provider.CLOUDFILES_UK: Provider.CLOUDFILES_UK,
-    Provider.CLOUDFILES_SWIFT: Provider.OPENSTACK_SWIFT
+    Provider.CLOUDFILES_SWIFT: Provider.OPENSTACK_SWIFT,
 }
 
 
 class ContainerError(LibcloudError):
-    error_type = 'ContainerError'
+    error_type = "ContainerError"
 
     def __init__(self, value, driver, container_name):
         self.container_name = container_name
         super(ContainerError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
-        return ('<%s in %s, container=%s, value=%s>' %
-                (self.error_type, repr(self.driver),
-                 self.container_name, self.value))
+        return "<%s in %s, container=%s, value=%s>" % (
+            self.error_type,
+            repr(self.driver),
+            self.container_name,
+            self.value,
+        )
 
 
 class ObjectError(LibcloudError):
-    error_type = 'ContainerError'
+    error_type = "ContainerError"
 
     def __init__(self, value, driver, object_name):
         self.object_name = object_name
@@ -145,31 +149,33 @@ class ObjectError(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return '<%s in %s, value=%s, object = %s>' % (self.error_type,
-                                                      repr(self.driver),
-                                                      self.value,
-                                                      self.object_name)
+        return "<%s in %s, value=%s, object = %s>" % (
+            self.error_type,
+            repr(self.driver),
+            self.value,
+            self.object_name,
+        )
 
 
 class ContainerAlreadyExistsError(ContainerError):
-    error_type = 'ContainerAlreadyExistsError'
+    error_type = "ContainerAlreadyExistsError"
 
 
 class ContainerDoesNotExistError(ContainerError):
-    error_type = 'ContainerDoesNotExistError'
+    error_type = "ContainerDoesNotExistError"
 
 
 class ContainerIsNotEmptyError(ContainerError):
-    error_type = 'ContainerIsNotEmptyError'
+    error_type = "ContainerIsNotEmptyError"
 
 
 class ObjectDoesNotExistError(ObjectError):
-    error_type = 'ObjectDoesNotExistError'
+    error_type = "ObjectDoesNotExistError"
 
 
 class ObjectHashMismatchError(ObjectError):
-    error_type = 'ObjectHashMismatchError'
+    error_type = "ObjectHashMismatchError"
 
 
 class InvalidContainerNameError(ContainerError):
-    error_type = 'InvalidContainerNameError'
+    error_type = "InvalidContainerNameError"

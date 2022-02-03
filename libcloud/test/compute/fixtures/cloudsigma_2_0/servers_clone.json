@@ -9,8 +9,8 @@
             "dev_channel": "0:0",
             "device": "ide",
             "drive": {
-                "resource_uri": "/api/2.0/drives/f1e42abe-f7db-4dcc-b37e-e53aca7a3ba9/",
-                "uuid": "f1e42abe-f7db-4dcc-b37e-e53aca7a3ba9"
+                "resource_uri": "/api/2.0/drives/b02311e2-a83c-4c12-af10-b30d51c86913/",
+                "uuid": "b02311e2-a83c-4c12-af10-b30d51c86913"
             }
         }
     ],

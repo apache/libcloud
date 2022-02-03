@@ -17,10 +17,10 @@ from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.backup.types import BackupTargetType
 
 __all__ = [
-    'BackupTarget',
-    'BackupDriver',
-    'BackupTargetJob',
-    'BackupTargetRecoveryPoint'
+    "BackupTarget",
+    "BackupDriver",
+    "BackupTargetJob",
+    "BackupTargetRecoveryPoint",
 ]
 
 
@@ -57,10 +57,9 @@ class BackupTarget(object):
         self.extra = extra or {}
 
     def update(self, name=None, address=None, extra=None):
-        return self.driver.update_target(target=self,
-                                         name=name,
-                                         address=address,
-                                         extra=extra)
+        return self.driver.update_target(
+            target=self, name=name, address=address, extra=extra
+        )
 
     def delete(self):
         return self.driver.delete_target(target=self)
@@ -74,10 +73,13 @@ class BackupTarget(object):
         return target_id
 
     def __repr__(self):
-        return ('<Target: id=%s, name=%s, address=%s'
-                'type=%s, provider=%s ...>' %
-                (self.id, self.name, self.address,
-                 self.type, self.driver.name))
+        return "<Target: id=%s, name=%s, address=%s" "type=%s, provider=%s ...>" % (
+            self.id,
+            self.name,
+            self.address,
+            self.type,
+            self.driver.name,
+        )
 
 
 class BackupTargetJob(object):
@@ -122,10 +124,13 @@ class BackupTargetJob(object):
         return self.driver.resume_target_job(job=self)
 
     def __repr__(self):
-        return ('<Job: id=%s, status=%s, progress=%s'
-                'target=%s, provider=%s ...>' %
-                (self.id, self.status, self.progress,
-                 self.target.id, self.driver.name))
+        return "<Job: id=%s, status=%s, progress=%s" "target=%s, provider=%s ...>" % (
+            self.id,
+            self.status,
+            self.progress,
+            self.target.id,
+            self.driver.name,
+        )
 
 
 class BackupTargetRecoveryPoint(object):
@@ -165,8 +170,9 @@ class BackupTargetRecoveryPoint(object):
 
         :rtype: Instance of :class:`.BackupTargetJob`
         """
-        return self.driver.recover_target(target=self.target,
-                                          recovery_point=self, path=path)
+        return self.driver.recover_target(
+            target=self.target, recovery_point=self, path=path
+        )
 
     def recover_to(self, recovery_target, path=None):
         """
@@ -184,13 +190,16 @@ class BackupTargetRecoveryPoint(object):
             target=self.target,
             recovery_point=self,
             recovery_target=recovery_target,
-            path=path)
+            path=path,
+        )
 
     def __repr__(self):
-        return ('<RecoveryPoint: id=%s, date=%s, '
-                'target=%s, provider=%s ...>' %
-                (self.id, self.date,
-                 self.target.id, self.driver.name))
+        return "<RecoveryPoint: id=%s, date=%s, " "target=%s, provider=%s ...>" % (
+            self.id,
+            self.date,
+            self.target.id,
+            self.driver.name,
+        )
 
 
 class BackupDriver(BaseDriver):
@@ -199,12 +208,12 @@ class BackupDriver(BaseDriver):
 
     This class is always subclassed by a specific driver.
     """
+
     connectionCls = ConnectionUserAndKey
     name = None
     website = None
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 **kwargs):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -224,9 +233,9 @@ class BackupDriver(BaseDriver):
 
         :return: ``None``
         """
-        super(BackupDriver, self).__init__(key=key, secret=secret,
-                                           secure=secure, host=host, port=port,
-                                           **kwargs)
+        super(BackupDriver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
+        )
 
     def get_supported_target_types(self):
         """
@@ -235,7 +244,8 @@ class BackupDriver(BaseDriver):
         :return: ``list`` of :class:``BackupTargetType``
         """
         raise NotImplementedError(
-            'get_supported_target_types not implemented for this driver')
+            "get_supported_target_types not implemented for this driver"
+        )
 
     def list_targets(self):
         """
@@ -243,11 +253,9 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.BackupTarget`
         """
-        raise NotImplementedError(
-            'list_targets not implemented for this driver')
+        raise NotImplementedError("list_targets not implemented for this driver")
 
-    def create_target(self, name, address,
-                      type=BackupTargetType.VIRTUAL, extra=None):
+    def create_target(self, name, address, type=BackupTargetType.VIRTUAL, extra=None):
         """
         Creates a new backup target
 
@@ -265,11 +273,9 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`.BackupTarget`
         """
-        raise NotImplementedError(
-            'create_target not implemented for this driver')
+        raise NotImplementedError("create_target not implemented for this driver")
 
-    def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL,
-                                extra=None):
+    def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL, extra=None):
         """
         Creates a new backup target from an existing node.
         By default, this will use the first public IP of the node
@@ -285,14 +291,13 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`.BackupTarget`
         """
-        return self.create_target(name=node.name,
-                                  address=node.public_ips[0],
-                                  type=type,
-                                  extra=None)
+        return self.create_target(
+            name=node.name, address=node.public_ips[0], type=type, extra=None
+        )
 
-    def create_target_from_storage_container(self, container,
-                                             type=BackupTargetType.OBJECT,
-                                             extra=None):
+    def create_target_from_storage_container(
+        self, container, type=BackupTargetType.OBJECT, extra=None
+    ):
         """
         Creates a new backup target from an existing storage container
 
@@ -307,10 +312,9 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`.BackupTarget`
         """
-        return self.create_target(name=container.name,
-                                  address=container.get_cdn_url(),
-                                  type=type,
-                                  extra=None)
+        return self.create_target(
+            name=container.name, address=container.get_cdn_url(), type=type, extra=None
+        )
 
     def update_target(self, target, name, address, extra):
         """
@@ -330,8 +334,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`.BackupTarget`
         """
-        raise NotImplementedError(
-            'update_target not implemented for this driver')
+        raise NotImplementedError("update_target not implemented for this driver")
 
     def delete_target(self, target):
         """
@@ -340,8 +343,7 @@ class BackupDriver(BaseDriver):
         :param target: Backup target to delete
         :type  target: Instance of :class:`.BackupTarget`
         """
-        raise NotImplementedError(
-            'delete_target not implemented for this driver')
+        raise NotImplementedError("delete_target not implemented for this driver")
 
     def list_recovery_points(self, target, start_date=None, end_date=None):
         """
@@ -359,7 +361,8 @@ class BackupDriver(BaseDriver):
         :rtype: ``list`` of :class:`.BackupTargetRecoveryPoint`
         """
         raise NotImplementedError(
-            'list_recovery_points not implemented for this driver')
+            "list_recovery_points not implemented for this driver"
+        )
 
     def recover_target(self, target, recovery_point, path=None):
         """
@@ -376,11 +379,11 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`.BackupTargetJob`
         """
-        raise NotImplementedError(
-            'recover_target not implemented for this driver')
+        raise NotImplementedError("recover_target not implemented for this driver")
 
-    def recover_target_out_of_place(self, target, recovery_point,
-                                    recovery_target, path=None):
+    def recover_target_out_of_place(
+        self, target, recovery_point, recovery_target, path=None
+    ):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -399,7 +402,8 @@ class BackupDriver(BaseDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         raise NotImplementedError(
-            'recover_target_out_of_place not implemented for this driver')
+            "recover_target_out_of_place not implemented for this driver"
+        )
 
     def get_target_job(self, target, id):
         """
@@ -425,8 +429,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.BackupTargetJob`
         """
-        raise NotImplementedError(
-            'list_target_jobs not implemented for this driver')
+        raise NotImplementedError("list_target_jobs not implemented for this driver")
 
     def create_target_job(self, target, extra=None):
         """
@@ -440,8 +443,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            'create_target_job not implemented for this driver')
+        raise NotImplementedError("create_target_job not implemented for this driver")
 
     def resume_target_job(self, job):
         """
@@ -455,8 +457,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'resume_target_job not implemented for this driver')
+        raise NotImplementedError("resume_target_job not implemented for this driver")
 
     def suspend_target_job(self, job):
         """
@@ -470,8 +471,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'suspend_target_job not implemented for this driver')
+        raise NotImplementedError("suspend_target_job not implemented for this driver")
 
     def cancel_target_job(self, job):
         """
@@ -485,5 +485,4 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'cancel_target_job not implemented for this driver')
+        raise NotImplementedError("cancel_target_job not implemented for this driver")

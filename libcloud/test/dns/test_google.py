@@ -29,14 +29,13 @@ from libcloud.test.secrets import DNS_PARAMS_GOOGLE, DNS_KEYWORD_PARAMS_GOOGLE
 
 
 class GoogleTests(GoogleTestCase):
-
     def setUp(self):
         GoogleDNSMockHttp.test = self
         GoogleDNSDriver.connectionCls.conn_class = GoogleDNSMockHttp
         GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GoogleDNSMockHttp.type = None
         kwargs = DNS_KEYWORD_PARAMS_GOOGLE.copy()
-        kwargs['auth_type'] = 'IA'
+        kwargs["auth_type"] = "IA"
         self.driver = GoogleDNSDriver(*DNS_PARAMS_GOOGLE, **kwargs)
 
     def test_default_scopes(self):
@@ -52,136 +51,144 @@ class GoogleTests(GoogleTestCase):
         self.assertEqual(len(records), 3)
 
     def test_get_zone(self):
-        zone = self.driver.get_zone('example-com')
-        self.assertEqual(zone.id, 'example-com')
-        self.assertEqual(zone.domain, 'example.com.')
+        zone = self.driver.get_zone("example-com")
+        self.assertEqual(zone.id, "example-com")
+        self.assertEqual(zone.domain, "example.com.")
 
     def test_get_zone_does_not_exist(self):
-        GoogleDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+        GoogleDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
 
         try:
-            self.driver.get_zone('example-com')
+            self.driver.get_zone("example-com")
         except ZoneDoesNotExistError as e:
-            self.assertEqual(e.zone_id, 'example-com')
+            self.assertEqual(e.zone_id, "example-com")
         else:
-            self.fail('Exception not thrown')
+            self.fail("Exception not thrown")
 
     def test_get_record(self):
-        GoogleDNSMockHttp.type = 'FILTER_ZONES'
+        GoogleDNSMockHttp.type = "FILTER_ZONES"
         zone = self.driver.list_zones()[0]
         record = self.driver.get_record(zone.id, "A:foo.example.com.")
-        self.assertEqual(record.id, 'A:foo.example.com.')
-        self.assertEqual(record.name, 'foo.example.com.')
-        self.assertEqual(record.type, 'A')
-        self.assertEqual(record.zone.id, 'example-com')
+        self.assertEqual(record.id, "A:foo.example.com.")
+        self.assertEqual(record.name, "foo.example.com.")
+        self.assertEqual(record.type, "A")
+        self.assertEqual(record.zone.id, "example-com")
 
     def test_get_record_zone_does_not_exist(self):
-        GoogleDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+        GoogleDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
 
         try:
-            self.driver.get_record('example-com', 'a:a')
+            self.driver.get_record("example-com", "a:a")
         except ZoneDoesNotExistError as e:
-            self.assertEqual(e.zone_id, 'example-com')
+            self.assertEqual(e.zone_id, "example-com")
         else:
-            self.fail('Exception not thrown')
+            self.fail("Exception not thrown")
 
     def test_get_record_record_does_not_exist(self):
-        GoogleDNSMockHttp.type = 'RECORD_DOES_NOT_EXIST'
+        GoogleDNSMockHttp.type = "RECORD_DOES_NOT_EXIST"
         try:
-            self.driver.get_record('example-com', "A:foo")
+            self.driver.get_record("example-com", "A:foo")
         except RecordDoesNotExistError as e:
-            self.assertEqual(e.record_id, 'A:foo')
+            self.assertEqual(e.record_id, "A:foo")
         else:
-            self.fail('Exception not thrown')
+            self.fail("Exception not thrown")
 
     def test_create_zone(self):
-        extra = {'description': 'new domain for example.org'}
-        zone = self.driver.create_zone('example.org.', extra)
-        self.assertEqual(zone.domain, 'example.org.')
-        self.assertEqual(zone.extra['description'], extra['description'])
-        self.assertEqual(len(zone.extra['nameServers']), 4)
+        extra = {"description": "new domain for example.org"}
+        zone = self.driver.create_zone("example.org.", extra)
+        self.assertEqual(zone.domain, "example.org.")
+        self.assertEqual(zone.extra["description"], extra["description"])
+        self.assertEqual(len(zone.extra["nameServers"]), 4)
 
     def test_delete_zone(self):
-        zone = self.driver.get_zone('example-com')
+        zone = self.driver.get_zone("example-com")
         res = self.driver.delete_zone(zone)
         self.assertTrue(res)
 
     def test_ex_bulk_record_changes(self):
-        zone = self.driver.get_zone('example-com')
+        zone = self.driver.get_zone("example-com")
         records = self.driver.ex_bulk_record_changes(zone, {})
 
-        self.assertEqual(records['additions'][0].name, 'foo.example.com.')
-        self.assertEqual(records['additions'][0].type, 'A')
+        self.assertEqual(records["additions"][0].name, "foo.example.com.")
+        self.assertEqual(records["additions"][0].type, "A")
 
-        self.assertEqual(records['deletions'][0].name, 'bar.example.com.')
-        self.assertEqual(records['deletions'][0].type, 'A')
+        self.assertEqual(records["deletions"][0].name, "bar.example.com.")
+        self.assertEqual(records["deletions"][0].type, "A")
 
 
 class GoogleDNSMockHttp(MockHttp):
-    fixtures = DNSFileFixtures('google')
+    fixtures = DNSFileFixtures("google")
 
-    def _dns_v1_projects_project_name_managedZones(
-            self, method, url, body, headers):
-        if method == 'POST':
-            body = self.fixtures.load('zone_create.json')
+    def _dns_v1_projects_project_name_managedZones(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load("zone_create.json")
         else:
-            body = self.fixtures.load('zone_list.json')
+            body = self.fixtures.load("zone_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_FILTER_ZONES(
-            self, method, url, body, headers):
-        body = self.fixtures.load('zone_list.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("zone_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com_rrsets_FILTER_ZONES(
-            self, method, url, body, headers):
-        body = self.fixtures.load('record.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com_rrsets(
-            self, method, url, body, headers):
-        body = self.fixtures.load('records_list.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("records_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('managed_zones_1.json')
-        elif method == 'DELETE':
+        self, method, url, body, headers
+    ):
+        if method == "GET":
+            body = self.fixtures.load("managed_zones_1.json")
+        elif method == "DELETE":
             body = None
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com_changes(
-            self, method, url, body, headers):
-        body = self.fixtures.load('record_changes.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("record_changes.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com_ZONE_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('get_zone_does_not_exists.json')
-        return (httplib.NOT_FOUND, body, {},
-                httplib.responses[httplib.NOT_FOUND])
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("get_zone_does_not_exists.json")
+        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
 
     def _dns_v1_projects_project_name_managedZones_example_com_RECORD_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('managed_zones_1.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("managed_zones_1.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com_rrsets_RECORD_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('no_record.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("no_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dns_v1_projects_project_name_managedZones_example_com_rrsets_ZONE_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('get_zone_does_not_exists.json')
-        return (httplib.NOT_FOUND, body, {},
-                httplib.responses[httplib.NOT_FOUND])
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("get_zone_does_not_exists.json")
+        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
 
     def _dns_v1_projects_project_name_managedZones_example_com_FILTER_ZONES(
-            self, method, url, body, headers):
-        body = self.fixtures.load('zone.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("zone.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

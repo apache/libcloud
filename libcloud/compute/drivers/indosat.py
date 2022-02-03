@@ -17,11 +17,10 @@ Indosat Driver
 """
 
 from libcloud.compute.providers import Provider
-from libcloud.common.dimensiondata import (DimensionDataConnection,
-                                           API_ENDPOINTS)
+from libcloud.common.dimensiondata import DimensionDataConnection, API_ENDPOINTS
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver
 
-DEFAULT_REGION = 'indosat-id'
+DEFAULT_REGION = "indosat-id"
 
 
 class IndosatNodeDriver(DimensionDataNodeDriver):
@@ -31,17 +30,26 @@ class IndosatNodeDriver(DimensionDataNodeDriver):
 
     selected_region = None
     connectionCls = DimensionDataConnection
-    name = 'Indosat'
-    website = 'http://www.indosat.com/'
+    name = "Indosat"
+    website = "http://www.indosat.com/"
     type = Provider.INDOSAT
-    features = {'create_node': ['password']}
+    features = {"create_node": ["password"]}
     api_version = 1.0
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=DEFAULT_REGION, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        api_version=None,
+        region=DEFAULT_REGION,
+        **kwargs,
+    ):
 
         if region not in API_ENDPOINTS:
-            raise ValueError('Invalid region: %s' % (region))
+            raise ValueError("Invalid region: %s" % (region))
 
         self.selected_region = API_ENDPOINTS[region]
 
@@ -53,4 +61,5 @@ class IndosatNodeDriver(DimensionDataNodeDriver):
             port=port,
             api_version=api_version,
             region=region,
-            **kwargs)
+            **kwargs,
+        )

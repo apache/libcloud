@@ -25,7 +25,7 @@ from libcloud.loadbalancer.providers import get_driver
 
 def main():
     cls = get_driver(Provider.RACKSPACE)
-    driver = cls('username', 'api key', region='ord')
+    driver = cls("username", "api key", region="ord")
 
     balancers = driver.list_balancers()
 
@@ -34,14 +34,15 @@ def main():
     # creating a balancer which balances traffic across two
     # nodes: 192.168.86.1:80 and 192.168.86.2:8080. Balancer
     # itself listens on port 80/tcp
-    new_balancer_name = 'testlb' + os.urandom(4).encode('hex')
-    members = (Member(None, '192.168.86.1', 80),
-               Member(None, '192.168.86.2', 8080))
-    new_balancer = driver.create_balancer(name=new_balancer_name,
-                                          algorithm=Algorithm.ROUND_ROBIN,
-                                          port=80,
-                                          protocol='http',
-                                          members=members)
+    new_balancer_name = "testlb" + os.urandom(4).encode("hex")
+    members = (Member(None, "192.168.86.1", 80), Member(None, "192.168.86.2", 8080))
+    new_balancer = driver.create_balancer(
+        name=new_balancer_name,
+        algorithm=Algorithm.ROUND_ROBIN,
+        port=80,
+        protocol="http",
+        members=members,
+    )
 
     print(new_balancer)
 
@@ -54,7 +55,7 @@ def main():
         if balancer.state == State.RUNNING:
             break
 
-        print('sleeping for 30 seconds for balancers to become ready')
+        print("sleeping for 30 seconds for balancers to become ready")
         time.sleep(30)
 
     # fetch list of members
@@ -67,5 +68,6 @@ def main():
     # remove the balancer
     driver.destroy_balancer(new_balancer)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -34,8 +34,7 @@ VOXEL_API_HOST = "api.voxel.net"
 class VoxelResponse(XmlResponse):
     def __init__(self, response, connection):
         self.parsed = None
-        super(VoxelResponse, self).__init__(response=response,
-                                            connection=connection)
+        super(VoxelResponse, self).__init__(response=response, connection=connection)
 
     def parse_body(self):
         if not self.body:
@@ -50,9 +49,9 @@ class VoxelResponse(XmlResponse):
             return None
         if self.parsed is None:
             self.parsed = super(VoxelResponse, self).parse_body()
-        for err in self.parsed.findall('err'):
-            code = err.get('code')
-            err_list.append("(%s) %s" % (code, err.get('msg')))
+        for err in self.parsed.findall("err"):
+            code = err.get("code")
+            err_list.append("(%s) %s" % (code, err.get("msg")))
             # From voxel docs:
             # 1: Invalid login or password
             # 9: Permission denied: user lacks access rights for this method
@@ -65,7 +64,7 @@ class VoxelResponse(XmlResponse):
     def success(self):
         if not self.parsed:
             self.parsed = super(VoxelResponse, self).parse_body()
-        stat = self.parsed.get('stat')
+        stat = self.parsed.get("stat")
         if stat != "ok":
             return False
         return True
@@ -80,8 +79,7 @@ class VoxelConnection(ConnectionUserAndKey):
     responseCls = VoxelResponse
 
     def add_default_params(self, params):
-        params = dict([(k, v) for k, v in list(params.items())
-                       if v is not None])
+        params = dict([(k, v) for k, v in list(params.items()) if v is not None])
         params["key"] = self.user_id
         params["timestamp"] = datetime.datetime.utcnow().isoformat() + "+0000"
 
@@ -96,7 +94,7 @@ class VoxelConnection(ConnectionUserAndKey):
                     md5.update(b("%s%s" % (key, params[key])))
                 else:
                     md5.update(b(key))
-        params['api_sig'] = md5.hexdigest()
+        params["api_sig"] = md5.hexdigest()
         return params
 
 
@@ -104,12 +102,12 @@ VOXEL_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 
 NODE_STATE_MAP = {
-    'IN_PROGRESS': NodeState.PENDING,
-    'QUEUED': NodeState.PENDING,
-    'SUCCEEDED': NodeState.RUNNING,
-    'shutting-down': NodeState.TERMINATED,
-    'terminated': NodeState.TERMINATED,
-    'unknown': NodeState.UNKNOWN,
+    "IN_PROGRESS": NodeState.PENDING,
+    "QUEUED": NodeState.PENDING,
+    "SUCCEEDED": NodeState.RUNNING,
+    "shutting-down": NodeState.TERMINATED,
+    "terminated": NodeState.TERMINATED,
+    "unknown": NodeState.UNKNOWN,
 }
 
 
@@ -120,8 +118,8 @@ class VoxelNodeDriver(NodeDriver):
 
     connectionCls = VoxelConnection
     type = Provider.VOXEL
-    name = 'Voxel VoxCLOUD'
-    website = 'http://www.voxel.net/'
+    name = "Voxel VoxCLOUD"
+    website = "http://www.voxel.net/"
 
     def _initialize_instance_types():  # pylint: disable=no-method-argument
         for cpus in range(1, 14):
@@ -133,35 +131,48 @@ class VoxelNodeDriver(NodeDriver):
             ram = cpus * RAM_PER_CPU
 
             VOXEL_INSTANCE_TYPES[id] = {
-                'id': id,
-                'name': name,
-                'ram': ram,
-                'disk': None,
-                'bandwidth': None,
-                'price': None}
+                "id": id,
+                "name": name,
+                "ram": ram,
+                "disk": None,
+                "bandwidth": None,
+                "price": None,
+            }
 
-    features = {"create_node": [],
-                "list_sizes": ["variable_disk"]}
+    features = {"create_node": [], "list_sizes": ["variable_disk"]}
 
     _initialize_instance_types()
 
     def list_nodes(self):
         params = {"method": "voxel.devices.list"}
-        result = self.connection.request('/', params=params).object
+        result = self.connection.request("/", params=params).object
         return self._to_nodes(result)
 
     def list_sizes(self, location=None):
-        return [NodeSize(driver=self.connection.driver, **i)
-                for i in list(VOXEL_INSTANCE_TYPES.values())]
+        return [
+            NodeSize(driver=self.connection.driver, **i)
+            for i in list(VOXEL_INSTANCE_TYPES.values())
+        ]
 
     def list_images(self, location=None):
         params = {"method": "voxel.images.list"}
-        result = self.connection.request('/', params=params).object
+        result = self.connection.request("/", params=params).object
         return self._to_images(result)
 
-    def create_node(self, name, size, image, location, ex_privateip=None,
-                    ex_publicip=None, ex_rootpass=None, ex_consolepass=None,
-                    ex_sshuser=None, ex_sshpass=None, ex_voxel_access=None):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location,
+        ex_privateip=None,
+        ex_publicip=None,
+        ex_rootpass=None,
+        ex_consolepass=None,
+        ex_sshuser=None,
+        ex_sshpass=None,
+        ex_voxel_access=None,
+    ):
         """Create Voxel Node
 
         :keyword name: the name to assign the node (mandatory)
@@ -216,22 +227,22 @@ class VoxelNodeDriver(NodeDriver):
             ex_voxel_access = "true" if ex_voxel_access else "false"
 
         params = {
-            'method': 'voxel.voxcloud.create',
-            'hostname': name,
-            'disk_size': int(size.disk),
-            'facility': location.id,
-            'image_id': image.id,
-            'processing_cores': size.ram / RAM_PER_CPU,
-            'backend_ip': ex_privateip,
-            'frontend_ip': ex_publicip,
-            'admin_password': ex_rootpass,
-            'console_password': ex_consolepass,
-            'ssh_username': ex_sshuser,
-            'ssh_password': ex_sshpass,
-            'voxel_access': ex_voxel_access,
+            "method": "voxel.voxcloud.create",
+            "hostname": name,
+            "disk_size": int(size.disk),
+            "facility": location.id,
+            "image_id": image.id,
+            "processing_cores": size.ram / RAM_PER_CPU,
+            "backend_ip": ex_privateip,
+            "frontend_ip": ex_publicip,
+            "admin_password": ex_rootpass,
+            "console_password": ex_consolepass,
+            "ssh_username": ex_sshuser,
+            "ssh_password": ex_sshpass,
+            "voxel_access": ex_voxel_access,
         }
 
-        object = self.connection.request('/', params=params).object
+        object = self.connection.request("/", params=params).object
 
         if self._getstatus(object):
             return Node(
@@ -240,27 +251,26 @@ class VoxelNodeDriver(NodeDriver):
                 state=NODE_STATE_MAP[object.findtext("device/status")],
                 public_ips=ex_publicip,
                 private_ips=ex_privateip,
-                driver=self.connection.driver
+                driver=self.connection.driver,
             )
         else:
             return None
 
     def reboot_node(self, node):
-        params = {'method': 'voxel.devices.power',
-                  'device_id': node.id,
-                  'power_action': 'reboot'}
-        return self._getstatus(
-            self.connection.request('/', params=params).object)
+        params = {
+            "method": "voxel.devices.power",
+            "device_id": node.id,
+            "power_action": "reboot",
+        }
+        return self._getstatus(self.connection.request("/", params=params).object)
 
     def destroy_node(self, node):
-        params = {'method': 'voxel.voxcloud.delete',
-                  'device_id': node.id}
-        return self._getstatus(
-            self.connection.request('/', params=params).object)
+        params = {"method": "voxel.voxcloud.delete", "device_id": node.id}
+        return self._getstatus(self.connection.request("/", params=params).object)
 
     def list_locations(self):
         params = {"method": "voxel.voxcloud.facilities.list"}
-        result = self.connection.request('/', params=params).object
+        result = self.connection.request("/", params=params).object
         nodes = self._to_locations(result)
         return nodes
 
@@ -269,18 +279,22 @@ class VoxelNodeDriver(NodeDriver):
         return status == "ok"
 
     def _to_locations(self, object):
-        return [NodeLocation(element.attrib["label"],
-                             element.findtext("description"),
-                             element.findtext("description"),
-                             self)
-                for element in object.findall('facilities/facility')]
+        return [
+            NodeLocation(
+                element.attrib["label"],
+                element.findtext("description"),
+                element.findtext("description"),
+                self,
+            )
+            for element in object.findall("facilities/facility")
+        ]
 
     def _to_nodes(self, object):
         nodes = []
-        for element in object.findall('devices/device'):
+        for element in object.findall("devices/device"):
             if element.findtext("type") == "Virtual Server":
                 try:
-                    state = self.NODE_STATE_MAP[element.attrib['status']]
+                    state = self.NODE_STATE_MAP[element.attrib["status"]]
                 except KeyError:
                     state = NodeState.UNKNOWN
 
@@ -292,18 +306,26 @@ class VoxelNodeDriver(NodeDriver):
                     elif ip.attrib["type"] == "backend":
                         private_ip = ip.text
 
-                nodes.append(Node(id=element.attrib['id'],
-                                  name=element.attrib['label'],
-                                  state=state,
-                                  public_ips=public_ip,
-                                  private_ips=private_ip,
-                                  driver=self.connection.driver))
+                nodes.append(
+                    Node(
+                        id=element.attrib["id"],
+                        name=element.attrib["label"],
+                        state=state,
+                        public_ips=public_ip,
+                        private_ips=private_ip,
+                        driver=self.connection.driver,
+                    )
+                )
         return nodes
 
     def _to_images(self, object):
         images = []
         for element in object.findall("images/image"):
-            images.append(NodeImage(id=element.attrib["id"],
-                                    name=element.attrib["summary"],
-                                    driver=self.connection.driver))
+            images.append(
+                NodeImage(
+                    id=element.attrib["id"],
+                    name=element.attrib["summary"],
+                    driver=self.connection.driver,
+                )
+            )
         return images

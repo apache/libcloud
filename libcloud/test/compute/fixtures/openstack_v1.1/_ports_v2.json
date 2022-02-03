@@ -153,7 +153,6 @@
         {
             "status": "DOWN", 
             "extra_dhcp_opts": [], 
-            "description": "testport", 
             "allowed_address_pairs": [], 
             "tags": [], 
             "network_id": "123c8a8c-6427-4e8f-a805-2035365f4d43", 

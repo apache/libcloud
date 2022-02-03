@@ -19,13 +19,13 @@ import os
 import requests
 
 # Old deprecated API
-url = 'https://readthedocs.org/build/8284/'
+url = "https://readthedocs.org/build/8284/"
 r = requests.post(url)
 print(r.text)
 
 # New API (which doesn't apear to be working)
-token = os.environ['RTD_TOKEN']
+token = os.environ["RTD_TOKEN"]
 
-url = 'https://readthedocs.org/api/v2/webhook/libcloud/87656/'
-r = requests.post(url, data={'token': token, 'branches': 'trunk'})
+url = "https://readthedocs.org/api/v2/webhook/libcloud/87656/"
+r = requests.post(url, data={"token": token, "branches": "trunk"})
 print(r.text)

@@ -1,0 +1,51 @@
+{
+    "records": [
+        {
+            "id": "123",
+            "type": "NS",
+            "name": "",
+            "data": "ns1.vultr.com",
+            "priority": -1,
+            "ttl": 300
+        },
+        {
+            "id": "234",
+            "type": "NS",
+            "name": "",
+            "data": "ns2.vultr.com",
+            "priority": -1,
+            "ttl": 300
+        },
+        {
+            "id": "345",
+            "type": "A",
+            "name": "",
+            "data": "192.168.1.1",
+            "priority": -1,
+            "ttl": 300
+        },
+        {
+            "id": "e4aebb47-0832-4526-a920-01cfbe8bb4be",
+            "type": "CNAME",
+            "name": "*",
+            "data": "dimgaltest.gr",
+            "priority": -1,
+            "ttl": 300
+        },
+        {
+            "id": "d597a92e-3006-44b9-8bc2-b6c1c9a7ca0f",
+            "type": "MX",
+            "name": "",
+            "data": "dimgaltest.gr",
+            "priority": 10,
+            "ttl": 300
+        }
+    ],
+    "meta": {
+        "total": 5,
+        "links": {
+            "next": "",
+            "prev": ""
+        }
+    }
+}

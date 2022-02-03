@@ -29,6 +29,7 @@ class G8Connection(ConnectionKey):
     """
     Connection class for G8
     """
+
     responseCls = JsonResponse
 
     def add_default_headers(self, headers):
@@ -36,8 +37,8 @@ class G8Connection(ConnectionKey):
         Add headers that are necessary for every request
         """
         self.driver.key = maybe_update_jwt(self.driver.key)
-        headers['Authorization'] = "bearer {}".format(self.driver.key)
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = "bearer {}".format(self.driver.key)
+        headers["Content-Type"] = "application/json"
         return headers
 
 
@@ -53,7 +54,7 @@ def base64url_decode(input):
     rem = len(input) % 4
 
     if rem > 0:
-        input += b'=' * (4 - rem)
+        input += b"=" * (4 - rem)
     return base64.urlsafe_b64decode(input)
 
 
@@ -66,15 +67,15 @@ def is_jwt_expired(jwt):
 
     :rtype: bool
     """
-    jwt = jwt.encode('utf-8')
-    signing_input, _ = jwt.rsplit(b'.', 1)
-    _, claims_segment = signing_input.split(b'.', 1)
+    jwt = jwt.encode("utf-8")
+    signing_input, _ = jwt.rsplit(b".", 1)
+    _, claims_segment = signing_input.split(b".", 1)
     claimsdata = base64url_decode(claims_segment)
     if isinstance(claimsdata, bytes):
-        claimsdata = claimsdata.decode('utf-8')
+        claimsdata = claimsdata.decode("utf-8")
     data = json.loads(claimsdata)
     # check if it's about to expire in the next minute
-    return data['exp'] < time.time() + 60
+    return data["exp"] < time.time() + 60
 
 
 def maybe_update_jwt(jwt):

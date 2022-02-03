@@ -17,9 +17,4 @@
 Module for working with Load Balancers
 """
 
-__all__ = [
-    'base',
-    'providers',
-    'types',
-    'drivers'
-]
+__all__ = ["base", "providers", "types", "drivers"]

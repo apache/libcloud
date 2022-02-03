@@ -17,13 +17,11 @@ from libcloud.common.types import LibcloudError
 from libcloud.storage.providers import Provider
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver, BaseS3Connection
 
-__all__ = [
-    'AuroraObjectsStorageDriver'
-]
+__all__ = ["AuroraObjectsStorageDriver"]
 
-AURORA_OBJECTS_EU_HOST = 'o.auroraobjects.eu'
+AURORA_OBJECTS_EU_HOST = "o.auroraobjects.eu"
 
-NO_CDN_SUPPORT_ERROR = 'CDN is not supported by AuroraObjects'
+NO_CDN_SUPPORT_ERROR = "CDN is not supported by AuroraObjects"
 
 
 class BaseAuroraObjectsConnection(BaseS3Connection):
@@ -32,8 +30,8 @@ class BaseAuroraObjectsConnection(BaseS3Connection):
 
 class BaseAuroraObjectsStorageDriver(BaseS3StorageDriver):
     type = Provider.AURORAOBJECTS
-    name = 'PCextreme AuroraObjects'
-    website = 'https://www.pcextreme.com/aurora/objects'
+    name = "PCextreme AuroraObjects"
+    website = "https://www.pcextreme.com/aurora/objects"
 
 
 class AuroraObjectsStorageDriver(BaseAuroraObjectsStorageDriver):

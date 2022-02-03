@@ -19,20 +19,21 @@ from libcloud.container.drivers.joyent import JoyentContainerDriver
 from libcloud.test.secrets import CONTAINER_PARAMS_DOCKER
 
 
-from libcloud.test.container.test_docker import DockerContainerDriverTestCase, DockerMockHttp
+from libcloud.test.container.test_docker import (
+    DockerContainerDriverTestCase,
+    DockerMockHttp,
+)
 
 
 class JoyentContainerDriverTestCase(DockerContainerDriverTestCase, unittest.TestCase):
-
     def setUp(self):
         # Create a test driver for each version
-        versions = ('linux_124', 'mac_124')
+        versions = ("linux_124", "mac_124")
         self.drivers = []
         for version in versions:
-            JoyentContainerDriver.connectionCls.conn_class = \
-                DockerMockHttp
+            JoyentContainerDriver.connectionCls.conn_class = DockerMockHttp
             DockerMockHttp.type = None
-            DockerMockHttp.use_param = 'a'
+            DockerMockHttp.use_param = "a"
             driver = JoyentContainerDriver(*CONTAINER_PARAMS_DOCKER)
             driver.version = version
             self.drivers.append(driver)

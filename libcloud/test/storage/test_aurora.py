@@ -32,14 +32,12 @@ class AuroraObjectsTests(S3Tests, unittest.TestCase):
         self.driver = self.create_driver()
 
     def test_get_object_cdn_url(self):
-        self.mock_response_klass.type = 'get_object'
-        obj = self.driver.get_object(container_name='test2',
-                                     object_name='test')
+        self.mock_response_klass.type = "get_object"
+        obj = self.driver.get_object(container_name="test2", object_name="test")
 
         with self.assertRaises(LibcloudError):
             self.driver.get_object_cdn_url(obj)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

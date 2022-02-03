@@ -28,17 +28,17 @@ from libcloud.compute.base import NodeSize, NodeImage
 
 class VCLResponse(XMLRPCResponse):
     exceptions = {
-        'VCL_Account': InvalidCredsError,
+        "VCL_Account": InvalidCredsError,
     }
 
 
 class VCLConnection(XMLRPCConnection, ConnectionUserAndKey):
-    endpoint = '/index.php?mode=xmlrpccall'
+    endpoint = "/index.php?mode=xmlrpccall"
 
     def add_default_headers(self, headers):
-        headers['X-APIVERSION'] = '2'
-        headers['X-User'] = self.user_id
-        headers['X-Pass'] = self.key
+        headers["X-APIVERSION"] = "2"
+        headers["X-User"] = self.user_id
+        headers["X-Pass"] = self.key
         return headers
 
 
@@ -51,25 +51,24 @@ class VCLNodeDriver(NodeDriver):
     """
 
     NODE_STATE_MAP = {
-        'ready': NodeState.RUNNING,
-        'failed': NodeState.TERMINATED,
-        'timedout': NodeState.TERMINATED,
-        'loading': NodeState.PENDING,
-        'time': NodeState.PENDING,
-        'future': NodeState.PENDING,
-        'error': NodeState.UNKNOWN,
-        'notready': NodeState.PENDING,
-        'notavailable': NodeState.TERMINATED,
-        'success': NodeState.PENDING
+        "ready": NodeState.RUNNING,
+        "failed": NodeState.TERMINATED,
+        "timedout": NodeState.TERMINATED,
+        "loading": NodeState.PENDING,
+        "time": NodeState.PENDING,
+        "future": NodeState.PENDING,
+        "error": NodeState.UNKNOWN,
+        "notready": NodeState.PENDING,
+        "notavailable": NodeState.TERMINATED,
+        "success": NodeState.PENDING,
     }
 
     connectionCls = VCLConnection
-    name = 'VCL'
-    website = 'http://incubator.apache.org/vcl/'
+    name = "VCL"
+    website = "http://incubator.apache.org/vcl/"
     type = Provider.VCL
 
-    def __init__(self, key, secret, secure=True, host=None, port=None, *args,
-                 **kwargs):
+    def __init__(self, key, secret, secure=True, host=None, port=None, *args, **kwargs):
         """
         :param    key:    API key or username to used (required)
         :type     key:    ``str``
@@ -89,23 +88,22 @@ class VCLNodeDriver(NodeDriver):
         :rtype: ``None``
         """
         if not host:
-            raise Exception('When instantiating VCL driver directly ' +
-                            'you also need to provide host')
+            raise Exception(
+                "When instantiating VCL driver directly "
+                + "you also need to provide host"
+            )
 
-        super(VCLNodeDriver, self).__init__(key, secret, secure=True,
-                                            host=None, port=None, *args,
-                                            **kwargs)
+        super(VCLNodeDriver, self).__init__(
+            key, secret, secure=True, host=None, port=None, *args, **kwargs
+        )
 
     def _vcl_request(self, method, *args):
-        res = self.connection.request(
-            method,
-            *args
-        ).object
-        if(res['status'] == 'error'):
-            raise LibcloudError(res['errormsg'], driver=self)
+        res = self.connection.request(method, *args).object
+        if res["status"] == "error":
+            raise LibcloudError(res["errormsg"], driver=self)
         return res
 
-    def create_node(self, image, start=None, length='60'):
+    def create_node(self, image, start=None, length="60"):
         """Create a new VCL reservation
         size and name ignored, image is the id from list_image
 
@@ -124,23 +122,18 @@ class VCLNodeDriver(NodeDriver):
         # Special case for xmlrpclib not handling 64 bit integers when writting
         # XML - we always  cast value to string.
         start = start or str(time.time())
-        length = length or '60'
+        length = length or "60"
 
-        res = self._vcl_request(
-            "XMLRPCaddRequest",
-            image.id,
-            start,
-            length
-        )
+        res = self._vcl_request("XMLRPCaddRequest", image.id, start, length)
 
         return Node(
-            id=res['requestid'],
+            id=res["requestid"],
             name=image.name,
-            state=self.NODE_STATE_MAP[res['status']],
+            state=self.NODE_STATE_MAP[res["status"]],
             public_ips=[],
             private_ips=[],
             driver=self,
-            image=image.name
+            image=image.name,
         )
 
     def destroy_node(self, node):
@@ -154,20 +147,13 @@ class VCLNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         try:
-            self._vcl_request(
-                'XMLRPCendRequest',
-                node.id
-            )
+            self._vcl_request("XMLRPCendRequest", node.id)
         except LibcloudError:
             return False
         return True
 
     def _to_image(self, img):
-        return NodeImage(
-            id=img['id'],
-            name=img['name'],
-            driver=self.connection.driver
-        )
+        return NodeImage(id=img["id"], name=img["name"], driver=self.connection.driver)
 
     def list_images(self, location=None):
         """
@@ -175,9 +161,7 @@ class VCLNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_images`
         """
-        res = self.connection.request(
-            "XMLRPCgetImages"
-        ).object
+        res = self.connection.request("XMLRPCgetImages").object
         return [self._to_image(i) for i in res]
 
     def list_sizes(self, location=None):
@@ -187,53 +171,34 @@ class VCLNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_sizes`
         """
-        return [NodeSize(
-            't1.micro',
-            'none',
-            '512',
-            0, 0, 0, self)
-        ]
+        return [NodeSize("t1.micro", "none", "512", 0, 0, 0, self)]
 
     def _to_connect_data(self, request_id, ipaddr):
-        res = self._vcl_request(
-            "XMLRPCgetRequestConnectData",
-            request_id,
-            ipaddr
-        )
+        res = self._vcl_request("XMLRPCgetRequestConnectData", request_id, ipaddr)
         return res
 
     def _to_status(self, requestid, imagename, ipaddr):
-        res = self._vcl_request(
-            "XMLRPCgetRequestStatus",
-            requestid
-        )
+        res = self._vcl_request("XMLRPCgetRequestStatus", requestid)
 
         public_ips = []
         extra = []
-        if(res['status'] == 'ready'):
+        if res["status"] == "ready":
             cdata = self._to_connect_data(requestid, ipaddr)
-            public_ips = [cdata['serverIP']]
-            extra = {
-                'user': cdata['user'],
-                'pass': cdata['password']
-            }
+            public_ips = [cdata["serverIP"]]
+            extra = {"user": cdata["user"], "pass": cdata["password"]}
         return Node(
             id=requestid,
             name=imagename,
-            state=self.NODE_STATE_MAP[res['status']],
+            state=self.NODE_STATE_MAP[res["status"]],
             public_ips=public_ips,
             private_ips=[],
             driver=self,
             image=imagename,
-            extra=extra
+            extra=extra,
         )
 
     def _to_nodes(self, res, ipaddr):
-        return [self._to_status(
-            h['requestid'],
-            h['imagename'],
-            ipaddr
-        ) for h in res]
+        return [self._to_status(h["requestid"], h["imagename"], ipaddr) for h in res]
 
     def list_nodes(self, ipaddr):
         """
@@ -244,10 +209,8 @@ class VCLNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`Node`
         """
-        res = self._vcl_request(
-            "XMLRPCgetRequestIds"
-        )
-        return self._to_nodes(res['requests'], ipaddr)
+        res = self._vcl_request("XMLRPCgetRequestIds")
+        return self._to_nodes(res["requests"], ipaddr)
 
     def ex_update_node_access(self, node, ipaddr):
         """
@@ -277,11 +240,7 @@ class VCLNodeDriver(NodeDriver):
         :return: true on success, throws error on failure
         :rtype: ``bool``
         """
-        return self._vcl_request(
-            "XMLRPCextendRequest",
-            node.id,
-            minutes
-        )
+        return self._vcl_request("XMLRPCextendRequest", node.id, minutes)
 
     def ex_get_request_end_time(self, node):
         """
@@ -293,11 +252,9 @@ class VCLNodeDriver(NodeDriver):
         :return: unix timestamp
         :rtype: ``int``
         """
-        res = self._vcl_request(
-            "XMLRPCgetRequestIds"
-        )
+        res = self._vcl_request("XMLRPCgetRequestIds")
         time = 0
-        for i in res['requests']:
-            if i['requestid'] == node.id:
-                time = i['end']
+        for i in res["requests"]:
+            if i["requestid"] == node.id:
+                time = i["end"]
         return time

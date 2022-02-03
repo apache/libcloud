@@ -9,5 +9,4 @@ from libcloud.compute.providers import get_driver
 # You must still place placeholder empty strings for user_id / key
 # due to the nature of the driver's __init__() params.
 ComputeEngine = get_driver(Provider.GCE)
-driver = ComputeEngine('', '', project='your_project_id',
-                       datacenter='us-central1-a')
+driver = ComputeEngine("", "", project="your_project_id", datacenter="us-central1-a")

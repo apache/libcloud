@@ -28,10 +28,7 @@ from libcloud.compute.types import Provider, NodeState
 from libcloud.utils.iso8601 import parse_date
 from libcloud.utils.py3 import httplib
 
-__all__ = [
-    'DigitalOceanNodeDriver',
-    'DigitalOcean_v2_NodeDriver'
-]
+__all__ = ["DigitalOceanNodeDriver", "DigitalOcean_v2_NodeDriver"]
 
 
 class DigitalOceanNodeDriver(NodeDriver):
@@ -49,22 +46,21 @@ class DigitalOceanNodeDriver(NodeDriver):
                              (optional)
     :type       api_version: ``str``
     """
-    type = Provider.DIGITAL_OCEAN
-    name = 'DigitalOcean'
-    website = 'https://www.digitalocean.com'
 
-    def __new__(cls, key, secret=None, api_version='v2', **kwargs):
+    type = Provider.DIGITAL_OCEAN
+    name = "DigitalOcean"
+    website = "https://www.digitalocean.com"
+
+    def __new__(cls, key, secret=None, api_version="v2", **kwargs):
         if cls is DigitalOceanNodeDriver:
-            if api_version == 'v1' or secret is not None:
-                if secret is not None and api_version == 'v2':
-                    raise InvalidCredsError(
-                        'secret not accepted for v2 authentication')
+            if api_version == "v1" or secret is not None:
+                if secret is not None and api_version == "v2":
+                    raise InvalidCredsError("secret not accepted for v2 authentication")
                 raise DigitalOcean_v1_Error()
-            elif api_version == 'v2':
+            elif api_version == "v2":
                 cls = DigitalOcean_v2_NodeDriver
             else:
-                raise NotImplementedError('Unsupported API version: %s' %
-                                          (api_version))
+                raise NotImplementedError("Unsupported API version: %s" % (api_version))
         return super(DigitalOceanNodeDriver, cls).__new__(cls, **kwargs)
 
 
@@ -76,29 +72,29 @@ class SSHKey(object):
         self.pub_key = pub_key
 
     def __repr__(self):
-        return (('<SSHKey: id=%s, name=%s, pub_key=%s>') %
-                (self.id, self.name, self.pub_key))
+        return ("<SSHKey: id=%s, name=%s, pub_key=%s>") % (
+            self.id,
+            self.name,
+            self.pub_key,
+        )
 
 
-class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
-                                 DigitalOceanNodeDriver):
+class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDriver):
     """
     DigitalOcean NodeDriver using v2 of the API.
     """
 
-    NODE_STATE_MAP = {'new': NodeState.PENDING,
-                      'off': NodeState.STOPPED,
-                      'active': NodeState.RUNNING,
-                      'archive': NodeState.TERMINATED}
+    NODE_STATE_MAP = {
+        "new": NodeState.PENDING,
+        "off": NodeState.STOPPED,
+        "active": NodeState.RUNNING,
+        "archive": NodeState.TERMINATED,
+    }
 
-    EX_CREATE_ATTRIBUTES = ['backups',
-                            'ipv6',
-                            'private_networking',
-                            'tags',
-                            'ssh_keys']
+    EX_CREATE_ATTRIBUTES = ["backups", "ipv6", "private_networking", "tags", "ssh_keys"]
 
     def list_images(self):
-        data = self._paginated_request('/v2/images', 'images')
+        data = self._paginated_request("/v2/images", "images")
         return list(map(self._to_image, data))
 
     def list_key_pairs(self):
@@ -108,7 +104,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: Available SSH keys.
         :rtype: ``list`` of :class:`KeyPair`
         """
-        data = self._paginated_request('/v2/account/keys', 'ssh_keys')
+        data = self._paginated_request("/v2/account/keys", "ssh_keys")
         return list(map(self._to_key_pair, data))
 
     def list_locations(self, ex_available=True):
@@ -119,33 +115,42 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :type ex_evailable: ``bool``
         """
         locations = []
-        data = self._paginated_request('/v2/regions', 'regions')
+        data = self._paginated_request("/v2/regions", "regions")
         for location in data:
             if ex_available:
-                if location.get('available'):
+                if location.get("available"):
                     locations.append(self._to_location(location))
             else:
                 locations.append(self._to_location(location))
         return locations
 
     def list_nodes(self):
-        data = self._paginated_request('/v2/droplets', 'droplets')
+        data = self._paginated_request("/v2/droplets", "droplets")
         return list(map(self._to_node, data))
 
     def list_sizes(self, location=None):
-        data = self._paginated_request('/v2/sizes', 'sizes')
+        data = self._paginated_request("/v2/sizes", "sizes")
         sizes = list(map(self._to_size, data))
         if location:
-            sizes = [size for size in sizes if location.id in
-                     size.extra.get('regions', [])]
+            sizes = [
+                size for size in sizes if location.id in size.extra.get("regions", [])
+            ]
         return sizes
 
     def list_volumes(self):
-        data = self._paginated_request('/v2/volumes', 'volumes')
+        data = self._paginated_request("/v2/volumes", "volumes")
         return list(map(self._to_volume, data))
 
-    def create_node(self, name, size, image, location, ex_create_attr=None,
-                    ex_ssh_key_ids=None, ex_user_data=None):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location,
+        ex_create_attr=None,
+        ex_ssh_key_ids=None,
+        ex_user_data=None,
+    ):
         """
         Create a node.
 
@@ -177,41 +182,49 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: The newly created node.
         :rtype: :class:`Node`
         """
-        attr = {'name': name, 'size': size.name, 'image': image.id,
-                'region': location.id, 'user_data': ex_user_data}
+        attr = {
+            "name": name,
+            "size": size.name,
+            "image": image.id,
+            "region": location.id,
+            "user_data": ex_user_data,
+        }
 
         if ex_ssh_key_ids:
-            warnings.warn("The ex_ssh_key_ids parameter has been deprecated in"
-                          " favor of the ex_create_attr parameter.")
-            attr['ssh_keys'] = ex_ssh_key_ids
+            warnings.warn(
+                "The ex_ssh_key_ids parameter has been deprecated in"
+                " favor of the ex_create_attr parameter."
+            )
+            attr["ssh_keys"] = ex_ssh_key_ids
 
         ex_create_attr = ex_create_attr or {}
         for key in ex_create_attr.keys():
             if key in self.EX_CREATE_ATTRIBUTES:
                 attr[key] = ex_create_attr[key]
 
-        res = self.connection.request('/v2/droplets',
-                                      data=json.dumps(attr), method='POST')
+        res = self.connection.request(
+            "/v2/droplets", data=json.dumps(attr), method="POST"
+        )
 
-        data = res.object['droplet']
+        data = res.object["droplet"]
         # TODO: Handle this in the response class
-        status = res.object.get('status', 'OK')
-        if status == 'ERROR':
-            message = res.object.get('message', None)
-            error_message = res.object.get('error_message', message)
-            raise ValueError('Failed to create node: %s' % (error_message))
+        status = res.object.get("status", "OK")
+        if status == "ERROR":
+            message = res.object.get("message", None)
+            error_message = res.object.get("error_message", message)
+            raise ValueError("Failed to create node: %s" % (error_message))
 
         return self._to_node(data=data)
 
     def destroy_node(self, node):
-        res = self.connection.request('/v2/droplets/%s' % (node.id),
-                                      method='DELETE')
+        res = self.connection.request("/v2/droplets/%s" % (node.id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def reboot_node(self, node):
-        attr = {'type': 'reboot'}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "reboot"}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def create_image(self, node, name):
@@ -228,9 +241,10 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        attr = {'type': 'snapshot', 'name': name}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "snapshot", "name": name}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def delete_image(self, image):
@@ -243,8 +257,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        res = self.connection.request('/v2/images/%s' % (image.id),
-                                      method='DELETE')
+        res = self.connection.request("/v2/images/%s" % (image.id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def get_image(self, image_id):
@@ -259,43 +272,49 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: A NodeImage object
         :rtype: :class:`NodeImage`
         """
-        data = self._paginated_request('/v2/images/%s' % (image_id), 'image')
+        data = self._paginated_request("/v2/images/%s" % (image_id), "image")
         return self._to_image(data)
 
     def ex_change_kernel(self, node, kernel_id):
-        attr = {'type': 'change_kernel', 'kernel': kernel_id}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "change_kernel", "kernel": kernel_id}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_enable_ipv6(self, node):
-        attr = {'type': 'enable_ipv6'}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "enable_ipv6"}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_rename_node(self, node, name):
-        attr = {'type': 'rename', 'name': name}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "rename", "name": name}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_shutdown_node(self, node):
-        attr = {'type': 'shutdown'}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "shutdown"}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_hard_reboot(self, node):
-        attr = {'type': 'power_cycle'}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "power_cycle"}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_power_on_node(self, node):
-        attr = {'type': 'power_on'}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "power_on"}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_rebuild_node(self, node):
@@ -308,9 +327,10 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return True if the operation began successfully
         :rtype ``bool``
         """
-        attr = {'type': 'rebuild', 'image': node.extra['image']['id']}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "rebuild", "image": node.extra["image"]["id"]}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
     def ex_resize_node(self, node, size):
@@ -327,12 +347,13 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return True if the operation began successfully
         :rtype ``bool``
         """
-        attr = {'type': 'resize', 'size': size.name}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
+        attr = {"type": "resize", "size": size.name}
+        res = self.connection.request(
+            "/v2/droplets/%s/actions" % (node.id), data=json.dumps(attr), method="POST"
+        )
         return res.status == httplib.CREATED
 
-    def create_key_pair(self, name, public_key=''):
+    def create_key_pair(self, name, public_key=""):
         """
         Create a new SSH key.
 
@@ -342,11 +363,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :param      public_key: Valid public key string (required)
         :type       public_key: ``str``
         """
-        attr = {'name': name, 'public_key': public_key}
-        res = self.connection.request('/v2/account/keys', method='POST',
-                                      data=json.dumps(attr))
+        attr = {"name": name, "public_key": public_key}
+        res = self.connection.request(
+            "/v2/account/keys", method="POST", data=json.dumps(attr)
+        )
 
-        data = res.object['ssh_key']
+        data = res.object["ssh_key"]
 
         return self._to_key_pair(data=data)
 
@@ -357,9 +379,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :param      key: SSH key (required)
         :type       key: :class:`KeyPair`
         """
-        key_id = key.extra['id']
-        res = self.connection.request('/v2/account/keys/%s' % (key_id),
-                                      method='DELETE')
+        key_id = key.extra["id"]
+        res = self.connection.request("/v2/account/keys/%s" % (key_id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def get_key_pair(self, name):
@@ -372,8 +393,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :rtype: :class:`.KeyPair`
         """
         qkey = [k for k in self.list_key_pairs() if k.name == name][0]
-        data = self.connection.request('/v2/account/keys/%s' %
-                                       qkey.extra['id']).object['ssh_key']
+        data = self.connection.request("/v2/account/keys/%s" % qkey.extra["id"]).object[
+            "ssh_key"
+        ]
         return self._to_key_pair(data=data)
 
     def create_volume(self, size, name, location=None, snapshot=None):
@@ -398,16 +420,17 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-        attr = {'name': name, 'size_gigabytes': size, 'region': location.id}
+        attr = {"name": name, "size_gigabytes": size, "region": location.id}
 
-        res = self.connection.request('/v2/volumes', data=json.dumps(attr),
-                                      method='POST')
-        data = res.object['volume']
-        status = res.object.get('status', 'OK')
-        if status == 'ERROR':
-            message = res.object.get('message', None)
-            error_message = res.object.get('error_message', message)
-            raise ValueError('Failed to create volume: %s' % (error_message))
+        res = self.connection.request(
+            "/v2/volumes", data=json.dumps(attr), method="POST"
+        )
+        data = res.object["volume"]
+        status = res.object.get("status", "OK")
+        if status == "ERROR":
+            message = res.object.get("message", None)
+            error_message = res.object.get("error_message", message)
+            raise ValueError("Failed to create volume: %s" % (error_message))
 
         return self._to_volume(data=data)
 
@@ -420,8 +443,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        res = self.connection.request('/v2/volumes/%s' % volume.id,
-                                      method='DELETE')
+        res = self.connection.request("/v2/volumes/%s" % volume.id, method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def attach_volume(self, node, volume, device=None):
@@ -439,12 +461,16 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rytpe: ``bool``
         """
-        attr = {'type': 'attach', 'droplet_id': node.id,
-                'volume_name': volume.name,
-                'region': volume.extra['region_slug']}
+        attr = {
+            "type": "attach",
+            "droplet_id": node.id,
+            "volume_name": volume.name,
+            "region": volume.extra["region_slug"],
+        }
 
-        res = self.connection.request('/v2/volumes/actions',
-                                      data=json.dumps(attr), method='POST')
+        res = self.connection.request(
+            "/v2/volumes/actions", data=json.dumps(attr), method="POST"
+        )
 
         return res.status == httplib.ACCEPTED
 
@@ -457,14 +483,18 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        attr = {'type': 'detach', 'volume_name': volume.name,
-                'region': volume.extra['region_slug']}
+        attr = {
+            "type": "detach",
+            "volume_name": volume.name,
+            "region": volume.extra["region_slug"],
+        }
 
         responses = []
-        for droplet_id in volume.extra['droplet_ids']:
-            attr['droplet_id'] = droplet_id
-            res = self.connection.request('/v2/volumes/actions',
-                                          data=json.dumps(attr), method='POST')
+        for droplet_id in volume.extra["droplet_ids"]:
+            attr["droplet_id"] = droplet_id
+            res = self.connection.request(
+                "/v2/volumes/actions", data=json.dumps(attr), method="POST"
+            )
             responses.append(res)
 
         return all([r.status == httplib.ACCEPTED for r in responses])
@@ -479,10 +509,13 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: The newly created volume snapshot.
         :rtype: :class:`VolumeSnapshot`
         """
-        attr = {'name': name}
-        res = self.connection.request('/v2/volumes/%s/snapshots' % (
-            volume.id), data=json.dumps(attr), method='POST')
-        data = res.object['snapshot']
+        attr = {"name": name}
+        res = self.connection.request(
+            "/v2/volumes/%s/snapshots" % (volume.id),
+            data=json.dumps(attr),
+            method="POST",
+        )
+        data = res.object["snapshot"]
         return self._to_volume_snapshot(data=data)
 
     def list_volume_snapshots(self, volume):
@@ -495,8 +528,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: List of volume snapshots.
         :rtype: ``list`` of :class: `StorageVolume`
         """
-        data = self._paginated_request('/v2/volumes/%s/snapshots' %
-                                       (volume.id), 'snapshots')
+        data = self._paginated_request(
+            "/v2/volumes/%s/snapshots" % (volume.id), "snapshots"
+        )
         return list(map(self._to_volume_snapshot, data))
 
     def delete_volume_snapshot(self, snapshot):
@@ -508,8 +542,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        res = self.connection.request('v2/snapshots/%s' % (snapshot.id),
-                                      method='DELETE')
+        res = self.connection.request(
+            "v2/snapshots/%s" % (snapshot.id), method="DELETE"
+        )
         return res.status == httplib.NO_CONTENT
 
     def ex_get_node_details(self, node_id):
@@ -521,9 +556,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: :class:`Node`
         """
-        data = self._paginated_request(
-            '/v2/droplets/{}'.format(node_id), 'droplet'
-        )
+        data = self._paginated_request("/v2/droplets/{}".format(node_id), "droplet")
         return self._to_node(data)
 
     def ex_create_floating_ip(self, location):
@@ -539,10 +572,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: :class:`DigitalOcean_v2_FloatingIpAddress`
         """
-        attr = {'region': location.id}
-        resp = self.connection.request('/v2/floating_ips',
-                                       data=json.dumps(attr), method='POST')
-        return self._to_floating_ip(resp.object['floating_ip'])
+        attr = {"region": location.id}
+        resp = self.connection.request(
+            "/v2/floating_ips", data=json.dumps(attr), method="POST"
+        )
+        return self._to_floating_ip(resp.object["floating_ip"])
 
     def ex_delete_floating_ip(self, ip):
         """
@@ -553,8 +587,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/v2/floating_ips/{}'.format(ip.id),
-                                       method='DELETE')
+        resp = self.connection.request(
+            "/v2/floating_ips/{}".format(ip.id), method="DELETE"
+        )
         return resp.status == httplib.NO_CONTENT
 
     def ex_list_floating_ips(self):
@@ -564,7 +599,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :rtype: ``list`` of :class:`DigitalOcean_v2_FloatingIpAddress`
         """
         return self._to_floating_ips(
-            self._paginated_request('/v2/floating_ips', 'floating_ips')
+            self._paginated_request("/v2/floating_ips", "floating_ips")
         )
 
     def ex_get_floating_ip(self, ip):
@@ -579,7 +614,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         floating_ips = self.ex_list_floating_ips()
         matching_ips = [x for x in floating_ips if x.ip_address == ip]
         if not matching_ips:
-            raise ValueError('Floating ip %s not found' % ip)
+            raise ValueError("Floating ip %s not found" % ip)
         return matching_ips[0]
 
     def ex_attach_floating_ip_to_node(self, node, ip):
@@ -594,13 +629,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        data = {
-            'type': 'assign',
-            'droplet_id': node.id
-        }
+        data = {"type": "assign", "droplet_id": node.id}
         resp = self.connection.request(
-            '/v2/floating_ips/%s/actions' % ip.ip_address,
-            data=json.dumps(data), method='POST'
+            "/v2/floating_ips/%s/actions" % ip.ip_address,
+            data=json.dumps(data),
+            method="POST",
         )
         return resp.status == httplib.CREATED
 
@@ -621,58 +654,69 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        data = {
-            'type': 'unassign'
-        }
+        data = {"type": "unassign"}
         resp = self.connection.request(
-            '/v2/floating_ips/%s/actions' % ip.ip_address,
-            data=json.dumps(data), method='POST'
+            "/v2/floating_ips/%s/actions" % ip.ip_address,
+            data=json.dumps(data),
+            method="POST",
         )
         return resp.status == httplib.CREATED
 
     def _to_node(self, data):
-        extra_keys = ['memory', 'vcpus', 'disk', 'image', 'size',
-                      'size_slug', 'locked', 'created_at', 'networks',
-                      'kernel', 'backup_ids', 'snapshot_ids', 'features',
-                      'tags']
-        if 'status' in data:
-            state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
+        extra_keys = [
+            "memory",
+            "vcpus",
+            "disk",
+            "image",
+            "size",
+            "size_slug",
+            "locked",
+            "created_at",
+            "networks",
+            "kernel",
+            "backup_ids",
+            "snapshot_ids",
+            "features",
+            "tags",
+        ]
+        if "status" in data:
+            state = self.NODE_STATE_MAP.get(data["status"], NodeState.UNKNOWN)
         else:
             state = NodeState.UNKNOWN
 
-        created = parse_date(data['created_at'])
-        networks = data['networks']
+        created = parse_date(data["created_at"])
+        networks = data["networks"]
         private_ips = []
         public_ips = []
         if networks:
-            for net in networks['v4']:
-                if net['type'] == 'private':
-                    private_ips = [net['ip_address']]
-                if net['type'] == 'public':
-                    public_ips = [net['ip_address']]
+            for net in networks["v4"]:
+                if net["type"] == "private":
+                    private_ips = [net["ip_address"]]
+                if net["type"] == "public":
+                    public_ips = [net["ip_address"]]
 
         extra = {}
         for key in extra_keys:
             if key in data:
                 extra[key] = data[key]
-        extra['region'] = data.get('region', {}).get('name')
+        extra["region"] = data.get("region", {}).get("name")
 
         # Untouched extra values, backwards compatibility
-        resolve_data = data.get('image')
+        resolve_data = data.get("image")
         if resolve_data:
             image = self._to_image(resolve_data)
         else:
             image = None
 
-        resolve_data = extra.get('size')
+        resolve_data = extra.get("size")
         if resolve_data:
             size = self._to_size(resolve_data)
         else:
             size = None
 
         node = Node(
-            id=data['id'],
-            name=data['name'],
+            id=data["id"],
+            name=data["name"],
             state=state,
             image=image,
             size=size,
@@ -680,59 +724,85 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             private_ips=private_ips,
             created_at=created,
             driver=self,
-            extra=extra)
+            extra=extra,
+        )
         return node
 
     def _to_image(self, data):
-        extra = {'distribution': data['distribution'],
-                 'public': data['public'],
-                 'slug': data['slug'],
-                 'regions': data['regions'],
-                 'min_disk_size': data['min_disk_size'],
-                 'created_at': data['created_at']}
-        return NodeImage(id=data['id'], name=data['name'], driver=self,
-                         extra=extra)
+        extra = {
+            "distribution": data["distribution"],
+            "public": data["public"],
+            "slug": data["slug"],
+            "regions": data["regions"],
+            "min_disk_size": data["min_disk_size"],
+            "created_at": data["created_at"],
+        }
+        return NodeImage(id=data["id"], name=data["name"], driver=self, extra=extra)
 
     def _to_volume(self, data):
-        extra = {'created_at': data['created_at'],
-                 'droplet_ids': data['droplet_ids'],
-                 'region': data['region'],
-                 'region_slug': data['region']['slug']}
+        extra = {
+            "created_at": data["created_at"],
+            "droplet_ids": data["droplet_ids"],
+            "region": data["region"],
+            "region_slug": data["region"]["slug"],
+        }
 
-        return StorageVolume(id=data['id'], name=data['name'],
-                             size=data['size_gigabytes'], driver=self,
-                             extra=extra)
+        return StorageVolume(
+            id=data["id"],
+            name=data["name"],
+            size=data["size_gigabytes"],
+            driver=self,
+            extra=extra,
+        )
 
     def _to_location(self, data):
-        extra = data.get('features', [])
-        return NodeLocation(id=data['slug'], name=data['name'], country=None,
-                            extra=extra, driver=self)
+        extra = data.get("features", [])
+        return NodeLocation(
+            id=data["slug"], name=data["name"], country=None, extra=extra, driver=self
+        )
 
     def _to_size(self, data):
-        extra = {'vcpus': data['vcpus'],
-                 'regions': data['regions'],
-                 'price_monthly': data['price_monthly']}
-        return NodeSize(id=data['slug'], name=data['slug'], ram=data['memory'],
-                        disk=data['disk'], bandwidth=data['transfer'],
-                        price=data['price_hourly'], driver=self, extra=extra)
+        extra = {
+            "vcpus": data["vcpus"],
+            "regions": data["regions"],
+            "price_monthly": data["price_monthly"],
+        }
+        return NodeSize(
+            id=data["slug"],
+            name=data["slug"],
+            ram=data["memory"],
+            disk=data["disk"],
+            bandwidth=data["transfer"],
+            price=data["price_hourly"],
+            driver=self,
+            extra=extra,
+        )
 
     def _to_key_pair(self, data):
-        extra = {'id': data['id']}
-        return KeyPair(name=data['name'],
-                       fingerprint=data['fingerprint'],
-                       public_key=data['public_key'],
-                       private_key=None,
-                       driver=self,
-                       extra=extra)
+        extra = {"id": data["id"]}
+        return KeyPair(
+            name=data["name"],
+            fingerprint=data["fingerprint"],
+            public_key=data["public_key"],
+            private_key=None,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_volume_snapshot(self, data):
-        extra = {'created_at': data['created_at'],
-                 'resource_id': data['resource_id'],
-                 'regions': data['regions'],
-                 'min_disk_size': data['min_disk_size']}
-        return VolumeSnapshot(id=data['id'], name=data['name'],
-                              size=data['size_gigabytes'],
-                              driver=self, extra=extra)
+        extra = {
+            "created_at": data["created_at"],
+            "resource_id": data["resource_id"],
+            "regions": data["regions"],
+            "min_disk_size": data["min_disk_size"],
+        }
+        return VolumeSnapshot(
+            id=data["id"],
+            name=data["name"],
+            size=data["size_gigabytes"],
+            driver=self,
+            extra=extra,
+        )
 
     def _to_floating_ips(self, obj):
         return [self._to_floating_ip(ip) for ip in obj]
@@ -740,13 +810,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     def _to_floating_ip(self, obj):
         return DigitalOcean_v2_FloatingIpAddress(
             # There is no ID, but the IP is unique so we can use that
-            id=obj['ip'],
-            ip_address=obj['ip'],
-            node_id=obj['droplet']['id'] if obj['droplet'] else None,
-            extra={
-                'region': obj['region'],
-            },
-            driver=self
+            id=obj["ip"],
+            ip_address=obj["ip"],
+            node_id=obj["droplet"]["id"] if obj["droplet"] else None,
+            extra={"region": obj["region"]},
+            driver=self,
         )
 
 
@@ -771,6 +839,7 @@ class DigitalOcean_v2_FloatingIpAddress(object):
         return self.driver.ex_delete_floating_ip(self)
 
     def __repr__(self):
-        return ('<DigitalOcean_v2_FloatingIpAddress: id=%s, ip_addr=%s,'
-                ' driver=%s>'
-                % (self.id, self.ip_address, self.driver))
+        return (
+            "<DigitalOcean_v2_FloatingIpAddress: id=%s, ip_addr=%s,"
+            " driver=%s>" % (self.id, self.ip_address, self.driver)
+        )

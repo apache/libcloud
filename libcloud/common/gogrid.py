@@ -23,9 +23,9 @@ from libcloud.common.types import MalformedResponseError
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import NodeLocation
 
-HOST = 'api.gogrid.com'
+HOST = "api.gogrid.com"
 PORTS_BY_SECURITY = {True: 443, False: 80}
-API_VERSION = '1.8'
+API_VERSION = "1.8"
 
 __all__ = [
     "GoGridResponse",
@@ -36,25 +36,23 @@ __all__ = [
 
 
 class GoGridResponse(JsonResponse):
-
     def __init__(self, *args, **kwargs):
         self.driver = BaseGoGridDriver
         super(GoGridResponse, self).__init__(*args, **kwargs)
 
     def success(self):
         if self.status == 403:
-            raise InvalidCredsError('Invalid credentials', self.driver)
+            raise InvalidCredsError("Invalid credentials", self.driver)
         if self.status == 401:
-            raise InvalidCredsError('API Key has insufficient rights',
-                                    self.driver)
+            raise InvalidCredsError("API Key has insufficient rights", self.driver)
         if not self.body:
             return None
         try:
-            return self.parse_body()['status'] == 'success'
+            return self.parse_body()["status"] == "success"
         except ValueError:
-            raise MalformedResponseError('Malformed reply',
-                                         body=self.body,
-                                         driver=self.driver)
+            raise MalformedResponseError(
+                "Malformed reply", body=self.body, driver=self.driver
+            )
 
     def parse_error(self):
         try:
@@ -74,20 +72,22 @@ class GoGridConnection(ConnectionUserAndKey):
     def add_default_params(self, params):
         params["api_key"] = self.user_id
         params["v"] = API_VERSION
-        params["format"] = 'json'
+        params["format"] = "json"
         params["sig"] = self.get_signature(self.user_id, self.key)
 
         return params
 
     def get_signature(self, key, secret):
-        """ create sig from md5 of key + secret + time """
+        """create sig from md5 of key + secret + time"""
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
-    def request(self, action, params=None, data='', headers=None, method='GET',
-                raw=False):
-        return super(GoGridConnection, self).request(action, params, data,
-                                                     headers, method, raw)
+    def request(
+        self, action, params=None, data="", headers=None, method="GET", raw=False
+    ):
+        return super(GoGridConnection, self).request(
+            action, params, data, headers, method, raw
+        )
 
 
 class GoGridIpAddress(object):
@@ -111,32 +111,34 @@ class BaseGoGridDriver(object):
     name = "GoGrid"
 
     def _get_ip(self, element):
-        return element.get('ip').get('ip')
+        return element.get("ip").get("ip")
 
     def _to_ip(self, element):
-        ip = GoGridIpAddress(id=element['id'],
-                             ip=element['ip'],
-                             public=element['public'],
-                             subnet=element['subnet'],
-                             state=element["state"]["name"])
-        ip.location = self._to_location(element['datacenter'])
+        ip = GoGridIpAddress(
+            id=element["id"],
+            ip=element["ip"],
+            public=element["public"],
+            subnet=element["subnet"],
+            state=element["state"]["name"],
+        )
+        ip.location = self._to_location(element["datacenter"])
         return ip
 
     def _to_ips(self, object):
-        return [self._to_ip(el)
-                for el in object['list']]
+        return [self._to_ip(el) for el in object["list"]]
 
     def _to_location(self, element):
         # pylint: disable=no-member
-        location = NodeLocation(id=element['id'],
-                                name=element['name'],
-                                country="US",
-                                driver=self.connection.driver)
+        location = NodeLocation(
+            id=element["id"],
+            name=element["name"],
+            country="US",
+            driver=self.connection.driver,
+        )
         return location
 
     def _to_locations(self, object):
-        return [self._to_location(el)
-                for el in object['list']]
+        return [self._to_location(el) for el in object["list"]]
 
     def ex_list_ips(self, **kwargs):
         """Return list of IP addresses assigned to
@@ -163,16 +165,16 @@ class BaseGoGridDriver(object):
         params = {}
 
         if "public" in kwargs and kwargs["public"] is not None:
-            params["ip.type"] = {True: "Public",
-                                 False: "Private"}[kwargs["public"]]
+            params["ip.type"] = {True: "Public", False: "Private"}[kwargs["public"]]
         if "assigned" in kwargs and kwargs["assigned"] is not None:
-            params["ip.state"] = {True: "Assigned",
-                                  False: "Unassigned"}[kwargs["assigned"]]
-        if "location" in kwargs and kwargs['location'] is not None:
-            params['datacenter'] = kwargs['location'].id
+            params["ip.state"] = {True: "Assigned", False: "Unassigned"}[
+                kwargs["assigned"]
+            ]
+        if "location" in kwargs and kwargs["location"] is not None:
+            params["datacenter"] = kwargs["location"].id
 
         # pylint: disable=no-member
-        response = self.connection.request('/api/grid/ip/list', params=params)
+        response = self.connection.request("/api/grid/ip/list", params=params)
         ips = self._to_ips(response.object)
         return ips
 
@@ -182,5 +184,4 @@ class BaseGoGridDriver(object):
             return ips[0].ip
         except IndexError:
             # pylint: disable=no-member
-            raise LibcloudError('No public unassigned IPs left',
-                                self.driver)
+            raise LibcloudError("No public unassigned IPs left", self.driver)

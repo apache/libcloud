@@ -23,9 +23,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeImage, KeyPair
 from libcloud.compute.providers import Provider
 
 
-__all__ = [
-    "OnAppNodeDriver"
-]
+__all__ = ["OnAppNodeDriver"]
 
 """
 Define the extra dictionary for specific resources
@@ -34,212 +32,101 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     "node": {
         "add_to_marketplace": {
             "key_name": "add_to_marketplace",
-            "transform_func": bool
+            "transform_func": bool,
         },
-        "admin_note": {
-            "key_name": "admin_note",
-            "transform_func": str
-        },
+        "admin_note": {"key_name": "admin_note", "transform_func": str},
         "allow_resize_without_reboot": {
             "key_name": "allow_resize_without_reboot",
-            "transform_func": bool
+            "transform_func": bool,
         },
         "allowed_hot_migrate": {
             "key_name": "allowed_hot_migrate",
-            "transform_func": bool
+            "transform_func": bool,
         },
-        "allowed_swap": {
-            "key_name": "allowed_swap",
-            "transform_func": bool
-        },
-        "booted": {
-            "key_name": "booted",
-            "transform_func": bool
-        },
-        "built": {
-            "key_name": "built",
-            "transform_func": bool
-        },
-        "cpu_priority": {
-            "key_name": "cpu_priority",
-            "transform_func": int
-        },
-        "cpu_shares": {
-            "key_name": "cpu_shares",
-            "transform_func": int
-        },
-        "cpu_sockets": {
-            "key_name": "cpu_sockets",
-            "transform_func": int
-        },
-        "cpu_threads": {
-            "key_name": "cpu_threads",
-            "transform_func": int
-        },
-        "cpu_units": {
-            "key_name": "cpu_units",
-            "transform_func": int
-        },
-        "cpus": {
-            "key_name": "cpus",
-            "transform_func": int
-        },
-        "created_at": {
-            "key_name": "created_at",
-            "transform_func": str
-        },
+        "allowed_swap": {"key_name": "allowed_swap", "transform_func": bool},
+        "booted": {"key_name": "booted", "transform_func": bool},
+        "built": {"key_name": "built", "transform_func": bool},
+        "cpu_priority": {"key_name": "cpu_priority", "transform_func": int},
+        "cpu_shares": {"key_name": "cpu_shares", "transform_func": int},
+        "cpu_sockets": {"key_name": "cpu_sockets", "transform_func": int},
+        "cpu_threads": {"key_name": "cpu_threads", "transform_func": int},
+        "cpu_units": {"key_name": "cpu_units", "transform_func": int},
+        "cpus": {"key_name": "cpus", "transform_func": int},
+        "created_at": {"key_name": "created_at", "transform_func": str},
         "customer_network_id": {
             "key_name": "customer_network_id",
-            "transform_func": str
+            "transform_func": str,
         },
-        "deleted_at": {
-            "key_name": "deleted_at",
-            "transform_func": str
-        },
-        "edge_server_type": {
-            "key_name": "edge_server_type",
-            "transform_func": str
-        },
-        "enable_autoscale": {
-            "key_name": "enable_autoscale",
-            "transform_func": bool
-        },
-        "enable_monitis": {
-            "key_name": "enable_monitis",
-            "transform_func": bool
-        },
-        "firewall_notrack": {
-            "key_name": "firewall_notrack",
-            "transform_func": bool
-        },
-        "hostname": {
-            "key_name": "hostname",
-            "transform_func": str
-        },
-        "hypervisor_id": {
-            "key_name": "hypervisor_id",
-            "transform_func": int
-        },
-        "id": {
-            "key_name": "id",
-            "transform_func": int
-        },
+        "deleted_at": {"key_name": "deleted_at", "transform_func": str},
+        "edge_server_type": {"key_name": "edge_server_type", "transform_func": str},
+        "enable_autoscale": {"key_name": "enable_autoscale", "transform_func": bool},
+        "enable_monitis": {"key_name": "enable_monitis", "transform_func": bool},
+        "firewall_notrack": {"key_name": "firewall_notrack", "transform_func": bool},
+        "hostname": {"key_name": "hostname", "transform_func": str},
+        "hypervisor_id": {"key_name": "hypervisor_id", "transform_func": int},
+        "id": {"key_name": "id", "transform_func": int},
         "initial_root_password": {
             "key_name": "initial_root_password",
-            "transform_func": str
+            "transform_func": str,
         },
         "initial_root_password_encrypted": {
             "key_name": "initial_root_password_encrypted",
-            "transform_func": bool
+            "transform_func": bool,
         },
         "local_remote_access_ip_address": {
             "key_name": "local_remote_access_ip_address",
-            "transform_func": str
+            "transform_func": str,
         },
         "local_remote_access_port": {
             "key_name": "local_remote_access_port",
-            "transform_func": int
+            "transform_func": int,
         },
-        "locked": {
-            "key_name": "locked",
-            "transform_func": bool
-        },
-        "memory": {
-            "key_name": "memory",
-            "transform_func": int
-        },
-        "min_disk_size": {
-            "key_name": "min_disk_size",
-            "transform_func": int
-        },
+        "locked": {"key_name": "locked", "transform_func": bool},
+        "memory": {"key_name": "memory", "transform_func": int},
+        "min_disk_size": {"key_name": "min_disk_size", "transform_func": int},
         "monthly_bandwidth_used": {
             "key_name": "monthly_bandwidth_used",
-            "transform_func": int
+            "transform_func": int,
         },
-        "note": {
-            "key_name": "note",
-            "transform_func": str
-        },
-        "operating_system": {
-            "key_name": "operating_system",
-            "transform_func": str
-        },
+        "note": {"key_name": "note", "transform_func": str},
+        "operating_system": {"key_name": "operating_system", "transform_func": str},
         "operating_system_distro": {
             "key_name": "operating_system_distro",
-            "transform_func": str
+            "transform_func": str,
         },
-        "preferred_hvs": {
-            "key_name": "preferred_hvs",
-            "transform_func": list
-        },
-        "price_per_hour": {
-            "key_name": "price_per_hour",
-            "transform_func": float
-        },
+        "preferred_hvs": {"key_name": "preferred_hvs", "transform_func": list},
+        "price_per_hour": {"key_name": "price_per_hour", "transform_func": float},
         "price_per_hour_powered_off": {
             "key_name": "price_per_hour_powered_off",
-            "transform_func": float
+            "transform_func": float,
         },
-        "recovery_mode": {
-            "key_name": "recovery_mode",
-            "transform_func": bool
-        },
+        "recovery_mode": {"key_name": "recovery_mode", "transform_func": bool},
         "remote_access_password": {
             "key_name": "remote_access_password",
-            "transform_func": str
+            "transform_func": str,
         },
-        "service_password": {
-            "key_name": "service_password",
-            "transform_func": str
-        },
-        "state": {
-            "key_name": "state",
-            "transform_func": str
-        },
+        "service_password": {"key_name": "service_password", "transform_func": str},
+        "state": {"key_name": "state", "transform_func": str},
         "storage_server_type": {
             "key_name": "storage_server_type",
-            "transform_func": str
+            "transform_func": str,
         },
         "strict_virtual_machine_id": {
             "key_name": "strict_virtual_machine_id",
-            "transform_func": str
+            "transform_func": str,
         },
         "support_incremental_backups": {
             "key_name": "support_incremental_backups",
-            "transform_func": bool
+            "transform_func": bool,
         },
-        "suspended": {
-            "key_name": "suspended",
-            "transform_func": bool
-        },
-        "template_id": {
-            "key_name": "template_id",
-            "transform_func": int
-        },
-        "template_label": {
-            "key_name": "template_label",
-            "transform_func": str
-        },
-        "total_disk_size": {
-            "key_name": "total_disk_size",
-            "transform_func": int
-        },
-        "updated_at": {
-            "key_name": "updated_at",
-            "transform_func": str
-        },
-        "user_id": {
-            "key_name": "user_id",
-            "transform_func": int
-        },
-        "vip": {
-            "key_name": "vip",
-            "transform_func": bool
-        },
-        "xen_id": {
-            "key_name": "xen_id",
-            "transform_func": int
-        }
+        "suspended": {"key_name": "suspended", "transform_func": bool},
+        "template_id": {"key_name": "template_id", "transform_func": int},
+        "template_label": {"key_name": "template_label", "transform_func": str},
+        "total_disk_size": {"key_name": "total_disk_size", "transform_func": int},
+        "updated_at": {"key_name": "updated_at", "transform_func": str},
+        "user_id": {"key_name": "user_id", "transform_func": int},
+        "vip": {"key_name": "vip", "transform_func": bool},
+        "xen_id": {"key_name": "xen_id", "transform_func": int},
     }
 }
 
@@ -251,13 +138,23 @@ class OnAppNodeDriver(NodeDriver):
 
     connectionCls = OnAppConnection
     type = Provider.ONAPP
-    name = 'OnApp'
-    website = 'http://onapp.com/'
+    name = "OnApp"
+    website = "http://onapp.com/"
 
-    def create_node(self, name, ex_memory, ex_cpus, ex_cpu_shares,
-                    ex_hostname, ex_template_id, ex_primary_disk_size,
-                    ex_swap_disk_size, ex_required_virtual_machine_build=1,
-                    ex_required_ip_address_assignment=1, **kwargs):
+    def create_node(
+        self,
+        name,
+        ex_memory,
+        ex_cpus,
+        ex_cpu_shares,
+        ex_hostname,
+        ex_template_id,
+        ex_primary_disk_size,
+        ex_swap_disk_size,
+        ex_required_virtual_machine_build=1,
+        ex_required_ip_address_assignment=1,
+        **kwargs,
+    ):
         """
         Add a VS
 
@@ -277,7 +174,7 @@ class OnAppNodeDriver(NodeDriver):
             swap_disk_size=ex_swap_disk_size,
             required_virtual_machine_build=ex_required_virtual_machine_build,
             required_ip_address_assignment=ex_required_ip_address_assignment,
-            rate_limit=kwargs.get("rate_limit")
+            rate_limit=kwargs.get("rate_limit"),
         )
 
         server_params.update(OnAppNodeDriver._create_args_to_params(**kwargs))
@@ -286,16 +183,13 @@ class OnAppNodeDriver(NodeDriver):
         response = self.connection.request(
             "/virtual_machines.json",
             data=data,
-            headers={
-                "Content-type": "application/json"},
-            method="POST")
+            headers={"Content-type": "application/json"},
+            method="POST",
+        )
 
         return self._to_node(response.object["virtual_machine"])
 
-    def destroy_node(self,
-                     node,
-                     ex_convert_last_backup=0,
-                     ex_destroy_all_backups=0):
+    def destroy_node(self, node, ex_convert_last_backup=0, ex_destroy_all_backups=0):
         """
         Delete a VS
 
@@ -312,10 +206,9 @@ class OnAppNodeDriver(NodeDriver):
         """
         server_params = {
             "convert_last_backup": ex_convert_last_backup,
-            "destroy_all_backups": ex_destroy_all_backups
+            "destroy_all_backups": ex_destroy_all_backups,
         }
-        action = "/virtual_machines/{identifier}.json".format(
-            identifier=node.id)
+        action = "/virtual_machines/{identifier}.json".format(identifier=node.id)
 
         self.connection.request(action, params=server_params, method="DELETE")
         return True
@@ -350,11 +243,11 @@ class OnAppNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`.KeyPair` objects
         """
-        user_id = self.connection.request('/profile.json').object['user']['id']
-        response = self.connection.request('/users/%s/ssh_keys.json' % user_id)
+        user_id = self.connection.request("/profile.json").object["user"]["id"]
+        response = self.connection.request("/users/%s/ssh_keys.json" % user_id)
         ssh_keys = []
         for ssh_key in response.object:
-            ssh_keys.append(self._to_key_pair(ssh_key['ssh_key']))
+            ssh_keys.append(self._to_key_pair(ssh_key["ssh_key"]))
         return ssh_keys
 
     def get_key_pair(self, name):
@@ -366,10 +259,11 @@ class OnAppNodeDriver(NodeDriver):
 
         :rtype: :class:`.KeyPair` object
         """
-        user_id = self.connection.request('/profile.json').object['user']['id']
+        user_id = self.connection.request("/profile.json").object["user"]["id"]
         response = self.connection.request(
-            '/users/%s/ssh_keys/%s.json' % (user_id, name))
-        return self._to_key_pair(response.object['ssh_key'])
+            "/users/%s/ssh_keys/%s.json" % (user_id, name)
+        )
+        return self._to_key_pair(response.object["ssh_key"])
 
     def import_key_pair_from_string(self, name, key_material):
         """
@@ -383,15 +277,15 @@ class OnAppNodeDriver(NodeDriver):
 
         :rtype: :class:`.KeyPair` object
         """
-        data = json.dumps({'key': key_material})
-        user_id = self.connection.request('/profile.json').object['user']['id']
+        data = json.dumps({"key": key_material})
+        user_id = self.connection.request("/profile.json").object["user"]["id"]
         response = self.connection.request(
-            '/users/%s/ssh_keys.json' % user_id,
+            "/users/%s/ssh_keys.json" % user_id,
             data=data,
-            headers={
-                "Content-type": "application/json"},
-            method="POST")
-        return self._to_key_pair(response.object['ssh_key'])
+            headers={"Content-type": "application/json"},
+            method="POST",
+        )
+        return self._to_key_pair(response.object["ssh_key"])
 
     def delete_key_pair(self, key):
         """
@@ -405,8 +299,8 @@ class OnAppNodeDriver(NodeDriver):
         """
         key_id = key.name
         response = self.connection.request(
-            '/settings/ssh_keys/%s.json' % key_id,
-            method='DELETE')
+            "/settings/ssh_keys/%s.json" % key_id, method="DELETE"
+        )
         return response.status == httplib.NO_CONTENT
 
     #
@@ -414,28 +308,31 @@ class OnAppNodeDriver(NodeDriver):
     #
 
     def _to_key_pair(self, data):
-        extra = {'created_at': data['created_at'],
-                 'updated_at': data['updated_at']}
-        return KeyPair(name=data['id'],
-                       fingerprint=None,
-                       public_key=data['key'],
-                       private_key=None,
-                       driver=self,
-                       extra=extra)
+        extra = {"created_at": data["created_at"], "updated_at": data["updated_at"]}
+        return KeyPair(
+            name=data["id"],
+            fingerprint=None,
+            public_key=data["key"],
+            private_key=None,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_image(self, template):
-        extra = {'distribution': template['operating_system_distro'],
-                 'operating_system': template['operating_system'],
-                 'operating_system_arch': template['operating_system_arch'],
-                 'allow_resize_without_reboot':
-                 template['allow_resize_without_reboot'],
-                 'allowed_hot_migrate': template['allowed_hot_migrate'],
-                 'allowed_swap': template['allowed_swap'],
-                 'min_disk_size': template['min_disk_size'],
-                 'min_memory_size': template['min_memory_size'],
-                 'created_at': template['created_at']}
-        return NodeImage(id=template['id'], name=template['label'],
-                         driver=self, extra=extra)
+        extra = {
+            "distribution": template["operating_system_distro"],
+            "operating_system": template["operating_system"],
+            "operating_system_arch": template["operating_system_arch"],
+            "allow_resize_without_reboot": template["allow_resize_without_reboot"],
+            "allowed_hot_migrate": template["allowed_hot_migrate"],
+            "allowed_swap": template["allowed_swap"],
+            "min_disk_size": template["min_disk_size"],
+            "min_memory_size": template["min_memory_size"],
+            "created_at": template["created_at"],
+        }
+        return NodeImage(
+            id=template["id"], name=template["label"], driver=self, extra=extra
+        )
 
     def _to_node(self, data):
         identifier = data["identifier"]
@@ -443,7 +340,7 @@ class OnAppNodeDriver(NodeDriver):
         private_ips = []
         public_ips = []
         for ip in data["ip_addresses"]:
-            address = ip["ip_address"]['address']
+            address = ip["ip_address"]["address"]
             if is_private_subnet(address):
                 private_ips.append(address)
             else:
@@ -452,13 +349,9 @@ class OnAppNodeDriver(NodeDriver):
         extra = OnAppNodeDriver._get_extra_dict(
             data, RESOURCE_EXTRA_ATTRIBUTES_MAP["node"]
         )
-        return Node(identifier,
-                    name,
-                    extra['state'],
-                    public_ips,
-                    private_ips,
-                    self,
-                    extra=extra)
+        return Node(
+            identifier, name, extra["state"], public_ips, private_ips, self, extra=extra
+        )
 
     @staticmethod
     def _get_extra_dict(response, mapping):

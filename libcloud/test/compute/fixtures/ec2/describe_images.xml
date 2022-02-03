@@ -36,6 +36,7 @@
             </blockDeviceMapping>
             <virtualizationType>paravirtual</virtualizationType>
             <hypervisor>xen</hypervisor>
+            <creationDate>2021-01-10T18:24:00.000Z</creationDate>
         </item>
         <item>
             <imageId>ami-85b2a8ae</imageId>
@@ -47,6 +48,38 @@
             <imageType>machine</imageType>
             <kernelId>aki-88aa75e1</kernelId>
             <name>Test Image 2</name>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <billingProducts>
+                <item>
+                    <billingProduct>as-6dr90319</billingProduct>
+                </item>
+            </billingProducts>
+            <blockDeviceMapping>
+                <item>
+                    <deviceName>/dev/sda1</deviceName>
+                    <ebs>
+                        <snapshotId>snap-c0bfbbdb</snapshotId>
+                        <volumeSize>20</volumeSize>
+                        <deleteOnTermination>false</deleteOnTermination>
+                        <volumeType>standard</volumeType>
+                    </ebs>
+                </item>
+            </blockDeviceMapping>
+            <virtualizationType>paravirtual</virtualizationType>
+            <hypervisor>xen</hypervisor>
+            <creationDate>2021-01-10T18:25:00.000Z</creationDate>
+        </item>
+        <item>
+            <imageId>ami-85b2a8ac</imageId>
+            <imageLocation>123456788908/Test Image 3</imageLocation>
+            <imageState>available</imageState>
+            <imageOwnerId>123456788908</imageOwnerId>
+            <isPublic>false</isPublic>
+            <architecture>x86_64</architecture>
+            <imageType>machine</imageType>
+            <kernelId>aki-88aa75e1</kernelId>
+            <name>Test Image 3</name>
             <rootDeviceType>ebs</rootDeviceType>
             <rootDeviceName>/dev/sda1</rootDeviceName>
             <billingProducts>

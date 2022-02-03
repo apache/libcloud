@@ -16,9 +16,9 @@
 import unittest
 import sys
 
-from integration.driver.test import TestNodeDriver
+from integration.compute.driver.test import TestNodeDriver
 
-from integration.api.data import NODES, REPORT_DATA
+from integration.compute.api.data import NODES, REPORT_DATA
 
 
 class IntegrationTest(unittest.TestCase):

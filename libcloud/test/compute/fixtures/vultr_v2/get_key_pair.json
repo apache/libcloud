@@ -1,0 +1,8 @@
+{
+    "ssh_key": {
+        "id": "123",
+        "date_created": "2019-09-20T11:14:26+00:00",
+        "name": "tester",
+        "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwRaxNA9gsFPVAIq4rkBjTtBAsofSJ0lJS3hPFHiwABpiihu45dcJtcmIqUO2jooVsKCfPJ/KrZ5DqhgPWbHJ/C+ZtHDhZ19jq022nfb+tfqCgwolKd8POlmivtpQdl3AaG4hm/Uh0VICAsrgp1o6EEzRLJE6vWrz4XaIUKYI1idzv/1kF2R9LBb60HXsQaIeV5z0036uy9d55wG+DtwUIpBBfyxevISS9n1kEI+MHi+Ci4D9dmE3SGm+9gDAZ2ZwPjWcAiUnf8SJ5CyA3MwUCa8czPgVMtpt5qZNYxilrGJEpPhnCHwT3YvUbh69F24kMDj2IX9LYjcvUsgIjXuxb"
+    }
+}

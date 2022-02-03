@@ -24,8 +24,10 @@ from typing import Type, cast
 EC2 = get_driver(Provider.EC2)
 Rackspace = get_driver(Provider.RACKSPACE)
 
-drivers = [EC2('access key id', 'secret key', region='us-east-1'),
-           Rackspace('username', 'api key', region='iad')]
+drivers = [
+    EC2("access key id", "secret key", region="us-east-1"),
+    Rackspace("username", "api key", region="iad"),
+]
 
 nodes = []
 for driver in drivers:
@@ -36,7 +38,7 @@ print(nodes)
 # <Node: provider=Rackspace, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
 
 # grab the node named "test"
-node = [n for n in nodes if n.name == 'test'][0]
+node = [n for n in nodes if n.name == "test"][0]
 
 # reboot "test"
 node.reboot()

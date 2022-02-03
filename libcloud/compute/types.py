@@ -25,14 +25,12 @@ __all__ = [
     "NodeState",
     "DeploymentError",
     "DeploymentException",
-
     # @@TR: should the unused imports below be exported?
     "LibcloudError",
     "MalformedResponseError",
     "InvalidCredsError",
     "InvalidCredsException",
-
-    "OLD_CONSTANT_TO_NEW_MAPPING"
+    "OLD_CONSTANT_TO_NEW_MAPPING",
 ]
 
 
@@ -91,135 +89,136 @@ class Provider(Type):
     :cvar VSphere: VSphere driver.
     :cvar VULTR: vultr driver.
     """
-    AZURE = 'azure'
-    AZURE_ARM = 'azure_arm'
-    DUMMY = 'dummy'
-    ABIQUO = 'abiquo'
-    ALIYUN_ECS = 'aliyun_ecs'
-    AURORACOMPUTE = 'aurora_compute'
-    BLUEBOX = 'bluebox'
-    BRIGHTBOX = 'brightbox'
-    BSNL = 'bsnl'
-    CISCOCCS = 'ciscoccs'
-    CLOUDFRAMES = 'cloudframes'
-    CLOUDSIGMA = 'cloudsigma'
-    CLOUDSCALE = 'cloudscale'
-    CLOUDSTACK = 'cloudstack'
-    DIGITAL_OCEAN = 'digitalocean'
-    DIMENSIONDATA = 'dimensiondata'
-    EC2 = 'ec2'
-    ECP = 'ecp'
-    ELASTICHOSTS = 'elastichosts'
-    EQUINIXMETAL = 'equinixmetal'
-    EUCALYPTUS = 'eucalyptus'
-    EXOSCALE = 'exoscale'
-    GANDI = 'gandi'
-    GCE = 'gce'
-    GIG_G8 = 'gig_g8'
-    GOGRID = 'gogrid'
-    GRIDSCALE = 'gridscale'
-    GRIDSPOT = 'gridspot'
-    HOSTVIRTUAL = 'hostvirtual'
-    IBM = 'ibm'
-    IKOULA = 'ikoula'
-    INDOSAT = 'indosat'
-    INTERNETSOLUTIONS = 'internetsolutions'
-    JOYENT = 'joyent'
-    KAMATERA = 'kamatera'
-    KTUCLOUD = 'ktucloud'
-    KUBEVIRT = 'kubevirt'
-    LIBVIRT = 'libvirt'
-    LINODE = 'linode'
-    MAXIHOST = 'maxihost'
-    MEDONE = 'medone'
-    NEPHOSCALE = 'nephoscale'
-    NIMBUS = 'nimbus'
-    NINEFOLD = 'ninefold'
-    NTTA = 'ntta'
-    NTTCIS = 'nttcis'
-    ONEANDONE = 'oneandone'
-    OPENNEBULA = 'opennebula'
-    OPENSTACK = 'openstack'
-    OPSOURCE = 'opsource'
-    OUTSCALE_INC = 'outscale_inc'
-    OUTSCALE_SAS = 'outscale_sas'
-    OUTSCALE = 'outscale'
-    OVH = 'ovh'
-    PROFIT_BRICKS = 'profitbricks'
-    RACKSPACE = 'rackspace'
-    RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
-    RIMUHOSTING = 'rimuhosting'
-    RUNABOVE = 'runabove'
-    SCALEWAY = 'scaleway'
-    SERVERLOVE = 'serverlove'
-    SKALICLOUD = 'skalicloud'
-    SOFTLAYER = 'softlayer'
-    TERREMARK = 'terremark'
-    UPCLOUD = 'upcloud'
-    VCL = 'vcl'
-    VCLOUD = 'vcloud'
-    VOXEL = 'voxel'
-    VPSNET = 'vpsnet'
-    VSPHERE = 'vsphere'
-    VULTR = 'vultr'
+
+    AZURE = "azure"
+    AZURE_ARM = "azure_arm"
+    DUMMY = "dummy"
+    ABIQUO = "abiquo"
+    ALIYUN_ECS = "aliyun_ecs"
+    AURORACOMPUTE = "aurora_compute"
+    BLUEBOX = "bluebox"
+    BRIGHTBOX = "brightbox"
+    BSNL = "bsnl"
+    CISCOCCS = "ciscoccs"
+    CLOUDFRAMES = "cloudframes"
+    CLOUDSIGMA = "cloudsigma"
+    CLOUDSCALE = "cloudscale"
+    CLOUDSTACK = "cloudstack"
+    DIGITAL_OCEAN = "digitalocean"
+    DIMENSIONDATA = "dimensiondata"
+    EC2 = "ec2"
+    ECP = "ecp"
+    ELASTICHOSTS = "elastichosts"
+    EQUINIXMETAL = "equinixmetal"
+    EUCALYPTUS = "eucalyptus"
+    EXOSCALE = "exoscale"
+    GANDI = "gandi"
+    GCE = "gce"
+    GIG_G8 = "gig_g8"
+    GOGRID = "gogrid"
+    GRIDSCALE = "gridscale"
+    GRIDSPOT = "gridspot"
+    HOSTVIRTUAL = "hostvirtual"
+    IBM = "ibm"
+    IKOULA = "ikoula"
+    INDOSAT = "indosat"
+    INTERNETSOLUTIONS = "internetsolutions"
+    JOYENT = "joyent"
+    KAMATERA = "kamatera"
+    KTUCLOUD = "ktucloud"
+    KUBEVIRT = "kubevirt"
+    LIBVIRT = "libvirt"
+    LINODE = "linode"
+    MAXIHOST = "maxihost"
+    MEDONE = "medone"
+    NEPHOSCALE = "nephoscale"
+    NIMBUS = "nimbus"
+    NINEFOLD = "ninefold"
+    NTTA = "ntta"
+    NTTCIS = "nttcis"
+    ONEANDONE = "oneandone"
+    OPENNEBULA = "opennebula"
+    OPENSTACK = "openstack"
+    OPSOURCE = "opsource"
+    OUTSCALE_INC = "outscale_inc"
+    OUTSCALE_SAS = "outscale_sas"
+    OUTSCALE = "outscale"
+    OVH = "ovh"
+    PROFIT_BRICKS = "profitbricks"
+    RACKSPACE = "rackspace"
+    RACKSPACE_FIRST_GEN = "rackspace_first_gen"
+    RIMUHOSTING = "rimuhosting"
+    RUNABOVE = "runabove"
+    SCALEWAY = "scaleway"
+    SERVERLOVE = "serverlove"
+    SKALICLOUD = "skalicloud"
+    SOFTLAYER = "softlayer"
+    TERREMARK = "terremark"
+    UPCLOUD = "upcloud"
+    VCL = "vcl"
+    VCLOUD = "vcloud"
+    VOXEL = "voxel"
+    VPSNET = "vpsnet"
+    VSPHERE = "vsphere"
+    VULTR = "vultr"
 
     # OpenStack based providers
-    CLOUDWATT = 'cloudwatt'
-    HPCLOUD = 'hpcloud'
-    KILI = 'kili'
-    ONAPP = 'onapp'
+    CLOUDWATT = "cloudwatt"
+    HPCLOUD = "hpcloud"
+    KILI = "kili"
+    ONAPP = "onapp"
 
     # Deprecated constants which aren't supported anymore
-    RACKSPACE_UK = 'rackspace_uk'
-    RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
-    RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
-    RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
-    RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
+    RACKSPACE_UK = "rackspace_uk"
+    RACKSPACE_NOVA_BETA = "rackspace_nova_beta"
+    RACKSPACE_NOVA_DFW = "rackspace_nova_dfw"
+    RACKSPACE_NOVA_LON = "rackspace_nova_lon"
+    RACKSPACE_NOVA_ORD = "rackspace_nova_ord"
 
-    EC2_US_EAST = 'ec2_us_east'
-    EC2_US_EAST_OHIO = 'ec2_us_east_ohio'
-    EC2_EU = 'ec2_eu_west'  # deprecated name
-    EC2_EU_WEST = 'ec2_eu_west'
-    EC2_EU_WEST2 = 'ec2_eu_west_london'
-    EC2_US_WEST = 'ec2_us_west'
-    EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
-    EC2_AP_NORTHEAST = 'ec2_ap_northeast'
-    EC2_AP_NORTHEAST1 = 'ec2_ap_northeast_1'
-    EC2_AP_NORTHEAST2 = 'ec2_ap_northeast_2'
-    EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
-    EC2_SA_EAST = 'ec2_sa_east'
-    EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
-    EC2_CA_CENTRAL1 = 'ec2_ca_central_1'
+    EC2_US_EAST = "ec2_us_east"
+    EC2_US_EAST_OHIO = "ec2_us_east_ohio"
+    EC2_EU = "ec2_eu_west"  # deprecated name
+    EC2_EU_WEST = "ec2_eu_west"
+    EC2_EU_WEST2 = "ec2_eu_west_london"
+    EC2_US_WEST = "ec2_us_west"
+    EC2_AP_SOUTHEAST = "ec2_ap_southeast"
+    EC2_AP_NORTHEAST = "ec2_ap_northeast"
+    EC2_AP_NORTHEAST1 = "ec2_ap_northeast_1"
+    EC2_AP_NORTHEAST2 = "ec2_ap_northeast_2"
+    EC2_US_WEST_OREGON = "ec2_us_west_oregon"
+    EC2_SA_EAST = "ec2_sa_east"
+    EC2_AP_SOUTHEAST2 = "ec2_ap_southeast_2"
+    EC2_CA_CENTRAL1 = "ec2_ca_central_1"
 
-    ELASTICHOSTS_UK1 = 'elastichosts_uk1'
-    ELASTICHOSTS_UK2 = 'elastichosts_uk2'
-    ELASTICHOSTS_US1 = 'elastichosts_us1'
-    ELASTICHOSTS_US2 = 'elastichosts_us2'
-    ELASTICHOSTS_US3 = 'elastichosts_us3'
-    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
-    ELASTICHOSTS_AU1 = 'elastichosts_au1'
-    ELASTICHOSTS_CN1 = 'elastichosts_cn1'
+    ELASTICHOSTS_UK1 = "elastichosts_uk1"
+    ELASTICHOSTS_UK2 = "elastichosts_uk2"
+    ELASTICHOSTS_US1 = "elastichosts_us1"
+    ELASTICHOSTS_US2 = "elastichosts_us2"
+    ELASTICHOSTS_US3 = "elastichosts_us3"
+    ELASTICHOSTS_CA1 = "elastichosts_ca1"
+    ELASTICHOSTS_AU1 = "elastichosts_au1"
+    ELASTICHOSTS_CN1 = "elastichosts_cn1"
 
-    CLOUDSIGMA_US = 'cloudsigma_us'
+    CLOUDSIGMA_US = "cloudsigma_us"
 
     # Removed
     # SLICEHOST = 'slicehost'
 
 
-DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
-                                  Provider.RACKSPACE_NOVA_BETA,
-                                  Provider.RACKSPACE_NOVA_DFW,
-                                  Provider.RACKSPACE_NOVA_LON,
-                                  Provider.RACKSPACE_NOVA_ORD]
+DEPRECATED_RACKSPACE_PROVIDERS = [
+    Provider.RACKSPACE_UK,
+    Provider.RACKSPACE_NOVA_BETA,
+    Provider.RACKSPACE_NOVA_DFW,
+    Provider.RACKSPACE_NOVA_LON,
+    Provider.RACKSPACE_NOVA_ORD,
+]
 OLD_CONSTANT_TO_NEW_MAPPING = {
     # Rackspace
     Provider.RACKSPACE_UK: Provider.RACKSPACE_FIRST_GEN,
-
     Provider.RACKSPACE_NOVA_BETA: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_DFW: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE,
-
     # AWS
     Provider.EC2_US_EAST: Provider.EC2,
     Provider.EC2_US_EAST_OHIO: Provider.EC2,
@@ -235,7 +234,6 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
     Provider.EC2_CA_CENTRAL1: Provider.EC2,
-
     # ElasticHosts
     Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,
     Provider.ELASTICHOSTS_UK2: Provider.ELASTICHOSTS,
@@ -266,60 +264,64 @@ class NodeState(Type):
     :cvar RECONFIGURING: Node is being reconfigured.
     :cvar UNKNOWN: Node state is unknown.
     """
-    RUNNING = 'running'
-    STARTING = 'starting'
-    REBOOTING = 'rebooting'
-    TERMINATED = 'terminated'
-    PENDING = 'pending'
-    UNKNOWN = 'unknown'
-    STOPPING = 'stopping'
-    STOPPED = 'stopped'
-    SUSPENDED = 'suspended'
-    ERROR = 'error'
-    PAUSED = 'paused'
-    RECONFIGURING = 'reconfiguring'
-    MIGRATING = 'migrating'
-    NORMAL = 'normal'
-    UPDATING = 'updating'
+
+    RUNNING = "running"
+    STARTING = "starting"
+    REBOOTING = "rebooting"
+    TERMINATED = "terminated"
+    PENDING = "pending"
+    UNKNOWN = "unknown"
+    STOPPING = "stopping"
+    STOPPED = "stopped"
+    SUSPENDED = "suspended"
+    ERROR = "error"
+    PAUSED = "paused"
+    RECONFIGURING = "reconfiguring"
+    MIGRATING = "migrating"
+    NORMAL = "normal"
+    UPDATING = "updating"
 
 
 class StorageVolumeState(Type):
     """
     Standard states of a StorageVolume
     """
-    AVAILABLE = 'available'
-    ERROR = 'error'
-    INUSE = 'inuse'
-    CREATING = 'creating'
-    DELETING = 'deleting'
-    DELETED = 'deleted'
-    BACKUP = 'backup'
-    ATTACHING = 'attaching'
-    UNKNOWN = 'unknown'
-    MIGRATING = 'migrating'
-    UPDATING = 'updating'
+
+    AVAILABLE = "available"
+    ERROR = "error"
+    INUSE = "inuse"
+    CREATING = "creating"
+    DELETING = "deleting"
+    DELETED = "deleted"
+    BACKUP = "backup"
+    ATTACHING = "attaching"
+    UNKNOWN = "unknown"
+    MIGRATING = "migrating"
+    UPDATING = "updating"
 
 
 class VolumeSnapshotState(Type):
     """
     Standard states of VolumeSnapshots
     """
-    AVAILABLE = 'available'
-    ERROR = 'error'
-    CREATING = 'creating'
-    DELETING = 'deleting'
-    RESTORING = 'restoring'
-    UNKNOWN = 'unknown'
-    UPDATING = 'updating'
+
+    AVAILABLE = "available"
+    ERROR = "error"
+    CREATING = "creating"
+    DELETING = "deleting"
+    RESTORING = "restoring"
+    UNKNOWN = "unknown"
+    UPDATING = "updating"
 
 
 class NodeImageMemberState(Type):
     """
     Standard states of VolumeSnapshots
     """
-    ACCEPTED = 'accepted'
-    PENDING = 'pending'
-    REJECTED = 'rejected'
+
+    ACCEPTED = "accepted"
+    PENDING = "pending"
+    REJECTED = "rejected"
 
 
 class Architecture(object):
@@ -329,6 +331,7 @@ class Architecture(object):
     :cvar I386: i386 (32 bt)
     :cvar X86_64: x86_64 (64 bit)
     """
+
     I386 = 0
     X86_X64 = 1
 
@@ -351,28 +354,35 @@ class DeploymentError(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return (('<DeploymentError: node=%s, error=%s, driver=%s>'
-                 % (self.node.id, str(self.value), str(self.driver))))
+        return "<DeploymentError: node=%s, error=%s, driver=%s>" % (
+            self.node.id,
+            str(self.value),
+            str(self.driver),
+        )
 
 
 class KeyPairError(LibcloudError):
-    error_type = 'KeyPairError'
+    error_type = "KeyPairError"
 
     def __init__(self, name, driver):
         self.name = name
-        self.value = 'Key pair with name %s does not exist' % (name)
+        self.value = "Key pair with name %s does not exist" % (name)
         super(KeyPairError, self).__init__(value=self.value, driver=driver)
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return ('<%s name=%s, value=%s, driver=%s>' %
-                (self.error_type, self.name, self.value, self.driver.name))
+        return "<%s name=%s, value=%s, driver=%s>" % (
+            self.error_type,
+            self.name,
+            self.value,
+            self.driver.name,
+        )
 
 
 class KeyPairDoesNotExistError(KeyPairError):
-    error_type = 'KeyPairDoesNotExistError'
+    error_type = "KeyPairDoesNotExistError"
 
 
 """Deprecated alias of :class:`DeploymentException`"""

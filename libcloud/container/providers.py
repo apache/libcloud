@@ -27,22 +27,17 @@ if TYPE_CHECKING:
     from libcloud.container.base import ContainerDriver
 
 DRIVERS = {
-    Provider.DUMMY:
-    ('libcloud.container.drivers.dummy', 'DummyContainerDriver'),
-    Provider.DOCKER:
-    ('libcloud.container.drivers.docker', 'DockerContainerDriver'),
-    Provider.JOYENT:
-    ('libcloud.container.drivers.joyent', 'JoyentContainerDriver'),
-    Provider.ECS:
-    ('libcloud.container.drivers.ecs', 'ElasticContainerDriver'),
-    Provider.KUBERNETES:
-    ('libcloud.container.drivers.kubernetes', 'KubernetesContainerDriver'),
-    Provider.LXD:
-    ('libcloud.container.drivers.lxd', 'LXDContainerDriver'),
-    Provider.RANCHER:
-    ('libcloud.container.drivers.rancher', 'RancherContainerDriver'),
-    Provider.GKE:
-    ('libcloud.container.drivers.gke', 'GKEContainerDriver')
+    Provider.DUMMY: ("libcloud.container.drivers.dummy", "DummyContainerDriver"),
+    Provider.DOCKER: ("libcloud.container.drivers.docker", "DockerContainerDriver"),
+    Provider.JOYENT: ("libcloud.container.drivers.joyent", "JoyentContainerDriver"),
+    Provider.ECS: ("libcloud.container.drivers.ecs", "ElasticContainerDriver"),
+    Provider.KUBERNETES: (
+        "libcloud.container.drivers.kubernetes",
+        "KubernetesContainerDriver",
+    ),
+    Provider.LXD: ("libcloud.container.drivers.lxd", "LXDContainerDriver"),
+    Provider.RANCHER: ("libcloud.container.drivers.rancher", "RancherContainerDriver"),
+    Provider.GKE: ("libcloud.container.drivers.gke", "GKEContainerDriver"),
 }
 
 
@@ -53,5 +48,6 @@ def get_driver(provider):
 
 def set_driver(provider, module, klass):
     # type: (Union[Provider, str], ModuleType, type) -> Type[ContainerDriver]
-    return _set_provider_driver(drivers=DRIVERS, provider=provider,
-                                module=module, klass=klass)
+    return _set_provider_driver(
+        drivers=DRIVERS, provider=provider, module=module, klass=klass
+    )

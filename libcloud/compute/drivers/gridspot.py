@@ -34,11 +34,12 @@ class GridspotResponse(JsonResponse):
     """
     Response class for Gridspot
     """
+
     def parse_body(self):
         body = super(GridspotResponse, self).parse_body()
 
-        if 'exception_name' in body and body['exception_name']:
-            raise GridspotAPIException(body['exception_name'])
+        if "exception_name" in body and body["exception_name"]:
+            raise GridspotAPIException(body["exception_name"])
 
         return body
 
@@ -52,11 +53,11 @@ class GridspotConnection(ConnectionKey):
     Connection class to connect to Gridspot's API servers
     """
 
-    host = 'gridspot.com'
+    host = "gridspot.com"
     responseCls = GridspotResponse
 
     def add_default_params(self, params):
-        params['api_key'] = self.key
+        params["api_key"] = self.key
         return params
 
 
@@ -66,22 +67,18 @@ class GridspotNodeDriver(NodeDriver):
     """
 
     type = Provider.GRIDSPOT
-    name = 'Gridspot'
-    website = 'http://www.gridspot.com/'
+    name = "Gridspot"
+    website = "http://www.gridspot.com/"
     connectionCls = GridspotConnection
-    NODE_STATE_MAP = {
-        'Running': NodeState.RUNNING,
-        'Starting': NodeState.PENDING
-    }
+    NODE_STATE_MAP = {"Running": NodeState.RUNNING, "Starting": NodeState.PENDING}
 
     def list_nodes(self):
-        data = self.connection.request(
-            '/compute_api/v1/list_instances').object
-        return [self._to_node(n) for n in data['instances']]
+        data = self.connection.request("/compute_api/v1/list_instances").object
+        return [self._to_node(n) for n in data["instances"]]
 
     def destroy_node(self, node):
-        data = {'instance_id': node.id}
-        self.connection.request('/compute_api/v1/stop_instance', data).object
+        data = {"instance_id": node.id}
+        self.connection.request("/compute_api/v1/stop_instance", data).object
         return True
 
     def _get_node_state(self, state):
@@ -99,31 +96,29 @@ class GridspotNodeDriver(NodeDriver):
         port = None
         ip = None
 
-        state = self._get_node_state(data['current_state'])
+        state = self._get_node_state(data["current_state"])
 
-        if data['vm_ssh_wan_ip_endpoint'] != 'null':
-            parts = data['vm_ssh_wan_ip_endpoint'].split(':')
+        if data["vm_ssh_wan_ip_endpoint"] != "null":
+            parts = data["vm_ssh_wan_ip_endpoint"].split(":")
             ip = parts[0]
             port = int(parts[1])
 
-        extra_params = {
-            'winning_bid_id': data['winning_bid_id'],
-            'port': port
-        }
+        extra_params = {"winning_bid_id": data["winning_bid_id"], "port": port}
 
         # Spec is vague and doesn't indicate if these will always be present
-        self._add_int_param(extra_params, data, 'vm_num_logical_cores')
-        self._add_int_param(extra_params, data, 'vm_num_physical_cores')
-        self._add_int_param(extra_params, data, 'vm_ram')
-        self._add_int_param(extra_params, data, 'start_state_time')
-        self._add_int_param(extra_params, data, 'ended_state_time')
-        self._add_int_param(extra_params, data, 'running_state_time')
+        self._add_int_param(extra_params, data, "vm_num_logical_cores")
+        self._add_int_param(extra_params, data, "vm_num_physical_cores")
+        self._add_int_param(extra_params, data, "vm_ram")
+        self._add_int_param(extra_params, data, "start_state_time")
+        self._add_int_param(extra_params, data, "ended_state_time")
+        self._add_int_param(extra_params, data, "running_state_time")
 
         return Node(
-            id=data['instance_id'],
-            name=data['instance_id'],
+            id=data["instance_id"],
+            name=data["instance_id"],
             state=state,
             public_ips=[ip],
             private_ips=[],
             driver=self.connection.driver,
-            extra=extra_params)
+            extra=extra_params,
+        )
