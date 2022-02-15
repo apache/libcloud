@@ -39,7 +39,8 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = "2016-04-30-preview"
-DISK_API_VERSION = "2018-06-01"
+DISK_API_VERSION = "2016-04-30-preview" # need to upgrade and merge with DISK_RESIZE_API_VERSION
+DISK_RESIZE_API_VERSION = "2018-06-01"
 IMAGES_API_VERSION = "2015-06-15"
 INSTANCE_VIEW_API_VERSION = "2015-06-15"
 IP_API_VERSION = "2019-06-01"
@@ -1123,7 +1124,7 @@ class AzureNodeDriver(NodeDriver):
         }
 
         response = self.connection.request(
-            action, method="PUT", params={"api-version": DISK_API_VERSION}, data=data
+            action, method="PUT", params={"api-version": DISK_RESIZE_API_VERSION}, data=data
         )
 
         return self._to_volume(
