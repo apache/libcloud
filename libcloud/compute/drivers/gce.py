@@ -245,7 +245,7 @@ class GCEConnection(GoogleBaseConnection):
         for resp in response_list:
             # example k would be a zone or region name
             # example v would be { "disks" : [], "otherkey" : "..." }
-            for k, v in resp["items"].items():
+            for k, v in resp.get("items", {}).items():
                 if list_name in v:
                     merged_items.setdefault(k, {}).setdefault(list_name, [])
                     # Combine the list with the existing list.
