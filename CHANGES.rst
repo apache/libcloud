@@ -60,6 +60,10 @@ Compute
   user can specify which micro version to use (
   https://docs.openstack.org/api-guide/compute/microversions.html).
   (GITHUB-1647, GITHUB-1648)
+
+- [GCE] Add ``paginated_request()`` method to GCEConnection and update
+  ``ex_list_project_images()`` method to utilize it.
+  (GITHUB-1646, GITHUB-1655)
   [Miguel Caballer - @micafer]
 
 Storage
