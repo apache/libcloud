@@ -193,13 +193,6 @@ REGION_DETAILS = {
         "country": "Hong Kong",
         "signature_version": "2",
     },
-    "Asia Pacific (Hong Kong)": {
-        "id": "ap-east-1",
-        "endpoint": "ec2.ap-east-1.amazonaws.com",
-        "api_name": "ec2_ap_east",
-        "country": "Hong Kong",
-        "signature_version": "2",
-    },
     # Not in JSON
     "China (Beijing)": {
         "id": "cn-north-1",
