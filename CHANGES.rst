@@ -51,10 +51,16 @@ Compute
   (GITHUB-1650)
   [Miguel Caballer - @micafer]
 
-- [EC2] Update supported EC2 regions and instance sizes and add support 
+- [EC2] Update supported EC2 regions and instance sizes and add support
   for eu-south-1 region.
   (GITHUB-1656)
   [Arturo Noha - @r2ronoha]
+
+- [OpenStack] Add new ``ex_force_microversion`` constructor argument with which
+  user can specify which micro version to use (
+  https://docs.openstack.org/api-guide/compute/microversions.html).
+  (GITHUB-1647, GITHUB-1648)
+  [Miguel Caballer - @micafer]
 
 Storage
 ~~~~~~~
