@@ -51,6 +51,11 @@ Compute
   (GITHUB-1650)
   [Miguel Caballer - @micafer]
 
+- [EC2] Update supported EC2 regions and instance sizes and add support 
+  for eu-south-1 region.
+  (GITHUB-1656)
+  [Arturo Noha - @r2ronoha]
+
 Storage
 ~~~~~~~
 
