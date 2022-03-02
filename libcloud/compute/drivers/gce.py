@@ -130,6 +130,25 @@ class GCEConnection(GoogleBaseConnection):
             params.update(self.gce_params)
         return params, headers
 
+    def paginated_request(self, *args, **kwargs):
+        """
+        Generic function to create a paginated request to any API call
+        not only aggregated or zone ones as request_aggregated_items.
+
+        @inherits: :class:`GoogleBaseConnection.request`
+        """
+        more_results = True
+        items = []
+        max_results = kwargs["max_results"] if "max_results" in kwargs else 500
+        params = {"maxResults": max_results}
+        while more_results:
+            self.gce_params = params
+            response = self.request(*args, **kwargs)
+            items.extend(response.object.get("items", []))
+            more_results = "pageToken" in params
+
+        return {"items": items}
+
     def request(self, *args, **kwargs):
         """
         Perform request then do GCE-specific processing of URL params.
@@ -224,14 +243,13 @@ class GCEConnection(GoogleBaseConnection):
         """
         merged_items = {}
         for resp in response_list:
-            if "items" in resp:
-                # example k would be a zone or region name
-                # example v would be { "disks" : [], "otherkey" : "..." }
-                for k, v in resp["items"].items():
-                    if list_name in v:
-                        merged_items.setdefault(k, {}).setdefault(list_name, [])
-                        # Combine the list with the existing list.
-                        merged_items[k][list_name] += v[list_name]
+            # example k would be a zone or region name
+            # example v would be { "disks" : [], "otherkey" : "..." }
+            for k, v in resp["items"].items():
+                if list_name in v:
+                    merged_items.setdefault(k, {}).setdefault(list_name, [])
+                    # Combine the list with the existing list.
+                    merged_items[k][list_name] += v[list_name]
         return {"items": merged_items}
 
 
@@ -2609,7 +2627,7 @@ class GCENodeDriver(NodeDriver):
         list_images = []
         request = "/global/images"
         if ex_project is None:
-            response = self.connection.request(request, method="GET").object
+            response = self.connection.paginated_request(request, method="GET")
             for img in response.get("items", []):
                 if "deprecated" not in img:
                     list_images.append(self._to_node_image(img))
@@ -2627,7 +2645,7 @@ class GCENodeDriver(NodeDriver):
                 new_request_path = save_request_path.replace(self.project, proj)
                 self.connection.request_path = new_request_path
                 try:
-                    response = self.connection.request(request, method="GET").object
+                    response = self.connection.paginated_request(request, method="GET")
                 except Exception:
                     raise
                 finally:
