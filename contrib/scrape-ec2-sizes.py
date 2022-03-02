@@ -115,14 +115,14 @@ REGION_DETAILS = {
         "country": "United Kingdom",
         "signature_version": "4",
     },
-    'EU (Milan)': {
+    "EU (Milan)": {
         "id": "eu-south-1",
         "endpoint": "ec2.eu-south-1.amazonaws.com",
         "api_name": "ec2_eu_south",
         "country": "Italy",
         "signature_version": "4",
     },
-    'EU (Paris)': {
+    "EU (Paris)": {
         "id": "eu-west-3",
         "endpoint": "ec2.eu-west-3.amazonaws.com",
         "api_name": "ec2_eu_west_paris",
