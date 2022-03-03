@@ -39,7 +39,9 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = "2016-04-30-preview"
-DISK_API_VERSION = "2016-04-30-preview"  # need to upgrade and merge with DISK_RESIZE_API_VERSION
+DISK_API_VERSION = (
+    "2016-04-30-preview"  # need to upgrade and merge with DISK_RESIZE_API_VERSION
+)
 DISK_RESIZE_API_VERSION = "2018-06-01"
 IMAGES_API_VERSION = "2015-06-15"
 INSTANCE_VIEW_API_VERSION = "2015-06-15"
@@ -110,8 +112,7 @@ class AzureComputeGalleryImage(NodeImage):
                 name,
             )
         )
-        super(AzureComputeGalleryImage, self).__init__(
-            id, name, driver)
+        super(AzureComputeGalleryImage, self).__init__(id, name, driver)
 
     def __repr__(self):
         return ("<AzureComputeGalleryImage: id=%s, name=%s>") % (self.id, self.name)
@@ -287,7 +288,9 @@ class AzureNodeDriver(NodeDriver):
         action = "/subscriptions/%s/providers/Microsoft.Compute" % (
             self.subscription_id
         )
-        r = self.connection.request(action, params={"api-version": LOCATIONS_API_VERSION})
+        r = self.connection.request(
+            action, params={"api-version": LOCATIONS_API_VERSION}
+        )
 
         for rt in r.object["resourceTypes"]:
             if rt["resourceType"] == "virtualMachines":
@@ -665,7 +668,9 @@ class AzureNodeDriver(NodeDriver):
                     "Creating managed OS disk from %s image "
                     "type is not supported." % type(image)
                 )
-        elif isinstance(image, AzureImage) or isinstance(image, AzureComputeGalleryImage):
+        elif isinstance(image, AzureImage) or isinstance(
+            image, AzureComputeGalleryImage
+        ):
             if isinstance(image, AzureImage):
                 imageReference = {
                     "publisher": image.publisher,
@@ -674,9 +679,7 @@ class AzureNodeDriver(NodeDriver):
                     "version": image.version,
                 }
             else:
-                imageReference = {
-                    "id": image.id
-                }
+                imageReference = {"id": image.id}
             storage_profile = {
                 "imageReference": imageReference,
                 "osDisk": {
@@ -850,9 +853,7 @@ class AzureNodeDriver(NodeDriver):
         while do_node_polling and retries > 0:
             try:
                 time.sleep(ex_poll_wait)
-                self.connection.request(
-                    node.id, params={"api-version": VM_API_VERSION}
-                )
+                self.connection.request(node.id, params={"api-version": VM_API_VERSION})
                 retries -= 1
             except BaseHTTPError as h:
                 if h.code in (204, 404):
@@ -1124,7 +1125,10 @@ class AzureNodeDriver(NodeDriver):
         }
 
         response = self.connection.request(
-            action, method="PUT", params={"api-version": DISK_RESIZE_API_VERSION}, data=data
+            action,
+            method="PUT",
+            params={"api-version": DISK_RESIZE_API_VERSION},
+            data=data,
         )
 
         return self._to_volume(
@@ -1525,7 +1529,9 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
-        r = self.connection.request(action, params={"api-version": RESOURCE_GROUP_API_VERSION})
+        r = self.connection.request(
+            action, params={"api-version": RESOURCE_GROUP_API_VERSION}
+        )
         return [
             AzureResourceGroup(
                 grp["id"], grp["name"], grp["location"], grp["properties"]
@@ -1637,7 +1643,9 @@ class AzureNodeDriver(NodeDriver):
         action = "/subscriptions/%s/providers/" "Microsoft.Network/virtualnetworks" % (
             self.subscription_id
         )
-        r = self.connection.request(action, params={"api-version": VIRTUAL_NETWORK_API_VERSION})
+        r = self.connection.request(
+            action, params={"api-version": VIRTUAL_NETWORK_API_VERSION}
+        )
         return [
             AzureNetwork(net["id"], net["name"], net["location"], net["properties"])
             for net in r.object["value"]
@@ -2211,7 +2219,10 @@ class AzureNodeDriver(NodeDriver):
             }
 
         r = self.connection.request(
-            target, params={"api-version": VM_EXTENSION_API_VERSION}, data=data, method="PUT"
+            target,
+            params={"api-version": VM_EXTENSION_API_VERSION},
+            data=data,
+            method="PUT",
         )
         return r.object
 
@@ -2239,7 +2250,9 @@ class AzureNodeDriver(NodeDriver):
         state = NodeState.UNKNOWN
         try:
             action = "%s/InstanceView" % (data["id"])
-            r = self.connection.request(action, params={"api-version": INSTANCE_VIEW_API_VERSION})
+            r = self.connection.request(
+                action, params={"api-version": INSTANCE_VIEW_API_VERSION}
+            )
             for status in r.object["statuses"]:
                 if status["code"] in ["ProvisioningState/creating"]:
                     state = NodeState.PENDING

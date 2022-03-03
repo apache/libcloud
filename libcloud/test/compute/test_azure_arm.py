@@ -23,7 +23,11 @@ import mock
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeLocation, NodeSize, VolumeSnapshot, StorageVolume
-from libcloud.compute.drivers.azure_arm import AzureComputeGalleryImage, AzureImage, NodeAuthPassword
+from libcloud.compute.drivers.azure_arm import (
+    AzureComputeGalleryImage,
+    AzureImage,
+    NodeAuthPassword,
+)
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import (
     NodeState,
@@ -255,7 +259,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
             ex_network="000000",
             ex_subnet="000000",
             ex_use_managed_disks=True,
-            ex_os_disk_delete=True
+            ex_os_disk_delete=True,
         )
         hardware_profile = node.extra["properties"]["hardwareProfile"]
         os_profile = node.extra["properties"]["osProfile"]
@@ -285,7 +289,9 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_create_node_compute_gallery_image(self):
         location = NodeLocation("any_location", "", "", self.driver)
         size = NodeSize("any_size", "", 0, 0, 0, 0, driver=self.driver)
-        image = AzureComputeGalleryImage("sub-id00", "resource-group00", "gallery00", "image00", self.driver)
+        image = AzureComputeGalleryImage(
+            "sub-id00", "resource-group00", "gallery00", "image00", self.driver
+        )
         auth = NodeAuthPassword("any_password")
 
         node = self.driver.create_node(
