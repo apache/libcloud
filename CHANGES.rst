@@ -25,9 +25,13 @@ Compute
   (GITHUB-1629)
   [Miguel Caballer - @micafer]
 
-- [OpenStack] Avoid raising exception if ip is not found.
-  (GITHUB-1595)
-  [Miguel Caballer - @micafer]
+- [Azure ARM] Add option to create node from Compute Gallery image.
+  (GITHUB-1643)
+  [Robert Harris - @rgharris]
+
+- [Azure ARM] Add create node OS disk delete option.
+  (GITHUB-1644)
+  [Robert Harris - @rgharris]
 
 - [EC2] Add missing ``creation_date`` NodeImage extra.
   (GITHUB-1641)
