@@ -4384,7 +4384,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :rtype: :class:`OpenStack_2_FloatingIpAddress`
         """
         for pool in self.ex_list_floating_ip_pools():
-            if ip_pool == pool.name or ip_pool == pool.id:
+            if not ip_pool or ip_pool == pool.name or ip_pool == pool.id:
                 return pool.create_floating_ip()
 
     def ex_delete_floating_ip(self, ip):
