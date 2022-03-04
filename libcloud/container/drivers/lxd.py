@@ -2009,7 +2009,7 @@ class LXDContainerDriver(ContainerDriver):
         :return: int representing the gigabytes
         """
         size = int(size)
-        return size // 10 ** 9
+        return size // 10**9
 
     @staticmethod
     def _to_bytes(size, size_type="GB"):
@@ -2020,6 +2020,6 @@ class LXDContainerDriver(ContainerDriver):
         """
         size = int(size)
         if size_type == "GB":
-            return size * 10 ** 9
+            return size * 10**9
         elif size_type == "MB":
-            return size * 10 ** 6
+            return size * 10**6

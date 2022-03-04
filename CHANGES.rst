@@ -35,12 +35,56 @@ Compute
   property cannot be directly obtained from FloatingIP information and it
   must be gotten from the related Port information with the ``get_node_id``
   method.
-
   (GITHUB-1638)
   [Miguel Caballer - @micafer]
 
 - [OpenStack] Avoid raising exception if ip is not found.
   (GITHUB-1595)
+  [Miguel Caballer - @micafer]
+
+- [Azure ARM] Add option to create node from Compute Gallery image.
+  (GITHUB-1643)
+  [Robert Harris - @rgharris]
+
+- [Azure ARM] Add create node OS disk delete option.
+  (GITHUB-1644)
+  [Robert Harris - @rgharris]
+
+- [EC2] Add missing ``creation_date`` NodeImage extra.
+  (GITHUB-1641)
+  [Thomas JOUANNOT - @mazerty]
+
+- [GCE] Allow ``credentials`` argument which is provided to the driver
+  constructor to also be either a Python dictionary with the credentials object
+  or a JSON string with the serialized credentials object. That's in addition
+  to supporting passing in path to the credentials file or string PEM version of
+  the key.
+  (GITHUB-1214)
+  [@bverschueren]
+
+- [OpenStack] Personality field in the server requests of OpenStack must
+  be optional
+  (GITHUB-1649)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] headers field are overwrited in case of POST of
+  PUT methods in OpenStack connection
+  (GITHUB-1650)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Update supported EC2 regions and instance sizes and add support
+  for eu-south-1 region.
+  (GITHUB-1656)
+  [Arturo Noha - @r2ronoha]
+
+- [OpenStack] Add new ``ex_force_microversion`` constructor argument with which
+  user can specify which micro version to use (
+  https://docs.openstack.org/api-guide/compute/microversions.html).
+  (GITHUB-1647, GITHUB-1648)
+
+- [GCE] Add ``paginated_request()`` method to GCEConnection and update
+  ``ex_list_project_images()`` method to utilize it.
+  (GITHUB-1646, GITHUB-1655)
   [Miguel Caballer - @micafer]
 
 Storage
@@ -65,6 +109,10 @@ Storage
 
   (GITHUB-1631)
   [Tomaz Muraus - @Kami]
+
+- [Scaleway] Add new driver for the Scaleway Object Storage.
+  (GITHUB-1633)
+  [@reixd]
 
 Common
 ~~~~~~
