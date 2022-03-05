@@ -4087,12 +4087,6 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
             return "https://servers.api.rackspacecloud.com/v1.0/slug"
 
         OpenStack_1_1_NodeDriver.connectionCls.get_endpoint = get_endpoint
-
-    def test_ex_force_auth_version_all_possible_values(self):
-        """
-        Test case which verifies that the driver can be correctly instantiated using all the
-        supported API versions.
-        """
         OpenStack_1_1_NodeDriver.connectionCls.conn_class = (
             OpenStack_AllAuthVersions_MockHttp
         )
@@ -4100,6 +4094,11 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
         OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None
 
+    def test_ex_force_auth_version_all_possible_values(self):
+        """
+        Test case which verifies that the driver can be correctly instantiated using all the
+        supported API versions.
+        """
         cls = get_driver(Provider.OPENSTACK)
 
         for auth_version in AUTH_VERSIONS_WITH_EXPIRES:
