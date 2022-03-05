@@ -3963,16 +3963,17 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
         # Lazy import to avoid cyclic depedency issue
         from libcloud.test.common.test_openstack_identity import OpenStackIdentity_2_0_MockHttp
         from libcloud.test.common.test_openstack_identity import OpenStackIdentity_3_0_MockHttp
+        from libcloud.test.common.test_openstack_identity import OpenStackIdentity_3_0_AppCred_MockHttp
 
         self.mock_http = OpenStackMockHttp(*args, **kwargs)
         self.mock_http_1_1 = OpenStack_1_1_MockHttp(*args, **kwargs)
         self.mock_http_2_0 = OpenStack_2_0_MockHttp(*args, **kwargs)
         self.mock_http_2_0_identity = OpenStackIdentity_2_0_MockHttp(*args, **kwargs)
         self.mock_http_3_0_identity = OpenStackIdentity_3_0_MockHttp(*args, **kwargs)
+        self.mock_http_3_0_appcred_identity = OpenStackIdentity_3_0_AppCred_MockHttp(*args, **kwargs)
 
     def _v1_0_slug_servers_detail(self, method, url, body, headers):
         return self.mock_http_1_1._v1_1_slug_servers_detail(method=method, url=url, body=body, headers=headers)
-        return res
 
     def _v1_1_auth(self, method, url, body, headers):
         return self.mock_http._v1_1_auth(method=method, url=url, body=body, headers=headers)
@@ -3995,7 +3996,12 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
         return self.mock_http_3_0_identity._v3_OS_FEDERATION_identity_providers_test_user_id_protocols_test_tenant_auth(method=method, url=url, body=body, headers=headers)
 
     def _v3_auth_tokens(self, method, url, body, headers):
-        return self.mock_http_2_0._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
+        if "application_credential" in body:
+            return self.mock_http_3_0_appcred_identity._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
+        elif "token" in body:
+            return self.mock_http_3_0_identity._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
+        else:
+            return self.mock_http_3_0_identity._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
 
     def _v3_0_auth_tokens(self, method, url, body, headers):
         return self.mock_http_3_0_identity._v3_0_auth_tokens(method=method, url=url, body=body, headers=headers)
@@ -4072,12 +4078,18 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
             key = OPENSTACK_PARAMS[1]
 
             if auth_version.startswith("3.x"):
-                driver_kwargs["ex_domina_name"] = "domain-name"
+                driver_kwargs["ex_domain_name"] = "test_domain"
+                driver_kwargs["ex_tenant_domain_id"] = "test_tenant_domain_id"
                 driver_kwargs["ex_force_service_region"] = "regionOne"
                 driver_kwargs["ex_tenant_name"] = "tenant-name"
 
             if auth_version == "3.x_oidc_access_token":
-                key  = "test_key"
+                key = "test_key"
+                driver_kwargs["ex_domain_name"] = None
+
+            elif auth_version == "3.x_appcred":
+                user_id = "appcred_id"
+                key = "appcred_secret"
 
             driver = cls(user_id, key, ex_force_auth_url="http://x.y.z.y:5000", ex_force_auth_version=auth_version, **driver_kwargs)
             nodes = driver.list_nodes()
