@@ -87,6 +87,14 @@ Compute
   (GITHUB-1646, GITHUB-1655)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Fix regression which was inadvertently introduced in #1557 which
+  would cause some OpenStack authentication methods to not work and result in
+  an exception.
+
+  Reported by @LanderOtto via #1659.
+  (GITHUB-1659, GITHUB-1660)
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
