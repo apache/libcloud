@@ -1954,6 +1954,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(
 
         self.auth_url = auth_url
         self.tenant_name = tenant_name
+        self.tenant_domain_id = tenant_domain_id
         self.domain_name = domain_name
         self.token_scope = token_scope
         self.timeout = timeout
