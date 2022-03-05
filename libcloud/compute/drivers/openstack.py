@@ -4545,7 +4545,7 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
 
     def get_node_id(self):
         if not self.node_id:
-            # if not is not set, get it from port_details
+            # if node id is not set, get it from port_details
 
             # In neutron version prior to 13.0.0 port_details does not exists
             if "port_details" not in self.extra or not self.extra["port_details"]:
