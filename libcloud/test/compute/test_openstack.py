@@ -3961,53 +3961,87 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
         super(OpenStack_AllAuthVersions_MockHttp, self).__init__(*args, **kwargs)
 
         # Lazy import to avoid cyclic depedency issue
-        from libcloud.test.common.test_openstack_identity import OpenStackIdentity_2_0_MockHttp
-        from libcloud.test.common.test_openstack_identity import OpenStackIdentity_3_0_MockHttp
-        from libcloud.test.common.test_openstack_identity import OpenStackIdentity_3_0_AppCred_MockHttp
+        from libcloud.test.common.test_openstack_identity import (
+            OpenStackIdentity_2_0_MockHttp,
+        )
+        from libcloud.test.common.test_openstack_identity import (
+            OpenStackIdentity_3_0_MockHttp,
+        )
+        from libcloud.test.common.test_openstack_identity import (
+            OpenStackIdentity_3_0_AppCred_MockHttp,
+        )
 
         self.mock_http = OpenStackMockHttp(*args, **kwargs)
         self.mock_http_1_1 = OpenStack_1_1_MockHttp(*args, **kwargs)
         self.mock_http_2_0 = OpenStack_2_0_MockHttp(*args, **kwargs)
         self.mock_http_2_0_identity = OpenStackIdentity_2_0_MockHttp(*args, **kwargs)
         self.mock_http_3_0_identity = OpenStackIdentity_3_0_MockHttp(*args, **kwargs)
-        self.mock_http_3_0_appcred_identity = OpenStackIdentity_3_0_AppCred_MockHttp(*args, **kwargs)
+        self.mock_http_3_0_appcred_identity = OpenStackIdentity_3_0_AppCred_MockHttp(
+            *args, **kwargs
+        )
 
     def _v1_0_slug_servers_detail(self, method, url, body, headers):
-        return self.mock_http_1_1._v1_1_slug_servers_detail(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_1_1._v1_1_slug_servers_detail(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v1_1_auth(self, method, url, body, headers):
-        return self.mock_http._v1_1_auth(method=method, url=url, body=body, headers=headers)
+        return self.mock_http._v1_1_auth(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v2_0_tokens(self, method, url, body, headers):
-        return self.mock_http_2_0._v2_0_tokens(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_2_0._v2_0_tokens(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v2_1337_servers_detail(self, method, url, body, headers):
-        return self.mock_http_2_0._v2_1337_servers_detail(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_2_0._v2_1337_servers_detail(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v2_0_tenants(self, method, url, body, headers):
-        return self.mock_http_2_0_identity._v2_0_tenants(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_2_0_identity._v2_0_tenants(
+            method=method, url=url, body=body, headers=headers
+        )
 
-    def _v2_9c4693dce56b493b9b83197d900f7fba_servers_detail(self, method, url, body, headers):
-        return self.mock_http_1_1._v1_1_slug_servers_detail(method=method, url=url, body=body, headers=headers)
+    def _v2_9c4693dce56b493b9b83197d900f7fba_servers_detail(
+        self, method, url, body, headers
+    ):
+        return self.mock_http_1_1._v1_1_slug_servers_detail(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v3_OS_FEDERATION_identity_providers_user_name_protocols_tenant_name_auth(
         self, method, url, body, headers
     ):
-        return self.mock_http_3_0_identity._v3_OS_FEDERATION_identity_providers_test_user_id_protocols_test_tenant_auth(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_3_0_identity._v3_OS_FEDERATION_identity_providers_test_user_id_protocols_test_tenant_auth(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v3_auth_tokens(self, method, url, body, headers):
         if "application_credential" in body:
-            return self.mock_http_3_0_appcred_identity._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
+            return self.mock_http_3_0_appcred_identity._v3_auth_tokens(
+                method=method, url=url, body=body, headers=headers
+            )
         elif "token" in body:
-            return self.mock_http_3_0_identity._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
+            return self.mock_http_3_0_identity._v3_auth_tokens(
+                method=method, url=url, body=body, headers=headers
+            )
         else:
-            return self.mock_http_3_0_identity._v3_auth_tokens(method=method, url=url, body=body, headers=headers)
+            return self.mock_http_3_0_identity._v3_auth_tokens(
+                method=method, url=url, body=body, headers=headers
+            )
 
     def _v3_0_auth_tokens(self, method, url, body, headers):
-        return self.mock_http_3_0_identity._v3_0_auth_tokens(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_3_0_identity._v3_0_auth_tokens(
+            method=method, url=url, body=body, headers=headers
+        )
 
     def _v3_auth_projects(self, method, url, body, headers):
-        return self.mock_http_3_0_identity._v3_auth_projects(method=method, url=url, body=body, headers=headers)
+        return self.mock_http_3_0_identity._v3_auth_projects(
+            method=method, url=url, body=body, headers=headers
+        )
 
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
@@ -4045,7 +4079,6 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
 
 
 class OpenStack_AuthVersions_Tests(unittest.TestCase):
-
     def setUp(self):
         # monkeypatch get_endpoint because the base openstack driver doesn't actually
         # work with old devstack but this class/tests are still used by the rackspace
@@ -4060,7 +4093,9 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
         Test case which verifies that the driver can be correctly instantiated using all the
         supported API versions.
         """
-        OpenStack_1_1_NodeDriver.connectionCls.conn_class = OpenStack_AllAuthVersions_MockHttp
+        OpenStack_1_1_NodeDriver.connectionCls.conn_class = (
+            OpenStack_AllAuthVersions_MockHttp
+        )
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None
@@ -4091,7 +4126,13 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
                 user_id = "appcred_id"
                 key = "appcred_secret"
 
-            driver = cls(user_id, key, ex_force_auth_url="http://x.y.z.y:5000", ex_force_auth_version=auth_version, **driver_kwargs)
+            driver = cls(
+                user_id,
+                key,
+                ex_force_auth_url="http://x.y.z.y:5000",
+                ex_force_auth_version=auth_version,
+                **driver_kwargs,
+            )
             nodes = driver.list_nodes()
             self.assertTrue(len(nodes) >= 1)
 
