@@ -4109,7 +4109,6 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
                 # 1.1 is old and deprecated, 3.0 is not exposed directly to the endu ser
                 continue
 
-
             user_id = OPENSTACK_PARAMS[0]
             key = OPENSTACK_PARAMS[1]
 
