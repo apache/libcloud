@@ -79,7 +79,7 @@ Archive of old incubator mailing lists:
 IRC
 ---
 
-* #libcloud on Freenode
+* #libcloud on Libera.chat (https://libera.chat)
 
 .. _issue-tracker:
 
