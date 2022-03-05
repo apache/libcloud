@@ -82,18 +82,6 @@ from libcloud.test.secrets import OPENSTACK_PARAMS
 BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
 
 
-def test_driver_instantiation_invalid_auth():
-    with pytest.raises(LibcloudError):
-        d = OpenStackNodeDriver(
-            "user",
-            "correct_password",
-            ex_force_auth_version="5.0",
-            ex_force_auth_url="http://x.y.z.y:5000",
-            ex_tenant_name="admin",
-        )
-        d.list_nodes()
-
-
 class OpenStackAuthTests(unittest.TestCase):
     def setUp(self):
         OpenStack_1_0_NodeDriver.connectionCls = OpenStack_1_0_Connection
@@ -121,6 +109,17 @@ class OpenStackAuthTests(unittest.TestCase):
             )
             d.connection._populate_hosts_and_request_paths()
             self.assertEqual(d.connection.host, "test_endpoint.com")
+
+    def test_driver_instantiation_invalid_auth(self):
+        with pytest.raises(LibcloudError):
+            d = OpenStack_1_0_NodeDriver(
+                "user",
+                "correct_password",
+                ex_force_auth_version="5.0",
+                ex_force_auth_url="http://x.y.z.y:5000",
+                ex_tenant_name="admin",
+            )
+            d.list_nodes()
 
 
 class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
@@ -4083,6 +4082,9 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
         # monkeypatch get_endpoint because the base openstack driver doesn't actually
         # work with old devstack but this class/tests are still used by the rackspace
         # driver
+        self.originalGetEndpoint = OpenStack_1_1_NodeDriver.connectionCls.get_endpoint
+        self.originalConnectionCls = OpenStack_1_1_NodeDriver.connectionCls
+
         def get_endpoint(*args, **kwargs):
             return "https://servers.api.rackspacecloud.com/v1.0/slug"
 
@@ -4090,6 +4092,15 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
         OpenStack_1_1_NodeDriver.connectionCls.conn_class = (
             OpenStack_AllAuthVersions_MockHttp
         )
+
+        OpenStackMockHttp.type = None
+        OpenStack_1_1_MockHttp.type = None
+        OpenStack_2_0_MockHttp.type = None
+
+    def tearDown(self):
+        OpenStack_1_1_NodeDriver.connectionCls.get_endpoint = self.originalGetEndpoint
+        OpenStack_1_1_NodeDriver.connectionCls.conn_class = self.originalConnectionCls
+
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None
