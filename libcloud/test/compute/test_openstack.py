@@ -63,7 +63,6 @@ from libcloud.compute.drivers.openstack import (
     OpenStackKeyPair,
     OpenStack_1_0_Connection,
     OpenStack_2_FloatingIpPool,
-    OpenStackNodeDriver,
     OpenStack_2_NodeDriver,
     OpenStack_2_PortInterfaceState,
     OpenStackNetwork,
