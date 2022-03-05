@@ -1741,6 +1741,7 @@ class OpenStackIdentity_3_0_Connection_AppCred(OpenStackIdentity_3_0_Connection)
         timeout=None,
         proxy_url=None,
         parent_conn=None,
+        auth_cache=None,
     ):
         """
         Tenant, domain and scope options are ignored as they are contained
@@ -1756,6 +1757,7 @@ class OpenStackIdentity_3_0_Connection_AppCred(OpenStackIdentity_3_0_Connection)
             timeout=timeout,
             proxy_url=proxy_url,
             parent_conn=parent_conn,
+            auth_cache=auth_cache,
         )
 
     def _get_auth_data(self):
@@ -1928,6 +1930,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(
         user_id,
         key,
         tenant_name=None,
+        tenant_domain_id="default",
         domain_name="Default",
         token_scope=OpenStackIdentityTokenScope.PROJECT,
         timeout=None,
