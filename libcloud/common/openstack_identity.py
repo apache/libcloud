@@ -46,7 +46,6 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     "2.0_apikey",
     "2.0_password",
     "2.0_voms",
-    "3.0",
     "3.x_password",
     "3.x_appcred",
     "3.x_oidc_access_token",
