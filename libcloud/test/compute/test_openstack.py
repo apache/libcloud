@@ -1764,21 +1764,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         ret = pool.list_floating_ips()
 
         self.assertEqual(ret[0].id, "09ea1784-2f81-46dc-8c91-244b4df75bde")
-        self.assertEqual(ret[0].pool, pool)
+        self.assertEqual(ret[0].get_pool(), pool)
         self.assertEqual(ret[0].ip_address, "10.3.1.42")
-        self.assertEqual(ret[0].node_id, None)
+        self.assertEqual(ret[0].get_node_id(), None)
         self.assertEqual(ret[1].id, "04c5336a-0629-4694-ba30-04b0bdfa88a4")
-        self.assertEqual(ret[1].pool, pool)
+        self.assertEqual(ret[1].get_pool(), pool)
         self.assertEqual(ret[1].ip_address, "10.3.1.1")
-        self.assertEqual(ret[1].node_id, "fcfc96da-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[1].get_node_id(), "fcfc96da-19e2-40fd-8497-f29da1b21143")
         self.assertEqual(ret[2].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
-        self.assertEqual(ret[2].pool, pool)
+        self.assertEqual(ret[2].get_pool(), pool)
         self.assertEqual(ret[2].ip_address, "10.3.1.2")
-        self.assertEqual(ret[2].node_id, "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[2].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
         self.assertEqual(ret[3].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
-        self.assertEqual(ret[3].pool, pool)
+        self.assertEqual(ret[3].get_pool(), pool)
         self.assertEqual(ret[3].ip_address, "10.3.1.3")
-        self.assertEqual(ret[3].node_id, "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[3].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
 
     def test_OpenStack_2_FloatingIpPool_get_floating_ip(self):
         pool = OpenStack_2_FloatingIpPool(1, "foo", self.driver.connection)
@@ -2551,6 +2551,48 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         )
         self.assertEqual(server_group.name, "server_group_name")
         self.assertEqual(server_group.policy, "anti-affinity")
+
+    def test_ex_list_floating_ips(self):
+        ret = self.driver.ex_list_floating_ips()
+
+        self.assertEqual(ret[0].id, "09ea1784-2f81-46dc-8c91-244b4df75bde")
+        self.assertEqual(ret[0].get_pool(), None)
+        self.assertEqual(ret[0].ip_address, "10.3.1.42")
+        self.assertEqual(ret[0].get_node_id(), None)
+        self.assertEqual(ret[1].id, "04c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[1].get_pool(), None)
+        self.assertEqual(ret[1].ip_address, "10.3.1.1")
+        self.assertEqual(ret[1].get_node_id(), "fcfc96da-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[2].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[2].get_pool(), None)
+        self.assertEqual(ret[2].ip_address, "10.3.1.2")
+        self.assertEqual(ret[2].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[3].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[3].get_pool(), None)
+        self.assertEqual(ret[3].ip_address, "10.3.1.3")
+        self.assertEqual(ret[3].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[4].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[4].get_pool(), None)
+        self.assertEqual(ret[4].ip_address, "10.3.1.5")
+        self.assertEqual(ret[4].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
+
+    def test_ex_get_floating_ip(self):
+        float_ip = self.driver.ex_get_floating_ip("10.0.0.1")
+
+        self.assertEqual(float_ip.ip_address, "10.3.1.21")
+        self.assertEqual(float_ip.id, "04c5336a-0629-4694-ba30-04b0bdfa88a4")
+
+    def test_ex_create_floating_ip(self):
+        ret = self.driver.ex_create_floating_ip("public")
+
+        self.assertEqual(ret.id, "09ea1784-2f81-46dc-8c91-244b4df75bde")
+        self.assertEqual(ret.pool.name, "public")
+        self.assertEqual(ret.ip_address, "10.3.1.42")
+        self.assertEqual(ret.node_id, None)
+
+    def test_ex_delete_floating_ip(self):
+        ip = OpenStack_1_1_FloatingIpAddress("foo-bar-id", "42.42.42.42", None)
+        self.assertTrue(self.driver.ex_delete_floating_ip(ip))
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
@@ -3721,7 +3763,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
         if method == "GET":
-            body = self.fixtures.load("_v2_0__floatingips.json")
+            if "floating_network_id=" in url:
+                body = self.fixtures.load("_v2_0__floatingips_net_id.json")
+            elif "floating_ip_address" in url:
+                body = self.fixtures.load("_v2_0__floatingips_ip_id.json")
+            else:
+                body = self.fixtures.load("_v2_0__floatingips.json")
             return (
                 httplib.OK,
                 body,
