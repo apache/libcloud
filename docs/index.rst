@@ -2,9 +2,8 @@ Welcome to Apache Libcloud's documentation!
 ===========================================
 
 .. note::
-
-    Libcloud v3.5.0 dropped support for Python 3.5 and now only supports Python
-    >= 3.6.
+   Libcloud v3.5.0 dropped support for Python 3.5 and now only supports Python
+   >= 3.6.
 
    Libcloud v3.0.0 dropped support for Python 2.7 and Python 3.4 and now only
    supports Python >= 3.5.
@@ -57,7 +56,11 @@ Main
     troubleshooting
     api_docs
     faq
-    other/*
+    other/registering-a-third-party-driver
+    other/ssl-certificate-validation
+    other/using-http-proxy
+    other/working-with-oo-apis
+    other/using-libcloud-in-multithreaded-and-async-environments
 
 Developer Information
 ---------------------
