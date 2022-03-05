@@ -25,6 +25,23 @@ Compute
   (GITHUB-1629)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] OpenStack: Move floating IP functions to use network service
+  instead of nova.
+
+  This change affects all the floating ip related functions of the
+  ``OpenStack_2_NodeDriver`` class. Two new classes have been added
+  ``OpenStack_2_FloatingIpPool`` and ``OpenStack_2_FloatingIpAddress``.
+  The main change applies to the FloatingIP class where ``node_id``
+  property cannot be directly obtained from FloatingIP information and it
+  must be gotten from the related Port information with the ``get_node_id``
+  method.
+  (GITHUB-1638)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Avoid raising exception if ip is not found.
+  (GITHUB-1595)
+  [Miguel Caballer - @micafer]
+
 - [Azure ARM] Add option to create node from Compute Gallery image.
   (GITHUB-1643)
   [Robert Harris - @rgharris]
