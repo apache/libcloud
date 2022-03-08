@@ -4115,7 +4115,7 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
             driver_kwargs = {}
 
             if auth_version in ["1.1", "3.0"]:
-                # 1.1 is old and deprecated, 3.0 is not exposed directly to the endu ser
+                # 1.1 is old and deprecated, 3.0 is not exposed directly to the end user
                 continue
 
             user_id = OPENSTACK_PARAMS[0]
