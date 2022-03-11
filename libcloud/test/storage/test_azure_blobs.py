@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import json
 import os
 import sys
 import tempfile
@@ -35,7 +36,7 @@ from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
+from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver, AzureBlobsActiveDirectoryConnection
 from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
 
 from libcloud.test import unittest
@@ -50,6 +51,24 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures("azure_blobs")
     base_headers = {}
+
+    # Note: using this method to get the oauth key for azure ad authentication
+    def __getattr__(self, n):
+        def fn(method, url, body, headers):
+            fixture = self.fixtures.load(n + ".json")
+
+            if method in ("POST", "PUT"):
+                try:
+                    body = json.loads(body)
+                    fixture_tmp = json.loads(fixture)
+                    fixture_tmp = self._update(fixture_tmp, body)
+                    fixture = json.dumps(fixture_tmp)
+                except ValueError:
+                    pass
+
+            return (httplib.OK, fixture, headers, httplib.responses[httplib.OK])
+
+        return fn
 
     def _UNAUTHORIZED(self, method, url, body, headers):
         return (
@@ -1000,6 +1019,38 @@ class AzureBlobsTests(unittest.TestCase):
 
         self.assertEqual(host, "localhost")
         self.assertEqual(account_prefix, "fakeaccount1")
+
+    def test_storage_driver_azure_ad(self):
+        AzureBlobsActiveDirectoryConnection.conn_class = AzureBlobsMockHttp
+        driver = self.driver_type(key="fakeaccount1",
+                                  secret="DEKjfhdakkdjfhei~",
+                                  tenant_id="77777777-7777-7777-7777-777777777777",
+                                  identity="55555555-5555-5555-5555-555555555555",
+                                  auth_type="azureAd",
+                                  secure=True)
+        host = driver.connection.host
+
+        self.assertEqual(host, "fakeaccount1.blob.core.windows.net")
+
+    def test_get_azure_ad_object_success(self):
+        AzureBlobsActiveDirectoryConnection.conn_class = AzureBlobsMockHttp
+        driver = self.driver_type(key="fakeaccount1",
+                                  secret="DEKjfhdakkdjfhei~",
+                                  tenant_id="77777777-7777-7777-7777-777777777777",
+                                  identity="55555555-5555-5555-5555-555555555555",
+                                  auth_type="azureAd",
+                                  secure=True)
+        self.mock_response_klass.type = None
+        container = driver.get_container(container_name="test_container200")
+
+        self.assertTrue(container.name, "test_container200")
+        self.assertTrue(container.extra["etag"], "0x8CFB877BB56A6FB")
+        self.assertTrue(
+            container.extra["last_modified"], "Fri, 04 Jan 2013 09:48:06 GMT"
+        )
+        self.assertTrue(container.extra["lease"]["status"], "unlocked")
+        self.assertTrue(container.extra["lease"]["state"], "available")
+        self.assertTrue(container.extra["meta_data"]["meta1"], "value1")
 
 
 class AzuriteBlobsTests(AzureBlobsTests):
