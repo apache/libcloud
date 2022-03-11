@@ -207,7 +207,7 @@ For example
 
 .. sourcecode:: bash
 
-    ./dist/verify_checksums.sh apache-libcloud-0.13.2
+    ./dist/verify_checksums.sh apache-libcloud-3.5.0
 
 9. Updating doap_libcloud.rdf, __init__.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
