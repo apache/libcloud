@@ -430,11 +430,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         all_deprecated_images = self.driver.list_images(ex_include_deprecated=True)
         debian_images = self.driver.list_images(ex_project="debian-cloud")
         local_plus_deb = self.driver.list_images(["debian-cloud", "project_name"])
-        self.assertEqual(len(local_images), 50)
-        self.assertEqual(len(all_deprecated_images), 178)
+        self.assertEqual(len(local_images), 52)
+        self.assertEqual(len(all_deprecated_images), 180)
         self.assertEqual(len(debian_images), 2)
-        self.assertEqual(len(local_plus_deb), 4)
-        self.assertEqual(local_images[0].name, "custom-image")
+        self.assertEqual(len(local_plus_deb), 6)
+        self.assertEqual(local_images[0].name, "custom-image1")
+        self.assertEqual(local_images[2].name, "custom-image")
         self.assertEqual(debian_images[1].name, "debian-7-wheezy-v20131120")
 
     def test_ex_destroy_instancegroup(self):
@@ -2820,7 +2821,11 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _global_images(self, method, url, body, headers):
         if method == "POST":
             body = self.fixtures.load("global_images_post.json")
+        elif "maxResults" in url and "pageToken" not in url:
+            body = self.fixtures.load("global_images_paged.json")
         else:
+            if "maxResults" in url:
+                self.assertIn("pageToken=token", url)
             body = self.fixtures.load("global_images.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 

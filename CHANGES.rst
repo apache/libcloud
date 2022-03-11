@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development
------------------------------------------
+Changes in Apache Libcloud 3.5.0
+--------------------------------
 
 Common
 ~~~~~~
@@ -25,9 +25,30 @@ Compute
   (GITHUB-1629)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] OpenStack: Move floating IP functions to use network service
+  instead of nova.
+
+  This change affects all the floating ip related functions of the
+  ``OpenStack_2_NodeDriver`` class. Two new classes have been added
+  ``OpenStack_2_FloatingIpPool`` and ``OpenStack_2_FloatingIpAddress``.
+  The main change applies to the FloatingIP class where ``node_id``
+  property cannot be directly obtained from FloatingIP information and it
+  must be gotten from the related Port information with the ``get_node_id``
+  method.
+  (GITHUB-1638)
+  [Miguel Caballer - @micafer]
+
 - [OpenStack] Avoid raising exception if ip is not found.
   (GITHUB-1595)
   [Miguel Caballer - @micafer]
+
+- [Azure ARM] Add option to create node from Compute Gallery image.
+  (GITHUB-1643)
+  [Robert Harris - @rgharris]
+
+- [Azure ARM] Add create node OS disk delete option.
+  (GITHUB-1644)
+  [Robert Harris - @rgharris]
 
 - [EC2] Add missing ``creation_date`` NodeImage extra.
   (GITHUB-1641)
@@ -50,6 +71,29 @@ Compute
   PUT methods in OpenStack connection
   (GITHUB-1650)
   [Miguel Caballer - @micafer]
+
+- [EC2] Update supported EC2 regions and instance sizes and add support
+  for eu-south-1 region.
+  (GITHUB-1656)
+  [Arturo Noha - @r2ronoha]
+
+- [OpenStack] Add new ``ex_force_microversion`` constructor argument with which
+  user can specify which micro version to use (
+  https://docs.openstack.org/api-guide/compute/microversions.html).
+  (GITHUB-1647, GITHUB-1648)
+
+- [GCE] Add ``paginated_request()`` method to GCEConnection and update
+  ``ex_list_project_images()`` method to utilize it.
+  (GITHUB-1646, GITHUB-1655)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix regression which was inadvertently introduced in #1557 which
+  would cause some OpenStack authentication methods to not work and result in
+  an exception.
+
+  Reported by @LanderOtto via #1659.
+  (GITHUB-1659, GITHUB-1660)
+  [Tomaz Muraus - @Kami]
 
 Storage
 ~~~~~~~

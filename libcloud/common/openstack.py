@@ -178,6 +178,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         ex_force_service_type=None,
         ex_force_service_name=None,
         ex_force_service_region=None,
+        ex_force_microversion=None,
         ex_auth_cache=None,
         retry_delay=None,
         backoff=None,
@@ -206,6 +207,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
+        self._ex_force_microversion = ex_force_microversion
         self._ex_auth_cache = ex_auth_cache
         self._osa = None
 
@@ -340,6 +342,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers[AUTH_TOKEN_HEADER] = self.auth_token
         headers["Accept"] = self.accept_format
+        if self._ex_force_microversion:
+            headers["OpenStack-API-Version"] = (
+                "compute %s" % self._ex_force_microversion
+            )
         return headers
 
     def morph_action_hook(self, action):
@@ -481,6 +487,7 @@ class OpenStackDriverMixin(object):
         ex_force_service_name=None,
         ex_force_service_region=None,
         ex_auth_cache=None,
+        ex_force_microversion=None,
         *args,
         **kwargs,
     ):
@@ -496,6 +503,7 @@ class OpenStackDriverMixin(object):
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
         self._ex_auth_cache = ex_auth_cache
+        self._ex_force_microversion = ex_force_microversion
 
     def openstack_connection_kwargs(self):
         """
@@ -528,4 +536,6 @@ class OpenStackDriverMixin(object):
             rv["ex_force_service_region"] = self._ex_force_service_region
         if self._ex_auth_cache is not None:
             rv["ex_auth_cache"] = self._ex_auth_cache
+        if self._ex_force_microversion:
+            rv["ex_force_microversion"] = self._ex_force_microversion
         return rv

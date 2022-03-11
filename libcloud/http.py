@@ -21,8 +21,15 @@ verification, depending on libcloud.security settings.
 import os
 import warnings
 import requests
+
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
+
+try:
+    # requests no longer vendors urllib3 in newer versions
+    # https://github.com/python/typeshed/issues/6893#issuecomment-1012511758
+    from urllib3.poolmanager import PoolManager
+except ImportError:
+    from requests.packages.urllib3.poolmanager import PoolManager  # type: ignore
 
 import libcloud.security
 from libcloud.utils.py3 import urlparse, PY3

@@ -497,7 +497,6 @@
         <revision>v3.4.0</revision>
       </Version>
   </release>
-
   <release>
       <Version>
         <name>3.4.1</name>
@@ -505,7 +504,13 @@
         <revision>v3.4.1</revision>
       </Version>
   </release>
-
+  <release>
+      <Version>
+        <name>3.5.0</name>
+        <created>2022-03-11</created>
+        <revision>v3.5.0</revision>
+      </Version>
+  </release>
   <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>

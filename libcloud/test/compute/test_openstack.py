@@ -39,6 +39,7 @@ from libcloud.utils.py3 import u
 from libcloud.common.base import LibcloudConnection
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.openstack_identity import OpenStackAuthenticationCache
+from libcloud.common.openstack_identity import AUTH_VERSIONS_WITH_EXPIRES
 from libcloud.common.types import (
     InvalidCredsError,
     MalformedResponseError,
@@ -62,7 +63,6 @@ from libcloud.compute.drivers.openstack import (
     OpenStackKeyPair,
     OpenStack_1_0_Connection,
     OpenStack_2_FloatingIpPool,
-    OpenStackNodeDriver,
     OpenStack_2_NodeDriver,
     OpenStack_2_PortInterfaceState,
     OpenStackNetwork,
@@ -79,18 +79,6 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.secrets import OPENSTACK_PARAMS
 
 BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
-
-
-def test_driver_instantiation_invalid_auth():
-    with pytest.raises(LibcloudError):
-        d = OpenStackNodeDriver(
-            "user",
-            "correct_password",
-            ex_force_auth_version="5.0",
-            ex_force_auth_url="http://x.y.z.y:5000",
-            ex_tenant_name="admin",
-        )
-        d.list_nodes()
 
 
 class OpenStackAuthTests(unittest.TestCase):
@@ -120,6 +108,17 @@ class OpenStackAuthTests(unittest.TestCase):
             )
             d.connection._populate_hosts_and_request_paths()
             self.assertEqual(d.connection.host, "test_endpoint.com")
+
+    def test_driver_instantiation_invalid_auth(self):
+        with pytest.raises(LibcloudError):
+            d = OpenStack_1_0_NodeDriver(
+                "user",
+                "correct_password",
+                ex_force_auth_version="5.0",
+                ex_force_auth_url="http://x.y.z.y:5000",
+                ex_tenant_name="admin",
+            )
+            d.list_nodes()
 
 
 class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
@@ -1764,21 +1763,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         ret = pool.list_floating_ips()
 
         self.assertEqual(ret[0].id, "09ea1784-2f81-46dc-8c91-244b4df75bde")
-        self.assertEqual(ret[0].pool, pool)
+        self.assertEqual(ret[0].get_pool(), pool)
         self.assertEqual(ret[0].ip_address, "10.3.1.42")
-        self.assertEqual(ret[0].node_id, None)
+        self.assertEqual(ret[0].get_node_id(), None)
         self.assertEqual(ret[1].id, "04c5336a-0629-4694-ba30-04b0bdfa88a4")
-        self.assertEqual(ret[1].pool, pool)
+        self.assertEqual(ret[1].get_pool(), pool)
         self.assertEqual(ret[1].ip_address, "10.3.1.1")
-        self.assertEqual(ret[1].node_id, "fcfc96da-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[1].get_node_id(), "fcfc96da-19e2-40fd-8497-f29da1b21143")
         self.assertEqual(ret[2].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
-        self.assertEqual(ret[2].pool, pool)
+        self.assertEqual(ret[2].get_pool(), pool)
         self.assertEqual(ret[2].ip_address, "10.3.1.2")
-        self.assertEqual(ret[2].node_id, "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[2].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
         self.assertEqual(ret[3].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
-        self.assertEqual(ret[3].pool, pool)
+        self.assertEqual(ret[3].get_pool(), pool)
         self.assertEqual(ret[3].ip_address, "10.3.1.3")
-        self.assertEqual(ret[3].node_id, "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[3].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
 
     def test_OpenStack_2_FloatingIpPool_get_floating_ip(self):
         pool = OpenStack_2_FloatingIpPool(1, "foo", self.driver.connection)
@@ -2551,6 +2550,48 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         )
         self.assertEqual(server_group.name, "server_group_name")
         self.assertEqual(server_group.policy, "anti-affinity")
+
+    def test_ex_list_floating_ips(self):
+        ret = self.driver.ex_list_floating_ips()
+
+        self.assertEqual(ret[0].id, "09ea1784-2f81-46dc-8c91-244b4df75bde")
+        self.assertEqual(ret[0].get_pool(), None)
+        self.assertEqual(ret[0].ip_address, "10.3.1.42")
+        self.assertEqual(ret[0].get_node_id(), None)
+        self.assertEqual(ret[1].id, "04c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[1].get_pool(), None)
+        self.assertEqual(ret[1].ip_address, "10.3.1.1")
+        self.assertEqual(ret[1].get_node_id(), "fcfc96da-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[2].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[2].get_pool(), None)
+        self.assertEqual(ret[2].ip_address, "10.3.1.2")
+        self.assertEqual(ret[2].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[3].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[3].get_pool(), None)
+        self.assertEqual(ret[3].ip_address, "10.3.1.3")
+        self.assertEqual(ret[3].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
+        self.assertEqual(ret[4].id, "123c5336a-0629-4694-ba30-04b0bdfa88a4")
+        self.assertEqual(ret[4].get_pool(), None)
+        self.assertEqual(ret[4].ip_address, "10.3.1.5")
+        self.assertEqual(ret[4].get_node_id(), "cb4fba64-19e2-40fd-8497-f29da1b21143")
+
+    def test_ex_get_floating_ip(self):
+        float_ip = self.driver.ex_get_floating_ip("10.0.0.1")
+
+        self.assertEqual(float_ip.ip_address, "10.3.1.21")
+        self.assertEqual(float_ip.id, "04c5336a-0629-4694-ba30-04b0bdfa88a4")
+
+    def test_ex_create_floating_ip(self):
+        ret = self.driver.ex_create_floating_ip("public")
+
+        self.assertEqual(ret.id, "09ea1784-2f81-46dc-8c91-244b4df75bde")
+        self.assertEqual(ret.pool.name, "public")
+        self.assertEqual(ret.ip_address, "10.3.1.42")
+        self.assertEqual(ret.node_id, None)
+
+    def test_ex_delete_floating_ip(self):
+        ip = OpenStack_1_1_FloatingIpAddress("foo-bar-id", "42.42.42.42", None)
+        self.assertTrue(self.driver.ex_delete_floating_ip(ip))
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
@@ -3721,7 +3762,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
         if method == "GET":
-            body = self.fixtures.load("_v2_0__floatingips.json")
+            if "floating_network_id=" in url:
+                body = self.fixtures.load("_v2_0__floatingips_net_id.json")
+            elif "floating_ip_address" in url:
+                body = self.fixtures.load("_v2_0__floatingips_ip_id.json")
+            else:
+                body = self.fixtures.load("_v2_0__floatingips.json")
             return (
                 httplib.OK,
                 body,
@@ -3908,6 +3954,94 @@ class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
         return (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])
 
 
+class OpenStack_AllAuthVersions_MockHttp(MockHttp):
+    def __init__(self, *args, **kwargs):
+        super(OpenStack_AllAuthVersions_MockHttp, self).__init__(*args, **kwargs)
+
+        # Lazy import to avoid cyclic depedency issue
+        from libcloud.test.common.test_openstack_identity import (
+            OpenStackIdentity_2_0_MockHttp,
+        )
+        from libcloud.test.common.test_openstack_identity import (
+            OpenStackIdentity_3_0_MockHttp,
+        )
+        from libcloud.test.common.test_openstack_identity import (
+            OpenStackIdentity_3_0_AppCred_MockHttp,
+        )
+
+        self.mock_http = OpenStackMockHttp(*args, **kwargs)
+        self.mock_http_1_1 = OpenStack_1_1_MockHttp(*args, **kwargs)
+        self.mock_http_2_0 = OpenStack_2_0_MockHttp(*args, **kwargs)
+        self.mock_http_2_0_identity = OpenStackIdentity_2_0_MockHttp(*args, **kwargs)
+        self.mock_http_3_0_identity = OpenStackIdentity_3_0_MockHttp(*args, **kwargs)
+        self.mock_http_3_0_appcred_identity = OpenStackIdentity_3_0_AppCred_MockHttp(
+            *args, **kwargs
+        )
+
+    def _v1_0_slug_servers_detail(self, method, url, body, headers):
+        return self.mock_http_1_1._v1_1_slug_servers_detail(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v1_1_auth(self, method, url, body, headers):
+        return self.mock_http._v1_1_auth(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v2_0_tokens(self, method, url, body, headers):
+        return self.mock_http_2_0._v2_0_tokens(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v2_1337_servers_detail(self, method, url, body, headers):
+        return self.mock_http_2_0._v2_1337_servers_detail(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v2_0_tenants(self, method, url, body, headers):
+        return self.mock_http_2_0_identity._v2_0_tenants(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v2_9c4693dce56b493b9b83197d900f7fba_servers_detail(
+        self, method, url, body, headers
+    ):
+        return self.mock_http_1_1._v1_1_slug_servers_detail(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v3_OS_FEDERATION_identity_providers_user_name_protocols_tenant_name_auth(
+        self, method, url, body, headers
+    ):
+        return self.mock_http_3_0_identity._v3_OS_FEDERATION_identity_providers_test_user_id_protocols_test_tenant_auth(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v3_auth_tokens(self, method, url, body, headers):
+        if "application_credential" in body:
+            return self.mock_http_3_0_appcred_identity._v3_auth_tokens(
+                method=method, url=url, body=body, headers=headers
+            )
+        elif "token" in body:
+            return self.mock_http_3_0_identity._v3_auth_tokens(
+                method=method, url=url, body=body, headers=headers
+            )
+        else:
+            return self.mock_http_3_0_identity._v3_auth_tokens(
+                method=method, url=url, body=body, headers=headers
+            )
+
+    def _v3_0_auth_tokens(self, method, url, body, headers):
+        return self.mock_http_3_0_identity._v3_0_auth_tokens(
+            method=method, url=url, body=body, headers=headers
+        )
+
+    def _v3_auth_projects(self, method, url, body, headers):
+        return self.mock_http_3_0_identity._v3_auth_projects(
+            method=method, url=url, body=body, headers=headers
+        )
+
+
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
     driver_args = OPENSTACK_PARAMS + ("1.1",)
     driver_kwargs = {"ex_force_auth_version": "2.0"}
@@ -3940,6 +4074,76 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
                 ],
             },
         )
+
+
+class OpenStack_AuthVersions_Tests(unittest.TestCase):
+    def setUp(self):
+        # monkeypatch get_endpoint because the base openstack driver doesn't actually
+        # work with old devstack but this class/tests are still used by the rackspace
+        # driver
+        self.originalGetEndpoint = OpenStack_1_1_NodeDriver.connectionCls.get_endpoint
+        self.originalConnectionCls = OpenStack_1_1_NodeDriver.connectionCls
+
+        def get_endpoint(*args, **kwargs):
+            return "https://servers.api.rackspacecloud.com/v1.0/slug"
+
+        OpenStack_1_1_NodeDriver.connectionCls.get_endpoint = get_endpoint
+        OpenStack_1_1_NodeDriver.connectionCls.conn_class = (
+            OpenStack_AllAuthVersions_MockHttp
+        )
+
+        OpenStackMockHttp.type = None
+        OpenStack_1_1_MockHttp.type = None
+        OpenStack_2_0_MockHttp.type = None
+
+    def tearDown(self):
+        OpenStack_1_1_NodeDriver.connectionCls.get_endpoint = self.originalGetEndpoint
+        OpenStack_1_1_NodeDriver.connectionCls.conn_class = self.originalConnectionCls
+
+        OpenStackMockHttp.type = None
+        OpenStack_1_1_MockHttp.type = None
+        OpenStack_2_0_MockHttp.type = None
+
+    def test_ex_force_auth_version_all_possible_values(self):
+        """
+        Test case which verifies that the driver can be correctly instantiated using all the
+        supported API versions.
+        """
+        cls = get_driver(Provider.OPENSTACK)
+
+        for auth_version in AUTH_VERSIONS_WITH_EXPIRES:
+            driver_kwargs = {}
+
+            if auth_version in ["1.1", "3.0"]:
+                # 1.1 is old and deprecated, 3.0 is not exposed directly to the end user
+                continue
+
+            user_id = OPENSTACK_PARAMS[0]
+            key = OPENSTACK_PARAMS[1]
+
+            if auth_version.startswith("3.x"):
+                driver_kwargs["ex_domain_name"] = "test_domain"
+                driver_kwargs["ex_tenant_domain_id"] = "test_tenant_domain_id"
+                driver_kwargs["ex_force_service_region"] = "regionOne"
+                driver_kwargs["ex_tenant_name"] = "tenant-name"
+
+            if auth_version == "3.x_oidc_access_token":
+                key = "test_key"
+                driver_kwargs["ex_domain_name"] = None
+
+            elif auth_version == "3.x_appcred":
+                user_id = "appcred_id"
+                key = "appcred_secret"
+
+            driver = cls(
+                user_id,
+                key,
+                ex_force_auth_url="http://x.y.z.y:5000",
+                ex_force_auth_version=auth_version,
+                **driver_kwargs,
+            )
+            nodes = driver.list_nodes()
+            self.assertTrue(len(nodes) >= 1)
 
 
 class OpenStackMockAuthCache(OpenStackAuthenticationCache):

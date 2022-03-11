@@ -42,6 +42,11 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
             host="127.0.0.1", secure=1, port=443, timeout=10
         )
 
+    def test_set_microversion(self):
+        self.connection._ex_force_microversion = "2.67"
+        headers = self.connection.add_default_headers({})
+        self.assertEqual(headers["OpenStack-API-Version"], "compute 2.67")
+
     @patch("libcloud.common.base.ConnectionUserAndKey.request")
     def test_request(self, mock_request):
         OpenStackBaseConnection.conn_class._raw_data = ""

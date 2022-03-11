@@ -1,0 +1,48 @@
+{
+ "kind": "compute#imageList",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images",
+ "id": "projects/project_name/global/images",
+ "nextPageToken" : "token",
+ "items": [
+  {
+    "kind": "compute#image1",
+    "id": "7094983038334682861",
+    "creationTimestamp": "2017-10-26T07:58:38.442-07:00",
+    "name": "custom-image1",
+    "description": "a custom image 1",
+    "sourceType": "RAW",
+    "status": "READY",
+    "archiveSizeBytes": "1314375168",
+    "diskSizeGb": "10",
+    "sourceDisk": "projects/project_name/zones/us-central1-b/disks/custom-instance1",
+    "sourceDiskId": "3436116182804197834",
+    "family": "custom",
+    "selfLink": "projects/project_name/global/images/custom-image1",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "labels": {
+      "foo": "bar",
+      "one": "1",
+      "two": "two"
+    },
+    "getResourceId": {},
+    "getDisplayName": {},
+    "getResourceType": {},
+    "getFullResourcePath": {}
+  },
+  {
+   "kind": "compute#image2",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images/custom-image",
+   "id": "15632509721401584262",
+   "creationTimestamp": "2014-12-09T09:26:27.234-08:00",
+   "name": "custom-image2",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "243720274",
+   "diskSizeGb": "10"
+  }
+ ]
+}
