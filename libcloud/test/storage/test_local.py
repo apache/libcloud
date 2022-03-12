@@ -15,22 +15,20 @@
 
 from __future__ import with_statement
 
+import multiprocessing
 import os
-import pickle
-import sys
 import platform
 import shutil
-import unittest
-import time
+import sys
 import tempfile
-import multiprocessing
-from typing import Callable
+import time
+import unittest
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container
 from libcloud.storage.base import Object
-from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerAlreadyExistsError
+from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.utils.files import exhaust_iterator
@@ -114,7 +112,6 @@ class LocalTests(unittest.TestCase):
         with lock:
             expected_msg = "Failed to acquire thread lock"
             self.assertRaisesRegex(LibcloudError, expected_msg, lock.__enter__)
-
 
         success_1 = multiprocessing.Value("i", 0)
         success_2 = multiprocessing.Value("i", 0)

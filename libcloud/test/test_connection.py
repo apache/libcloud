@@ -589,6 +589,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         class RetryableThrowingError(Response):
             parse_error_counter: int = 0
             success_counter: int = 0
+
             def __init__(self, *_, **__):
                 super().__init__(mock.MagicMock(), mock.MagicMock())
 
