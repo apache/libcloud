@@ -16,27 +16,26 @@
 
 import os
 import socket
-import sys
 import ssl
-
-from requests.exceptions import ConnectTimeout
-
-from mock import Mock, patch
+import sys
+from unittest import mock
 
 import requests_mock
+from mock import Mock, patch
+from requests.exceptions import ConnectTimeout
 
 import libcloud.common.base
-
-from libcloud.test import unittest
 from libcloud.common.base import Connection, CertificateConnection
+from libcloud.common.base import Response
 from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.http import LibcloudBaseConnection
 from libcloud.http import LibcloudConnection
 from libcloud.http import SignedHTTPSAdapter
+from libcloud.test import unittest
+from libcloud.utils.py3 import assertRaisesRegex
+from libcloud.utils.retry import RETRY_EXCEPTIONS
 from libcloud.utils.retry import Retry
 from libcloud.utils.retry import RetryForeverOnRateLimitError
-from libcloud.utils.retry import RETRY_EXCEPTIONS
-from libcloud.utils.py3 import assertRaisesRegex
 
 
 class BaseConnectionClassTestCase(unittest.TestCase):
@@ -374,9 +373,10 @@ class ConnectionClassTestCase(unittest.TestCase):
     def test_context_is_reset_after_request_has_finished(self):
         context = {"foo": "bar"}
 
-        def responseCls(connection, response):
+        def responseCls(connection, response) -> mock.MagicMock:
             connection.called = True
             self.assertEqual(connection.context, context)
+            return mock.MagicMock(spec=Response)
 
         con = Connection()
         con.called = False
@@ -563,6 +563,58 @@ class ConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(
             mock_connect.call_count, len(RETRY_EXCEPTIONS), "Retry logic failed"
         )
+
+    def test_request_parses_errors(self):
+        class ThrowingResponse(Response):
+            def __init__(self, *_, **__):
+                super().__init__(mock.MagicMock(), mock.MagicMock())
+
+            def parse_body(self):
+                return super().parse_body()
+
+            def parse_error(self):
+                raise RateLimitReachedError()
+
+            def success(self):
+                return False
+
+        con = Connection()
+        con.connection = Mock()
+        con.responseCls = ThrowingResponse
+
+        with self.assertRaises(RateLimitReachedError):
+            con.request(action="/")
+
+    def test_parse_errors_can_be_retried(self):
+        class RetryableThrowingError(Response):
+            parse_error_counter: int = 0
+            success_counter: int = 0
+            def __init__(self, *_, **__):
+                super().__init__(mock.MagicMock(), mock.MagicMock())
+
+            def parse_body(self):
+                return super().parse_body()
+
+            def parse_error(self):
+                RetryableThrowingError.parse_error_counter += 1
+                if RetryableThrowingError.parse_error_counter > 1:
+                    return "success"
+                else:
+                    raise RateLimitReachedError()
+
+            def success(self):
+                RetryableThrowingError.success_counter += 1
+                if RetryableThrowingError.success_counter > 1:
+                    return True
+                else:
+                    return False
+
+        con = Connection()
+        con.connection = Mock()
+        con.responseCls = RetryableThrowingError
+        result = con.request(action="/", retry_failed=True)
+
+        self.assertEqual(result.success(), True)
 
 
 class CertificateConnectionClassTestCase(unittest.TestCase):

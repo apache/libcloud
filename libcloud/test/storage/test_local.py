@@ -16,6 +16,7 @@
 from __future__ import with_statement
 
 import os
+import pickle
 import sys
 import platform
 import shutil
@@ -23,6 +24,7 @@ import unittest
 import time
 import tempfile
 import multiprocessing
+from typing import Callable
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container
@@ -40,6 +42,29 @@ try:
 except ImportError:
     print("fasteners library is not available, skipping local_storage tests...")
     LocalStorageDriver = None
+
+
+class PickleableAcquireLockInSubprocess:
+    def __call__(self, pid, success):
+        # For first process acquire should succeed and for the second it should fail
+        lock = LockLocalStorage("/tmp/c", timeout=0.5)
+
+        if pid == 1:
+            with lock:
+                # We use longer sleep when running tests in parallel to avoid
+                # failures related to slower process spawn
+                time.sleep(2.5)
+
+            success.value = 1
+        elif pid == 2:
+            expected_msg = "Failed to acquire IPC lock"
+            try:
+                lock.__enter__()
+            except LibcloudError as e:
+                assert expected_msg in str(e)
+                success.value = 1
+        else:
+            raise ValueError("Invalid pid")
 
 
 class LocalTests(unittest.TestCase):
@@ -90,30 +115,12 @@ class LocalTests(unittest.TestCase):
             expected_msg = "Failed to acquire thread lock"
             self.assertRaisesRegex(LibcloudError, expected_msg, lock.__enter__)
 
-        # 3. Multiprocessing scenario where IPC lock is involved
-        def acquire_lock_in_subprocess(pid, success):
-            # For first process acquire should succeed and for the second it should fail
-            lock = LockLocalStorage("/tmp/c", timeout=0.5)
-
-            if pid == 1:
-                with lock:
-                    # We use longer sleep when running tests in parallel to avoid
-                    # failures related to slower process spawn
-                    time.sleep(2.5)
-
-                success.value = 1
-            elif pid == 2:
-                expected_msg = "Failed to acquire IPC lock"
-                self.assertRaisesRegex(LibcloudError, expected_msg, lock.__enter__)
-                success.value = 1
-            else:
-                raise ValueError("Invalid pid")
 
         success_1 = multiprocessing.Value("i", 0)
         success_2 = multiprocessing.Value("i", 0)
 
         p1 = multiprocessing.Process(
-            target=acquire_lock_in_subprocess,
+            target=PickleableAcquireLockInSubprocess(),
             args=(
                 1,
                 success_1,
@@ -124,7 +131,7 @@ class LocalTests(unittest.TestCase):
         time.sleep(0.2)
 
         p2 = multiprocessing.Process(
-            target=acquire_lock_in_subprocess,
+            target=PickleableAcquireLockInSubprocess(),
             args=(
                 2,
                 success_2,
