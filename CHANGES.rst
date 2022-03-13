@@ -1,6 +1,19 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Retrieve regions and zones lazily when they are first accessed (via
+  self.zone_{dict,list} and self.region_{dict,list} attribute) instead of
+  retrieving them inside the driver constructor.
+
+  (GITHUB-1661, GITHUB-1661)
+  [Dimitris Galanis - @dimgal1]
+
 Changes in Apache Libcloud 3.5.0
 --------------------------------
 
