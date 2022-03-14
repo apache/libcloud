@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - trunk
+      - fix_codecov
       - pyjion_cicd_tests
   pull_request:
     branches:
