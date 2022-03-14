@@ -259,7 +259,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         tenant_id=None,
         identity=None,
         auth_type=None,
-        cloud_environment=None,
+        cloud_environment="default",
         **kwargs
     ):
         self._host = host
