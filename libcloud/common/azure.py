@@ -32,7 +32,7 @@ from libcloud.utils.xml import fixxpath
 from libcloud.http import LibcloudConnection
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.azure_arm import publicEnvironments, AzureBaseDriver, AzureAuthJsonResponse
+from libcloud.common.azure_arm import publicEnvironments, AzureAuthJsonResponse
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
@@ -105,6 +105,10 @@ class AzureRawResponse(RawResponse):
     pass
 
 
+class AzureBaseDriver(BaseDriver):
+    name = "Microsoft Azure Service Management API"
+
+
 class AzureActiveDirectoryConnection(ConnectionUserAndKey):
     """
     Represents a single connection to Azure using Azure AD for Blob
@@ -126,12 +130,10 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         port=None,
         tenant_id=None,
         identity=None,
-        cloud_environment=None,
+        cloud_environment="default",
         **kwargs
     ):
         super(AzureActiveDirectoryConnection, self).__init__(identity, secret, **kwargs)
-        if not cloud_environment:
-            cloud_environment = "default"
         if isinstance(cloud_environment, basestring):
             cloud_environment = publicEnvironments[cloud_environment]
         if not isinstance(cloud_environment, dict):
@@ -331,10 +333,6 @@ class AzureConnection(ConnectionUserAndKey):
                 special_header_values.append("")
 
         return special_header_values
-
-
-class AzureBaseDriver(BaseDriver):
-    name = "Microsoft Azure Service Management API"
 
 
 class AzureServiceManagementConnection(CertificateConnection):
