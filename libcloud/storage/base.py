@@ -895,9 +895,6 @@ class StorageDriver(BaseDriver):
                     file_stream, self._get_hash_function()
                 )
 
-        if not response.success():
-            response.parse_error()
-
         return {
             "response": response,
             "bytes_transferred": stream_length,
