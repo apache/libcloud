@@ -133,6 +133,17 @@ class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCas
         self.assertEqual(services[1]["metadata"]["name"], "default-http-backend")
         self.assertEqual(services[2]["metadata"]["name"], "kube-dns")
 
+    def test_list_deployments(self):
+        deployments = self.driver.ex_list_deployments()
+        self.assertEqual(len(deployments), 7)
+        deployment = deployments[0]
+        self.assertEqual(deployment.id, "aea45586-9a4a-4a01-805c-719f431316c0")
+        self.assertEqual(deployment.name, "event-exporter-gke")
+        self.assertEqual(deployment.namespace, "kube-system")
+        for deployment in deployments:
+            self.assertIsInstance(deployment.replicas, int)
+            self.assertIsInstance(deployment.selector, dict)
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures("kubernetes")
@@ -218,6 +229,10 @@ class KubernetesMockHttp(MockHttp):
             body = self.fixtures.load("_apis_metrics_k8s_io_v1beta1_pods.json")
         else:
             raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _apis_apps_v1_deployments(self, method, url, body, headers):
+        body = self.fixtures.load("_apis_apps_v1_deployments.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

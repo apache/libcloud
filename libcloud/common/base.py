@@ -540,7 +540,6 @@ class Connection(object):
         stream=False,
         json=None,
         retry_failed=None,
-        enforce_unicode_response=False,
     ):
         """
         Request a given `action`.
@@ -579,10 +578,6 @@ class Connection(object):
         :param retry_failed: True if failed requests should be retried. This
                               argument can override module level constant and
                               environment variable value on per-request basis.
-
-        :type enforce_unicode_response: ``bool``
-        :param enforce_unicode_response: True to set the response encoding
-                                             to utf-8
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
@@ -662,13 +657,7 @@ class Connection(object):
             request_to_be_executed = retry_request(self._retryable_request)
 
         return request_to_be_executed(
-            url=url,
-            method=method,
-            raw=raw,
-            stream=stream,
-            headers=headers,
-            data=data,
-            enforce_unicode_response=enforce_unicode_response,
+            url=url, method=method, raw=raw, stream=stream, headers=headers, data=data
         )
 
     def _retryable_request(
@@ -679,7 +668,6 @@ class Connection(object):
         method: str,
         raw: bool,
         stream: bool,
-        enforce_unicode_response: bool,
     ) -> Union[RawResponse, Response]:
         try:
             # @TODO: Should we just pass File object as body to request method
@@ -721,10 +709,6 @@ class Connection(object):
         except ssl.SSLError as e:
             self.reset_context()
             raise ssl.SSLError(str(e))
-
-        if enforce_unicode_response:
-            # Handle problem: https://github.com/psf/requests/issues/2359
-            self.connection.response.encoding = "utf-8"
 
         if raw:
             responseCls = self.rawResponseCls

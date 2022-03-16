@@ -16,6 +16,8 @@
 import datetime
 import json
 import hashlib
+from collections import OrderedDict
+from typing import List, Dict, Any, Optional, Union
 
 from libcloud.container.base import (
     Container,
@@ -35,16 +37,95 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node
 from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
+from libcloud.common.exceptions import BaseHTTPError
 
-from libcloud.utils.misc import to_n_cpus
-from libcloud.utils.misc import to_cpu_str
-from libcloud.utils.misc import to_memory_str
-from libcloud.utils.misc import to_n_bytes
-
-__all__ = ["KubernetesContainerDriver"]
+__all__ = [
+    "KubernetesContainerDriver",
+    "to_n_bytes",
+    "to_memory_str",
+    "to_cpu_str",
+    "to_n_cpus",
+]
 
 
 ROOT_URL = "/api/"
+
+
+K8S_UNIT_MAP = OrderedDict(
+    {
+        "K": 1000,
+        "Ki": 1024,
+        "M": 1000 * 1000,
+        "Mi": 1024 * 1024,
+        "G": 1000 * 1000 * 1000,
+        "Gi": 1024 * 1024 * 1024,
+    }
+)
+
+
+def to_n_bytes(memory_str: str) -> int:
+    """Convert memory string to number of bytes
+    (e.g. '1234Mi'-> 1293942784)
+    """
+    if memory_str.startswith("0"):
+        return 0
+    if memory_str.isnumeric():
+        return int(memory_str)
+    for unit, multiplier in K8S_UNIT_MAP.items():
+        if memory_str.endswith(unit):
+            return int(memory_str.strip(unit)) * multiplier
+
+
+def to_memory_str(n_bytes: int, unit: Optional[str] = None) -> str:
+    """Convert number of bytes to k8s memory string
+    (e.g. 1293942784 -> '1234Mi')
+    """
+    if n_bytes == 0:
+        return "0K"
+    n_bytes = int(n_bytes)
+    memory_str = None
+    if unit is None:
+        for unit, multiplier in reversed(K8S_UNIT_MAP.items()):
+            converted_n_bytes_float = n_bytes / multiplier
+            converted_n_bytes = n_bytes // multiplier
+            memory_str = f"{converted_n_bytes}{unit}"
+            if converted_n_bytes_float % 1 == 0:
+                break
+    elif K8S_UNIT_MAP.get(unit):
+        memory_str = f"{n_bytes // K8S_UNIT_MAP[unit]}{unit}"
+    return memory_str
+
+
+def to_cpu_str(n_cpus: Union[int, float]) -> str:
+    """Convert number of cpus to cpu string
+    (e.g. 0.5 -> '500m')
+    """
+    if n_cpus == 0:
+        return "0"
+    millicores = n_cpus * 1000
+    if millicores % 1 == 0:
+        return f"{int(millicores)}m"
+    microcores = n_cpus * 1000000
+    if microcores % 1 == 0:
+        return f"{int(microcores)}u"
+    nanocores = n_cpus * 1000000000
+    return f"{int(nanocores)}n"
+
+
+def to_n_cpus(cpu_str: str) -> Union[int, float]:
+    """Convert cpu string to number of cpus
+    (e.g. '500m' -> 0.5, '2000000000n' -> 2)
+    """
+    if cpu_str.endswith("n"):
+        return int(cpu_str.strip("n")) / 1000000000
+    elif cpu_str.endswith("u"):
+        return int(cpu_str.strip("u")) / 1000000
+    elif cpu_str.endswith("m"):
+        return int(cpu_str.strip("m")) / 1000
+    elif cpu_str.isnumeric():
+        return int(cpu_str)
+    else:
+        return 0
 
 
 def sum_resources(self, *resource_dicts):
@@ -57,7 +138,16 @@ def sum_resources(self, *resource_dicts):
 
 
 class KubernetesDeployment:
-    def __init__(self, id, name, namespace, created_at, replicas, selector, extra=None):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        namespace: str,
+        created_at: str,
+        replicas: int,
+        selector: Dict[str, Any],
+        extra: Optional[Dict[str, Any]] = None,
+    ):
         self.id = id
         self.name = name
         self.namespace = namespace
@@ -77,15 +167,15 @@ class KubernetesDeployment:
 class KubernetesPod(object):
     def __init__(
         self,
-        id,
-        name,
-        containers,
-        namespace,
-        state,
-        ip_addresses,
-        created_at,
-        node_name,
-        extra,
+        id: str,
+        name: str,
+        containers: List[Container],
+        namespace: str,
+        state: str,
+        ip_addresses: List[str],
+        created_at: datetime.datetime,
+        node_name: str,
+        extra: Dict[str, Any],
     ):
         """
         A Kubernetes pod
@@ -100,11 +190,21 @@ class KubernetesPod(object):
         self.node_name = node_name
         self.extra = extra
 
+    def __repr__(self):
+        return "<KubernetesPod name=%s namespace=%s state=%s>" % (
+            self.name,
+            self.namespace,
+            self.state,
+        )
+
 
 class KubernetesNamespace(ContainerCluster):
     """
     A Kubernetes namespace
     """
+
+    def __repr__(self):
+        return "<KubernetesNamespace name=%s>" % (self.name,)
 
 
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
@@ -114,22 +214,20 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
 
-    def list_containers(self, image=None, all=True):
+    def list_containers(self, image=None, all=True) -> List[Container]:
         """
         List the deployed container images
 
-        :param image: Filter to containers with a certain image
+        :param image: Filter to containers with a certain image(unused)
         :type  image: :class:`libcloud.container.base.ContainerImage`
 
-        :param all: Show all container (including stopped ones)
+        :param all: Show all container (unused)
         :type  all: ``bool``
 
         :rtype: ``list`` of :class:`libcloud.container.base.Container`
         """
         try:
-            result = self.connection.request(
-                ROOT_URL + "v1/pods", enforce_unicode_response=True
-            ).object
+            result = self.connection.request(ROOT_URL + "v1/pods").object
         except Exception as exc:
             errno = getattr(exc, "errno", None)
             if errno == 111:
@@ -145,7 +243,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             containers.extend(pod.containers)
         return containers
 
-    def get_container(self, id):
+    def get_container(self, id: str) -> Container:
         """
         Get a container by ID
 
@@ -158,7 +256,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         match = [container for container in containers if container.id == id]
         return match[0]
 
-    def list_namespaces(self):
+    def list_namespaces(self) -> List[KubernetesNamespace]:
         """
         Get a list of namespaces that pods can be deployed into
 
@@ -178,7 +276,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         namespaces = [self._to_namespace(value) for value in result["items"]]
         return namespaces
 
-    def get_namespace(self, id):
+    def get_namespace(self, id: str) -> KubernetesNamespace:
         """
         Get a namespace by ID
 
@@ -191,7 +289,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         return self._to_namespace(result)
 
-    def delete_namespace(self, namespace):
+    def delete_namespace(self, namespace: KubernetesNamespace) -> bool:
         """
         Delete a namespace
 
@@ -203,15 +301,12 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         ).object
         return True
 
-    def create_namespace(self, name, location=None):
+    def create_namespace(self, name: str) -> KubernetesNamespace:
         """
         Create a namespace
 
         :param  name: The name of the namespace
         :type   name: ``str``
-
-        :param  location: The location to create the namespace in
-        :type   location: :class:`.ClusterLocation`
 
         :rtype: :class:`.KubernetesNamespace`
         """
@@ -222,7 +317,12 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         return self._to_namespace(result)
 
     def deploy_container(
-        self, name, image, namespace=None, parameters=None, start=True
+        self,
+        name: str,
+        image: ContainerImage,
+        namespace: KubernetesNamespace = None,
+        parameters: Optional[str] = None,
+        start: Optional[bool] = True,
     ):
         """
         Deploy an installed container image.
@@ -238,10 +338,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :param namespace: The namespace to deploy to, None is default
         :type  namespace: :class:`.KubernetesNamespace`
 
-        :param parameters: Container Image parameters
+        :param parameters: Container Image parameters(unused)
         :type  parameters: ``str``
 
-        :param start: Start the container on deployment
+        :param start: Start the container on deployment(unused)
         :type  start: ``bool``
 
         :rtype: :class:`.Container`
@@ -261,7 +361,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         ).object
         return self._to_namespace(result)
 
-    def destroy_container(self, container):
+    def destroy_container(self, container: Container) -> bool:
         """
         Destroy a deployed container. Because the containers are single
         container pods, this will delete the pod.
@@ -273,15 +373,16 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         return self.ex_destroy_pod(container.extra["namespace"], container.extra["pod"])
 
-    def ex_list_pods(self, fetch_metrics=False):
+    def ex_list_pods(self, fetch_metrics: bool = False) -> List[KubernetesPod]:
         """
         List available Pods
 
+        :param fetch_metrics: Fetch metrics for pods
+        :type  fetch_metrics: ``bool``
+
         :rtype: ``list`` of :class:`.KubernetesPod`
         """
-        result = self.connection.request(
-            ROOT_URL + "v1/pods", enforce_unicode_response=True
-        ).object
+        result = self.connection.request(ROOT_URL + "v1/pods").object
         metrics = None
         if fetch_metrics:
             try:
@@ -292,14 +393,23 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                     ): metric["containers"]
                     for metric in self.ex_list_pods_metrics()
                 }
-            except Exception:
+            except BaseHTTPError:
+                # Metrics Server may not be installed
                 pass
 
         return [self._to_pod(value, metrics=metrics) for value in result["items"]]
 
-    def ex_destroy_pod(self, namespace, pod_name):
+    def ex_destroy_pod(self, namespace: str, pod_name: str) -> bool:
         """
         Delete a pod and the containers within it.
+
+        :param namespace: The pod's namespace
+        :type  namespace: ``str``
+
+        :param pod_name: Name of the pod to destroy
+        :type  pod_name: ``str``
+
+        :rtype: ``bool``
         """
         self.connection.request(
             ROOT_URL + "v1/namespaces/%s/pods/%s" % (namespace, pod_name),
@@ -307,49 +417,67 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         ).object
         return True
 
-    def ex_list_nodes(self):
+    def ex_list_nodes(self) -> List[Node]:
         """
         List available Nodes
 
         :rtype: ``list`` of :class:`.Node`
         """
-        result = self.connection.request(
-            ROOT_URL + "v1/nodes", enforce_unicode_response=True
-        ).object
+        result = self.connection.request(ROOT_URL + "v1/nodes").object
         return [self._to_node(node) for node in result["items"]]
 
-    def ex_destroy_node(self, node_name):
+    def ex_destroy_node(self, node_name: str) -> bool:
         """
         Destroy a node.
+
+        :param node_name: Name of the node to destroy
+        :type  node_name: ``str``
+
+        :rtype: ``bool``
         """
         self.connection.request(
             ROOT_URL + f"v1/nodes/{node_name}", method="DELETE"
         ).object
         return True
 
-    def ex_get_version(self):
-        """Get Kubernetes version"""
+    def ex_get_version(self) -> str:
+        """Get Kubernetes version
+
+        :rtype: ``str``
+        """
         return self.connection.request("/version").object["gitVersion"]
 
-    def ex_list_nodes_metrics(self):
-        return self.connection.request(
-            "/apis/metrics.k8s.io/v1beta1/nodes", enforce_unicode_response=True
-        ).object["items"]
+    def ex_list_nodes_metrics(self) -> List[Dict[str, Any]]:
+        """Get nodes metrics from Kubernetes Metrics Server
 
-    def ex_list_pods_metrics(self):
-        return self.connection.request(
-            "/apis/metrics.k8s.io/v1beta1/pods", enforce_unicode_response=True
-        ).object["items"]
+        :rtype: ``list`` of ``dict``
+        """
+        return self.connection.request("/apis/metrics.k8s.io/v1beta1/nodes").object[
+            "items"
+        ]
 
-    def ex_list_services(self):
-        return self.connection.request(
-            ROOT_URL + "v1/services", enforce_unicode_response=True
-        ).object["items"]
+    def ex_list_pods_metrics(self) -> List[Dict[str, Any]]:
+        """Get pods metrics from Kubernetes Metrics Server
 
-    def ex_list_deployments(self):
-        items = self.connection.request(
-            "/apis/apps/v1/deployments", enforce_unicode_response=True
-        ).object["items"]
+        :rtype: ``list`` of ``dict``
+        """
+        return self.connection.request("/apis/metrics.k8s.io/v1beta1/pods").object[
+            "items"
+        ]
+
+    def ex_list_services(self) -> List[Dict[str, Any]]:
+        """Get cluster services
+
+        :rtype: ``list`` of ``dict``
+        """
+        return self.connection.request(ROOT_URL + "v1/services").object["items"]
+
+    def ex_list_deployments(self) -> List[KubernetesDeployment]:
+        """Get cluster deployments
+
+        :rtype: ``list`` of :class:`.KubernetesDeployment`
+        """
+        items = self.connection.request("/apis/apps/v1/deployments").object["items"]
         return [self._to_deployment(item) for item in items]
 
     def _to_deployment(self, data):
