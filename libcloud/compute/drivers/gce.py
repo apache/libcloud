@@ -2108,19 +2108,17 @@ class GCENodeDriver(NodeDriver):
         # Cache Zone and Region information to reduce API calls and
         # increase speed
         self.base_path = "/compute/%s/projects/%s" % (API_VERSION, self.project)
-        self.zone_list = self.ex_list_zones()
-        self.zone_dict = {}
-        for zone in self.zone_list:
-            self.zone_dict[zone.name] = zone
+
+        self._zone_dict = None
+        self._zone_list = None
+
         if datacenter:
             self.zone = self.ex_get_zone(datacenter)
         else:
             self.zone = None
 
-        self.region_list = self.ex_list_regions()
-        self.region_dict = {}
-        for region in self.region_list:
-            self.region_dict[region.name] = region
+        self._region_dict = None
+        self._region_list = None
 
         if self.zone:
             self.region = self._get_region_from_zone(self.zone)
@@ -2130,6 +2128,32 @@ class GCENodeDriver(NodeDriver):
         # Volume details are looked up in this name-zone dict.
         # It is populated if the volume name is not found or the dict is empty.
         self._ex_volume_dict = {}
+
+    @property
+    def zone_dict(self):
+        if self._zone_dict is None:
+            zones = self.ex_list_zones()
+            self._zone_dict = {zone.name: zone for zone in zones}
+        return self._zone_dict
+
+    @property
+    def zone_list(self):
+        if self._zone_list is None:
+            self._zone_list = list(self.zone_dict.values())
+        return self._zone_list
+
+    @property
+    def region_dict(self):
+        if self._region_dict is None:
+            regions = self.ex_list_regions()
+            self._region_dict = {region.name: region for region in regions}
+        return self._region_dict
+
+    @property
+    def region_list(self):
+        if self._region_list is None:
+            self._region_list = list(self.region_dict.values())
+        return self._region_list
 
     def ex_add_access_config(self, node, name, nic, nat_ip=None, config_type=None):
         """

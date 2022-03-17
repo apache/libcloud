@@ -2526,6 +2526,65 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         zone_no_mw = self.driver.ex_get_zone("us-central1-a")
         self.assertIsNone(zone_no_mw.time_until_mw)
 
+    def test_driver_zone_attributes(self):
+        zones = self.driver.ex_list_zones()
+        self.assertEqual(len(self.driver.zone_dict), len(zones))
+        self.assertEqual(len(self.driver.zone_list), len(zones))
+        for zone, fetched_zone in zip(self.driver.zone_list, zones):
+            self.assertEqual(zone.id, fetched_zone.id)
+            self.assertEqual(zone.name, fetched_zone.name)
+            self.assertEqual(zone.status, fetched_zone.status)
+
+    def test_driver_region_attributes(self):
+        regions = self.driver.ex_list_regions()
+        self.assertEqual(len(self.driver.region_dict), len(regions))
+        self.assertEqual(len(self.driver.region_list), len(regions))
+        for region, fetched_region in zip(self.driver.region_list, regions):
+            self.assertEqual(region.id, fetched_region.id)
+            self.assertEqual(region.name, fetched_region.name)
+            self.assertEqual(region.status, fetched_region.status)
+
+
+class GCENodeDriverTest2(GoogleTestCase):
+    """
+    GCE Test Class, test node driver without passing `datacenter` parameter on initialization.
+    """
+
+    def setUp(self):
+        GCEMockHttp.test = self
+        GCENodeDriver.connectionCls.conn_class = GCEMockHttp
+        GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
+        GCEMockHttp.type = None
+        kwargs = GCE_KEYWORD_PARAMS.copy()
+        kwargs["auth_type"] = "IA"
+        self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
+
+    def test_zone_attributes(self):
+        self.assertIsNone(self.driver._zone_dict)
+        self.assertIsNone(self.driver._zone_list)
+
+        zones = self.driver.ex_list_zones()
+
+        self.assertEqual(len(self.driver.zone_list), len(zones))
+        self.assertEqual(len(self.driver.zone_dict), len(zones))
+        for zone, fetched_zone in zip(self.driver.zone_list, zones):
+            self.assertEqual(zone.id, fetched_zone.id)
+            self.assertEqual(zone.name, fetched_zone.name)
+            self.assertEqual(zone.status, fetched_zone.status)
+
+    def test_region_attributes(self):
+        self.assertIsNone(self.driver._region_dict)
+        self.assertIsNone(self.driver._region_list)
+
+        regions = self.driver.ex_list_regions()
+
+        self.assertEqual(len(self.driver.region_list), len(regions))
+        self.assertEqual(len(self.driver.region_dict), len(regions))
+        for region, fetched_region in zip(self.driver.region_list, regions):
+            self.assertEqual(region.id, fetched_region.id)
+            self.assertEqual(region.name, fetched_region.name)
+            self.assertEqual(region.status, fetched_region.status)
+
 
 class GCEMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures("gce")

@@ -1,11 +1,37 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Retrieve regions and zones lazily when they are first accessed (via
+  self.zone_{dict,list} and self.region_{dict,list} attribute) instead of
+  retrieving them inside the driver constructor.
+
+  (GITHUB-1661, GITHUB-1661)
+  [Dimitris Galanis - @dimgal1]
+
 Changes in Apache Libcloud 3.5.0
 --------------------------------
 
 Common
 ~~~~~~
+
+- Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+  (GITHUB-1620)
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
 
 - Update AWS error response parsing code so it also correctly handles error XML
   responses without a namespace in the response body.
@@ -121,22 +147,6 @@ Storage
 - [Scaleway] Add new driver for the Scaleway Object Storage.
   (GITHUB-1633)
   [@reixd]
-
-Common
-~~~~~~
-
-- Support for Python 3.5 which has been EOL for more than a year now has been
-  removed.
-
-  If you still want to use Libcloud with Python 3.5, you should use an older
-  release which still supports Python 3.5.
-  (GITHUB-1620)
-
-- Update code which retries failed HTTP requests to also retry failed "raw"
-  requests and make sure we also wrap and retry piece of code where Response
-  class is instantiated and exceptions can be thrown.
-  [Daniel Draper - @Germandrummer92]
-  (GITHUB-1592)
 
 Other
 ~~~~~
@@ -1194,7 +1204,7 @@ Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
 Common
-------
+~~~~~~
 
 - Fix a regression with ``get_driver()`` method not working if ``provider``
   argument value was a string (e.g. using ``get_driver('openstack')``
@@ -1224,7 +1234,7 @@ Common
   [Tomaz Muraus]
 
 Compute
--------
+~~~~~~~
 
 - [DigitalOcean] Fix ``attach_volume`` and ``detach_volume`` methods.
   Previously those two methods incorrectly passed volume id instead of
@@ -1281,7 +1291,7 @@ Compute
   [Tomaz Muraus]
 
 Storage
--------
+~~~~~~~
 
 - [AWS S3] Make sure ``host`` driver constructor argument has priority
   over ``region`` argument.
@@ -1296,14 +1306,14 @@ Changes in Apache Libcloud v2.7.0
 ---------------------------------
 
 General
--------
+~~~~~~~
 
 - Test code with Python 3.8 and advertise that we also support Python 3.8.
   (GITHUB-1371, GITHUB-1374)
   [Tomaz Muraus]
 
 Common
-------
+~~~~~~
 
 - [OpenStack] Fix OpenStack project scoped token authentication. The driver
   constructors now accept ``ex_tenant_domain_id`` argument which tells
@@ -1312,7 +1322,7 @@ Common
   [kshtsk]
 
 Compute
--------
+~~~~~~~
 
 - Introduce type annotations for the base compute API methods. This means you
   can now leverage mypy to type check (with some limitations) your code which

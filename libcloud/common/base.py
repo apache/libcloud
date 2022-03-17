@@ -275,6 +275,9 @@ class RawResponse(Response):
             self.request = response.request
             self.iter_content = response.iter_content
 
+        if not self.success():
+            self.parse_error()
+
     def success(self):
         """
         Determine if our request was successful.
