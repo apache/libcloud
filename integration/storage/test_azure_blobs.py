@@ -80,6 +80,27 @@ class IotedgeStorageTest(Integration.ContainerTestBase):
     ready_message = b'BlobService - StartAsync completed'
 
 
+class AzureAdAzuriteStorageTest(AzuriteStorageTest):
+    provider = 'azure_blobs'
+
+    account = 'devstoreaccount1'
+    secret = os.getenv('AZURE_CLIENT_SECRET')
+    tenant_id = '982317c6-fb7e-4e92-abcd-196557e41c5b'
+    auth_type = 'azureAd'
+    identity = '16cd65a3-dfa2-4272-bcdb-842cbbedb1b7'
+
+    image = 'arafato/azurite'
+    port = 10000
+    environment = {'executable': 'blob'}
+    ready_message = b'Azure Blob Storage Emulator listening'
+
+    has_sas_support = False
+
+    def test_cdn_url(self):
+        if not self.has_sas_support:
+            self.skipTest('Storage backend has no account SAS support')
+
+
 class StorageTest(Integration.TestBase):
     provider = 'azure_blobs'
 
