@@ -48,7 +48,6 @@ class AzureRedirectException(Exception):
 
 
 class AzureResponse(XmlResponse):
-
     valid_response_codes = [
         httplib.NOT_FOUND,
         httplib.CONFLICT,
@@ -185,7 +184,8 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         self.get_client_credentials()
         return super(AzureActiveDirectoryConnection, self).connect(**kwargs)
 
-    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
+    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False, stream=False, json=None,
+                retry_failed=None, *kwargs):
 
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).
@@ -193,7 +193,15 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
             self.get_client_credentials()
 
         return super(AzureActiveDirectoryConnection, self).request(
-            action, params=params, data=data, headers=headers, method=method, raw=raw
+            action,
+            params=params,
+            data=data,
+            headers=headers,
+            method=method,
+            raw=raw,
+            stream=stream,
+            json=json,
+            retry_failed=retry_failed
         )
 
 
