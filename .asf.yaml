@@ -41,15 +41,15 @@ github:
         strict: true
         # contexts are the names of checks that must pass
         contexts:
-          - "CI / Unit Tests (Python 3.7)"
-          - "CI / Unit Tests (Python 3.8)"
-          - "CI / Unit Tests (Python 3.9)"
-          - "CI / Unit Tests (Python 3.10)"
-          - "CI / Run Various Lint and Other Checks (3.7)"
-          - "CI / Build and upload Documentation (3.7)"
+          - "Unit Tests (Python 3.7)"
+          - "Unit Tests (Python 3.8)"
+          - "Unit Tests (Python 3.9)"
+          - "Unit Tests (Python 3.10)"
+          - "Run Various Lint and Other Checks (3.7)"
+          - "Build and upload Documentation (3.7)"
 
 notifications:
-  commits: commits@libcloud.apache.org
+  jobs: notifications@libcloud.apache.org
   issues: notifications@libcloud.apache.org
   pullrequests: notifications@libcloud.apache.org
   jobs: notifications@libcloud.apache.org
