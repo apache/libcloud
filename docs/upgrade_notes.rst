@@ -14,6 +14,14 @@ Libcloud 3.5.0
   If you still want to use Libcloud with Python 3.5, you should use an older
   release which still supports Python 3.5.
 
+* The OpenStack compute driver has moved the floating ip related functions
+  from nova to neutron. This change affects all the floating ip related
+  functions of the ``OpenStack_2_NodeDriver`` class. Two new classes have been
+  added ``OpenStack_2_FloatingIpPool`` and ``OpenStack_2_FloatingIpAddress``.
+  The main change applies to the FloatingIP class where ``node_id`` property
+  cannot be directly obtained from FloatingIP information and it must be
+  gotten from the related Port information with the ``get_node_id()`` method.
+
 Libcloud 3.4.0
 --------------
 
