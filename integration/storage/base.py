@@ -74,7 +74,7 @@ class Integration:
 
             kwargs = {'key': self.account, 'secret': self.secret}
 
-            for optional in 'host', 'port', 'secure', 'identity', 'auth_type', 'tenant_id':
+            for optional in 'host', 'port', 'secure':
                 value = getattr(self, optional, None)
                 if value is not None:
                     kwargs[optional] = value
