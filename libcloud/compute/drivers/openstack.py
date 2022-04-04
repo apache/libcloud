@@ -3653,7 +3653,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             resp = self.network_connection.request(
                 "/v2.0/floatingips/%s" % ip.id,
                 method="PUT",
-                data={"floatingip": {"port_id": ports[0]}},
+                data={"floatingip": {"port_id": ports[0].id}},
             )
             return resp.status == httplib.ACCEPTED
         else:
