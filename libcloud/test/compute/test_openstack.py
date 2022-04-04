@@ -1452,6 +1452,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_details(node_id)
         self.assertEqual(node.id, "12064247")
         self.assertEqual(node.name, "lc-test")
+        self.assertEqual(node.extra["flavor_details"]["vcpus"], 2)
 
     def test_ex_get_size(self):
         size_id = "7"
