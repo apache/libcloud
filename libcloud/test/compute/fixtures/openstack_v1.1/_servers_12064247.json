@@ -54,11 +54,11 @@
         "key_name": null,
         "progress": 100,
         "flavor": {
-            "vcpus": "2",
-            "ram": "2048",
-            "disk": "2048",
-            "ephemeral": "2048",
-            "swap": "2048",
+            "vcpus": 2,
+            "ram": 2048,
+            "disk": 2048,
+            "ephemeral": 2048,
+            "swap": 2048,
             "original_name": "flavor_name"
         },
         "config_drive": "",
