@@ -3622,6 +3622,44 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return self._to_port(response.object["port"])
 
+    def ex_get_node_ports(self, node):
+        """
+        Get the list of OpenStack_2_PortInterface interfaces from a Node.
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :rtype: ``list`` of :class:`OpenStack_2_PortInterface`
+        """
+        response = self.network_connection.request(
+            "/servers/%s/os-interface" % node.id, method="GET"
+        )
+        return [self._to_port(port) for port in response["interfaceAttachments"]]
+
+    def ex_attach_floating_ip_to_node(self, node, ip):
+        """
+        Attach the floating IP to the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to attach
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        ports = self.ex_get_node_ports(node)
+        if ports:
+            # Set to the first node port
+            resp = self.network_connection.request(
+                "/v2.0/floatingips/%s" % ip.id,
+                method="PUT",
+                data={"floatingip": {"port_id": ports[0]}},
+            )
+            return resp.status == httplib.ACCEPTED
+        else:
+            # if there are no ports
+            return False
+
     def _get_volume_connection(self):
         """
         Get the correct Volume connection (v3 or v2)
