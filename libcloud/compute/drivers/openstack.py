@@ -4436,7 +4436,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :rtype: ``bool``
         """
         ip_id = None
-        if isinstance(ip, OpenStack_1_1_FloatingIpAddress):
+        if hasattr(ip, "id"):
             ip_id = ip.id
         else:
             for pool in self.ex_list_floating_ip_pools():
