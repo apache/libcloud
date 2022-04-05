@@ -1,8 +1,17 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development
------------------------------------------
+Changes in Apache Libcloud 3.5.1
+--------------------------------
+
+Common
+~~~~~~
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
 
 Compute
 ~~~~~~~
@@ -26,12 +35,6 @@ Common
   If you still want to use Libcloud with Python 3.5, you should use an older
   release which still supports Python 3.5.
   (GITHUB-1620)
-
-- Update code which retries failed HTTP requests to also retry failed "raw"
-  requests and make sure we also wrap and retry piece of code where Response
-  class is instantiated and exceptions can be thrown.
-  [Daniel Draper - @Germandrummer92]
-  (GITHUB-1592)
 
 - Update AWS error response parsing code so it also correctly handles error XML
   responses without a namespace in the response body.
