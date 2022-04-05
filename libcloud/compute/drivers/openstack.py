@@ -3630,7 +3630,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``list`` of :class:`OpenStack_2_PortInterface`
         """
-        response = self.network_connection.request(
+        response = self.connection.request(
             "/servers/%s/os-interface" % node.id, method="GET"
         )
         ports = []
