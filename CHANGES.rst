@@ -1,6 +1,20 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Error in volume api calls if microversion is set in OpenStack.
+  In previous version if `ex_force_microversion` is set, it is assumed to set
+  it to the compute service. Now if only a version is set `2.67`, compute
+  service is assumed but it can be also set the service name `volume 3.21`.
+
+  (GITHUB-1675)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.5.1
 --------------------------------
 
@@ -22,14 +36,6 @@ Compute
 
   (GITHUB-1661, GITHUB-1661)
   [Dimitris Galanis - @dimgal1]
-
-- [OpenStack] Error in volume api calls if microversion is set in OpenStack.
-  In previous version if `ex_force_microversion` is set, it is assumed to set
-  it to the compute service. Now if only a version is set `2.67`, compute
-  service is assumed but it can be also set the service name `volume 3.21`.
-
-  (GITHUB-1675)
-  [Miguel Caballer - @micafer]
 
 Changes in Apache Libcloud 3.5.0
 --------------------------------
