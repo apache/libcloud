@@ -3789,9 +3789,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         if method == "PUT":
-            self.assertEqual(
+            self.assertIn(
                 body,
-                '{"floatingip": {"port_id": "ce531f90-199f-48c0-816c-13e38010b442"}}',
+                [
+                    '{"floatingip": {"port_id": "ce531f90-199f-48c0-816c-13e38010b442"}}',
+                    '{"floatingip": {"port_id": null}}',
+                ],
             )
             body = ""
             return (

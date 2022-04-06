@@ -4458,6 +4458,35 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             # if there are no ports
             return False
 
+    def ex_detach_floating_ip_from_node(self, node, ip):
+        """
+        Detach the floating IP from the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to remove
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        ip_id = None
+        if hasattr(ip, "id"):
+            ip_id = ip.id
+        else:
+            for pool in self.ex_list_floating_ip_pools():
+                fip = pool.get_floating_ip(ip)
+                if fip:
+                    ip_id = fip.id
+        if not ip_id:
+            return False
+        resp = self.network_connection.request(
+            "/v2.0/floatingips/%s" % ip_id,
+            method="PUT",
+            data={"floatingip": {"port_id": None}},
+        )
+        return resp.status == httplib.OK
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
