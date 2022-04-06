@@ -355,8 +355,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 raise LibcloudError("Invalid microversion format.")
 
             if self.service_type and self.service_type.startswith(service_type):
-                headers["OpenStack-API-Version"] = "%s %s" % (service_type,
-                                                              microversion)
+                headers["OpenStack-API-Version"] = "%s %s" % (
+                    service_type,
+                    microversion,
+                )
         return headers
 
     def morph_action_hook(self, action):
