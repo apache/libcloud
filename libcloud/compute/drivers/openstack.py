@@ -3635,7 +3635,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         ports = []
         for port in response.object["interfaceAttachments"]:
-            port['id'] = port.pop('port_id')
+            port["id"] = port.pop("port_id")
             ports.append(self._to_port(port))
         return ports
 
@@ -4457,6 +4457,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         else:
             # if there are no ports
             return False
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
