@@ -1,6 +1,16 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Fix error creating and getting node in OpenStack.
+  (GITHUB-1672)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.5.1
 --------------------------------
 
@@ -22,10 +32,6 @@ Compute
 
   (GITHUB-1661, GITHUB-1661)
   [Dimitris Galanis - @dimgal1]
-
-- [OpenStack] Fix error creating and getting node in OpenStack.
-  (GITHUB-1672)
-  [Miguel Caballer - @micafer]
 
 Changes in Apache Libcloud 3.5.0
 --------------------------------
