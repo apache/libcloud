@@ -7,8 +7,8 @@ Changes in Apache Libcloud in development
 Compute
 ~~~~~~~
 
-- [OpenStack] Fix error attaching a Floating IP to an OpenStack node does not
-  if `ex_force_microversion` is set with 2.44 or newer microversion.
+- [OpenStack] Fix error attaching/detaching a Floating IP to an OpenStack node
+  when `ex_force_microversion` is set with 2.44 or newer microversion.
 
   (GITHUB-1674)
   [Miguel Caballer - @micafer]
