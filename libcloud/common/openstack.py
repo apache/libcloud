@@ -352,7 +352,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 service_type = "compute"
                 microversion = microversion[0]
             else:
-                raise LibcloudError("Invalid microversion format.")
+                raise LibcloudError("Invalid microversion format: servicename X.XX")
 
             if self.service_type and self.service_type.startswith(service_type):
                 headers["OpenStack-API-Version"] = "%s %s" % (
