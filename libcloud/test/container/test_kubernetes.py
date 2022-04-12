@@ -19,6 +19,11 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.container.base import ContainerImage
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
+from libcloud.container.drivers.kubernetes import to_n_bytes
+from libcloud.container.drivers.kubernetes import to_cpu_str
+from libcloud.container.drivers.kubernetes import to_n_cpus
+from libcloud.container.drivers.kubernetes import to_memory_str
+from libcloud.container.drivers.kubernetes import sum_resources
 
 from libcloud.test.secrets import CONTAINER_PARAMS_KUBERNETES
 from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
@@ -143,6 +148,87 @@ class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCas
         for deployment in deployments:
             self.assertIsInstance(deployment.replicas, int)
             self.assertIsInstance(deployment.selector, dict)
+
+    def test_to_n_bytes(self):
+        memory = "0"
+        self.assertEqual(to_n_bytes(memory), 0)
+        memory = "1000Ki"
+        self.assertEqual(to_n_bytes(memory), 1_024_000)
+        memory = "100K"
+        self.assertEqual(to_n_bytes(memory), 100_000)
+        memory = "512Mi"
+        self.assertEqual(to_n_bytes(memory), 536_870_912)
+        memory = "900M"
+        self.assertEqual(to_n_bytes(memory), 900_000_000)
+        memory = "10Gi"
+        self.assertEqual(to_n_bytes(memory), 10_737_418_240)
+        memory = "10G"
+        self.assertEqual(to_n_bytes(memory), 10_000_000_000)
+
+    def test_to_memory_str(self):
+        memory = 0
+        self.assertEqual(to_memory_str(memory), "0K")
+        memory = 1_024_000
+        self.assertEqual(to_memory_str(memory), "1000Ki")
+        memory = 100_000
+        self.assertEqual(to_memory_str(memory), "100K")
+        memory = 536_870_912
+        self.assertEqual(to_memory_str(memory), "512Mi")
+        memory = 900_000_000
+        self.assertEqual(to_memory_str(memory), "900M")
+        memory = 10_737_418_240
+        self.assertEqual(to_memory_str(memory), "10Gi")
+        memory = 10_000_000_000
+        self.assertEqual(to_memory_str(memory), "10G")
+
+    def test_to_cpu_str(self):
+        cpu = 0
+        self.assertEqual(to_cpu_str(cpu), "0")
+        cpu = 0.5
+        self.assertEqual(to_cpu_str(cpu), "500m")
+        cpu = 2
+        self.assertEqual(to_cpu_str(cpu), "2000m")
+        cpu = 0.000001
+        self.assertEqual(to_cpu_str(cpu), "1u")
+        cpu = 0.0005
+        self.assertEqual(to_cpu_str(cpu), "500u")
+        cpu = 0.000000001
+        self.assertEqual(to_cpu_str(cpu), "1n")
+        cpu = 0.0000005
+        self.assertEqual(to_cpu_str(cpu), "500n")
+
+    def test_to_n_cpus(self):
+        cpu = "0m"
+        self.assertEqual(to_n_cpus(cpu), 0)
+        cpu = "2"
+        self.assertEqual(to_n_cpus(cpu), 2)
+        cpu = "500m"
+        self.assertEqual(to_n_cpus(cpu), 0.5)
+        cpu = "500m"
+        self.assertEqual(to_n_cpus(cpu), 0.5)
+        cpu = "2000m"
+        self.assertEqual(to_n_cpus(cpu), 2)
+        cpu = "1u"
+        self.assertEqual(to_n_cpus(cpu), 0.000001)
+        cpu = "500u"
+        self.assertEqual(to_n_cpus(cpu), 0.0005)
+        cpu = "1n"
+        self.assertEqual(to_n_cpus(cpu), 0.000000001)
+        cpu = "500n"
+        self.assertEqual(to_n_cpus(cpu), 0.0000005)
+
+    def test_sum_resources(self):
+        resource_1 = {"cpu": "1", "memory": "1000Mi"}
+        resource_2 = {"cpu": "2", "memory": "2000Mi"}
+        self.assertDictEqual(
+            sum_resources(resource_1, resource_2),
+            {"cpu": "3000m", "memory": "3000Mi"},
+        )
+        resource_3 = {"cpu": "1500m", "memory": "1Gi"}
+        self.assertDictEqual(
+            sum_resources(resource_1, resource_2, resource_3),
+            {"cpu": "4500m", "memory": "4024Mi"},
+        )
 
 
 class KubernetesMockHttp(MockHttp):

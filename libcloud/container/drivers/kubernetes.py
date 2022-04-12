@@ -128,7 +128,7 @@ def to_n_cpus(cpu_str: str) -> Union[int, float]:
         return 0
 
 
-def sum_resources(self, *resource_dicts):
+def sum_resources(*resource_dicts):
     total_cpu = 0
     total_memory = 0
     for rd in resource_dicts:
