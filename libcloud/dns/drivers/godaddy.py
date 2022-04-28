@@ -464,7 +464,7 @@ class GoDaddyDNSDriver(DNSDriver):
               extra=extra,
           )
         return zone
-    
+
     def _to_records(self, items, zone=None):
         records = []
 
