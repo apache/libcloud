@@ -1196,6 +1196,7 @@ class BaseS3StorageDriver(StorageDriver):
         extra = {"content_type": headers["content-type"]}
         if "etag" in headers:
             extra["etag"] = headers["etag"]
+
         meta_data = {}
 
         if "content-encoding" in headers:
