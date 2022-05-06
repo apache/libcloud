@@ -1447,6 +1447,13 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_details("does-not-exist")
         self.assertTrue(node is None)
 
+    def test_ex_get_node_details_microversion_2_47(self):
+        node_id = "12064247"
+        node = self.driver.ex_get_node_details(node_id)
+        self.assertEqual(node.id, "12064247")
+        self.assertEqual(node.name, "lc-test")
+        self.assertEqual(node.extra["flavor_details"]["vcpus"], 2)
+
     def test_ex_get_size(self):
         size_id = "7"
         size = self.driver.ex_get_size(size_id)
@@ -2774,6 +2781,16 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v1_1_slug_servers_12062(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_servers_12064.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v1_1_slug_servers_12064247(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_servers_12064247.json")
             return (
                 httplib.OK,
                 body,

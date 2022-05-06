@@ -1192,8 +1192,11 @@ class BaseS3StorageDriver(StorageDriver):
         return content_length
 
     def _headers_to_object(self, object_name, container, headers):
-        hash = headers["etag"].replace('"', "")
-        extra = {"content_type": headers["content-type"], "etag": headers["etag"]}
+        hash = headers.get("etag", "").replace('"', "")
+        extra = {"content_type": headers["content-type"]}
+        if "etag" in headers:
+            extra["etag"] = headers["etag"]
+
         meta_data = {}
 
         if "content-encoding" in headers:

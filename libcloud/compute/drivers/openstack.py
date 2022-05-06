@@ -2520,7 +2520,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 tenantId=api_node.get("tenant_id") or api_node["tenantId"],
                 userId=api_node.get("user_id", None),
                 imageId=image_id,
-                flavorId=api_node["flavor"]["id"],
+                flavorId=api_node.get("flavor", {}).get("id", None),
+                flavor_details=api_node.get("flavor", None),
                 uri=next(
                     link["href"] for link in api_node["links"] if link["rel"] == "self"
                 ),
