@@ -3802,6 +3802,25 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
+    def _v2_1337_v2_0_floatingips_09ea1784_2f81_46dc_8c91_244b4df75bde(
+        self, method, url, body, headers
+    ):
+        if method == "PUT":
+            self.assertIn(
+                body,
+                [
+                    '{"floatingip": {"port_id": "ce531f90-199f-48c0-816c-13e38010b442"}}',
+                    '{"floatingip": {"port_id": null}}',
+                ],
+            )
+            body = ""
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
     def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95(
         self, method, url, body, headers
     ):
@@ -3944,6 +3963,16 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ""
             return (
                 httplib.NO_CONTENT,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v2_1337_servers_4242_os_interface(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_servers_os_intefaces.json")
+            return (
+                httplib.OK,
                 body,
                 self.json_content_headers,
                 httplib.responses[httplib.OK],

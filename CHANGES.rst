@@ -7,6 +7,12 @@ Changes in Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- [OpenStack] Fix error attaching/detaching a Floating IP to an OpenStack node
+  when `ex_force_microversion` is set with 2.44 or newer microversion.
+
+  (GITHUB-1674)
+  [Miguel Caballer - @micafer]
+
 - [OpenStack] Error in volume api calls if microversion is set in OpenStack.
   In previous version if `ex_force_microversion` is set, it is assumed to set
   it to the compute service. Now if only a version is set `2.67`, compute

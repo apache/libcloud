@@ -3039,23 +3039,23 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             created=created,
             driver=self,
             extra=dict(
-                admin_state_up=element["admin_state_up"],
-                allowed_address_pairs=element["allowed_address_pairs"],
-                binding_vnic_type=element["binding:vnic_type"],
+                admin_state_up=element.get("admin_state_up"),
+                allowed_address_pairs=element.get("allowed_address_pairs"),
+                binding_vnic_type=element.get("binding:vnic_type"),
                 binding_host_id=element.get("binding:host_id", None),
-                device_id=element["device_id"],
+                device_id=element.get("device_id"),
                 description=element.get("description", None),
-                device_owner=element["device_owner"],
-                fixed_ips=element["fixed_ips"],
-                mac_address=element["mac_address"],
-                name=element["name"],
-                network_id=element["network_id"],
+                device_owner=element.get("device_owner"),
+                fixed_ips=element.get("fixed_ips"),
+                mac_address=element.get("mac_address"),
+                name=element.get("name"),
+                network_id=element.get("network_id"),
                 project_id=element.get("project_id", None),
                 port_security_enabled=element.get("port_security_enabled", None),
                 revision_number=element.get("revision_number", None),
-                security_groups=element["security_groups"],
+                security_groups=element.get("security_groups"),
                 tags=element.get("tags", None),
-                tenant_id=element["tenant_id"],
+                tenant_id=element.get("tenant_id"),
                 updated=updated,
             ),
         )
@@ -3622,6 +3622,23 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             "/v2.0/ports/{}".format(port.id), method="PUT", data=data
         )
         return self._to_port(response.object["port"])
+
+    def ex_get_node_ports(self, node):
+        """
+        Get the list of OpenStack_2_PortInterface interfaces from a Node.
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :rtype: ``list`` of :class:`OpenStack_2_PortInterface`
+        """
+        response = self.connection.request(
+            "/servers/%s/os-interface" % node.id, method="GET"
+        )
+        ports = []
+        for port in response.object["interfaceAttachments"]:
+            port["id"] = port.pop("port_id")
+            ports.append(self._to_port(port))
+        return ports
 
     def _get_volume_connection(self):
         """
@@ -4406,6 +4423,70 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             "/v2.0/floatingips/%s" % ip.id, method="DELETE"
         )
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
+    def ex_attach_floating_ip_to_node(self, node, ip):
+        """
+        Attach the floating IP to the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to attach
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        ip_id = None
+        if hasattr(ip, "id"):
+            ip_id = ip.id
+        else:
+            for pool in self.ex_list_floating_ip_pools():
+                fip = pool.get_floating_ip(ip)
+                if fip:
+                    ip_id = fip.id
+        if not ip_id:
+            return False
+        ports = self.ex_get_node_ports(node)
+        if ports:
+            # Set to the first node port
+            resp = self.network_connection.request(
+                "/v2.0/floatingips/%s" % ip_id,
+                method="PUT",
+                data={"floatingip": {"port_id": ports[0].id}},
+            )
+            return resp.status == httplib.OK
+        else:
+            # if there are no ports
+            return False
+
+    def ex_detach_floating_ip_from_node(self, node, ip):
+        """
+        Detach the floating IP from the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to remove
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        ip_id = None
+        if hasattr(ip, "id"):
+            ip_id = ip.id
+        else:
+            for pool in self.ex_list_floating_ip_pools():
+                fip = pool.get_floating_ip(ip)
+                if fip:
+                    ip_id = fip.id
+        if not ip_id:
+            return False
+        resp = self.network_connection.request(
+            "/v2.0/floatingips/%s" % ip_id,
+            method="PUT",
+            data={"floatingip": {"port_id": None}},
+        )
+        return resp.status == httplib.OK
 
 
 class OpenStack_1_1_FloatingIpPool(object):
