@@ -30,8 +30,10 @@ try:
     import paramiko
 
     have_paramiko = True
+
+    PARAMIKO_VERSION_TUPLE = tuple([int(x) for x in paramiko.__version__.split(".")])
 except ImportError:
-    pass
+    PARAMIKO_VERSION_TUPLE = []
 
 # Depending on your version of Paramiko, it may cause a deprecation
 # warning on Python 2.6.
@@ -415,7 +417,7 @@ class ParamikoSSHClient(BaseSSHClient):
             # / granular exception.
             # See https://www.paramiko.org/changelog.html for details.
             if (
-                tuple([int(x) for x in paramiko.__version__.split(".")]) >= (2, 9, 0)
+                PARAMIKO_VERSION_TUPLE >= (2, 9, 0)
                 and LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY
             ):
                 self.logger.warn(SHA2_PUBKEY_NOT_SUPPORTED_AUTH_ERROR_MSG)
