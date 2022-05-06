@@ -23,6 +23,17 @@ Compute
   (GITHUB-1661, GITHUB-1661)
   [Dimitris Galanis - @dimgal1]
 
+Storage
+~~~~~~~
+
+- [Google Storage] Fix public objects retrieval. In some scenarios, Google
+  doesn't return ``etag`` header in the response (e.g. for gzip content
+  encoding). The code has been updated to take this into account and not
+  throw if the header is not present.
+
+  (GITHUB-1682, GITHUB-1683)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
 Changes in Apache Libcloud 3.5.0
 --------------------------------
 
