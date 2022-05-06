@@ -75,12 +75,13 @@ LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY = LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY.lowe
     "1",
 ]
 
-SHA2_AUTH_ERROR_MSG = """
-Received auth error from the server, disabling SHA2 based pubkey algorithms
-for backward compatibility reasons and trying connecting again.
+SHA2_PUBKEY_NOT_SUPPORTED_AUTH_ERROR_MSG = """
+Received authentication error from the server. Disabling SHA-2 variants of RSA
+key verification algorithms for backward compatibility reasons and trying
+connecting again.
 
 You can disable this behavior by setting LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY
-environment variable to "false"
+environment variable to "false".
 """.strip()
 
 
@@ -403,15 +404,15 @@ class ParamikoSSHClient(BaseSSHClient):
         try:
             self.client.connect(**conninfo)
         except paramiko.ssh_exception.AuthenticationException as e:
-            # Special case to handle paramiko >= 2.9.0 which supports new SHA2
-            # based pub key algorithms which don't work with older OpenSSH
-            # server versions.
+            # Special case to handle paramiko >= 2.9.0 which supports new SHA-2
+            # based pub key verification algorithms which don't work with older
+            # OpenSSH server versions (e.g. default setup on Ubuntu 14.04).
             # See https://www.paramiko.org/changelog.html for details.
             if (
                 tuple([int(x) for x in paramiko.__version__.split(".")]) >= (2, 9, 0)
                 and LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY
             ):
-                self.logger.debug(SHA2_AUTH_ERROR_MSG)
+                self.logger.warn(SHA2_PUBKEY_NOT_SUPPORTED_AUTH_ERROR_MSG)
 
                 conninfo["disabled_algorithms"] = {
                     "pubkeys": ["rsa-sha2-256", "rsa-sha2-512"]
