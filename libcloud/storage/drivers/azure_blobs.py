@@ -204,35 +204,37 @@ class AzureBlobsConnection(AzureConnection):
 
 class AzureBlobsActiveDirectoryConnection(AzureActiveDirectoryConnection):
     """
-       Represents a single connection to Azure Blobs.
+    Represents a single connection to Azure Blobs.
 
-       The main Azure Blob Storage service uses a prefix in the hostname to
-       distinguish between accounts, e.g. ``theaccount.blob.core.windows.net``.
-       However, some custom deployments of the service, such as the Azurite
-       emulator, instead use a URL prefix such as ``/theaccount``. To support
-       these deployments, the parameter ``account_prefix`` must be set on the
-       connection. This is done by instantiating the driver with arguments such
-       as ``host='somewhere.tld'`` and ``key='theaccount'``. To specify a custom
-       host without an account prefix, e.g. to connect to Azure Government or
-       Azure China, the driver can be instantiated with the appropriate storage
-       endpoint suffix, e.g. ``host='blob.core.usgovcloudapi.net'`` and
-       ``key='theaccount'``.
+    The main Azure Blob Storage service uses a prefix in the hostname to
+    distinguish between accounts, e.g. ``theaccount.blob.core.windows.net``.
+    However, some custom deployments of the service, such as the Azurite
+    emulator, instead use a URL prefix such as ``/theaccount``. To support
+    these deployments, the parameter ``account_prefix`` must be set on the
+    connection. This is done by instantiating the driver with arguments such
+    as ``host='somewhere.tld'`` and ``key='theaccount'``. To specify a custom
+    host without an account prefix, e.g. to connect to Azure Government or
+    Azure China, the driver can be instantiated with the appropriate storage
+    endpoint suffix, e.g. ``host='blob.core.usgovcloudapi.net'`` and
+    ``key='theaccount'``.
 
-       This connection is similar to AzureBlobsConnection, but uses Azure Active
-       Directory to authenticate
+    This connection is similar to AzureBlobsConnection, but uses Azure Active
+    Directory to authenticate
 
-       :param account_prefix: Optional prefix identifying the storage account.
-                              Used when connecting to a custom deployment of the
-                              storage service like Azurite or IoT Edge Storage.
-       :type account_prefix: ``str``
-       """
+    :param account_prefix: Optional prefix identifying the storage account.
+                           Used when connecting to a custom deployment of the
+                           storage service like Azurite or IoT Edge Storage.
+    :type account_prefix: ``str``
+    """
 
     def __init__(self, *args, **kwargs):
         self.account_prefix = kwargs.pop("account_prefix", None)
         super(AzureBlobsActiveDirectoryConnection, self).__init__(*args, **kwargs)
 
     def morph_action_hook(self, action):
-        action = super(AzureBlobsActiveDirectoryConnection, self).morph_action_hook(action)
+        action = super(AzureBlobsActiveDirectoryConnection, self).morph_action_hook(
+            action
+        )
 
         if self.account_prefix is not None:
             action = "/%s%s" % (self.account_prefix, action)
@@ -260,7 +262,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         identity=None,
         auth_type=None,
         cloud_environment="default",
-        **kwargs
+        **kwargs,
     ):
         self._host = host
         self._tenant_id = tenant_id

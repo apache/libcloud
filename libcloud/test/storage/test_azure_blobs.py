@@ -36,7 +36,10 @@ from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver, AzureBlobsActiveDirectoryConnection
+from libcloud.storage.drivers.azure_blobs import (
+    AzureBlobsStorageDriver,
+    AzureBlobsActiveDirectoryConnection,
+)
 from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
 
 from libcloud.test import unittest
@@ -1022,24 +1025,28 @@ class AzureBlobsTests(unittest.TestCase):
 
     def test_storage_driver_azure_ad(self):
         AzureBlobsActiveDirectoryConnection.conn_class = AzureBlobsMockHttp
-        driver = self.driver_type(key="fakeaccount1",
-                                  secret="DEKjfhdakkdjfhei~",
-                                  tenant_id="77777777-7777-7777-7777-777777777777",
-                                  identity="55555555-5555-5555-5555-555555555555",
-                                  auth_type="azureAd",
-                                  secure=True)
+        driver = self.driver_type(
+            key="fakeaccount1",
+            secret="DEKjfhdakkdjfhei~",
+            tenant_id="77777777-7777-7777-7777-777777777777",
+            identity="55555555-5555-5555-5555-555555555555",
+            auth_type="azureAd",
+            secure=True,
+        )
         host = driver.connection.host
 
         self.assertEqual(host, "fakeaccount1.blob.core.windows.net")
 
     def test_get_azure_ad_object_success(self):
         AzureBlobsActiveDirectoryConnection.conn_class = AzureBlobsMockHttp
-        driver = self.driver_type(key="fakeaccount1",
-                                  secret="DEKjfhdakkdjfhei~",
-                                  tenant_id="77777777-7777-7777-7777-777777777777",
-                                  identity="55555555-5555-5555-5555-555555555555",
-                                  auth_type="azureAd",
-                                  secure=True)
+        driver = self.driver_type(
+            key="fakeaccount1",
+            secret="DEKjfhdakkdjfhei~",
+            tenant_id="77777777-7777-7777-7777-777777777777",
+            identity="55555555-5555-5555-5555-555555555555",
+            auth_type="azureAd",
+            secure=True,
+        )
         self.mock_response_klass.type = None
         container = driver.get_container(container_name="test_container200")
 

@@ -112,6 +112,7 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
     """
     Represents a single connection to Azure using Azure AD for Blob
     """
+
     conn_class = LibcloudConnection
     driver = AzureBaseDriver
     name = "Azure AD Auth"
@@ -130,7 +131,7 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         tenant_id=None,
         identity=None,
         cloud_environment="default",
-        **kwargs
+        **kwargs,
     ):
         super(AzureActiveDirectoryConnection, self).__init__(identity, secret, **kwargs)
         if isinstance(cloud_environment, basestring):
@@ -184,8 +185,19 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         self.get_client_credentials()
         return super(AzureActiveDirectoryConnection, self).connect(**kwargs)
 
-    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False, stream=False, json=None,
-                retry_failed=None, *kwargs):
+    def request(
+        self,
+        action,
+        params=None,
+        data=None,
+        headers=None,
+        method="GET",
+        raw=False,
+        stream=False,
+        json=None,
+        retry_failed=None,
+        *kwargs,
+    ):
 
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).
@@ -201,7 +213,7 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
             raw=raw,
             stream=stream,
             json=json,
-            retry_failed=retry_failed
+            retry_failed=retry_failed,
         )
 
 
