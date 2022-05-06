@@ -67,21 +67,24 @@ SUPPORTED_KEY_TYPES_URL = "https://libcloud.readthedocs.io/en/latest/compute/dep
 # algorithms aka the behavior is the same as with paramiko < 2.9.0.
 # In case users only talk to newer OpenSSH servers which support those
 # algorithms, they may want to disable this workaround.
-LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY = os.environ.get(
-    "LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY", "true"
+LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY = os.environ.get(
+    "LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY", "true"
 )
-LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY = LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY.lower() in [
-    "true",
-    "1",
-]
+LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY = (
+    LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY.lower()
+    in [
+        "true",
+        "1",
+    ]
+)
 
 SHA2_PUBKEY_NOT_SUPPORTED_AUTH_ERROR_MSG = """
 Received authentication error from the server. Disabling SHA-2 variants of RSA
-key verification algorithms for backward compatibility reasons and trying
+key verification algorithm for backward compatibility reasons and trying
 connecting again.
 
-You can disable this behavior by setting LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY
-environment variable to "false".
+You can disable this behavior by setting
+LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY environment variable to "false".
 """.strip()
 
 
@@ -404,13 +407,16 @@ class ParamikoSSHClient(BaseSSHClient):
         try:
             self.client.connect(**conninfo)
         except paramiko.ssh_exception.AuthenticationException as e:
-            # Special case to handle paramiko >= 2.9.0 which supports new SHA-2
-            # based pub key verification algorithms which don't work with older
-            # OpenSSH server versions (e.g. default setup on Ubuntu 14.04).
+            # Special case to handle paramiko >= 2.9.0 which supports SHA-2
+            # variants of the RSA key verification algorithm which don't work
+            # with older OpenSSH server versions (e.g. default setup on Ubuntu
+            # 14.04).
+            # Sadly there is no way for us to catch and retry on more specific
+            # / granular exception.
             # See https://www.paramiko.org/changelog.html for details.
             if (
                 tuple([int(x) for x in paramiko.__version__.split(".")]) >= (2, 9, 0)
-                and LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY
+                and LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY
             ):
                 self.logger.warn(SHA2_PUBKEY_NOT_SUPPORTED_AUTH_ERROR_MSG)
 

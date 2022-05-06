@@ -46,10 +46,12 @@ Compute
   disabled.
 
   This functionality can be disabled by setting
-  ``LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY``environment variable to ``false``.
+  ``LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY``environment variable to
+  ``false``.
 
-  For security reasons you are encouraged to do that in case you know you
-  won't be connecting to any old OpenSSH servers.
+  For security reasons (to prevent possible downgrade attacks and similar) you
+  are encouraged to do that in case you know you won't be connecting to any old
+  OpenSSH servers.
   [Tomaz Muraus]
 
 Storage
