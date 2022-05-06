@@ -60,6 +60,29 @@ __all__ = [
 
 SUPPORTED_KEY_TYPES_URL = "https://libcloud.readthedocs.io/en/latest/compute/deployment.html#supported-private-ssh-key-types"  # NOQA
 
+# Set it to False to disable backward compatibility mode when running
+# paramiko >= 2.9.0. In backward compatibility mode we try to disable newer
+# SHA-2 based public key algorithms in case server returns auth error. This
+# way it works correctly with older OpenSSH servers which don't support those
+# algorithms aka the behavior is the same as with paramiko < 2.9.0.
+# In case users only talk to newer OpenSSH servers which support those
+# algorithms, they may want to disable this workaround.
+LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY = os.environ.get(
+    "LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY", "true"
+)
+LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY = LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY.lower() in [
+    "true",
+    "1",
+]
+
+SHA2_AUTH_ERROR_MSG = """
+Received auth error from the server, disabling SHA2 based pubkey algorithms
+for backward compatibility reasons and trying connecting again.
+
+You can disable this behavior by setting LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY
+environment variable to "false"
+""".strip()
+
 
 class SSHCommandTimeoutError(Exception):
     """
@@ -377,7 +400,26 @@ class ParamikoSSHClient(BaseSSHClient):
 
         self.logger.debug("Connecting to server", extra=extra)
 
-        self.client.connect(**conninfo)
+        try:
+            self.client.connect(**conninfo)
+        except paramiko.ssh_exception.AuthenticationException as e:
+            # Special case to handle paramiko >= 2.9.0 which supports new SHA2
+            # based pub key algorithms which don't work with older OpenSSH
+            # server versions.
+            # See https://www.paramiko.org/changelog.html for details.
+            if (
+                tuple([int(x) for x in paramiko.__version__.split(".")]) >= (2, 9, 0)
+                and LIBCLOUD_PARAMIKO_SHA2_COMPATIBILITY
+            ):
+                self.logger.debug(SHA2_AUTH_ERROR_MSG)
+
+                conninfo["disabled_algorithms"] = {
+                    "pubkeys": ["rsa-sha2-256", "rsa-sha2-512"]
+                }
+                self.client.connect(**conninfo)
+            else:
+                raise e
+
         return True
 
     def put(self, path, contents=None, chmod=None, mode="w"):
