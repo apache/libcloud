@@ -343,9 +343,22 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         headers[AUTH_TOKEN_HEADER] = self.auth_token
         headers["Accept"] = self.accept_format
         if self._ex_force_microversion:
-            headers["OpenStack-API-Version"] = (
-                "compute %s" % self._ex_force_microversion
-            )
+            # If service not set in microversion, asume compute
+            microversion = self._ex_force_microversion.strip().split()
+            if len(microversion) == 2:
+                service_type = microversion[0]
+                microversion = microversion[1]
+            elif len(microversion) == 1:
+                service_type = "compute"
+                microversion = microversion[0]
+            else:
+                raise LibcloudError("Invalid microversion format: servicename X.XX")
+
+            if self.service_type and self.service_type.startswith(service_type):
+                headers["OpenStack-API-Version"] = "%s %s" % (
+                    service_type,
+                    microversion,
+                )
         return headers
 
     def morph_action_hook(self, action):
