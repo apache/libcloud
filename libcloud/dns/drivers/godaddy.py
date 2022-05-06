@@ -445,24 +445,15 @@ class GoDaddyDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, item):
-        if "expires" not in item:
-          zone = Zone(
-              id=item["domainId"],
-              domain=item["domain"],
-              type="master",
-              ttl=None,
-              driver=self,
-          )
-        if "expires" in item:
-          extra = {"expires": item["expires"]}
-          zone = Zone(
-              id=item["domainId"],
-              domain=item["domain"],
-              type="master",
-              ttl=None,
-              driver=self,
-              extra=extra,
-          )
+        extra = {"expires": item.get("expires", None)}
+        zone = Zone(
+            id=item["domainId"],
+            domain=item["domain"],
+            type="master",
+            ttl=None,
+            driver=self,
+            extra=extra,
+        )
         return zone
 
     def _to_records(self, items, zone=None):
