@@ -1,4 +1,4 @@
-﻿Changelog
+Changelog
 =========
 
 Changes in Apache Libcloud in development
@@ -14,6 +14,31 @@ Compute
 
   (GITHUB-1675)
   [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix error creating and getting node in OpenStack when
+  ex_force_microversion is set to a version newer than 2.47.
+
+  (GITHUB-1672)
+  [Miguel Caballer - @micafer]
+  
+Storage
+~~~~~~~
+
+- [Google Storage] Fix public objects retrieval. In some scenarios, Google
+  doesn't return ``etag`` header in the response (e.g. for gzip content
+  encoding). The code has been updated to take this into account and not
+  throw if the header is not present.
+
+  (GITHUB-1682, GITHUB-1683)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+DNS
+~~~
+
+- [GoDaddy] Fix ``list_zones()`` method so it doesn't throw if an item is
+  missing ``expires`` attribute.
+  (GITHUB-1681)
+  [Dave Grenier - @livegrenier]
 
 Changes in Apache Libcloud 3.5.1
 --------------------------------

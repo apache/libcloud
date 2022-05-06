@@ -28,7 +28,7 @@ def pytest_configure(config):
         print("Missing " + secrets_current)
         print("Maybe you forgot to copy it from -dist:")
         print("cp libcloud/test/secrets.py-dist libcloud/test/secrets.py")
-        pytest.exit("")
+        pytest.exit(reason="Secrets file missing")
 
     mtime_current = os.path.getmtime(secrets_current)
     mtime_dist = os.path.getmtime(secrets_dist)
@@ -39,4 +39,4 @@ def pytest_configure(config):
             "Please copy the new secrets.py-dist file over otherwise"
             + " tests might fail"
         )
-        pytest.exit("")
+        pytest.exit(reason="Secrets file out of date")
