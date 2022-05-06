@@ -1,6 +1,18 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Fix error creating and getting node in OpenStack when
+  ex_force_microversion is set to a version newer than 2.47.
+
+  (GITHUB-1672)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.5.1
 --------------------------------
 
