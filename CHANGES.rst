@@ -34,6 +34,14 @@ Storage
   (GITHUB-1682, GITHUB-1683)
   [Veith Röthlingshöfer - @RunOrVeith]
 
+DNS
+~~~
+
+- [GoDaddy] Fix ``list_zones()`` method so it doesn't throw if an item is
+  missing ``expires`` attribute.
+  (GITHUB-1681)
+  [Dave Grenier - @livegrenier]
+
 Changes in Apache Libcloud 3.5.0
 --------------------------------
 
