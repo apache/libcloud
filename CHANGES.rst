@@ -35,10 +35,10 @@ Compute
   with paramiko >= 2.9.0 and older OpenSSH server versions which doesn't
   support SHA-2 variants of RSA key verification algorithm.
 
-  paramiko v2.9.0 introduced a change to prefer SHA-2 based key verification
-  algorithm. With this version paramiko would fail to connect to older OpenSSH
-  servers which don't support this algorithm (e.g. default setup on Ubuntu
-  14.04) and throw authentication error.
+  paramiko v2.9.0 introduced a change to prefer SHA-2 variants of RSA key
+  verification algorithm. With this version paramiko would fail to connect
+  to older OpenSSH servers which don't support this algorithm (e.g. default
+  setup on Ubuntu 14.04) and throw authentication error.
 
   The code has been updated to be backward compatible. It first tries to
   connect to the server using default preferred algorithm values and in case
