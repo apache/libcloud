@@ -1081,6 +1081,43 @@ class ConnectionUserAndKey(ConnectionKey):
         self.user_id = user_id
 
 
+class ConnectionUserPasswordAndKey(ConnectionKey):
+    """
+    Base connection class which accepts a ``user_id``, ``password`` and ``key`` argument.
+    """
+
+    user_id = None  # type: int
+    password = None  # type: str
+
+    def __init__(
+        self,
+        user_id,
+        password,
+        key,
+        secure=True,
+        host=None,
+        port=None,
+        url=None,
+        timeout=None,
+        proxy_url=None,
+        backoff=None,
+        retry_delay=None,
+    ):
+        super(ConnectionUserPasswordAndKey, self).__init__(
+            key,
+            secure=secure,
+            host=host,
+            port=port,
+            url=url,
+            timeout=timeout,
+            backoff=backoff,
+            retry_delay=retry_delay,
+            proxy_url=proxy_url,
+        )
+        self.user_id = user_id
+        self.password = password
+
+
 class BaseDriver(object):
     """
     Base driver class from which other classes can inherit from.
