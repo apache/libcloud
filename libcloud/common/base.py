@@ -46,6 +46,7 @@ __all__ = [
     "PollingConnection",
     "ConnectionKey",
     "ConnectionUserAndKey",
+    "ConnectionUserPasswordAndKey",
     "CertificateConnection",
     "Response",
     "HTTPResponse",
