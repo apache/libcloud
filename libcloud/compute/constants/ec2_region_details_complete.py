@@ -15,6 +15,14 @@
 # limitations under the License.
 
 REGION_DETAILS = {
+    "af-south-1": {
+        "api_name": "ec2_af_south",
+        "country": "South Africa",
+        "endpoint": "ec2.af-south-1.amazonaws.com",
+        "id": "af-south-1",
+        "instance_types": [],
+        "signature_version": "4"
+    },
     "ap-east-1": {
         "api_name": "ec2_ap_east",
         "country": "Hong Kong",
@@ -163,9 +171,9 @@ REGION_DETAILS = {
             "t4g.small",
             "t4g.xlarge",
             "x1.16xlarge",
-            "x1.32xlarge",
+            "x1.32xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "ap-northeast-1": {
         "api_name": "ec2_ap_northeast",
@@ -564,9 +572,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "ap-northeast-2": {
         "api_name": "ec2_ap_northeast",
@@ -873,9 +881,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "ap-northeast-3": {
         "api_name": "ec2_ap_northeast",
@@ -883,7 +891,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.ap-northeast-3.amazonaws.com",
         "id": "ap-northeast-3",
         "instance_types": [],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "ap-south-1": {
         "api_name": "ec2_ap_south_1",
@@ -931,6 +939,16 @@ REGION_DETAILS = {
             "c5n.9xlarge",
             "c5n.large",
             "c5n.xlarge",
+            "c6a.12xlarge",
+            "c6a.16xlarge",
+            "c6a.24xlarge",
+            "c6a.2xlarge",
+            "c6a.32xlarge",
+            "c6a.48xlarge",
+            "c6a.4xlarge",
+            "c6a.8xlarge",
+            "c6a.large",
+            "c6a.xlarge",
             "c6g.12xlarge",
             "c6g.16xlarge",
             "c6g.2xlarge",
@@ -1193,14 +1211,21 @@ REGION_DETAILS = {
             "x2idn.16xlarge",
             "x2idn.24xlarge",
             "x2idn.32xlarge",
+            "x2iedn.16xlarge",
+            "x2iedn.24xlarge",
+            "x2iedn.2xlarge",
+            "x2iedn.32xlarge",
+            "x2iedn.4xlarge",
+            "x2iedn.8xlarge",
+            "x2iedn.xlarge",
             "z1d.12xlarge",
             "z1d.2xlarge",
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "ap-southeast-1": {
         "api_name": "ec2_ap_southeast",
@@ -1593,9 +1618,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "ap-southeast-2": {
         "api_name": "ec2_ap_southeast_2",
@@ -1951,9 +1976,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "ca-central-1": {
         "api_name": "ec2_ca_central_1",
@@ -2228,9 +2253,9 @@ REGION_DETAILS = {
             "x1e.32xlarge",
             "x1e.4xlarge",
             "x1e.8xlarge",
-            "x1e.xlarge",
+            "x1e.xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "cn-north-1": {
         "api_name": "ec2_cn_north",
@@ -2238,7 +2263,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.cn-north-1.amazonaws.com.cn",
         "id": "cn-north-1",
         "instance_types": [],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "cn-northwest-1": {
         "api_name": "ec2_cn_northwest",
@@ -2246,7 +2271,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.cn-northwest-1.amazonaws.com.cn",
         "id": "cn-northwest-1",
         "instance_types": [],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "eu-central-1": {
         "api_name": "ec2_eu_central",
@@ -2307,6 +2332,16 @@ REGION_DETAILS = {
             "c5n.9xlarge",
             "c5n.large",
             "c5n.xlarge",
+            "c6a.12xlarge",
+            "c6a.16xlarge",
+            "c6a.24xlarge",
+            "c6a.2xlarge",
+            "c6a.32xlarge",
+            "c6a.48xlarge",
+            "c6a.4xlarge",
+            "c6a.8xlarge",
+            "c6a.large",
+            "c6a.xlarge",
             "c6g.12xlarge",
             "c6g.16xlarge",
             "c6g.2xlarge",
@@ -2445,6 +2480,16 @@ REGION_DETAILS = {
             "m5zn.6xlarge",
             "m5zn.large",
             "m5zn.xlarge",
+            "m6a.12xlarge",
+            "m6a.16xlarge",
+            "m6a.24xlarge",
+            "m6a.2xlarge",
+            "m6a.32xlarge",
+            "m6a.48xlarge",
+            "m6a.4xlarge",
+            "m6a.8xlarge",
+            "m6a.large",
+            "m6a.xlarge",
             "m6g.12xlarge",
             "m6g.16xlarge",
             "m6g.2xlarge",
@@ -2616,9 +2661,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "eu-north-1": {
         "api_name": "ec2_eu_north_stockholm",
@@ -2778,9 +2823,9 @@ REGION_DETAILS = {
             "t4g.small",
             "t4g.xlarge",
             "u-6tb1.112xlarge",
-            "u-6tb1.56xlarge",
+            "u-6tb1.56xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "eu-south-1": {
         "api_name": "ec2_eu_south",
@@ -2956,9 +3001,9 @@ REGION_DETAILS = {
             "t4g.xlarge",
             "u-3tb1.56xlarge",
             "u-6tb1.112xlarge",
-            "u-6tb1.56xlarge",
+            "u-6tb1.56xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "eu-west-1": {
         "api_name": "ec2_eu_west",
@@ -3131,6 +3176,13 @@ REGION_DETAILS = {
             "i3en.6xlarge",
             "i3en.large",
             "i3en.xlarge",
+            "i4i.16xlarge",
+            "i4i.2xlarge",
+            "i4i.32xlarge",
+            "i4i.4xlarge",
+            "i4i.8xlarge",
+            "i4i.large",
+            "i4i.xlarge",
             "im4gn.16xlarge",
             "im4gn.2xlarge",
             "im4gn.4xlarge",
@@ -3426,9 +3478,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "eu-west-2": {
         "api_name": "ec2_eu_west_london",
@@ -3719,9 +3771,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "eu-west-3": {
         "api_name": "ec2_eu_west_paris",
@@ -3971,9 +4023,9 @@ REGION_DETAILS = {
             "u-6tb1.112xlarge",
             "u-6tb1.56xlarge",
             "x1.16xlarge",
-            "x1.32xlarge",
+            "x1.32xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "sa-east-1": {
         "api_name": "ec2_sa_east",
@@ -4220,6 +4272,14 @@ REGION_DETAILS = {
             "r6g.large",
             "r6g.medium",
             "r6g.xlarge",
+            "r6gd.12xlarge",
+            "r6gd.16xlarge",
+            "r6gd.2xlarge",
+            "r6gd.4xlarge",
+            "r6gd.8xlarge",
+            "r6gd.large",
+            "r6gd.medium",
+            "r6gd.xlarge",
             "r6i.12xlarge",
             "r6i.16xlarge",
             "r6i.24xlarge",
@@ -4265,9 +4325,9 @@ REGION_DETAILS = {
             "x1e.32xlarge",
             "x1e.4xlarge",
             "x1e.8xlarge",
-            "x1e.xlarge",
+            "x1e.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "us-east-1": {
         "api_name": "ec2_us_east",
@@ -4446,6 +4506,13 @@ REGION_DETAILS = {
             "i3en.6xlarge",
             "i3en.large",
             "i3en.xlarge",
+            "i4i.16xlarge",
+            "i4i.2xlarge",
+            "i4i.32xlarge",
+            "i4i.4xlarge",
+            "i4i.8xlarge",
+            "i4i.large",
+            "i4i.xlarge",
             "im4gn.16xlarge",
             "im4gn.2xlarge",
             "im4gn.4xlarge",
@@ -4741,9 +4808,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "us-east-2": {
         "api_name": "ec2_us_east_ohio",
@@ -4799,6 +4866,16 @@ REGION_DETAILS = {
             "c5n.9xlarge",
             "c5n.large",
             "c5n.xlarge",
+            "c6a.12xlarge",
+            "c6a.16xlarge",
+            "c6a.24xlarge",
+            "c6a.2xlarge",
+            "c6a.32xlarge",
+            "c6a.48xlarge",
+            "c6a.4xlarge",
+            "c6a.8xlarge",
+            "c6a.large",
+            "c6a.xlarge",
             "c6g.12xlarge",
             "c6g.16xlarge",
             "c6g.2xlarge",
@@ -4878,6 +4955,13 @@ REGION_DETAILS = {
             "i3en.6xlarge",
             "i3en.large",
             "i3en.xlarge",
+            "i4i.16xlarge",
+            "i4i.2xlarge",
+            "i4i.32xlarge",
+            "i4i.4xlarge",
+            "i4i.8xlarge",
+            "i4i.large",
+            "i4i.xlarge",
             "im4gn.16xlarge",
             "im4gn.2xlarge",
             "im4gn.4xlarge",
@@ -4954,6 +5038,16 @@ REGION_DETAILS = {
             "m5zn.6xlarge",
             "m5zn.large",
             "m5zn.xlarge",
+            "m6a.12xlarge",
+            "m6a.16xlarge",
+            "m6a.24xlarge",
+            "m6a.2xlarge",
+            "m6a.32xlarge",
+            "m6a.48xlarge",
+            "m6a.4xlarge",
+            "m6a.8xlarge",
+            "m6a.large",
+            "m6a.xlarge",
             "m6g.12xlarge",
             "m6g.16xlarge",
             "m6g.2xlarge",
@@ -5124,6 +5218,9 @@ REGION_DETAILS = {
             "x2gd.large",
             "x2gd.medium",
             "x2gd.xlarge",
+            "x2idn.16xlarge",
+            "x2idn.24xlarge",
+            "x2idn.32xlarge",
             "x2iedn.16xlarge",
             "x2iedn.24xlarge",
             "x2iedn.2xlarge",
@@ -5136,9 +5233,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "4",
+        "signature_version": "4"
     },
     "us-gov-west-1": {
         "api_name": "ec2_us_govwest",
@@ -5146,7 +5243,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.us-gov-west-1.amazonaws.com",
         "id": "us-gov-west-1",
         "instance_types": [],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "us-west-1": {
         "api_name": "ec2_us_west",
@@ -5456,9 +5553,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
+        "signature_version": "2"
     },
     "us-west-2": {
         "api_name": "ec2_us_west_oregon",
@@ -5637,6 +5734,13 @@ REGION_DETAILS = {
             "i3en.6xlarge",
             "i3en.large",
             "i3en.xlarge",
+            "i4i.16xlarge",
+            "i4i.2xlarge",
+            "i4i.32xlarge",
+            "i4i.4xlarge",
+            "i4i.8xlarge",
+            "i4i.large",
+            "i4i.xlarge",
             "im4gn.16xlarge",
             "im4gn.2xlarge",
             "im4gn.4xlarge",
@@ -5912,6 +6016,9 @@ REGION_DETAILS = {
             "x2gd.large",
             "x2gd.medium",
             "x2gd.xlarge",
+            "x2idn.16xlarge",
+            "x2idn.24xlarge",
+            "x2idn.32xlarge",
             "x2iedn.16xlarge",
             "x2iedn.24xlarge",
             "x2iedn.2xlarge",
@@ -5929,8 +6036,8 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge",
+            "z1d.xlarge"
         ],
-        "signature_version": "2",
-    },
+        "signature_version": "2"
+    }
 }

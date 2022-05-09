@@ -93,6 +93,14 @@ REGION_DETAILS = {
         "country": "US",
         "signature_version": "2",
     },
+    # Africa
+    "af-south-1": {
+        "id": "af-south-1",
+        "endpoint": "ec2.af-south-1.amazonaws.com",
+        "api_name": "ec2_af_south",
+        "country": "South Africa",
+        "signature_version": "4",
+    },
     # EU
     "eu-west-1": {
         "id": "eu-west-1",
