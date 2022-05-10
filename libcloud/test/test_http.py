@@ -118,6 +118,7 @@ class HttpLayerTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.mock_server.shutdown()
+        cls.mock_server.socket.close()
         cls.mock_server_thread.join()
 
     def test_prepared_request_empty_body_chunked_encoding_not_used(self):
