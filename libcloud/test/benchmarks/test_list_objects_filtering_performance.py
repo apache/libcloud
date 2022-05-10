@@ -22,7 +22,7 @@ import string
 import tempfile
 
 import pytest
-import mock
+from unittest import mock
 
 from libcloud.storage.drivers.local import LocalStorageDriver
 

@@ -16,7 +16,7 @@
 import unittest
 import sys
 
-import mock
+from unittest import mock
 
 from libcloud.common.base import LazyObject, Response
 from libcloud.common.exceptions import BaseHTTPError, RateLimitReachedError

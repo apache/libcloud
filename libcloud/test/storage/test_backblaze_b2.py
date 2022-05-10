@@ -17,7 +17,7 @@ import os
 import sys
 import tempfile
 
-import mock
+from unittest import mock
 import json
 
 from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver

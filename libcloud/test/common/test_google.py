@@ -16,7 +16,7 @@
 Tests for Google Connection classes.
 """
 import datetime
-import mock
+from unittest import mock
 import os
 import sys
 import unittest

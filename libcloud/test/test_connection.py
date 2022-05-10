@@ -21,7 +21,7 @@ import sys
 from unittest import mock
 
 import requests_mock
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from requests.exceptions import ConnectTimeout
 
 import libcloud.common.base

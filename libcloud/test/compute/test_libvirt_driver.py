@@ -15,7 +15,7 @@
 
 import sys
 
-import mock
+from unittest import mock
 
 from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
 from libcloud.compute.drivers.libvirt_driver import have_libvirt
