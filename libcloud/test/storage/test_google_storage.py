@@ -15,7 +15,7 @@
 
 import copy
 import json
-import mock
+from unittest import mock
 import re
 import sys
 import unittest
@@ -24,8 +24,8 @@ from io import BytesIO
 
 import email.utils
 import pytest
-from mock import Mock
-from mock import PropertyMock
+from unittest.mock import Mock
+from unittest.mock import PropertyMock
 
 from libcloud.common.google import GoogleAuthType
 from libcloud.common.types import InvalidCredsError

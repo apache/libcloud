@@ -15,7 +15,7 @@
 
 import sys
 
-from mock import Mock
+from unittest.mock import Mock
 
 from libcloud.common.base import BaseDriver
 

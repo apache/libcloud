@@ -15,7 +15,7 @@
 import sys
 import json
 
-from mock import Mock, call
+from unittest.mock import Mock, call
 
 from libcloud.common.upcloud import (
     UpcloudCreateNodeRequestBody,

@@ -26,7 +26,7 @@ try:
 except ImportError:
     have_paramiko = False
 
-from mock import patch
+from unittest.mock import patch
 
 import libcloud
 from libcloud import _init_once

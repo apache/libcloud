@@ -116,8 +116,10 @@ class HttpLayerTestCase(unittest.TestCase):
         cls.mock_server_thread.start()
 
     @classmethod
-    def tearDownCls(cls):
-        cls.mock_server_thread.kill()
+    def tearDownClass(cls):
+        cls.mock_server.shutdown()
+        cls.mock_server.socket.close()
+        cls.mock_server_thread.join()
 
     def test_prepared_request_empty_body_chunked_encoding_not_used(self):
         connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)

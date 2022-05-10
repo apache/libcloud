@@ -32,7 +32,7 @@ from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import assertRaisesRegex
 
-from mock import patch, Mock, MagicMock, call
+from unittest.mock import patch, Mock, MagicMock, call
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA

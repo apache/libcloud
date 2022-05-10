@@ -26,7 +26,7 @@ Compute
 
   (GITHUB-1672)
   [Miguel Caballer - @micafer]
-  
+
 Storage
 ~~~~~~~
 
@@ -45,6 +45,15 @@ DNS
   missing ``expires`` attribute.
   (GITHUB-1681)
   [Dave Grenier - @livegrenier]
+
+Other
+~~~~~
+
+- Test code has been updated to utilize stdlib ``unittest.mock`` module instead
+  of 3rd party PyPi ``mock`` package.
+
+  (GITHUG-1684)
+  Reported by @pgajdos.
 
 Changes in Apache Libcloud 3.5.1
 --------------------------------
