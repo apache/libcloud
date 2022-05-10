@@ -18,7 +18,7 @@ import sys
 import functools
 from datetime import datetime
 
-import mock
+from unittest import mock
 
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.types import LibcloudError

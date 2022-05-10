@@ -17,7 +17,6 @@ dependencies installed:
 
 * ``tox`` (``pip install tox``) - you only need this library if you want to
   use tox to run the tests with all the supported Python versions
-* ``mock`` (``pip install mock``)
 * ``fasteners`` (``pip install fasteners``) - only used in the local storage
   driver
 * ``coverage`` (``pip install coverage``) - you only need this library if you

@@ -19,7 +19,7 @@ import os
 import sys
 import unittest
 import datetime
-import mock
+from unittest import mock
 import pytest
 
 from libcloud.utils.iso8601 import UTC
@@ -29,7 +29,7 @@ try:
 except ImportError:
     import json
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import requests_mock
 
 from libcloud.utils.py3 import httplib

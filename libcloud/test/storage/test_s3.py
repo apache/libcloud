@@ -21,9 +21,9 @@ import sys
 from io import BytesIO
 from hashlib import sha1
 
-import mock
-from mock import Mock
-from mock import PropertyMock
+from unittest import mock
+from unittest.mock import Mock
+from unittest.mock import PropertyMock
 import libcloud.utils.files  # NOQA: F401
 
 from libcloud.utils.py3 import ET
