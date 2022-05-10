@@ -27,6 +27,10 @@ Compute
   (GITHUB-1672)
   [Miguel Caballer - @micafer]
 
+- [EC2] Add support for new ``af-south-1`` region.
+  (GITHUB-1688)
+  [Balazs Baranyi - @balazsbaranyi]
+
 Storage
 ~~~~~~~
 
