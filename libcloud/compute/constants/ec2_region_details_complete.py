@@ -2727,6 +2727,7 @@ REGION_DETAILS = {
             "g4dn.4xlarge",
             "g4dn.8xlarge",
             "g4dn.xlarge",
+            "hpc6a.48xlarge",
             "i3.16xlarge",
             "i3.2xlarge",
             "i3.4xlarge",
