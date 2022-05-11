@@ -50,13 +50,6 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES = False
 
-    @classmethod
-    def tearDownClass(cls):
-        if "http_proxy" in os.environ:
-            del os.environ["http_proxy"]
-
-        libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES = False
-
     def test_parse_proxy_url(self):
         conn = LibcloudBaseConnection()
 
