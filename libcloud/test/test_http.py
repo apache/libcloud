@@ -115,11 +115,24 @@ class HttpLayerTestCase(unittest.TestCase):
         cls.mock_server_thread.setDaemon(True)
         cls.mock_server_thread.start()
 
+        cls.orig_http_proxy = os.environ.pop("http_proxy", None)
+        cls.orig_https_proxy = os.environ.pop("https_proxy", None)
+
     @classmethod
     def tearDownClass(cls):
         cls.mock_server.shutdown()
         cls.mock_server.server_close()
         cls.mock_server_thread.join()
+
+        if cls.orig_http_proxy:
+            os.environ["http_proxy"] = cls.orig_http_proxy
+        elif "http_proxy" in os.environ:
+            del os.environ["http_proxy"]
+
+        if cls.orig_https_proxy:
+            os.environ["https_proxy"] = cls.orig_https_proxy
+        elif "https_proxy" in os.environ:
+            del os.environ["https_proxy"]
 
     def test_prepared_request_empty_body_chunked_encoding_not_used(self):
         connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)
