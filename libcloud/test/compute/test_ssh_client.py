@@ -626,7 +626,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv.side_effect = ["🤦".encode("utf-32"), "a", "b"]
 
         stdout = client._consume_stdout(chan).getvalue()
-        self.assertEqual("\x00\x00&\x01\x00ab", stdout)
+        if sys.byteorder == "little":
+            self.assertEqual("\x00\x00&\x01\x00ab", stdout)
+        else:
+            self.assertEqual("\x00\x00\x00\x01&ab", stdout)
         self.assertEqual(len(stdout), 7)
 
     def test_consume_stderr_chunk_contains_non_utf8_character(self):
@@ -639,7 +642,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv_stderr.side_effect = ["🤦".encode("utf-32"), "a", "b"]
 
         stderr = client._consume_stderr(chan).getvalue()
-        self.assertEqual("\x00\x00&\x01\x00ab", stderr)
+        if sys.byteorder == "little":
+            self.assertEqual("\x00\x00&\x01\x00ab", stderr)
+        else:
+            self.assertEqual("\x00\x00\x00\x01&ab", stderr)
         self.assertEqual(len(stderr), 7)
 
     def test_keep_alive_and_compression(self):
