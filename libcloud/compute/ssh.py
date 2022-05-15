@@ -33,7 +33,7 @@ try:
 
     PARAMIKO_VERSION_TUPLE = tuple([int(x) for x in paramiko.__version__.split(".")])
 except ImportError:
-    PARAMIKO_VERSION_TUPLE = []
+    PARAMIKO_VERSION_TUPLE = ()
 
 # Depending on your version of Paramiko, it may cause a deprecation
 # warning on Python 2.6.
