@@ -71,14 +71,10 @@ SUPPORTED_KEY_TYPES_URL = "https://libcloud.readthedocs.io/en/latest/compute/dep
 # algorithms, they may want to disable this workaround.
 LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY = os.environ.get(
     "LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY", "true"
-)
-LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY = (
-    LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY.lower()
-    in [
-        "true",
-        "1",
-    ]
-)
+).lower() in [
+    "true",
+    "1",
+]
 
 SHA2_PUBKEY_NOT_SUPPORTED_AUTH_ERROR_MSG = """
 Received authentication error from the server. Disabling SHA-2 variants of RSA
