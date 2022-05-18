@@ -8957,6 +8957,7 @@ class GCENodeDriver(NodeDriver):
         :type   node_attrs: ``dict``
         """
         error = None
+        code = None
         try:
             response = self.connection.request(
                 status["disk_response"]["selfLink"]
@@ -9037,6 +9038,7 @@ class GCENodeDriver(NodeDriver):
         :type   node_attrs: ``dict``
         """
         error = None
+        code = None
         try:
             response = self.connection.request(
                 status["node_response"]["selfLink"]

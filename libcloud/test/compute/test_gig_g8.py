@@ -18,7 +18,7 @@ import base64
 import json
 import time
 
-import mock
+from unittest import mock
 
 from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp

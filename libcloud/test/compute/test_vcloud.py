@@ -45,7 +45,7 @@ from libcloud.compute.types import NodeState
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from mock import patch, mock_open
+from unittest.mock import patch, mock_open
 
 from libcloud.test.secrets import VCLOUD_PARAMS
 

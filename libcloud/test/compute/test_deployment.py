@@ -39,7 +39,7 @@ from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Ra
 
 from libcloud.test import MockHttp, XML_HEADERS
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from libcloud.test.secrets import RACKSPACE_PARAMS
 
