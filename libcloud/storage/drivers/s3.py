@@ -1193,7 +1193,12 @@ class BaseS3StorageDriver(StorageDriver):
 
     def _headers_to_object(self, object_name, container, headers):
         hash = headers.get("etag", "").replace('"', "")
-        extra = {"content_type": headers["content-type"]}
+
+        extra = {}
+
+        if "content-type" in headers:
+            extra["content_type"] = headers["content-type"]
+
         if "etag" in headers:
             extra["etag"] = headers["etag"]
 
