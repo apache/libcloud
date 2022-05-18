@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-from mock import patch
+from unittest.mock import patch
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import BaseHTTPError

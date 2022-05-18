@@ -19,10 +19,7 @@ import os
 import sys
 import unittest
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
+from unittest import mock
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib

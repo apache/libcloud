@@ -18,7 +18,7 @@ import sys
 import tempfile
 import datetime
 
-from mock import Mock
+from unittest.mock import Mock
 
 from libcloud import __version__
 from libcloud.test import unittest

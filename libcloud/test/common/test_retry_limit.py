@@ -16,7 +16,7 @@
 import socket
 import ssl
 
-from mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock
 
 from libcloud.utils.retry import TRANSIENT_SSL_ERROR
 from libcloud.common.base import Connection

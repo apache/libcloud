@@ -15,7 +15,7 @@
 import sys
 import unittest
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from libcloud.dns.base import Record, Zone
 from libcloud.dns.types import RecordType

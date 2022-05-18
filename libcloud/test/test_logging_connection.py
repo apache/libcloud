@@ -19,7 +19,7 @@ from io import StringIO
 import zlib
 import requests_mock
 
-import mock
+from unittest import mock
 
 import libcloud
 from libcloud.test import unittest

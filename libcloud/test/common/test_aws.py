@@ -17,7 +17,7 @@ import sys
 import unittest
 from datetime import datetime
 
-import mock
+from unittest import mock
 
 from libcloud.common.aws import AWSRequestSignerAlgorithmV4
 from libcloud.common.aws import SignedAWSConnection

@@ -141,7 +141,7 @@ class VoxelNodeDriver(NodeDriver):
 
     features = {"create_node": [], "list_sizes": ["variable_disk"]}
 
-    _initialize_instance_types()
+    _initialize_instance_types()  # pylint: disable=too-many-function-args
 
     def list_nodes(self):
         params = {"method": "voxel.devices.list"}

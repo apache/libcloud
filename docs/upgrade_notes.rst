@@ -5,6 +5,30 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.6.0
+--------------
+
+* Compatibility layer has been introduced for paramiko SSH based deployment
+  functionality.
+
+  paramiko v2.9.0 introduced a change to prefer SHA-2 variants of RSA key
+  verification algorithm (https://github.com/paramiko/paramiko/blob/2.9.0/sites/www/changelog.rst#changelog).
+  With this version paramiko would fail to connect to older OpenSSH
+  servers which don't support this algorithm (e.g. default setup on Ubuntu
+  14.04) and throw authentication error.
+
+  The code has been updated to be backward compatible. It first tries to
+  connect to the server using default preferred algorithm values and in case
+  that fails, it will fall back to the old approach with SHA-2 variants
+  disabled.
+
+  This functionality can be disabled by setting
+  ``LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY``environment variable to
+  ``false``.
+
+  For security reasons (to prevent possible downgrade attacks and similar) you
+  are encouraged to do that in case you know you won't be connecting to any old
+
 Libcloud 3.5.0
 --------------
 
