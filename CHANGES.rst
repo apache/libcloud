@@ -73,6 +73,16 @@ DNS
   (GITHUB-1681)
   [Dave Grenier - @livegrenier]
 
+Container
+~~~~~~~~~
+
+- [Kubernetes] Various improvements in the driver - implement list methods for
+  nodes, services, deployments, node/pod metrics, add more fields to Pods and
+  Containers, rename clusters to namespaces, add type annotations.
+
+  (GITHUB-1667)
+  [Dimitris Galanis - @dimgal1]
+
 Other
 ~~~~~
 
