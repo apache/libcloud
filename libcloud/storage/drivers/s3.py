@@ -1196,9 +1196,13 @@ class BaseS3StorageDriver(StorageDriver):
 
         extra = {}
 
+        # Not all the S3 compatible implementations return this header, see
+        # https://github.com/apache/libcloud/pull/1695 for details
         if "content-type" in headers:
             extra["content_type"] = headers["content-type"]
 
+        # Google Storage S3 compatible API doesn't return this header under
+        # some scenarios https://github.com/apache/libcloud/issues/1682
         if "etag" in headers:
             extra["etag"] = headers["etag"]
 
