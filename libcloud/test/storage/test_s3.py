@@ -112,6 +112,20 @@ class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         body = self.fixtures.load("list_container_objects.xml")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
+    def _test2_test_get_object_no_content_type(self, method, url, body, headers):
+        headers = {
+            "content-length": "12345",
+            "last-modified": "Thu, 13 Sep 2012 07:13:22 GMT",
+        }
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _test2_get_object_no_content_type(self, method, url, body, headers):
+        headers = {
+            "content-length": "12345",
+            "last-modified": "Thu, 13 Sep 2012 07:13:22 GMT",
+        }
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
     def _test2_test_get_object(self, method, url, body, headers):
         # test_get_object_success
         body = self.fixtures.load("list_containers.xml")
@@ -501,6 +515,18 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = "get_container"
         container = self.driver.get_container(container_name="test1")
         self.assertTrue(container.name, "test1")
+
+    def test_get_object_no_content_type_and_etag_in_response_headers(self):
+        self.mock_response_klass.type = "get_object_no_content_type"
+        obj = self.driver.get_object(container_name="test2", object_name="test")
+
+        self.assertEqual(obj.name, "test")
+        self.assertEqual(obj.container.name, "test2")
+        self.assertEqual(obj.size, 12345)
+        self.assertIsNone(obj.hash)
+        self.assertEqual(obj.extra["last_modified"], "Thu, 13 Sep 2012 07:13:22 GMT")
+        self.assertTrue("etag" not in obj.extra)
+        self.assertTrue("content_type" not in obj.extra)
 
     def test_get_object_cdn_url(self):
         self.mock_response_klass.type = "get_object"

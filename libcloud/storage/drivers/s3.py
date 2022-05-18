@@ -1232,7 +1232,7 @@ class BaseS3StorageDriver(StorageDriver):
         obj = Object(
             name=object_name,
             size=int(content_length),
-            hash=hash,
+            hash=hash or None,
             extra=extra,
             meta_data=meta_data,
             container=container,
