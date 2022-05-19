@@ -21,7 +21,7 @@ import sys
 from unittest import mock
 
 import requests_mock
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from requests.exceptions import ConnectTimeout
 
 import libcloud.common.base
@@ -40,20 +40,19 @@ from libcloud.utils.retry import RetryForeverOnRateLimitError
 
 class BaseConnectionClassTestCase(unittest.TestCase):
     def setUp(self):
-        self.orig_proxy = os.environ.pop("http_proxy", None)
+        self.orig_http_proxy = os.environ.pop("http_proxy", None)
+        self.orig_https_proxy = os.environ.pop("https_proxy", None)
 
     def tearDown(self):
-        if self.orig_proxy:
-            os.environ["http_proxy"] = self.orig_proxy
+        if self.orig_http_proxy:
+            os.environ["http_proxy"] = self.orig_http_proxy
         elif "http_proxy" in os.environ:
             del os.environ["http_proxy"]
 
-        libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES = False
-
-    @classmethod
-    def tearDownClass(cls):
-        if "http_proxy" in os.environ:
-            del os.environ["http_proxy"]
+        if self.orig_https_proxy:
+            os.environ["https_proxy"] = self.orig_https_proxy
+        elif "https_proxy" in os.environ:
+            del os.environ["https_proxy"]
 
         libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES = False
 

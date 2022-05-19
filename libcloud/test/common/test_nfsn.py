@@ -17,7 +17,7 @@ import string
 import sys
 import unittest
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from libcloud.common.nfsn import NFSNConnection
 from libcloud.test import LibcloudTestCase, MockHttp

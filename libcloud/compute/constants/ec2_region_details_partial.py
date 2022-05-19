@@ -15,6 +15,13 @@
 # limitations under the License.
 
 REGION_DETAILS = {
+    "af-south-1": {
+        "api_name": "ec2_af_south",
+        "country": "South Africa",
+        "endpoint": "ec2.af-south-1.amazonaws.com",
+        "id": "af-south-1",
+        "signature_version": "4",
+    },
     "ap-east-1": {
         "api_name": "ec2_ap_east",
         "country": "Hong Kong",

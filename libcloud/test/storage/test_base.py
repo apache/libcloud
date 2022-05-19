@@ -18,8 +18,8 @@ import hashlib
 import sys
 from io import BytesIO
 
-import mock
-from mock import Mock
+from unittest import mock
+from unittest.mock import Mock
 
 from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.storage.base import DEFAULT_CONTENT_TYPE

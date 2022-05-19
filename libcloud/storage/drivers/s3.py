@@ -1192,8 +1192,20 @@ class BaseS3StorageDriver(StorageDriver):
         return content_length
 
     def _headers_to_object(self, object_name, container, headers):
-        hash = headers["etag"].replace('"', "")
-        extra = {"content_type": headers["content-type"], "etag": headers["etag"]}
+        hash = headers.get("etag", "").replace('"', "")
+
+        extra = {}
+
+        # Not all the S3 compatible implementations return this header, see
+        # https://github.com/apache/libcloud/pull/1695 for details
+        if "content-type" in headers:
+            extra["content_type"] = headers["content-type"]
+
+        # Google Storage S3 compatible API doesn't return this header under
+        # some scenarios https://github.com/apache/libcloud/issues/1682
+        if "etag" in headers:
+            extra["etag"] = headers["etag"]
+
         meta_data = {}
 
         if "content-encoding" in headers:
@@ -1220,7 +1232,7 @@ class BaseS3StorageDriver(StorageDriver):
         obj = Object(
             name=object_name,
             size=int(content_length),
-            hash=hash,
+            hash=hash or None,
             extra=extra,
             meta_data=meta_data,
             container=container,

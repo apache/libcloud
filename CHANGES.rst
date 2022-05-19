@@ -1,5 +1,96 @@
-﻿Changelog
+Changelog
 =========
+
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Fix error attaching/detaching a Floating IP to an OpenStack node
+  when `ex_force_microversion` is set with 2.44 or newer microversion.
+
+  (GITHUB-1674)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Error in volume api calls if microversion is set in OpenStack.
+  In previous version if `ex_force_microversion` is set, it is assumed to set
+  it to the compute service. Now if only a version is set `2.67`, compute
+  service is assumed but it can be also set the service name `volume 3.21`.
+
+  (GITHUB-1675)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix error creating and getting node in OpenStack when
+  ex_force_microversion is set to a version newer than 2.47.
+
+  (GITHUB-1672)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Add support for new ``af-south-1`` region.
+  (GITHUB-1688)
+  [Balazs Baranyi - @balazsbaranyi]
+
+- [SSH] Update deploy node and ParamikoSSHClient related code so it works
+  with paramiko >= 2.9.0 and older OpenSSH server versions which doesn't
+  support SHA-2 variants of RSA key verification algorithm.
+
+  paramiko v2.9.0 introduced a change to prefer SHA-2 variants of RSA key
+  verification algorithm. With this version paramiko would fail to connect
+  to older OpenSSH servers which don't support this algorithm (e.g. default
+  setup on Ubuntu 14.04) and throw authentication error.
+
+  The code has been updated to be backward compatible. It first tries to
+  connect to the server using default preferred algorithm values and in case
+  this fails, it will fall back to the old approach with SHA-2 variants
+  disabled.
+
+  This functionality can be disabled by setting
+  ``LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY``environment variable to
+  ``false``.
+
+  For security reasons (to prevent possible downgrade attacks and similar) you
+  are encouraged to do that in case you know you won't be connecting to any old
+  OpenSSH servers.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- [Google Storage] Fix public objects retrieval. In some scenarios, Google
+  doesn't return ``etag`` header in the response (e.g. for gzip content
+  encoding). The code has been updated to take this into account and not
+  throw if the header is not present.
+
+  (GITHUB-1682, GITHUB-1683)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+DNS
+~~~
+
+- [GoDaddy] Fix ``list_zones()`` method so it doesn't throw if an item is
+  missing ``expires`` attribute.
+  (GITHUB-1681)
+  [Dave Grenier - @livegrenier]
+
+Container
+~~~~~~~~~
+
+- [Kubernetes] Various improvements in the driver - implement list methods for
+  nodes, services, deployments, node/pod metrics, add more fields to Pods and
+  Containers, rename clusters to namespaces, add type annotations.
+
+  (GITHUB-1667)
+  [Dimitris Galanis - @dimgal1]
+
+Other
+~~~~~
+
+- Test code has been updated to utilize stdlib ``unittest.mock`` module instead
+  of 3rd party PyPi ``mock`` package.
+
+  (GITHUG-1684)
+  Reported by @pgajdos.
 
 Changes in Apache Libcloud 3.5.1
 --------------------------------

@@ -19,7 +19,7 @@ import os
 import sys
 import unittest
 import datetime
-import mock
+from unittest import mock
 import pytest
 
 from libcloud.utils.iso8601 import UTC
@@ -29,7 +29,7 @@ try:
 except ImportError:
     import json
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import requests_mock
 
 from libcloud.utils.py3 import httplib
@@ -1447,6 +1447,13 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_get_node_details("does-not-exist")
         self.assertTrue(node is None)
 
+    def test_ex_get_node_details_microversion_2_47(self):
+        node_id = "12064247"
+        node = self.driver.ex_get_node_details(node_id)
+        self.assertEqual(node.id, "12064247")
+        self.assertEqual(node.name, "lc-test")
+        self.assertEqual(node.extra["flavor_details"]["vcpus"], 2)
+
     def test_ex_get_size(self):
         size_id = "7"
         size = self.driver.ex_get_size(size_id)
@@ -2781,6 +2788,16 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
+    def _v1_1_slug_servers_12064247(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_servers_12064247.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
     def _v1_1_slug_servers_12063_metadata(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_servers_12063_metadata_two_keys.json")
@@ -3785,6 +3802,25 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
+    def _v2_1337_v2_0_floatingips_09ea1784_2f81_46dc_8c91_244b4df75bde(
+        self, method, url, body, headers
+    ):
+        if method == "PUT":
+            self.assertIn(
+                body,
+                [
+                    '{"floatingip": {"port_id": "ce531f90-199f-48c0-816c-13e38010b442"}}',
+                    '{"floatingip": {"port_id": null}}',
+                ],
+            )
+            body = ""
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
     def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95(
         self, method, url, body, headers
     ):
@@ -3927,6 +3963,16 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ""
             return (
                 httplib.NO_CONTENT,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v2_1337_servers_4242_os_interface(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_servers_os_intefaces.json")
+            return (
+                httplib.OK,
                 body,
                 self.json_content_headers,
                 httplib.responses[httplib.OK],

@@ -220,7 +220,7 @@ class CloudStackDriverMixIn(object):
     def _sync_request(
         self, command, action=None, params=None, data=None, headers=None, method="GET"
     ):
-        return self.connection._sync_request(
+        return self.connection._sync_request(  # pylint: disable=maybe-no-member
             command=command,
             action=action,
             params=params,
@@ -239,7 +239,7 @@ class CloudStackDriverMixIn(object):
         method="GET",
         context=None,
     ):
-        return self.connection._async_request(
+        return self.connection._async_request(  # pylint: disable=maybe-no-member
             command=command,
             action=action,
             params=params,

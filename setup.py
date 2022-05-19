@@ -208,7 +208,6 @@ if setuptools_version < (36, 2):
         raise RuntimeError(msg)
 
 TEST_REQUIREMENTS = [
-    "mock",
     "requests_mock",
     "pytest",
     "pytest-runner",

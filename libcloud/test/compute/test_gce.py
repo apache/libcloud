@@ -17,7 +17,7 @@ Tests for Google Compute Engine Driver
 """
 
 import datetime
-import mock
+from unittest import mock
 import sys
 import unittest
 

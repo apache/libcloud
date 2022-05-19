@@ -1,0 +1,255 @@
+{
+  "kind": "PodMetricsList",
+  "apiVersion": "metrics.k8s.io/v1beta1",
+  "metadata": {
+    "selfLink": "/apis/metrics.k8s.io/v1beta1/pods"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "gke-metrics-agent-sfjzj",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/gke-metrics-agent-sfjzj",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:42Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "gke-metrics-agent",
+          "usage": {
+            "cpu": "704595n",
+            "memory": "24716Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "stackdriver-metadata-agent-cluster-level-849ff68b6d-fphxl",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/stackdriver-metadata-agent-cluster-level-849ff68b6d-fphxl",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:47Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "metadata-agent-nanny",
+          "usage": {
+            "cpu": "30081564n",
+            "memory": "7376Ki"
+          }
+        },
+        {
+          "name": "metadata-agent",
+          "usage": {
+            "cpu": "1435158n",
+            "memory": "20224Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "event-exporter-gke-67986489c8-g47rz",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/event-exporter-gke-67986489c8-g47rz",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:57Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "prometheus-to-sd-exporter",
+          "usage": {
+            "cpu": "36247n",
+            "memory": "7552Ki"
+          }
+        },
+        {
+          "name": "event-exporter",
+          "usage": {
+            "cpu": "21094n",
+            "memory": "8012Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "fluentbit-gke-ntfb8",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/fluentbit-gke-ntfb8",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:47Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "fluentbit",
+          "usage": {
+            "cpu": "1710930n",
+            "memory": "10424Ki"
+          }
+        },
+        {
+          "name": "fluentbit-gke",
+          "usage": {
+            "cpu": "511171n",
+            "memory": "12780Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "l7-default-backend-56cb9644f6-tx6xv",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/l7-default-backend-56cb9644f6-tx6xv",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:57Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "default-http-backend",
+          "usage": {
+            "cpu": "70131n",
+            "memory": "2752Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "kube-dns-autoscaler-844c9d9448-4h4th",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/kube-dns-autoscaler-844c9d9448-4h4th",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:50Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "autoscaler",
+          "usage": {
+            "cpu": "100385n",
+            "memory": "14604Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "pdcsi-node-k5h6d",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/pdcsi-node-k5h6d",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:49Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "csi-driver-registrar",
+          "usage": {
+            "cpu": "23137n",
+            "memory": "3964Ki"
+          }
+        },
+        {
+          "name": "gce-pd-driver",
+          "usage": {
+            "cpu": "33474n",
+            "memory": "4360Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "kube-proxy-gke-cluster-3-default-pool-76fd57f7-l83v",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/kube-proxy-gke-cluster-3-default-pool-76fd57f7-l83v",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:53Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "kube-proxy",
+          "usage": {
+            "cpu": "244320n",
+            "memory": "32760Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "kube-dns-6c7b8dc9f9-flm9k",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/kube-dns-6c7b8dc9f9-flm9k",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:50Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "dnsmasq",
+          "usage": {
+            "cpu": "166912n",
+            "memory": "4244Ki"
+          }
+        },
+        {
+          "name": "prometheus-to-sd",
+          "usage": {
+            "cpu": "10123n",
+            "memory": "8500Ki"
+          }
+        },
+        {
+          "name": "kubedns",
+          "usage": {
+            "cpu": "673332n",
+            "memory": "6632Ki"
+          }
+        },
+        {
+          "name": "sidecar",
+          "usage": {
+            "cpu": "682950n",
+            "memory": "5736Ki"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "metrics-server-v0.3.6-9c5bbf784-gqkx2",
+        "namespace": "kube-system",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods/metrics-server-v0.3.6-9c5bbf784-gqkx2",
+        "creationTimestamp": "2021-08-13T10:25:22Z"
+      },
+      "timestamp": "2021-08-13T10:24:53Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "metrics-server-nanny",
+          "usage": {
+            "cpu": "25366453n",
+            "memory": "7568Ki"
+          }
+        },
+        {
+          "name": "metrics-server",
+          "usage": {
+            "cpu": "215384n",
+            "memory": "14928Ki"
+          }
+        }
+      ]
+    }
+  ]
+}

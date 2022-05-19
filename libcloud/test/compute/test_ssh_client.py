@@ -32,15 +32,15 @@ from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import assertRaisesRegex
 
-from mock import patch, Mock, MagicMock, call
+from unittest.mock import patch, Mock, MagicMock, call
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA
-    paramiko_version = "0.0.0"
+    paramiko_version = ()
 else:
     import paramiko
 
-    paramiko_version = paramiko.__version__
+    paramiko_version = tuple([int(x) for x in paramiko.__version__.split(".")])
 
 
 @unittest.skipIf(not have_paramiko, "Skipping because paramiko is not available")
@@ -167,7 +167,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
     @patch("paramiko.SSHClient", Mock)
     @unittest.skipIf(
-        paramiko_version >= "2.7.0",
+        paramiko_version >= (2, 7, 0),
         "New versions of paramiko support OPENSSH key format",
     )
     def test_key_file_non_pem_format_error(self):
@@ -626,7 +626,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv.side_effect = ["🤦".encode("utf-32"), "a", "b"]
 
         stdout = client._consume_stdout(chan).getvalue()
-        self.assertEqual("\x00\x00&\x01\x00ab", stdout)
+        if sys.byteorder == "little":
+            self.assertEqual("\x00\x00&\x01\x00ab", stdout)
+        else:
+            self.assertEqual("\x00\x00\x00\x01&ab", stdout)
         self.assertEqual(len(stdout), 7)
 
     def test_consume_stderr_chunk_contains_non_utf8_character(self):
@@ -639,7 +642,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv_stderr.side_effect = ["🤦".encode("utf-32"), "a", "b"]
 
         stderr = client._consume_stderr(chan).getvalue()
-        self.assertEqual("\x00\x00&\x01\x00ab", stderr)
+        if sys.byteorder == "little":
+            self.assertEqual("\x00\x00&\x01\x00ab", stderr)
+        else:
+            self.assertEqual("\x00\x00\x00\x01&ab", stderr)
         self.assertEqual(len(stderr), 7)
 
     def test_keep_alive_and_compression(self):
