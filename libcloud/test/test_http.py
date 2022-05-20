@@ -34,7 +34,7 @@ from libcloud.utils.py3 import reload
 from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.http import LibcloudConnection
 
-from libcloud.test import unittest
+from libcloud.test import unittest, no_network
 
 ORIGINAL_CA_CERTS_PATH = libcloud.security.CA_CERTS_PATH
 
@@ -134,6 +134,7 @@ class HttpLayerTestCase(unittest.TestCase):
         elif "https_proxy" in os.environ:
             del os.environ["https_proxy"]
 
+    @unittest.skipIf(no_network(), "Network is disabled")
     def test_prepared_request_empty_body_chunked_encoding_not_used(self):
         connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)
         connection.prepared_request(
@@ -151,6 +152,7 @@ class HttpLayerTestCase(unittest.TestCase):
         self.assertEqual(connection.response.status_code, httplib.OK)
         self.assertEqual(connection.response.content, b"/test/prepared-request-2")
 
+    @unittest.skipIf(no_network(), "Network is disabled")
     def test_prepared_request_with_body(self):
         connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)
         connection.prepared_request(
@@ -160,6 +162,7 @@ class HttpLayerTestCase(unittest.TestCase):
         self.assertEqual(connection.response.status_code, httplib.OK)
         self.assertEqual(connection.response.content, b"/test/prepared-request-3")
 
+    @unittest.skipIf(no_network(), "Network is disabled")
     def test_request_custom_timeout_no_timeout(self):
         def response_hook(*args, **kwargs):
             # Assert timeout has been passed correctly
@@ -172,6 +175,7 @@ class HttpLayerTestCase(unittest.TestCase):
         )
         connection.request(method="GET", url="/test", hooks=hooks)
 
+    @unittest.skipIf(no_network(), "Network is disabled")
     def test_request_custom_timeout_timeout(self):
         def response_hook(*args, **kwargs):
             # Assert timeout has been passed correctly
