@@ -16,6 +16,7 @@
 import unittest
 import random
 import requests
+import os
 from libcloud.common.base import Response
 from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import PY2
@@ -284,6 +285,21 @@ def generate_random_data(size):
         data += value
         current_size += value_size
     return data
+
+
+def no_network():
+    """Return true if the NO_NETWORK environment variable is set.
+    Can be used to skip relevant tests.
+    """
+    return "NO_NETWORK" in os.environ
+
+
+def no_internet():
+    """Return true if the NO_INTERNET or the NO_NETWORK environment variable
+    is set.
+    Can be used to skip relevant tests.
+    """
+    return "NO_INTERNET" in os.environ or no_network()
 
 
 if __name__ == "__main__":
