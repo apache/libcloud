@@ -37674,6 +37674,12 @@
                 "us-east-2": 0.343,
                 "us-west-2": 0.343
             },
+            "i4i.metal": {
+                "eu-west-1": 12.109,
+                "us-east-1": 10.982,
+                "us-east-2": 10.982,
+                "us-west-2": 10.982
+            },
             "i4i.2xlarge": {
                 "eu-west-1": 0.757,
                 "us-east-1": 0.686,
@@ -44966,6 +44972,12 @@
                 "us-east-1": 1.007,
                 "us-east-2": 1.007,
                 "us-west-2": 1.007
+            },
+            "i4i.metal": {
+                "eu-west-1": 33.357,
+                "us-east-1": 32.23,
+                "us-east-2": 32.23,
+                "us-west-2": 32.23
             },
             "i4i.2xlarge": {
                 "eu-west-1": 2.085,
@@ -54330,5 +54342,5 @@
         }
     },
     "storage": {},
-    "updated": 1652641167
+    "updated": 1653245719
 }
