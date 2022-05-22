@@ -64,6 +64,7 @@ Connecting with Azure AD
 Create a service principal in the same tenant as your storage account.
 Once you have obtained your credentials you can instantiate the driver as shown
 below.
+
 .. literalinclude:: /examples/storage/azure/instantiate_azure_ad.py
    :language: python
 
