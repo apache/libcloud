@@ -65,6 +65,12 @@ Storage
   (GITHUB-1682, GITHUB-1683)
   [Veith Röthlingshöfer - @RunOrVeith]
 
+- [Azure Blobs] Add support for authenticating with Azure AD by passing
+  ``auth_type="azureAd"`` argument to the driver constructor.
+
+  (GITHUB-1663)
+  [Brooke White - @brookewhite9]
+
 DNS
 ~~~
 
