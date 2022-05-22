@@ -32,7 +32,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import LibcloudError
-from libcloud.common.azure import AzureConnection
+from libcloud.common.azure import AzureConnection, AzureActiveDirectoryConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerIsNotEmptyError
@@ -79,6 +79,10 @@ AZURE_STORAGE_CDN_URL_START_MINUTES = float(
 AZURE_STORAGE_CDN_URL_EXPIRY_HOURS = float(
     os.getenv("LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS", "24")
 )
+
+
+class AuthType(object):
+    AZURE_AD = "azureAD"
 
 
 class AzureBlobLease(object):
@@ -198,6 +202,48 @@ class AzureBlobsConnection(AzureConnection):
     API_VERSION = "2018-11-09"
 
 
+class AzureBlobsActiveDirectoryConnection(AzureActiveDirectoryConnection):
+    """
+    Represents a single connection to Azure Blobs.
+
+    The main Azure Blob Storage service uses a prefix in the hostname to
+    distinguish between accounts, e.g. ``theaccount.blob.core.windows.net``.
+    However, some custom deployments of the service, such as the Azurite
+    emulator, instead use a URL prefix such as ``/theaccount``. To support
+    these deployments, the parameter ``account_prefix`` must be set on the
+    connection. This is done by instantiating the driver with arguments such
+    as ``host='somewhere.tld'`` and ``key='theaccount'``. To specify a custom
+    host without an account prefix, e.g. to connect to Azure Government or
+    Azure China, the driver can be instantiated with the appropriate storage
+    endpoint suffix, e.g. ``host='blob.core.usgovcloudapi.net'`` and
+    ``key='theaccount'``.
+
+    This connection is similar to AzureBlobsConnection, but uses Azure Active
+    Directory to authenticate
+
+    :param account_prefix: Optional prefix identifying the storage account.
+                           Used when connecting to a custom deployment of the
+                           storage service like Azurite or IoT Edge Storage.
+    :type account_prefix: ``str``
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.account_prefix = kwargs.pop("account_prefix", None)
+        super(AzureBlobsActiveDirectoryConnection, self).__init__(*args, **kwargs)
+
+    def morph_action_hook(self, action):
+        action = super(AzureBlobsActiveDirectoryConnection, self).morph_action_hook(
+            action
+        )
+
+        if self.account_prefix is not None:
+            action = "/%s%s" % (self.account_prefix, action)
+
+        return action
+
+    API_VERSION = "2018-11-09"
+
+
 class AzureBlobsStorageDriver(StorageDriver):
     name = "Microsoft Azure (blobs)"
     website = "http://windows.azure.com/"
@@ -205,22 +251,49 @@ class AzureBlobsStorageDriver(StorageDriver):
     hash_type = "md5"
     supports_chunked_encoding = False
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        tenant_id=None,
+        identity=None,
+        auth_type=None,
+        cloud_environment="default",
+        **kwargs,
+    ):
         self._host = host
+        self._tenant_id = tenant_id
+        self._identity = identity
+        self._cloud_environment = cloud_environment
+        self._auth_type = auth_type
 
-        # B64decode() this key and keep it, so that we don't have to do
-        # so for every request. Minor performance improvement
-        secret = base64.b64decode(b(secret))
+        if self._auth_type == "azureAd":
+            self.connectionCls = AzureBlobsActiveDirectoryConnection
+        else:
+            # B64decode() this key and keep it, so that we don't have to do
+            # so for every request. Minor performance improvement
+            secret = base64.b64decode(b(secret))
 
         super(AzureBlobsStorageDriver, self).__init__(
             key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
         )
 
     def _ex_connection_class_kwargs(self):
+        kwargs = {}
+        # add tenant_id and identity if using azureAd auth
+        if self._auth_type == "azureAd":
+            kwargs["tenant_id"] = self._tenant_id
+            kwargs["identity"] = self._identity
+            kwargs["cloud_environment"] = self._cloud_environment
+
         # if the user didn't provide a custom host value, assume we're
         # targeting the default Azure Storage endpoints
         if self._host is None:
-            return {"host": "%s.%s" % (self.key, AZURE_STORAGE_HOST_SUFFIX)}
+            kwargs["host"] = "%s.%s" % (self.key, AZURE_STORAGE_HOST_SUFFIX)
+            return kwargs
 
         # connecting to a special storage region like Azure Government or
         # Azure China requires setting a custom storage endpoint but we
@@ -239,12 +312,15 @@ class AzureBlobsStorageDriver(StorageDriver):
         except StopIteration:
             pass
         else:
-            return {"host": "%s.%s" % (self.key, host_suffix)}
+            kwargs["host"] = "%s.%s" % (self.key, host_suffix)
+            return kwargs
 
         # if the host isn't targeting one of the special storage regions, it
         # must be pointing to Azurite or IoT Edge Storage so switch to prefix
         # identification
-        return {"account_prefix": self.key}
+        kwargs["account_prefix"] = self.key
+
+        return kwargs
 
     def _xml_to_container(self, node):
         """

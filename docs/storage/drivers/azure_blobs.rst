@@ -59,6 +59,15 @@ instantiate the driver as shown below.
 This instantiation strategy can also be adapted to connect to other self-hosted
 Azure Storage implementations such as `Azure Blob Storage on IoT Edge`_.
 
+Connecting with Azure AD
+------------------------------
+Create a service principal in the same tenant as your storage account.
+Once you have obtained your credentials you can instantiate the driver as shown
+below.
+
+.. literalinclude:: /examples/storage/azure/instantiate_azure_ad.py
+   :language: python
+
 .. _`General-purpose v2 accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#general-purpose-v2-accounts
 .. _`General-purpose v1 accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#general-purpose-v1-accounts
 .. _`BlockBlobStorage accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#blockblobstorage-accounts
