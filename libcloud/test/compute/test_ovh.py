@@ -26,6 +26,8 @@ from libcloud.test.common.test_ovh import BaseOvhMockHttp
 from libcloud.test.secrets import OVH_PARAMS
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+from libcloud.test import no_internet
+
 
 class OvhMockHttp(BaseOvhMockHttp):
     """Fixtures needed for tests related to rating model"""
@@ -211,6 +213,7 @@ class OvhTests(unittest.TestCase):
         driver = OvhNodeDriver(*OVH_PARAMS, region="ca")
         self.assertEqual(driver.connection.host, "ca.api.ovh.com")
 
+    @unittest.skipIf(no_internet(), "Internet is not reachable")
     def test_list_nodes_invalid_region(self):
         OvhNodeDriver.connectionCls.conn_class = LibcloudConnection
         driver = OvhNodeDriver(*OVH_PARAMS, region="invalid")

@@ -31,7 +31,7 @@ from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.http import LibcloudBaseConnection
 from libcloud.http import LibcloudConnection
 from libcloud.http import SignedHTTPSAdapter
-from libcloud.test import unittest
+from libcloud.test import unittest, no_internet
 from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.utils.retry import RETRY_EXCEPTIONS
 from libcloud.utils.retry import Retry
@@ -189,6 +189,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         conn = LibcloudConnection(host="localhost", port=8080, timeout=10)
         self.assertEqual(conn.session.timeout, 10)
 
+    @unittest.skipIf(no_internet(), "Internet is not reachable")
     def test_connection_timeout_raised(self):
         """
         Test that the connection times out
