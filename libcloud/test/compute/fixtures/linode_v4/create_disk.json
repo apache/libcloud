@@ -1,0 +1,9 @@
+{
+    "id": 1234,
+    "status": "not ready",
+    "label": "TestingDisk",
+    "created": "2020-10-09T17:21:32",
+    "updated": "2020-10-09T17:21:32",
+    "filesystem": "ext4",
+    "size": 5000
+}

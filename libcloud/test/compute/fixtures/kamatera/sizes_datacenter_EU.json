@@ -1,0 +1,26 @@
+[
+  {
+    "id": "small",
+    "ramMB": 4096,
+    "cpuCores": 2,
+    "cpuType": "B",
+    "diskSizeGB": 30,
+    "monthlyTrafficPackage": "t5000"
+  },
+  {
+    "id": "medium",
+    "ramMB": 8192,
+    "cpuCores": 4,
+    "cpuType": "B",
+    "diskSizeGB": 60,
+    "monthlyTrafficPackage": "t5000"
+  },
+  {
+    "id": "large",
+    "ramMB": 16384,
+    "cpuCores": 8,
+    "cpuType": "B",
+    "diskSizeGB": 100,
+    "monthlyTrafficPackage": "t5000"
+  }
+]

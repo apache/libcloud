@@ -1,0 +1,22 @@
+{
+  "kind": "NodeMetricsList",
+  "apiVersion": "metrics.k8s.io/v1beta1",
+  "metadata": {
+    "selfLink": "/apis/metrics.k8s.io/v1beta1/nodes"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "gke-cluster-3-default-pool-76fd57f7-l83v",
+        "selfLink": "/apis/metrics.k8s.io/v1beta1/nodes/gke-cluster-3-default-pool-76fd57f7-l83v",
+        "creationTimestamp": "2021-08-13T10:24:45Z"
+      },
+      "timestamp": "2021-08-13T10:24:26Z",
+      "window": "30s",
+      "usage": {
+        "cpu": "110691045n",
+        "memory": "801112Ki"
+      }
+    }
+  ]
+}

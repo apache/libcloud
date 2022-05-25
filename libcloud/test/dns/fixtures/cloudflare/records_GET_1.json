@@ -94,6 +94,26 @@
         "managed_by_apps": false,
         "managed_by_argo_tunnel": false
       }
+    },
+    {
+      "content": "aspmx3.googlemail.com",
+      "created_on": "2015-09-04T23:06:50.625895Z",
+      "id": "78526",
+      "locked": false,
+      "meta": {
+          "auto_added": true,
+          "managed_by_apps": false,
+          "managed_by_argo_tunnel": false
+      },
+      "modified_on": "2015-09-04T23:06:50.625895Z",
+      "name": "foo.bar",
+      "priority": 30,
+      "proxiable": false,
+      "proxied": false,
+      "ttl": 1,
+      "type": "MX",
+      "zone_id": "1234",
+      "zone_name": "foo.bar"
     }
   ],
   "result_info": {

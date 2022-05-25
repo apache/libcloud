@@ -54,16 +54,24 @@ class UpcloudCreateNodeRequestBody(object):
     :type ex_username: ``str``
     """
 
-    def __init__(self, name, size, image, location, auth=None,
-                 ex_hostname='localhost', ex_username='root'):
+    def __init__(
+        self,
+        name,
+        size,
+        image,
+        location,
+        auth=None,
+        ex_hostname="localhost",
+        ex_username="root",
+    ):
         self.body = {
-            'server': {
-                'title': name,
-                'hostname': ex_hostname,
-                'plan': size.id,
-                'zone': location.id,
-                'login_user': _LoginUser(ex_username, auth).to_dict(),
-                'storage_devices': _StorageDevice(image, size).to_dict()
+            "server": {
+                "title": name,
+                "hostname": ex_hostname,
+                "plan": size.id,
+                "zone": location.id,
+                "login_user": _LoginUser(ex_username, auth).to_dict(),
+                "storage_devices": _StorageDevice(image, size).to_dict(),
             }
         }
 
@@ -113,12 +121,12 @@ class UpcloudNodeDestroyer(object):
 
     def _do_destroy_node(self, node_id):
         state = self._operations.get_node_state(node_id)
-        if state == 'stopped':
+        if state == "stopped":
             self._operations.destroy_node(node_id)
             return True
-        elif state == 'error':
+        elif state == "error":
             return False
-        elif state == 'started':
+        elif state == "started":
             if not self._stop_called:
                 self._operations.stop_node(node_id)
                 self._stop_called = True
@@ -127,7 +135,7 @@ class UpcloudNodeDestroyer(object):
                 # not calling stop again
                 self._sleep()
             return self._do_destroy_node(node_id)
-        elif state == 'maintenance':
+        elif state == "maintenance":
             # Lets wait maintenace state to go away and retry destroy
             self._sleep()
             return self._do_destroy_node(node_id)
@@ -159,14 +167,10 @@ class UpcloudNodeOperations(object):
         :param  node_id: Id of the Node
         :type   node_id: ``int``
         """
-        body = {
-            'stop_server': {
-                'stop_type': 'hard'
-            }
-        }
-        self.connection.request('1.2/server/{0}/stop'.format(node_id),
-                                method='POST',
-                                data=json.dumps(body))
+        body = {"stop_server": {"stop_type": "hard"}}
+        self.connection.request(
+            "1.2/server/{0}/stop".format(node_id), method="POST", data=json.dumps(body)
+        )
 
     def get_node_state(self, node_id):
         """
@@ -178,10 +182,10 @@ class UpcloudNodeOperations(object):
         :rtype: ``str``
         """
 
-        action = '1.2/server/{0}'.format(node_id)
+        action = "1.2/server/{0}".format(node_id)
         try:
             response = self.connection.request(action)
-            return response.object['server']['state']
+            return response.object["server"]["state"]
         except BaseHTTPError as e:
             if e.code == 404:
                 return None
@@ -194,8 +198,7 @@ class UpcloudNodeOperations(object):
         :param  node_id: Id of the Node
         :type   node_id: ``int``
         """
-        self.connection.request('1.2/server/{0}'.format(node_id),
-                                method='DELETE')
+        self.connection.request("1.2/server/{0}".format(node_id), method="DELETE")
 
 
 class PlanPrice(object):
@@ -226,71 +229,60 @@ class PlanPrice(object):
         """
         if location is None:
             return None
-        server_plan_name = 'server_plan_' + plan_name
+        server_plan_name = "server_plan_" + plan_name
 
         for zone_price in self._zone_prices:
-            if zone_price['name'] == location.id:
-                return zone_price.get(server_plan_name, {}).get('price')
+            if zone_price["name"] == location.id:
+                return zone_price.get(server_plan_name, {}).get("price")
         return None
 
 
 class _LoginUser(object):
-
     def __init__(self, user_id, auth=None):
         self.user_id = user_id
         self.auth = auth
 
     def to_dict(self):
-        login_user = {'username': self.user_id}
+        login_user = {"username": self.user_id}
         if self.auth is not None:
-            login_user['ssh_keys'] = {
-                'ssh_key': [self.auth.pubkey]
-            }
+            login_user["ssh_keys"] = {"ssh_key": [self.auth.pubkey]}
         else:
-            login_user['create_password'] = 'yes'
+            login_user["create_password"] = "yes"
 
         return login_user
 
 
 class _StorageDevice(object):
-
     def __init__(self, image, size):
         self.image = image
         self.size = size
 
     def to_dict(self):
         extra = self.image.extra
-        if extra['type'] == 'template':
+        if extra["type"] == "template":
             return self._storage_device_for_template_image()
-        elif extra['type'] == 'cdrom':
+        elif extra["type"] == "cdrom":
             return self._storage_device_for_cdrom_image()
 
     def _storage_device_for_template_image(self):
-        hdd_device = {
-            'action': 'clone',
-            'storage': self.image.id
-        }
+        hdd_device = {"action": "clone", "storage": self.image.id}
         hdd_device.update(self._common_hdd_device())
-        return {'storage_device': [hdd_device]}
+        return {"storage_device": [hdd_device]}
 
     def _storage_device_for_cdrom_image(self):
-        hdd_device = {'action': 'create'}
+        hdd_device = {"action": "create"}
         hdd_device.update(self._common_hdd_device())
         storage_devices = {
-            'storage_device': [
+            "storage_device": [
                 hdd_device,
-                {
-                    'action': 'attach',
-                    'storage': self.image.id,
-                    'type': 'cdrom'
-                }
+                {"action": "attach", "storage": self.image.id, "type": "cdrom"},
             ]
         }
         return storage_devices
 
     def _common_hdd_device(self):
         return {
-            'title': self.image.name,
-            'size': self.size.disk,
-            'tier': self.size.extra.get('storage_tier', 'maxiops')
+            "title": self.image.name,
+            "size": self.size.disk,
+            "tier": self.size.extra.get("storage_tier", "maxiops"),
         }

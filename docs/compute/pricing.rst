@@ -37,6 +37,57 @@ JSON file (``data/pricing.json``) which is bundled with each release. This
 pricing data is only updated once you install a new release which means it
 could be out of date.
 
+Downloading latest pricing data from an S3 Bucket
+-------------------------------------------------
+
+Since July 2020, we now run a daily job as part of our CI/CD system which
+scrapes pricing data for various providers and publishes pricing data to a
+public read-only S3 bucket.
+
+Pricing file data is available at the following locations:
+
+* https://libcloud-pricing-data.s3.amazonaws.com/pricing.json
+* https://libcloud-pricing-data.s3.amazonaws.com/pricing.json.sha256
+* https://libcloud-pricing-data.s3.amazonaws.com/pricing.json.sha512
+
+First file contains the actual pricing JSON file and the second and third
+contain SHA 256 and SHA 512 sum of that file content.
+
+We are providing this service free of charge so it's important that you don't
+abuse it. This means you should not download this file more than once per day
+(it makes no sense to do it more often, since it only gets updated once per
+day if there are any changes) and you should utilize one of the caching
+approaches described below and only download ``pricing.json`` file when there
+are any changes / updates.
+
+You can use the content of the sha sum files to implement efficient file
+downloads and only download pricing.json file if the content has changed.
+
+You can do that by fetching the sha sum file, caching the sha sum and only
+downloading ``pricing.json`` file is the sha sum value has changed.
+
+An alternative to using the content of the sha sum file is caching the value
+of the ``ETag`` HTTP response header which you can retrieve by issuing HTTP
+``HEAD`` request against the ``pricing.json`` URL. HEAD request will only
+return the object metadata without the actual content.
+
+For example:
+
+.. sourcecode:: bash
+
+    curl --head https://libcloud-pricing-data.s3.amazonaws.com/pricing.json
+
+    HTTP/1.1 200 OK
+    x-amz-id-2: c8Mer3VtRYWGeKtKlbgwebn3BsVQt+Z/WKKPjk3NcsRSK23BzE6OQDIogzIR2oJGJRmOtS4ydjA=
+    x-amz-request-id: 9A790A3B3587478D
+    Date: Sat, 11 Jul 2020 16:01:39 GMT
+    Last-Modified: Sat, 11 Jul 2020 15:55:50 GMT
+    ETag: "e46324663d76dedafc7d9b09537b18a7"
+    Accept-Ranges: bytes
+    Content-Type: application/json
+    Content-Length: 549390
+    Server: AmazonS3
+
 .. _using-custom-pricing-file:
 
 Using a custom pricing file

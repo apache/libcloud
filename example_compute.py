@@ -21,17 +21,13 @@ from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 
 from typing import Type, cast
 
-ec2_cls = get_driver(Provider.EC2)
-rackspace_cls = get_driver(Provider.RACKSPACE)
+EC2 = get_driver(Provider.EC2)
+Rackspace = get_driver(Provider.RACKSPACE)
 
-# NOTE: If you are using driver methods which are not part of the standard API,
-# you need to explicitly cast the driver class reference to the correct class
-# for type checking to work correctly
-EC2 = cast(Type[EC2NodeDriver], ec2_cls)
-Rackspace = cast(Type[RackspaceNodeDriver], rackspace_cls)
-
-drivers = [EC2('access key id', 'secret key', region='us-east-1'),
-           Rackspace('username', 'api key', region='iad')]
+drivers = [
+    EC2("access key id", "secret key", region="us-east-1"),
+    Rackspace("username", "api key", region="iad"),
+]
 
 nodes = []
 for driver in drivers:
@@ -42,7 +38,7 @@ print(nodes)
 # <Node: provider=Rackspace, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
 
 # grab the node named "test"
-node = [n for n in nodes if n.name == 'test'][0]
+node = [n for n in nodes if n.name == "test"][0]
 
 # reboot "test"
 node.reboot()

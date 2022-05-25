@@ -1,0 +1,322 @@
+{
+    "items": [
+      {
+        "status": {
+          "startTime": "2019-12-08T13:34:37Z",
+          "conditions": [
+            {
+              "type": "Initialized",
+              "lastTransitionTime": "2019-12-08T13:34:37Z",
+              "lastProbeTime": null,
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "lastTransitionTime": "2019-12-08T13:34:44Z",
+              "lastProbeTime": null,
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "lastTransitionTime": "2019-12-08T13:34:44Z",
+              "lastProbeTime": null,
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "lastTransitionTime": "2019-12-08T13:34:37Z",
+              "lastProbeTime": null,
+              "status": "True"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageID": "docker-pullable://kubevirt/virt-launcher@sha256:eb68bf622cc5802f77d85587b414810fa7d4d7e0aeefc7ab1591b3b6efe8db3c",
+              "name": "compute",
+              "restartCount": 0,
+              "image": "sha256:73568f22b146ceff112103b53855fdb3ebdaea0a48988e3b0636a66fb3260a4a",
+              "lastState": {},
+              "started": true,
+              "state": {
+                "running": {
+                  "startedAt": "2019-12-08T13:34:38Z"
+                }
+              },
+              "containerID": "docker://aa579ffde24182bb934722bfb0d3de5fbfc27a03ae91c76a32230d8e8dec7d6b",
+              "ready": true
+            },
+            {
+              "imageID": "docker-pullable://kubevirt/cirros-registry-disk-demo@sha256:657bfaaea4720e494058da55b35b302065d384576d49fa17be32d10e8ddfe2e7",
+              "name": "volumecontainerdisk",
+              "restartCount": 0,
+              "image": "kubevirt/cirros-registry-disk-demo:latest",
+              "lastState": {},
+              "started": true,
+              "state": {
+                "running": {
+                  "startedAt": "2019-12-08T13:34:40Z"
+                }
+              },
+              "containerID": "docker://67a5b13cb5ad3a3bccde84e1388103018d6abd8cbec095c19ca1057b9c87c2c2",
+              "ready": true
+            }
+          ],
+          "qosClass": "Burstable",
+          "hostIP": "192.168.39.242",
+          "phase": "Running",
+          "podIP": "172.17.0.11",
+          "podIPs": [
+            {
+              "ip": "172.17.0.11"
+            }
+          ]
+        },
+        "metadata": {
+          "creationTimestamp": "2019-12-08T13:34:37Z",
+          "name": "virt-launcher-testvm-4sdfc",
+          "generateName": "virt-launcher-testvm-",
+          "ownerReferences": [
+            {
+              "apiVersion": "kubevirt.io/v1alpha3",
+              "name": "testvm",
+              "kind": "VirtualMachineInstance",
+              "blockOwnerDeletion": true,
+              "uid": "3909c8af-73b9-4797-b70d-1c06e0923101",
+              "controller": true
+            }
+          ],
+          "selfLink": "/api/v1/namespaces/default/pods/virt-launcher-testvm-4sdfc",
+          "uid": "633f0272-4550-4805-ac26-2d7b4d7d186a",
+          "labels": {
+            "kubevirt.io": "virt-launcher",
+            "kubevirt.io/size": "small",
+            "kubevirt.io/domain": "testvm",
+            "kubevirt.io/created-by": "3909c8af-73b9-4797-b70d-1c06e0923101"
+          },
+          "resourceVersion": "276430",
+          "annotations": {
+            "kubevirt.io/domain": "testvm"
+          },
+          "namespace": "default"
+        },
+        "spec": {
+          "enableServiceLinks": true,
+          "terminationGracePeriodSeconds": 60,
+          "securityContext": {
+            "seLinuxOptions": {
+              "type": "virt_launcher.process"
+            },
+            "runAsUser": 0
+          },
+          "volumes": [
+            {
+              "emptyDir": {},
+              "name": "infra-ready-mount"
+            },
+            {
+              "hostPath": {
+                "type": "",
+                "path": "/var/run/kubevirt"
+              },
+              "name": "virt-share-dir"
+            },
+            {
+              "hostPath": {
+                "type": "",
+                "path": "/var/lib/kubevirt/init/usr/bin"
+              },
+              "name": "virt-bin-share-dir"
+            },
+            {
+              "emptyDir": {},
+              "name": "libvirt-runtime"
+            },
+            {
+              "emptyDir": {},
+              "name": "ephemeral-disks"
+            },
+            {
+              "hostPath": {
+                "type": "",
+                "path": "/var/run/kubevirt/container-disks/3909c8af-73b9-4797-b70d-1c06e0923101"
+              },
+              "name": "container-disks"
+            }
+          ],
+          "automountServiceAccountToken": false,
+          "priority": 0,
+          "serviceAccountName": "default",
+          "serviceAccount": "default",
+          "hostname": "testvm",
+          "schedulerName": "default-scheduler",
+          "containers": [
+            {
+              "volumeMounts": [
+                {
+                  "mountPath": "/var/run/kubevirt-ephemeral-disks",
+                  "name": "ephemeral-disks"
+                },
+                {
+                  "mountPath": "/var/run/kubevirt/container-disks",
+                  "name": "container-disks",
+                  "mountPropagation": "HostToContainer"
+                },
+                {
+                  "mountPath": "/var/run/kubevirt",
+                  "name": "virt-share-dir"
+                },
+                {
+                  "mountPath": "/var/run/libvirt",
+                  "name": "libvirt-runtime"
+                },
+                {
+                  "mountPath": "/var/run/kubevirt-infra",
+                  "name": "infra-ready-mount"
+                }
+              ],
+              "name": "compute",
+              "imagePullPolicy": "IfNotPresent",
+              "command": [
+                "/usr/bin/virt-launcher",
+                "--qemu-timeout",
+                "5m",
+                "--name",
+                "testvm",
+                "--uid",
+                "3909c8af-73b9-4797-b70d-1c06e0923101",
+                "--namespace",
+                "default",
+                "--kubevirt-share-dir",
+                "/var/run/kubevirt",
+                "--ephemeral-disk-dir",
+                "/var/run/kubevirt-ephemeral-disks",
+                "--container-disk-dir",
+                "/var/run/kubevirt/container-disks",
+                "--readiness-file",
+                "/var/run/kubevirt-infra/healthy",
+                "--grace-period-seconds",
+                "45",
+                "--hook-sidecars",
+                "0",
+                "--less-pvc-space-toleration",
+                "10"
+              ],
+              "terminationMessagePath": "/dev/termination-log",
+              "image": "index.docker.io/kubevirt/virt-launcher@sha256:eb68bf622cc5802f77d85587b414810fa7d4d7e0aeefc7ab1591b3b6efe8db3c",
+              "securityContext": {
+                "privileged": false,
+                "runAsUser": 0,
+                "capabilities": {
+                  "add": [
+                    "NET_ADMIN",
+                    "SYS_NICE"
+                  ]
+                }
+              },
+              "terminationMessagePolicy": "File",
+              "resources": {
+                "limits": {
+                  "devices.kubevirt.io/tun": "1",
+                  "devices.kubevirt.io/vhost-net": "1",
+                  "devices.kubevirt.io/kvm": "1"
+                },
+                "requests": {
+                  "devices.kubevirt.io/tun": "1",
+                  "cpu": "100m",
+                  "memory": "225679432",
+                  "devices.kubevirt.io/vhost-net": "1",
+                  "devices.kubevirt.io/kvm": "1"
+                }
+              },
+              "readinessProbe": {
+                "timeoutSeconds": 5,
+                "failureThreshold": 5,
+                "successThreshold": 1,
+                "initialDelaySeconds": 4,
+                "exec": {
+                  "command": [
+                    "cat",
+                    "/var/run/kubevirt-infra/healthy"
+                  ]
+                },
+                "periodSeconds": 1
+              }
+            },
+            {
+              "volumeMounts": [
+                {
+                  "mountPath": "/var/run/kubevirt-ephemeral-disks/container-disk-data/3909c8af-73b9-4797-b70d-1c06e0923101",
+                  "name": "container-disks"
+                },
+                {
+                  "mountPath": "/usr/bin",
+                  "name": "virt-bin-share-dir"
+                }
+              ],
+              "name": "volumecontainerdisk",
+              "imagePullPolicy": "Always",
+              "command": [
+                "/usr/bin/container-disk"
+              ],
+              "args": [
+                "--copy-path",
+                "/var/run/kubevirt-ephemeral-disks/container-disk-data/3909c8af-73b9-4797-b70d-1c06e0923101/disk_0"
+              ],
+              "terminationMessagePath": "/dev/termination-log",
+              "image": "kubevirt/cirros-registry-disk-demo",
+              "terminationMessagePolicy": "File",
+              "resources": {
+                "limits": {
+                  "cpu": "100m",
+                  "memory": "40M"
+                },
+                "requests": {
+                  "cpu": "10m",
+                  "memory": "1M"
+                }
+              },
+              "readinessProbe": {
+                "timeoutSeconds": 1,
+                "failureThreshold": 5,
+                "successThreshold": 1,
+                "initialDelaySeconds": 1,
+                "exec": {
+                  "command": [
+                    "/usr/bin/container-disk",
+                    "--health-check"
+                  ]
+                },
+                "periodSeconds": 1
+              }
+            }
+          ],
+          "nodeSelector": {
+            "kubevirt.io/schedulable": "true"
+          },
+          "nodeName": "minikube",
+          "dnsPolicy": "ClusterFirst",
+          "tolerations": [
+            {
+              "operator": "Exists",
+              "tolerationSeconds": 300,
+              "effect": "NoExecute",
+              "key": "node.kubernetes.io/not-ready"
+            },
+            {
+              "operator": "Exists",
+              "tolerationSeconds": 300,
+              "effect": "NoExecute",
+              "key": "node.kubernetes.io/unreachable"
+            }
+          ],
+          "restartPolicy": "Never"
+        }
+      }
+    ],
+    "apiVersion": "v1",
+    "kind": "PodList",
+    "metadata": {
+      "resourceVersion": "277853",
+      "selfLink": "/api/v1/namespaces/default/pods"
+    }
+  }

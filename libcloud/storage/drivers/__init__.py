@@ -17,7 +17,4 @@
 Drivers for working with different providers
 """
 
-__all__ = [
-    'dummy',
-    'cloudfiles'
-]
+__all__ = ["dummy", "cloudfiles"]

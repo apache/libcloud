@@ -1,0 +1,679 @@
+{
+    "data": [
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.003,
+                        "monthly": 2.0
+                    }
+                }
+            },
+            "class": "nanode",
+            "disk": 25600,
+            "gpus": 0,
+            "id": "g6-nanode-1",
+            "label": "Nanode 1GB",
+            "memory": 1024,
+            "network_out": 1000,
+            "price": {
+                "hourly": 0.0075,
+                "monthly": 5.0
+            },
+            "successor": null,
+            "transfer": 1000,
+            "vcpus": 1
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.004,
+                        "monthly": 2.5
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 51200,
+            "gpus": 0,
+            "id": "g6-standard-1",
+            "label": "Linode 2GB",
+            "memory": 2048,
+            "network_out": 2000,
+            "price": {
+                "hourly": 0.015,
+                "monthly": 10.0
+            },
+            "successor": null,
+            "transfer": 2000,
+            "vcpus": 1
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.008,
+                        "monthly": 5.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 81920,
+            "gpus": 0,
+            "id": "g6-standard-2",
+            "label": "Linode 4GB",
+            "memory": 4096,
+            "network_out": 4000,
+            "price": {
+                "hourly": 0.03,
+                "monthly": 20.0
+            },
+            "successor": null,
+            "transfer": 4000,
+            "vcpus": 2
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.015,
+                        "monthly": 10.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 163840,
+            "gpus": 0,
+            "id": "g6-standard-4",
+            "label": "Linode 8GB",
+            "memory": 8192,
+            "network_out": 5000,
+            "price": {
+                "hourly": 0.06,
+                "monthly": 40.0
+            },
+            "successor": null,
+            "transfer": 5000,
+            "vcpus": 4
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.03,
+                        "monthly": 20.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 327680,
+            "gpus": 0,
+            "id": "g6-standard-6",
+            "label": "Linode 16GB",
+            "memory": 16384,
+            "network_out": 6000,
+            "price": {
+                "hourly": 0.12,
+                "monthly": 80.0
+            },
+            "successor": null,
+            "transfer": 8000,
+            "vcpus": 6
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.06,
+                        "monthly": 40.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 655360,
+            "gpus": 0,
+            "id": "g6-standard-8",
+            "label": "Linode 32GB",
+            "memory": 32768,
+            "network_out": 7000,
+            "price": {
+                "hourly": 0.24,
+                "monthly": 160.0
+            },
+            "successor": null,
+            "transfer": 16000,
+            "vcpus": 8
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.12,
+                        "monthly": 80.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 1310720,
+            "gpus": 0,
+            "id": "g6-standard-16",
+            "label": "Linode 64GB",
+            "memory": 65536,
+            "network_out": 9000,
+            "price": {
+                "hourly": 0.48,
+                "monthly": 320.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 16
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.18,
+                        "monthly": 120.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 1966080,
+            "gpus": 0,
+            "id": "g6-standard-20",
+            "label": "Linode 96GB",
+            "memory": 98304,
+            "network_out": 10000,
+            "price": {
+                "hourly": 0.72,
+                "monthly": 480.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 20
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.24,
+                        "monthly": 160.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 2621440,
+            "gpus": 0,
+            "id": "g6-standard-24",
+            "label": "Linode 128GB",
+            "memory": 131072,
+            "network_out": 11000,
+            "price": {
+                "hourly": 0.96,
+                "monthly": 640.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 24
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.36,
+                        "monthly": 240.0
+                    }
+                }
+            },
+            "class": "standard",
+            "disk": 3932160,
+            "gpus": 0,
+            "id": "g6-standard-32",
+            "label": "Linode 192GB",
+            "memory": 196608,
+            "network_out": 12000,
+            "price": {
+                "hourly": 1.44,
+                "monthly": 960.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 32
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.0075,
+                        "monthly": 5.0
+                    }
+                }
+            },
+            "class": "highmem",
+            "disk": 20480,
+            "gpus": 0,
+            "id": "g7-highmem-1",
+            "label": "Linode 24GB",
+            "memory": 24576,
+            "network_out": 5000,
+            "price": {
+                "hourly": 0.09,
+                "monthly": 60.0
+            },
+            "successor": null,
+            "transfer": 5000,
+            "vcpus": 2
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.015,
+                        "monthly": 10.0
+                    }
+                }
+            },
+            "class": "highmem",
+            "disk": 40960,
+            "gpus": 0,
+            "id": "g7-highmem-2",
+            "label": "Linode 48GB",
+            "memory": 49152,
+            "network_out": 6000,
+            "price": {
+                "hourly": 0.18,
+                "monthly": 120.0
+            },
+            "successor": null,
+            "transfer": 6000,
+            "vcpus": 2
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.03,
+                        "monthly": 20.0
+                    }
+                }
+            },
+            "class": "highmem",
+            "disk": 92160,
+            "gpus": 0,
+            "id": "g7-highmem-4",
+            "label": "Linode 90GB",
+            "memory": 92160,
+            "network_out": 7000,
+            "price": {
+                "hourly": 0.36,
+                "monthly": 240.0
+            },
+            "successor": null,
+            "transfer": 7000,
+            "vcpus": 4
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.06,
+                        "monthly": 40.0
+                    }
+                }
+            },
+            "class": "highmem",
+            "disk": 204800,
+            "gpus": 0,
+            "id": "g7-highmem-8",
+            "label": "Linode 150GB",
+            "memory": 153600,
+            "network_out": 8000,
+            "price": {
+                "hourly": 0.72,
+                "monthly": 480.0
+            },
+            "successor": null,
+            "transfer": 8000,
+            "vcpus": 8
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.12,
+                        "monthly": 80.0
+                    }
+                }
+            },
+            "class": "highmem",
+            "disk": 348160,
+            "gpus": 0,
+            "id": "g7-highmem-16",
+            "label": "Linode 300GB",
+            "memory": 307200,
+            "network_out": 9000,
+            "price": {
+                "hourly": 1.44,
+                "monthly": 960.0
+            },
+            "successor": null,
+            "transfer": 9000,
+            "vcpus": 16
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.008,
+                        "monthly": 5.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 81920,
+            "gpus": 0,
+            "id": "g6-dedicated-2",
+            "label": "Dedicated 4GB",
+            "memory": 4096,
+            "network_out": 4000,
+            "price": {
+                "hourly": 0.045,
+                "monthly": 30.0
+            },
+            "successor": null,
+            "transfer": 4000,
+            "vcpus": 2
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.015,
+                        "monthly": 10.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 163840,
+            "gpus": 0,
+            "id": "g6-dedicated-4",
+            "label": "Dedicated 8GB",
+            "memory": 8192,
+            "network_out": 5000,
+            "price": {
+                "hourly": 0.09,
+                "monthly": 60.0
+            },
+            "successor": null,
+            "transfer": 5000,
+            "vcpus": 4
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.03,
+                        "monthly": 20.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 327680,
+            "gpus": 0,
+            "id": "g6-dedicated-8",
+            "label": "Dedicated 16GB",
+            "memory": 16384,
+            "network_out": 6000,
+            "price": {
+                "hourly": 0.18,
+                "monthly": 120.0
+            },
+            "successor": null,
+            "transfer": 6000,
+            "vcpus": 8
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.06,
+                        "monthly": 40.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 655360,
+            "gpus": 0,
+            "id": "g6-dedicated-16",
+            "label": "Dedicated 32GB",
+            "memory": 32768,
+            "network_out": 7000,
+            "price": {
+                "hourly": 0.36,
+                "monthly": 240.0
+            },
+            "successor": null,
+            "transfer": 7000,
+            "vcpus": 16
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.12,
+                        "monthly": 80.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 1310720,
+            "gpus": 0,
+            "id": "g6-dedicated-32",
+            "label": "Dedicated 64GB",
+            "memory": 65536,
+            "network_out": 8000,
+            "price": {
+                "hourly": 0.72,
+                "monthly": 480.0
+            },
+            "successor": null,
+            "transfer": 8000,
+            "vcpus": 32
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.18,
+                        "monthly": 120.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 1966080,
+            "gpus": 0,
+            "id": "g6-dedicated-48",
+            "label": "Dedicated 96GB",
+            "memory": 98304,
+            "network_out": 9000,
+            "price": {
+                "hourly": 1.08,
+                "monthly": 720.0
+            },
+            "successor": null,
+            "transfer": 9000,
+            "vcpus": 48
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.24,
+                        "monthly": 160.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 2560000,
+            "gpus": 0,
+            "id": "g6-dedicated-50",
+            "label": "Dedicated 128GB",
+            "memory": 131072,
+            "network_out": 10000,
+            "price": {
+                "hourly": 1.44,
+                "monthly": 960.0
+            },
+            "successor": null,
+            "transfer": 10000,
+            "vcpus": 50
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.3,
+                        "monthly": 200.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 5120000,
+            "gpus": 0,
+            "id": "g6-dedicated-56",
+            "label": "Dedicated 256GB",
+            "memory": 262144,
+            "network_out": 11000,
+            "price": {
+                "hourly": 2.88,
+                "monthly": 1920.0
+            },
+            "successor": null,
+            "transfer": 11000,
+            "vcpus": 56
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.36,
+                        "monthly": 240.0
+                    }
+                }
+            },
+            "class": "dedicated",
+            "disk": 7372800,
+            "gpus": 0,
+            "id": "g6-dedicated-64",
+            "label": "Dedicated 512GB",
+            "memory": 524288,
+            "network_out": 12000,
+            "price": {
+                "hourly": 5.76,
+                "monthly": 3840.0
+            },
+            "successor": null,
+            "transfer": 12000,
+            "vcpus": 64
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.06,
+                        "monthly": 40.0
+                    }
+                }
+            },
+            "class": "gpu",
+            "disk": 655360,
+            "gpus": 1,
+            "id": "g1-gpu-rtx6000-1",
+            "label": "Dedicated 32GB + RTX6000 GPU x1",
+            "memory": 32768,
+            "network_out": 10000,
+            "price": {
+                "hourly": 1.5,
+                "monthly": 1000.0
+            },
+            "successor": null,
+            "transfer": 16000,
+            "vcpus": 8
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.12,
+                        "monthly": 80.0
+                    }
+                }
+            },
+            "class": "gpu",
+            "disk": 1310720,
+            "gpus": 2,
+            "id": "g1-gpu-rtx6000-2",
+            "label": "Dedicated 64GB + RTX6000 GPU x2",
+            "memory": 65536,
+            "network_out": 10000,
+            "price": {
+                "hourly": 3.0,
+                "monthly": 2000.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 16
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.18,
+                        "monthly": 120.0
+                    }
+                }
+            },
+            "class": "gpu",
+            "disk": 1966080,
+            "gpus": 3,
+            "id": "g1-gpu-rtx6000-3",
+            "label": "Dedicated 96GB + RTX6000 GPU x3",
+            "memory": 98304,
+            "network_out": 10000,
+            "price": {
+                "hourly": 4.5,
+                "monthly": 3000.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 20
+        },
+        {
+            "addons": {
+                "backups": {
+                    "price": {
+                        "hourly": 0.24,
+                        "monthly": 160.0
+                    }
+                }
+            },
+            "class": "gpu",
+            "disk": 2621440,
+            "gpus": 4,
+            "id": "g1-gpu-rtx6000-4",
+            "label": "Dedicated 128GB + RTX6000 GPU x4",
+            "memory": 131072,
+            "network_out": 10000,
+            "price": {
+                "hourly": 6.0,
+                "monthly": 4000.0
+            },
+            "successor": null,
+            "transfer": 20000,
+            "vcpus": 24
+        }
+    ],
+    "page": 1,
+    "pages": 1,
+    "results": 28
+}

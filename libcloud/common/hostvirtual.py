@@ -22,7 +22,7 @@ from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 
-API_HOST = 'vapi.vr.org'
+API_HOST = "vapi.vr.org"
 
 
 class HostVirtualException(LibcloudError):
@@ -35,7 +35,7 @@ class HostVirtualException(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return '<HostVirtualException in %d: %s>' % (self.code, self.message)
+        return "<HostVirtualException in %d: %s>" % (self.code, self.message)
 
 
 class HostVirtualConnection(ConnectionKey):
@@ -44,13 +44,17 @@ class HostVirtualConnection(ConnectionKey):
     allow_insecure = False
 
     def add_default_params(self, params):
-        params['key'] = self.key
+        params["key"] = self.key
         return params
 
 
 class HostVirtualResponse(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
+    valid_response_codes = [
+        httplib.OK,
+        httplib.ACCEPTED,
+        httplib.CREATED,
+        httplib.NO_CONTENT,
+    ]
 
     def parse_body(self):
         if not self.body:
@@ -63,13 +67,11 @@ class HostVirtualResponse(JsonResponse):
         data = self.parse_body()
 
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError('%(code)s:%(message)s' % (data['error']))
+            raise InvalidCredsError("%(code)s:%(message)s" % (data["error"]))
         elif self.status == httplib.PRECONDITION_FAILED:
-            raise HostVirtualException(
-                data['error']['code'], data['error']['message'])
+            raise HostVirtualException(data["error"]["code"], data["error"]["message"])
         elif self.status == httplib.NOT_FOUND:
-            raise HostVirtualException(
-                data['error']['code'], data['error']['message'])
+            raise HostVirtualException(data["error"]["code"], data["error"]["message"])
 
         return self.body
 

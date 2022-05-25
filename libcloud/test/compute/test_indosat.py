@@ -16,13 +16,15 @@
 import unittest
 
 from libcloud.compute.drivers.indosat import IndosatNodeDriver
-from libcloud.test.compute.test_dimensiondata_v2_3 import DimensionDataMockHttp, DimensionData_v2_3_Tests
+from libcloud.test.compute.test_dimensiondata_v2_3 import (
+    DimensionDataMockHttp,
+    DimensionData_v2_3_Tests,
+)
 
 
 class IndosatNodeDriverTests(DimensionData_v2_3_Tests, unittest.TestCase):
-
     def setUp(self):
         IndosatNodeDriver.connectionCls.conn_class = DimensionDataMockHttp
-        IndosatNodeDriver.connectionCls.active_api_version = '2.3'
+        IndosatNodeDriver.connectionCls.active_api_version = "2.3"
         DimensionDataMockHttp.type = None
-        self.driver = IndosatNodeDriver('user', 'password')
+        self.driver = IndosatNodeDriver("user", "password")

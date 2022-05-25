@@ -12,7 +12,7 @@ Provider                              list key pairs get key pair create key pai
 `Brightbox`_                          no             no           no              no                            no                          no             
 `BSNL`_                               no             no           no              no                            no                          no             
 `Cloudscale`_                         no             no           no              no                            no                          no             
-`CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
+`CloudSigma (API v2.0)`_              yes            yes          yes             yes                           no                          yes            
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
 `DigitalOcean`_                       yes            yes          yes             no                            no                          yes            
@@ -20,10 +20,12 @@ Provider                              list key pairs get key pair create key pai
 `Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
 `Enomaly Elastic Computing Platform`_ no             no           no              no                            no                          no             
 `ElasticHosts`_                       no             no           no              no                            no                          no             
+`EquinixMetal`_                       yes            no           yes             no                            no                          yes            
 `Eucalyptus`_                         yes            yes          yes             yes                           no                          yes            
 `Exoscale`_                           yes            yes          yes             yes                           no                          yes            
 `Gandi`_                              yes            yes          no              yes                           no                          yes            
 `Google Compute Engine`_              no             no           no              no                            no                          no             
+`GiG G8 Node Provider`_               no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
 `Gridscale`_                          yes            no           no              yes                           no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
@@ -31,8 +33,10 @@ Provider                              list key pairs get key pair create key pai
 `Indosat`_                            no             no           no              no                            no                          no             
 `InternetSolutions`_                  no             no           no              no                            no                          no             
 `Joyent`_                             no             no           no              no                            no                          no             
+`Kamatera`_                           no             no           no              no                            no                          no             
 `Kili Public Cloud`_                  yes            yes          yes             yes                           no                          yes            
 `KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
+`kubevirt`_                           no             no           no              no                            no                          no             
 `Libvirt`_                            no             no           no              no                            no                          no             
 `Linode`_                             no             no           no              no                            no                          no             
 `Maxihost`_                           yes            no           yes             no                            no                          no             
@@ -45,10 +49,10 @@ Provider                              list key pairs get key pair create key pai
 `1and1`_                              no             no           no              no                            no                          no             
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
+`Outscale API`_                       yes            yes          yes             no                            no                          yes            
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
 `Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
 `Ovh`_                                yes            yes          no              yes                           no                          yes            
-`Packet`_                             yes            no           yes             no                            no                          yes            
 `ProfitBricks`_                       no             no           no              no                            no                          no             
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
@@ -63,7 +67,8 @@ Provider                              list key pairs get key pair create key pai
 `vCloud`_                             no             no           no              no                            no                          no             
 `Voxel VoxCLOUD`_                     no             no           no              no                            no                          no             
 `vps.net`_                            no             no           no              no                            no                          no             
-`Vultr`_                              yes            no           yes             no                            no                          yes            
+`VMware vSphere`_                     no             no           no              no                            no                          no             
+`Vultr`_                              yes            yes          no              yes                           no                          yes            
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -83,10 +88,12 @@ Provider                              list key pairs get key pair create key pai
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
+.. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
+.. _`GiG G8 Node Provider`: https://gig.tech
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
@@ -94,8 +101,10 @@ Provider                              list key pairs get key pair create key pai
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
+.. _`kubevirt`: https://www.kubevirt.io
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/
@@ -108,10 +117,10 @@ Provider                              list key pairs get key pair create key pai
 .. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
+.. _`Outscale API`: http://www.outscale.com
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
@@ -126,4 +135,5 @@ Provider                              list key pairs get key pair create key pai
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
+.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com

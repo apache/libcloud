@@ -45,7 +45,6 @@ authentication information to the driver as described in `Examples`_. Also
 bear in mind that large clock drift (difference in time) between authenticating
 host and google will cause authentication to fail.
 
-
 Service Account
 ~~~~~~~~~~~~~~~
 
@@ -144,13 +143,29 @@ illustrate how to use Service Account Scopes.
 Examples
 --------
 
+Keep in mind that a lot of the driver methods depend on the zone / location
+being set.
+
+For that reason, you are advised to pass ``datacenter`` argument to the driver
+constructor. This value should contain a name of the zone where you want your
+operations to be performed (e.g. ``us-east1-b``).
+
+Some of the methods allow this value to be overridden on per method invocation
+basis - either by specifying ``zone`` or ``location`` method argument.
+
 Additional example code can be found in the "demos" directory of Libcloud here:
 https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 
 1. Getting Driver with Service Account authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+With local key file:
+
 .. literalinclude:: /examples/compute/gce/gce_service_account.py
+
+With Service Account credentials as dict:
+
+.. literalinclude:: /examples/compute/gce/gce_service_account_infile.py
 
 2. Getting Driver with Installed Application authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

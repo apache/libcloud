@@ -16,9 +16,7 @@
 World Wide DNS Driver
 """
 
-__all__ = [
-    'WorldWideDNSDriver'
-]
+__all__ = ["WorldWideDNSDriver"]
 
 import re
 
@@ -35,31 +33,37 @@ MAX_RECORD_ENTRIES = 40  # Maximum record entries for zone
 
 
 class WorldWideDNSError(LibcloudError):
-
     def __repr__(self):
-        return ("<WorldWideDNSError in " +
-                repr(self.driver) +
-                " " +
-                repr(self.value) + ">")
+        return (
+            "<WorldWideDNSError in " + repr(self.driver) + " " + repr(self.value) + ">"
+        )
 
 
 class WorldWideDNSDriver(DNSDriver):
     type = Provider.WORLDWIDEDNS
-    name = 'World Wide DNS'
-    website = 'https://www.worldwidedns.net/'
+    name = "World Wide DNS"
+    website = "https://www.worldwidedns.net/"
     connectionCls = WorldWideDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.MX: 'MX',
-        RecordType.CNAME: 'CNAME',
-        RecordType.A: 'A',
-        RecordType.NS: 'NS',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT',
+        RecordType.MX: "MX",
+        RecordType.CNAME: "CNAME",
+        RecordType.A: "A",
+        RecordType.NS: "NS",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
     }
 
-    def __init__(self, key, secret=None, reseller_id=None, secure=True,
-                 host=None, port=None, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        reseller_id=None,
+        secure=True,
+        host=None,
+        port=None,
+        **kwargs,
+    ):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -82,9 +86,9 @@ class WorldWideDNSDriver(DNSDriver):
 
         :return: ``None``
         """
-        super(WorldWideDNSDriver, self).__init__(key=key, secret=secret,
-                                                 secure=secure, host=host,
-                                                 port=port, **kwargs)
+        super(WorldWideDNSDriver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
+        )
         self.reseller_id = reseller_id
 
     def list_zones(self):
@@ -98,9 +102,9 @@ class WorldWideDNSDriver(DNSDriver):
         or
         https://www.worldwidedns.net/dns_api_protocol_list_reseller.asp
         """
-        action = '/api_dns_list.asp'
+        action = "/api_dns_list.asp"
         if self.reseller_id is not None:
-            action = '/api_dns_list_reseller.asp'
+            action = "/api_dns_list_reseller.asp"
         zones = self.connection.request(action)
         if len(zones.body) == 0:
             return []
@@ -132,9 +136,9 @@ class WorldWideDNSDriver(DNSDriver):
         zones = self.list_zones()
         zone = [zone for zone in zones if zone.id == zone_id]
         if len(zone) == 0:
-            raise ZoneDoesNotExistError(driver=self,
-                                        value="The zone doesn't exists",
-                                        zone_id=zone_id)
+            raise ZoneDoesNotExistError(
+                driver=self, value="The zone doesn't exists", zone_id=zone_id
+            )
         return zone[0]
 
     def get_record(self, zone_id, record_id):
@@ -152,20 +156,24 @@ class WorldWideDNSDriver(DNSDriver):
         zone = self.get_zone(zone_id)
         try:
             if int(record_id) not in range(1, MAX_RECORD_ENTRIES + 1):
-                raise RecordDoesNotExistError(value="Record doesn't exists",
-                                              driver=zone.driver,
-                                              record_id=record_id)
+                raise RecordDoesNotExistError(
+                    value="Record doesn't exists",
+                    driver=zone.driver,
+                    record_id=record_id,
+                )
         except ValueError:
             raise WorldWideDNSError(
-                value="Record id should be a string number", driver=self)
-        subdomain = zone.extra.get('S%s' % record_id)
-        type = zone.extra.get('T%s' % record_id)
-        data = zone.extra.get('D%s' % record_id)
+                value="Record id should be a string number", driver=self
+            )
+        subdomain = zone.extra.get("S%s" % record_id)
+        type = zone.extra.get("T%s" % record_id)
+        data = zone.extra.get("D%s" % record_id)
         record = self._to_record(record_id, subdomain, type, data, zone)
         return record
 
-    def update_zone(self, zone, domain, type='master', ttl=None, extra=None,
-                    ex_raw=False):
+    def update_zone(
+        self, zone, domain, type="master", ttl=None, extra=None, ex_raw=False
+    ):
         """
         Update an existing zone.
 
@@ -204,33 +212,32 @@ class WorldWideDNSDriver(DNSDriver):
         https://www.worldwidedns.net/dns_api_protocol_list_domain_raw_reseller.asp
         """
         if extra is not None:
-            not_specified = [key for key in zone.extra.keys() if key not in
-                             extra.keys()]
+            not_specified = [
+                key for key in zone.extra.keys() if key not in extra.keys()
+            ]
         else:
             not_specified = zone.extra.keys()
 
         if ttl is None:
             ttl = zone.ttl
 
-        params = {'DOMAIN': domain,
-                  'TTL': ttl}
+        params = {"DOMAIN": domain, "TTL": ttl}
 
         for key in not_specified:
             params[key] = zone.extra[key]
         if extra is not None:
             params.update(extra)
         if ex_raw:
-            action = '/api_dns_modify_raw.asp'
+            action = "/api_dns_modify_raw.asp"
             if self.reseller_id is not None:
-                action = '/api_dns_modify_raw_reseller.asp'
-            method = 'POST'
+                action = "/api_dns_modify_raw_reseller.asp"
+            method = "POST"
         else:
-            action = '/api_dns_modify.asp'
+            action = "/api_dns_modify.asp"
             if self.reseller_id is not None:
-                action = '/api_dns_modify_reseller.asp'
-            method = 'GET'
-        response = self.connection.request(action, params=params,  # noqa
-                                           method=method)
+                action = "/api_dns_modify_reseller.asp"
+            method = "GET"
+        response = self.connection.request(action, params=params, method=method)  # noqa
         zone = self.get_zone(zone.id)
         return zone
 
@@ -258,25 +265,30 @@ class WorldWideDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        if (extra is None) or ('entry' not in extra):
-            raise WorldWideDNSError(value="You must enter 'entry' parameter",
-                                    driver=self)
-        record_id = extra.get('entry')
-        if name == '':
-            name = '@'
+        if (extra is None) or ("entry" not in extra):
+            raise WorldWideDNSError(
+                value="You must enter 'entry' parameter", driver=self
+            )
+        record_id = extra.get("entry")
+        if name == "":
+            name = "@"
         if type not in self.RECORD_TYPE_MAP:
-            raise RecordError(value="Record type is not allowed",
-                              driver=record.zone.driver,
-                              record_id=name)
+            raise RecordError(
+                value="Record type is not allowed",
+                driver=record.zone.driver,
+                record_id=name,
+            )
         zone = record.zone
-        extra = {'S%s' % record_id: name,
-                 'T%s' % record_id: type,
-                 'D%s' % record_id: data}
+        extra = {
+            "S%s" % record_id: name,
+            "T%s" % record_id: type,
+            "D%s" % record_id: data,
+        }
         zone = self.update_zone(zone, zone.domain, extra=extra)
         record = self.get_record(zone.id, record_id)
         return record
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -301,20 +313,19 @@ class WorldWideDNSDriver(DNSDriver):
         or
         https://www.worldwidedns.net/dns_api_protocol_new_domain_reseller.asp
         """
-        if type == 'master':
+        if type == "master":
             _type = 0
-        elif type == 'slave':
+        elif type == "slave":
             _type = 1
         if extra:
-            dyn = extra.get('DYN') or 1
+            dyn = extra.get("DYN") or 1
         else:
             dyn = 1
-        params = {'DOMAIN': domain,
-                  'TYPE': _type}
-        action = '/api_dns_new_domain.asp'
+        params = {"DOMAIN": domain, "TYPE": _type}
+        action = "/api_dns_new_domain.asp"
         if self.reseller_id is not None:
-            params['DYN'] = dyn
-            action = '/api_dns_new_domain_reseller.asp'
+            params["DYN"] = dyn
+            action = "/api_dns_new_domain_reseller.asp"
         self.connection.request(action, params=params)
         zone = self.get_zone(domain)
         if ttl is not None:
@@ -348,24 +359,29 @@ class WorldWideDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        if (extra is None) or ('entry' not in extra):
+        if (extra is None) or ("entry" not in extra):
             # If no entry is specified, we look for an available one. If all
             # are full, raise error.
             record_id = self._get_available_record_entry(zone)
             if not record_id:
-                raise WorldWideDNSError(value="All record entries are full",
-                                        driver=zone.driver)
+                raise WorldWideDNSError(
+                    value="All record entries are full", driver=zone.driver
+                )
         else:
-            record_id = extra.get('entry')
-        if name == '':
-            name = '@'
+            record_id = extra.get("entry")
+        if name == "":
+            name = "@"
         if type not in self.RECORD_TYPE_MAP:
-            raise RecordError(value="Record type is not allowed",
-                              driver=zone.driver,
-                              record_id=record_id)
-        extra = {'S%s' % record_id: name,
-                 'T%s' % record_id: type,
-                 'D%s' % record_id: data}
+            raise RecordError(
+                value="Record type is not allowed",
+                driver=zone.driver,
+                record_id=record_id,
+            )
+        extra = {
+            "S%s" % record_id: name,
+            "T%s" % record_id: type,
+            "D%s" % record_id: data,
+        }
         zone = self.update_zone(zone, zone.domain, extra=extra)
         record = self.get_record(zone.id, record_id)
         return record
@@ -386,10 +402,10 @@ class WorldWideDNSDriver(DNSDriver):
         or
         https://www.worldwidedns.net/dns_api_protocol_delete_domain_reseller.asp
         """
-        params = {'DOMAIN': zone.domain}
-        action = '/api_dns_delete_domain.asp'
+        params = {"DOMAIN": zone.domain}
+        action = "/api_dns_delete_domain.asp"
         if self.reseller_id is not None:
-            action = '/api_dns_delete_domain_reseller.asp'
+            action = "/api_dns_delete_domain_reseller.asp"
         response = self.connection.request(action, params=params)
         return response.success()
 
@@ -404,12 +420,10 @@ class WorldWideDNSDriver(DNSDriver):
         """
         zone = record.zone
         for index in range(MAX_RECORD_ENTRIES):
-            if record.name == zone.extra['S%s' % (index + 1)]:
+            if record.name == zone.extra["S%s" % (index + 1)]:
                 entry = index + 1
                 break
-        extra = {'S%s' % entry: '',
-                 'T%s' % entry: 'NONE',
-                 'D%s' % entry: ''}
+        extra = {"S%s" % entry: "", "T%s" % entry: "NONE", "D%s" % entry: ""}
         self.update_zone(zone, zone.domain, extra=extra)
         return True
 
@@ -430,11 +444,10 @@ class WorldWideDNSDriver(DNSDriver):
         or
         https://www.worldwidedns.net/dns_api_protocol_viewzone_reseller.asp
         """
-        params = {'DOMAIN': domain,
-                  'NS': name_server}
-        action = '/api_dns_viewzone.asp'
+        params = {"DOMAIN": domain, "NS": name_server}
+        action = "/api_dns_viewzone.asp"
         if self.reseller_id is not None:
-            action = '/api_dns_viewzone_reseller.asp'
+            action = "/api_dns_viewzone_reseller.asp"
         response = self.connection.request(action, params=params)
         return response.object
 
@@ -456,27 +469,24 @@ class WorldWideDNSDriver(DNSDriver):
         https://www.worldwidedns.net/dns_api_protocol_transfer.asp
         """
         if self.reseller_id is None:
-            raise WorldWideDNSError("This is not a reseller account",
-                                    driver=self)
-        params = {'DOMAIN': domain,
-                  'NEW_ID': user_id}
-        response = self.connection.request('/api_dns_transfer.asp',
-                                           params=params)
+            raise WorldWideDNSError("This is not a reseller account", driver=self)
+        params = {"DOMAIN": domain, "NEW_ID": user_id}
+        response = self.connection.request("/api_dns_transfer.asp", params=params)
         return response.success()
 
     def _get_available_record_entry(self, zone):
         """Return an available entry to store a record."""
         entries = zone.extra
         for entry in range(1, MAX_RECORD_ENTRIES + 1):
-            subdomain = entries.get('S%s' % entry)
-            _type = entries.get('T%s' % entry)
-            data = entries.get('D%s' % entry)
+            subdomain = entries.get("S%s" % entry)
+            _type = entries.get("T%s" % entry)
+            data = entries.get("D%s" % entry)
             if not any([subdomain, _type, data]):
                 return entry
         return None
 
     def _to_zones(self, data):
-        domain_list = re.split('\r?\n', data)
+        domain_list = re.split("\r?\n", data)
         zones = []
         for line in domain_list:
             zone = self._to_zone(line)
@@ -485,52 +495,54 @@ class WorldWideDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, line):
-        data = line.split('\x1f')
+        data = line.split("\x1f")
         name = data[0]
         if data[1] == "P":
             type = "master"
             domain_data = self._get_domain_data(name)
-            resp_lines = re.split('\r?\n', domain_data.body)
+            resp_lines = re.split("\r?\n", domain_data.body)
             soa_block = resp_lines[:6]
             zone_data = resp_lines[6:]
-            extra = {'HOSTMASTER': soa_block[0], 'REFRESH': soa_block[1],
-                     'RETRY': soa_block[2], 'EXPIRE': soa_block[3],
-                     'SECURE': soa_block[5]}
+            extra = {
+                "HOSTMASTER": soa_block[0],
+                "REFRESH": soa_block[1],
+                "RETRY": soa_block[2],
+                "EXPIRE": soa_block[3],
+                "SECURE": soa_block[5],
+            }
             ttl = soa_block[4]
             for line in range(MAX_RECORD_ENTRIES):
-                line_data = zone_data[line].split('\x1f')
-                extra['S%s' % (line + 1)] = line_data[0]
+                line_data = zone_data[line].split("\x1f")
+                extra["S%s" % (line + 1)] = line_data[0]
                 _type = line_data[1]
-                extra['T%s' % (line + 1)] = _type if _type != 'NONE' else ''
+                extra["T%s" % (line + 1)] = _type if _type != "NONE" else ""
                 try:
-                    extra['D%s' % (line + 1)] = line_data[2]
+                    extra["D%s" % (line + 1)] = line_data[2]
                 except IndexError:
-                    extra['D%s' % (line + 1)] = ''
-        elif data[1] == 'S':
-            type = 'slave'
+                    extra["D%s" % (line + 1)] = ""
+        elif data[1] == "S":
+            type = "slave"
             extra = {}
             ttl = 0
-        return Zone(id=name, domain=name, type=type,
-                    ttl=ttl, driver=self, extra=extra)
+        return Zone(id=name, domain=name, type=type, ttl=ttl, driver=self, extra=extra)
 
     def _get_domain_data(self, name):
-        params = {'DOMAIN': name}
-        data = self.connection.request('/api_dns_list_domain.asp',
-                                       params=params)
+        params = {"DOMAIN": name}
+        data = self.connection.request("/api_dns_list_domain.asp", params=params)
         return data
 
     def _to_records(self, zone):
         records = []
         for record_id in range(1, MAX_RECORD_ENTRIES + 1):
-            subdomain = zone.extra['S%s' % (record_id)]
-            type = zone.extra['T%s' % (record_id)]
-            data = zone.extra['D%s' % (record_id)]
+            subdomain = zone.extra["S%s" % (record_id)]
+            type = zone.extra["T%s" % (record_id)]
+            data = zone.extra["D%s" % (record_id)]
             if subdomain and type and data:
-                record = self._to_record(
-                    record_id, subdomain, type, data, zone)
+                record = self._to_record(record_id, subdomain, type, data, zone)
                 records.append(record)
         return records
 
     def _to_record(self, _id, subdomain, type, data, zone):
-        return Record(id=_id, name=subdomain, type=type, data=data, zone=zone,
-                      driver=zone.driver)
+        return Record(
+            id=_id, name=subdomain, type=type, data=data, zone=zone, driver=zone.driver
+        )

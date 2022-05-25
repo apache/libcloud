@@ -26,15 +26,14 @@ from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.dns.types import Provider, RecordType
 from libcloud.utils.py3 import httplib
 
-API_HOST = 'my.rcodezero.at'
+API_HOST = "my.rcodezero.at"
 
 __all__ = [
-    'RcodeZeroDNSDriver',
+    "RcodeZeroDNSDriver",
 ]
 
 
 class RcodeZeroResponse(JsonResponse):
-
     def success(self):
         i = int(self.status)
         return 200 <= i <= 299
@@ -42,21 +41,22 @@ class RcodeZeroResponse(JsonResponse):
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError(
-                'Invalid API key. Check https://my.rcodezero.at/enableapi')
+                "Invalid API key. Check https://my.rcodezero.at/enableapi"
+            )
 
         errors = []
         try:
             body = self.parse_body()
         except MalformedResponseError as e:
-            body = '%s: %s' % (e.value, e.body)
+            body = "%s: %s" % (e.value, e.body)
         try:
-            errors = [body['message']]
+            errors = [body["message"]]
         except TypeError:
-            return '%s (HTTP Code: %d)' % (body, self.status)
+            return "%s (HTTP Code: %d)" % (body, self.status)
         except KeyError:
             pass
 
-        return '%s (HTTP Code: %d)' % (' '.join(errors), self.status)
+        return "%s (HTTP Code: %d)" % (" ".join(errors), self.status)
 
 
 class RcodeZeroConnection(ConnectionKey):
@@ -65,49 +65,57 @@ class RcodeZeroConnection(ConnectionKey):
     host = API_HOST
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = 'Bearer ' + self.key
-        headers['Accept'] = 'application/json'
+        headers["Authorization"] = "Bearer " + self.key
+        headers["Accept"] = "application/json"
         return headers
 
 
 class RcodeZeroDNSDriver(DNSDriver):
     type = Provider.RCODEZERO
-    name = 'RcodeZero DNS'
-    website = 'https://www.rcodezero.at/'
+    name = "RcodeZero DNS"
+    website = "https://www.rcodezero.at/"
     connectionCls = RcodeZeroConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.AFSDB: 'AFSDB',
-        RecordType.ALIAS: 'ALIAS',
-        RecordType.CERT: 'CERT',
-        RecordType.CNAME: 'CNAME',
-        RecordType.DNAME: 'DNAME',
-        RecordType.DNSKEY: 'DNSKEY',
-        RecordType.DS: 'DS',
-        RecordType.HINFO: 'HINFO',
-        RecordType.KEY: 'KEY',
-        RecordType.LOC: 'LOC',
-        RecordType.MX: 'MX',
-        RecordType.NAPTR: 'NAPTR',
-        RecordType.NS: 'NS',
-        RecordType.NSEC: 'NSEC',
-        RecordType.OPENPGPKEY: 'OPENPGPKEY',
-        RecordType.PTR: 'PTR',
-        RecordType.RP: 'RP',
-        RecordType.RRSIG: 'RRSIG',
-        RecordType.SOA: 'SOA',
-        RecordType.SPF: 'SPF',
-        RecordType.SRV: 'SRV',
-        RecordType.SSHFP: 'SSHFP',
-        RecordType.SRV: 'SRV',
-        RecordType.TLSA: 'TLSA',
-        RecordType.TXT: 'TXT',
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.AFSDB: "AFSDB",
+        RecordType.ALIAS: "ALIAS",
+        RecordType.CERT: "CERT",
+        RecordType.CNAME: "CNAME",
+        RecordType.DNAME: "DNAME",
+        RecordType.DNSKEY: "DNSKEY",
+        RecordType.DS: "DS",
+        RecordType.HINFO: "HINFO",
+        RecordType.KEY: "KEY",
+        RecordType.LOC: "LOC",
+        RecordType.MX: "MX",
+        RecordType.NAPTR: "NAPTR",
+        RecordType.NS: "NS",
+        RecordType.NSEC: "NSEC",
+        RecordType.OPENPGPKEY: "OPENPGPKEY",
+        RecordType.PTR: "PTR",
+        RecordType.RP: "RP",
+        RecordType.RRSIG: "RRSIG",
+        RecordType.SOA: "SOA",
+        RecordType.SPF: "SPF",
+        RecordType.SRV: "SRV",
+        RecordType.SSHFP: "SSHFP",
+        RecordType.SRV: "SRV",
+        RecordType.TLSA: "TLSA",
+        RecordType.TXT: "TXT",
     }
 
-    def __init__(self, key, secret=None, secure=True, host=None,
-                 port=None, api_version='v1', **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        api_version="v1",
+        **kwargs,
+    ):
         """
         :param    key: API token to be used (required)
         :type     key: ``str``
@@ -132,15 +140,14 @@ class RcodeZeroDNSDriver(DNSDriver):
         :return: ``None``
         """
 
-        if api_version == 'v1':
-            self.api_root = '/api/v1'
+        if api_version == "v1":
+            self.api_root = "/api/v1"
         else:
-            raise NotImplementedError('Unsupported API version: %s' %
-                                      api_version)
+            raise NotImplementedError("Unsupported API version: %s" % api_version)
 
-        super(RcodeZeroDNSDriver, self).__init__(key=key, secure=secure,
-                                                 host=host, port=port,
-                                                 **kwargs)
+        super(RcodeZeroDNSDriver, self).__init__(
+            key=key, secure=secure, host=host, port=port, **kwargs
+        )
 
     def create_record(self, name, zone, type, data, extra=None):
         """
@@ -164,29 +171,32 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = '%s/zones/%s/rrsets' % (self.api_root, zone.id)
+        action = "%s/zones/%s/rrsets" % (self.api_root, zone.id)
 
-        payload = self._to_patchrequest(
-            zone.id, None, name, type, data, extra, 'add')
+        payload = self._to_patchrequest(zone.id, None, name, type, data, extra, "add")
 
         try:
-            self.connection.request(action=action, data=json.dumps(payload),
-                                    method='PATCH')
+            self.connection.request(
+                action=action, data=json.dumps(payload), method="PATCH"
+            )
         except BaseHTTPError as e:
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-               e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
+                "Could not find domain"
+            ):
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
             raise e
 
-        if extra is not None and extra.get('ttl', None) is not None:
-            ttl = extra['ttl']
+        if extra is not None and extra.get("ttl", None) is not None:
+            ttl = extra["ttl"]
         else:
             ttl = None
-        return Record(id=None, name=name, data=data,
-                      type=type, zone=zone, ttl=ttl, driver=self)
+        return Record(
+            id=None, name=name, data=data, type=type, zone=zone, ttl=ttl, driver=self
+        )
 
-    def create_zone(self, domain, type='master', ttl=None, extra={}):
+    def create_zone(self, domain, type="master", ttl=None, extra={}):
         """
         Create a new zone.
 
@@ -207,26 +217,35 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = '%s/zones' % (self.api_root)
-        if type.lower() == 'slave' and (extra is None or
-                                        extra.get('masters', None) is None):
-            msg = 'Master IPs required for slave zones'
+        action = "%s/zones" % (self.api_root)
+        if type.lower() == "slave" and (
+            extra is None or extra.get("masters", None) is None
+        ):
+            msg = "Master IPs required for slave zones"
             raise ValueError(msg)
-        payload = {'domain': domain.lower(), 'type': type.lower()}
+        payload = {"domain": domain.lower(), "type": type.lower()}
         payload.update(extra)
-        zone_id = domain + '.'
+        zone_id = domain + "."
         try:
-            self.connection.request(action=action, data=json.dumps(payload),
-                                    method='POST')
+            self.connection.request(
+                action=action, data=json.dumps(payload), method="POST"
+            )
         except BaseHTTPError as e:
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-               e.message.find("Zone '%s' already configured for your account"
-                              % domain):
-                raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
-                                             value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.find(
+                "Zone '%s' already configured for your account" % domain
+            ):
+                raise ZoneAlreadyExistsError(
+                    zone_id=zone_id, driver=self, value=e.message
+                )
             raise e
-        return Zone(id=zone_id, domain=domain, type=type.lower(), ttl=None,
-                    driver=self, extra=extra)
+        return Zone(
+            id=zone_id,
+            domain=domain,
+            type=type.lower(),
+            ttl=None,
+            driver=self,
+            extra=extra,
+        )
 
     def update_zone(self, zone, domain, type=None, ttl=None, extra=None):
         """
@@ -251,28 +270,33 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = '%s/zones/%s' % (self.api_root, domain)
+        action = "%s/zones/%s" % (self.api_root, domain)
         if type is None:
             type = zone.type
 
-        if type.lower() == 'slave' and (extra is None or
-                                        extra.get('masters', None) is None):
-            msg = 'Master IPs required for slave zones'
+        if type.lower() == "slave" and (
+            extra is None or extra.get("masters", None) is None
+        ):
+            msg = "Master IPs required for slave zones"
             raise ValueError(msg)
-        payload = {'domain': domain.lower(), 'type': type.lower()}
+        payload = {"domain": domain.lower(), "type": type.lower()}
         if extra is not None:
             payload.update(extra)
         try:
-            self.connection.request(action=action, data=json.dumps(payload),
-                                    method='PUT')
+            self.connection.request(
+                action=action, data=json.dumps(payload), method="PUT"
+            )
         except BaseHTTPError as e:
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-               e.message.startswith("Domain '%s' update failed" % domain):
-                raise ZoneAlreadyExistsError(zone_id=zone.id, driver=self,
-                                             value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
+                "Domain '%s' update failed" % domain
+            ):
+                raise ZoneAlreadyExistsError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
             raise e
-        return Zone(id=zone.id, domain=domain, type=type, ttl=None,
-                    driver=self, extra=extra)
+        return Zone(
+            id=zone.id, domain=domain, type=type, ttl=None, driver=self, extra=extra
+        )
 
     def delete_record(self, record):
         """
@@ -284,21 +308,30 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
 
-        action = '%s/zones/%s/rrsets' % (self.api_root, record.zone.id)
+        action = "%s/zones/%s/rrsets" % (self.api_root, record.zone.id)
 
         payload = self._to_patchrequest(
-            record.zone.id, None, record.name, record.type, record.data,
-            record.extra, 'delete')
+            record.zone.id,
+            None,
+            record.name,
+            record.type,
+            record.data,
+            record.extra,
+            "delete",
+        )
 
         try:
-            self.connection.request(action=action, data=json.dumps(payload),
-                                    method='PATCH')
+            self.connection.request(
+                action=action, data=json.dumps(payload), method="PATCH"
+            )
 
         except BaseHTTPError as e:
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-               e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=record.zone.id,
-                                            driver=self, value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
+                "Could not find domain"
+            ):
+                raise ZoneDoesNotExistError(
+                    zone_id=record.zone.id, driver=self, value=e.message
+                )
             raise e
 
         return True
@@ -312,10 +345,9 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = '%s/zones/%s' % (self.api_root,
-                                  zone.id)
+        action = "%s/zones/%s" % (self.api_root, zone.id)
         try:
-            self.connection.request(action=action, method='DELETE')
+            self.connection.request(action=action, method="DELETE")
         except BaseHTTPError:
             return False
         return True
@@ -331,13 +363,14 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         :raises: ZoneDoesNotExistError: if zone could not be found.
         """
-        action = '%s/zones/%s' % (self.api_root, zone_id)
+        action = "%s/zones/%s" % (self.api_root, zone_id)
         try:
-            response = self.connection.request(action=action, method='GET')
+            response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
-                raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
-                                            value=e.message)
+                raise ZoneDoesNotExistError(
+                    zone_id=zone_id, driver=self, value=e.message
+                )
             raise e
 
         return self._to_zone(response.object)
@@ -354,16 +387,18 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        records = self.list_records(Zone(id=zone_id, domain=zone_id,
-                                         type=None, ttl=None, driver=self,
-                                         extra=None))
+        records = self.list_records(
+            Zone(
+                id=zone_id, domain=zone_id, type=None, ttl=None, driver=self, extra=None
+            )
+        )
 
         foundrecords = list(filter(lambda x: x.id == record_id, records))
 
         if len(foundrecords) > 0:
-            return(foundrecords[0])
+            return foundrecords[0]
         else:
-            return(None)
+            return None
 
     def list_records(self, zone):
         """
@@ -374,16 +409,18 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = '%s/zones/%s/rrsets?page_size=-1' % (self.api_root, zone.id)
+        action = "%s/zones/%s/rrsets?page_size=-1" % (self.api_root, zone.id)
         try:
-            response = self.connection.request(action=action, method='GET')
+            response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-               e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
+                "Could not find domain"
+            ):
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
             raise e
-        return self._to_records(response.object['data'], zone)
+        return self._to_records(response.object["data"], zone)
 
     def list_zones(self):
         """
@@ -391,9 +428,9 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        action = '%s/zones?page_size=-1' % (self.api_root)
-        response = self.connection.request(action=action, method='GET')
-        return self._to_zones(response.object['data'])
+        action = "%s/zones?page_size=-1" % (self.api_root)
+        response = self.connection.request(action=action, method="GET")
+        return self._to_zones(response.object["data"])
 
     def update_record(self, record, name, type, data, extra=None):
         """
@@ -417,42 +454,67 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
 
-        action = '%s/zones/%s/rrsets' % (self.api_root, record.zone.id)
+        action = "%s/zones/%s/rrsets" % (self.api_root, record.zone.id)
 
         payload = self._to_patchrequest(
-            record.zone.id, record, name, type, data, record.extra, 'update')
+            record.zone.id, record, name, type, data, record.extra, "update"
+        )
 
         try:
-            self.connection.request(action=action, data=json.dumps(payload),
-                                    method='PATCH')
+            self.connection.request(
+                action=action, data=json.dumps(payload), method="PATCH"
+            )
 
         except BaseHTTPError as e:
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-               e.message.startswith('Could not find domain'):
-                raise ZoneDoesNotExistError(zone_id=record.zone.id,
-                                            driver=self, value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
+                "Could not find domain"
+            ):
+                raise ZoneDoesNotExistError(
+                    zone_id=record.zone.id, driver=self, value=e.message
+                )
             raise e
-        if not (extra is None or extra.get('ttl', None) is None):
-            ttl = extra['ttl']
+        if not (extra is None or extra.get("ttl", None) is None):
+            ttl = extra["ttl"]
         else:
             ttl = record.ttl
 
-        return Record(id=hashlib.md5(str(name + ' ' +
-                                         data).encode('utf-8')).hexdigest(),
-                      name=name, data=data, type=type, zone=record.zone,
-                      driver=self, ttl=ttl, extra=extra)
+        return Record(
+            id=hashlib.md5(str(name + " " + data).encode("utf-8")).hexdigest(),
+            name=name,
+            data=data,
+            type=type,
+            zone=record.zone,
+            driver=self,
+            ttl=ttl,
+            extra=extra,
+        )
 
     def _to_zone(self, item):
         extra = {}
-        for e in ['dnssec_status', 'dnssec_status_detail', 'dnssec_ksk_status',
-                  'dnssec_ksk_status_detail', 'dnssec_ds', 'dnssec_dnskey',
-                  'dnssec_safe_to_unsign', 'dnssec', 'masters', 'serial',
-                  'created', 'last_check']:
+        for e in [
+            "dnssec_status",
+            "dnssec_status_detail",
+            "dnssec_ksk_status",
+            "dnssec_ksk_status_detail",
+            "dnssec_ds",
+            "dnssec_dnskey",
+            "dnssec_safe_to_unsign",
+            "dnssec",
+            "masters",
+            "serial",
+            "created",
+            "last_check",
+        ]:
             if e in item:
                 extra[e] = item[e]
-        return Zone(id=item['domain'], domain=item['domain'],
-                    type=item['type'].lower(), ttl=None, driver=self,
-                    extra=extra)
+        return Zone(
+            id=item["domain"],
+            domain=item["domain"],
+            type=item["type"].lower(),
+            ttl=None,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_zones(self, items):
         zones = []
@@ -463,18 +525,25 @@ class RcodeZeroDNSDriver(DNSDriver):
     def _to_records(self, items, zone):
         records = []
         for item in items:
-            for record in item['records']:
+            for record in item["records"]:
                 extra = {}
-                extra['disabled'] = record['disabled']
+                extra["disabled"] = record["disabled"]
                 # strip domain and trailing dot from recordname
-                recordname = re.sub('.' + zone.id + '$', '', item['name'][:-1])
+                recordname = re.sub("." + zone.id + "$", "", item["name"][:-1])
                 records.append(
-                    Record(id=hashlib.md5(str(recordname + ' ' +
-                                              record['content']).
-                                          encode('utf-8')).hexdigest(),
-                           name=recordname, data=record['content'],
-                           type=item['type'], zone=zone,
-                           driver=self, ttl=item['ttl'], extra=extra))
+                    Record(
+                        id=hashlib.md5(
+                            str(recordname + " " + record["content"]).encode("utf-8")
+                        ).hexdigest(),
+                        name=recordname,
+                        data=record["content"],
+                        type=item["type"],
+                        zone=zone,
+                        driver=self,
+                        ttl=item["ttl"],
+                        extra=extra,
+                    )
+                )
         return records
 
     # rcodezero supports only rrset, so we must create rrsets from the given
@@ -483,30 +552,31 @@ class RcodeZeroDNSDriver(DNSDriver):
         rrset = {}
 
         cur_records = self.list_records(
-            Zone(id=zone, domain=None, type=None, ttl=None, driver=self))
+            Zone(id=zone, domain=None, type=None, ttl=None, driver=self)
+        )
 
-        if name != '':
-            rrset['name'] = name + '.' + zone + '.'
+        if name != "":
+            rrset["name"] = name + "." + zone + "."
         else:
-            rrset['name'] = zone + '.'
+            rrset["name"] = zone + "."
 
-        rrset['type'] = type
-        rrset['changetype'] = action
-        rrset['records'] = []
-        if not (extra is None or extra.get('ttl', None) is None):
-            rrset['ttl'] = extra['ttl']
+        rrset["type"] = type
+        rrset["changetype"] = action
+        rrset["records"] = []
+        if not (extra is None or extra.get("ttl", None) is None):
+            rrset["ttl"] = extra["ttl"]
 
         content = {}
-        if not action == 'delete':
-            content['content'] = data
-            if not (extra is None or extra.get('disabled', None) is None):
-                content['disabled'] = extra['disabled']
-            rrset['records'].append(content)
-        id = hashlib.md5(str(name + ' ' + data).encode('utf-8')).hexdigest()
-    # check if rrset contains more than one record. if yes we need to create an
-    # update request
+        if not action == "delete":
+            content["content"] = data
+            if not (extra is None or extra.get("disabled", None) is None):
+                content["disabled"] = extra["disabled"]
+            rrset["records"].append(content)
+        id = hashlib.md5(str(name + " " + data).encode("utf-8")).hexdigest()
+        # check if rrset contains more than one record. if yes we need to create an
+        # update request
         for r in cur_records:
-            if action == 'update' and r.id == record.id:
+            if action == "update" and r.id == record.id:
                 # do not include records which should be updated in the update
                 # request
                 continue
@@ -514,13 +584,12 @@ class RcodeZeroDNSDriver(DNSDriver):
             if name == r.name and r.id != id:
                 # we have other records with the same name so make an update
                 # request
-                rrset['changetype'] = 'update'
+                rrset["changetype"] = "update"
                 content = {}
-                content['content'] = r.data
-                if not (r.extra is None or
-                        r.extra.get('disabled', None) is None):
-                    content['disabled'] = r.extra['disabled']
-                rrset['records'].append(content)
+                content["content"] = r.data
+                if not (r.extra is None or r.extra.get("disabled", None) is None):
+                    content["disabled"] = r.extra["disabled"]
+                rrset["records"].append(content)
         request = list()
         request.append(rrset)
         return request

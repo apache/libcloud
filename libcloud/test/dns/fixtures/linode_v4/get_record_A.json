@@ -1,0 +1,15 @@
+{
+    "id": 123,
+    "type": "A",
+    "name": "test.example.com",
+    "target": "200.150.100.50",
+    "priority": 0,
+    "weight": 0,
+    "port": 0,
+    "service": null,
+    "protocol": null,
+    "ttl_sec": 300,
+    "tag": null,
+    "created": "2020-10-16T07:57:37",
+    "updated": "2020-10-16T07:57:37"
+}

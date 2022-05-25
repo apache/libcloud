@@ -16,9 +16,7 @@
 OnApp DNS Driver
 """
 
-__all__ = [
-    'OnAppDNSDriver'
-]
+__all__ = ["OnAppDNSDriver"]
 
 import json
 
@@ -32,19 +30,19 @@ DEFAULT_ZONE_TTL = 1200
 
 class OnAppDNSDriver(DNSDriver):
     type = Provider.ONAPP
-    name = 'OnApp'
-    website = 'http://onapp.com/'
+    name = "OnApp"
+    website = "http://onapp.com/"
     connectionCls = OnAppConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.SOA: 'SOA',
-        RecordType.NS: 'NS',
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV',
+        RecordType.SOA: "SOA",
+        RecordType.NS: "NS",
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.TXT: "TXT",
+        RecordType.SRV: "SRV",
     }
 
     def list_zones(self):
@@ -53,7 +51,7 @@ class OnAppDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        response = self.connection.request('/dns_zones.json')
+        response = self.connection.request("/dns_zones.json")
 
         zones = self._to_zones(response.object)
         return zones
@@ -67,11 +65,11 @@ class OnAppDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        response = self.connection.request('/dns_zones/%s.json' % zone_id)
+        response = self.connection.request("/dns_zones/%s.json" % zone_id)
         zone = self._to_zone(response.object)
         return zone
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -93,15 +91,16 @@ class OnAppDNSDriver(DNSDriver):
         For more info, please see:
         https://docs.onapp.com/display/52API/Add+DNS+Zone
         """
-        dns_zone = {'name': domain}
+        dns_zone = {"name": domain}
         if extra is not None:
             dns_zone.update(extra)
-        dns_zone_data = json.dumps({'dns_zone': dns_zone})
+        dns_zone_data = json.dumps({"dns_zone": dns_zone})
         response = self.connection.request(
-            '/dns_zones.json',
-            method='POST',
+            "/dns_zones.json",
+            method="POST",
             headers={"Content-type": "application/json"},
-            data=dns_zone_data)
+            data=dns_zone_data,
+        )
         zone = self._to_zone(response.object)
         return zone
 
@@ -116,9 +115,7 @@ class OnAppDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        self.connection.request(
-            '/dns_zones/%s.json' % zone.id,
-            method='DELETE')
+        self.connection.request("/dns_zones/%s.json" % zone.id, method="DELETE")
         return True
 
     def list_records(self, zone):
@@ -130,9 +127,8 @@ class OnAppDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        response = self.connection.request(
-            '/dns_zones/%s/records.json' % zone.id)
-        dns_records = response.object['dns_zone']['records']
+        response = self.connection.request("/dns_zones/%s/records.json" % zone.id)
+        dns_records = response.object["dns_zone"]["records"]
         records = self._to_records(dns_records, zone)
         return records
 
@@ -148,8 +144,9 @@ class OnAppDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request('/dns_zones/%s/records/%s.json' %
-                                           (zone_id, record_id))
+        response = self.connection.request(
+            "/dns_zones/%s/records/%s.json" % (zone_id, record_id)
+        )
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 
@@ -182,12 +179,13 @@ class OnAppDNSDriver(DNSDriver):
         https://docs.onapp.com/display/52API/Add+DNS+Record
         """
         dns_record = self._format_record(name, type, data, extra)
-        dns_record_data = json.dumps({'dns_record': dns_record})
+        dns_record_data = json.dumps({"dns_record": dns_record})
         response = self.connection.request(
-            '/dns_zones/%s/records.json' % zone.id,
-            method='POST',
+            "/dns_zones/%s/records.json" % zone.id,
+            method="POST",
             headers={"Content-type": "application/json"},
-            data=dns_record_data)
+            data=dns_record_data,
+        )
         record = self._to_record(response.object, zone=zone)
         return record
 
@@ -221,12 +219,13 @@ class OnAppDNSDriver(DNSDriver):
         """
         zone = record.zone
         dns_record = self._format_record(name, type, data, extra)
-        dns_record_data = json.dumps({'dns_record': dns_record})
+        dns_record_data = json.dumps({"dns_record": dns_record})
         self.connection.request(
-            '/dns_zones/%s/records/%s.json' % (zone.id, record.id),
-            method='PUT',
+            "/dns_zones/%s/records/%s.json" % (zone.id, record.id),
+            method="PUT",
             headers={"Content-type": "application/json"},
-            data=dns_record_data)
+            data=dns_record_data,
+        )
         record = self.get_record(zone.id, record.id)
         return record
 
@@ -243,8 +242,9 @@ class OnAppDNSDriver(DNSDriver):
         https://docs.onapp.com/display/52API/Delete+DNS+Record
         """
         zone_id = record.zone.id
-        self.connection.request('/dns_zones/%s/records/%s.json' % (zone_id,
-                                record.id), method='DELETE')
+        self.connection.request(
+            "/dns_zones/%s/records/%s.json" % (zone_id, record.id), method="DELETE"
+        )
         return True
 
     #
@@ -252,38 +252,38 @@ class OnAppDNSDriver(DNSDriver):
     #
 
     def _format_record(self, name, type, data, extra):
-        if name == '':
-            name = '@'
+        if name == "":
+            name = "@"
         if extra is None:
             extra = {}
         record_type = self.RECORD_TYPE_MAP[type]
         new_record = {
-            'name': name,
-            'ttl': extra.get('ttl', DEFAULT_ZONE_TTL),
-            'type': record_type
+            "name": name,
+            "ttl": extra.get("ttl", DEFAULT_ZONE_TTL),
+            "type": record_type,
         }
         if type == RecordType.MX:
             additions = {
-                'priority': extra.get('priority', 1),
-                'hostname': extra.get('hostname')
+                "priority": extra.get("priority", 1),
+                "hostname": extra.get("hostname"),
             }
         elif type == RecordType.SRV:
             additions = {
-                'port': extra.get('port'),
-                'weight': extra.get('weight', 1),
-                'priority': extra.get('priority', 1),
-                'hostname': extra.get('hostname')
+                "port": extra.get("port"),
+                "weight": extra.get("weight", 1),
+                "priority": extra.get("priority", 1),
+                "hostname": extra.get("hostname"),
             }
         elif type == RecordType.A:
-            additions = {'ip': data}
+            additions = {"ip": data}
         elif type == RecordType.CNAME:
-            additions = {'hostname': extra.get('hostname')}
+            additions = {"hostname": extra.get("hostname")}
         elif type == RecordType.AAAA:
-            additions = {'ip': data}
+            additions = {"ip": data}
         elif type == RecordType.TXT:
-            additions = {'txt': extra.get('txt')}
+            additions = {"txt": extra.get("txt")}
         elif type == RecordType.NS:
-            additions = {'hostname': extra.get('hostname')}
+            additions = {"hostname": extra.get("hostname")}
 
         new_record.update(additions)
         return new_record
@@ -297,18 +297,26 @@ class OnAppDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, data):
-        dns_zone = data.get('dns_zone')
-        id = dns_zone.get('id')
-        name = dns_zone.get('name')
-        extra = {'user_id': dns_zone.get('user_id'),
-                 'cdn_reference': dns_zone.get('cdn_reference'),
-                 'created_at': dns_zone.get('created_at'),
-                 'updated_at': dns_zone.get('updated_at')}
+        dns_zone = data.get("dns_zone")
+        id = dns_zone.get("id")
+        name = dns_zone.get("name")
+        extra = {
+            "user_id": dns_zone.get("user_id"),
+            "cdn_reference": dns_zone.get("cdn_reference"),
+            "created_at": dns_zone.get("created_at"),
+            "updated_at": dns_zone.get("updated_at"),
+        }
 
-        type = 'master'
+        type = "master"
 
-        return Zone(id=id, domain=name, type=type, ttl=DEFAULT_ZONE_TTL,
-                    driver=self, extra=extra)
+        return Zone(
+            id=id,
+            domain=name,
+            type=type,
+            ttl=DEFAULT_ZONE_TTL,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_records(self, data, zone):
         records = []
@@ -323,10 +331,18 @@ class OnAppDNSDriver(DNSDriver):
     def _to_record(self, data, zone_id=None, zone=None):
         if not zone:  # We need zone_id or zone
             zone = self.get_zone(zone_id)
-        record = data.get('dns_record')
-        id = record.get('id')
-        name = record.get('name')
-        type = record.get('type')
-        ttl = record.get('ttl', None)
-        return Record(id=id, name=name, type=type, data=record, zone=zone,
-                      driver=self, ttl=ttl, extra={})
+        record = data.get("dns_record")
+        id = record.get("id")
+        name = record.get("name")
+        type = record.get("type")
+        ttl = record.get("ttl", None)
+        return Record(
+            id=id,
+            name=name,
+            type=type,
+            data=record,
+            zone=zone,
+            driver=self,
+            ttl=ttl,
+            extra={},
+        )

@@ -81,16 +81,16 @@ class TestLazyList(unittest.TestCase):
         except IndexError:
             pass
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_repr(self):
         ll1 = LazyList(get_more=self._get_more_empty)
         ll2 = LazyList(get_more=self._get_more_exhausted)
         ll3 = LazyList(get_more=self._get_more_not_exhausted)
 
-        self.assertEqual(repr(ll1), '[]')
-        self.assertEqual(repr(ll2), '[1, 2, 3, 4, 5]')
-        self.assertEqual(repr(ll3), '[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]')
+        self.assertEqual(repr(ll1), "[]")
+        self.assertEqual(repr(ll2), "[1, 2, 3, 4, 5]")
+        self.assertEqual(repr(ll3), "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
 
     def _get_more_empty(self, last_key, value_dict):
         return [], None, True
@@ -108,5 +108,6 @@ class TestLazyList(unittest.TestCase):
 
         return data, last_key, exhausted
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

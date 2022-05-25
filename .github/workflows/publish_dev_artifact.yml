@@ -1,0 +1,54 @@
+# Workflow which builds .tar.gz and .whl development artifact on each push to
+# trunk and stores it as a Github Actions workflow artifact
+# NOTE: Those artifacts are not persisted long term and are mostly meant to be
+# used for testing and similar
+name: Publish dev release bundle
+
+on:
+  workflow_run:
+    workflows:
+      - "CI"
+    branches:
+      - trunk
+    types:
+      - completed
+
+jobs:
+  generate_and_publish_dev_release_artifacts:
+    name: Generate and Publish Dev Release Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Print Environment Info
+        id: printenv
+        run: |
+          printenv | sort
+
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install wheel
+
+      - name: Create Dev Artifacts
+        run: |
+          python setup.py sdist --formats=bztar,zip,gztar
+          python setup.py bdist_wheel
+
+      - name: Store dev artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libcloud-dev-artifacts
+          retention-days: 60
+          path: |
+            dist/*.tar.gz
+            dist/*.whl

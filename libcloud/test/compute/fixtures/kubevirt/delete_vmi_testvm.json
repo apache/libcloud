@@ -1,0 +1,132 @@
+{
+    "apiVersion": "kubevirt.io/v1alpha3",
+    "status": {
+      "phase": "Running",
+      "migrationMethod": "BlockMigration",
+      "conditions": [
+        {
+          "type": "LiveMigratable",
+          "lastTransitionTime": null,
+          "message": "cannot migrate VMI with a bridge interface connected to a pod network",
+          "status": "False",
+          "lastProbeTime": null,
+          "reason": "InterfaceNotLiveMigratable"
+        },
+        {
+          "type": "Ready",
+          "lastTransitionTime": "2019-12-08T13:17:48Z",
+          "status": "True",
+          "lastProbeTime": null
+        }
+      ],
+      "guestOSInfo": {},
+      "nodeName": "minikube",
+      "interfaces": [
+        {
+          "ipAddress": "172.17.0.11",
+          "name": "default",
+          "mac": "02:42:ac:11:00:0b"
+        }
+      ],
+      "qosClass": "Burstable"
+    },
+    "kind": "VirtualMachineInstance",
+    "metadata": {
+      "generateName": "testvm",
+      "deletionGracePeriodSeconds": 0,
+      "labels": {
+        "kubevirt.io/nodeName": "minikube",
+        "kubevirt.io/size": "small",
+        "kubevirt.io/domain": "testvm"
+      },
+      "annotations": {
+        "kubevirt.io/latest-observed-api-version": "v1alpha3",
+        "kubevirt.io/storage-observed-api-version": "v1alpha3"
+      },
+      "namespace": "default",
+      "creationTimestamp": "2019-12-08T13:17:41Z",
+      "name": "testvm",
+      "generation": 9,
+      "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachineinstances/testvm",
+      "ownerReferences": [
+        {
+          "apiVersion": "kubevirt.io/v1alpha3",
+          "name": "testvm",
+          "kind": "VirtualMachine",
+          "blockOwnerDeletion": true,
+          "uid": "74fd7665-fbd6-4565-977c-96bd21fb785a",
+          "controller": true
+        }
+      ],
+      "deletionTimestamp": "2019-12-08T13:18:54Z",
+      "resourceVersion": "276064",
+      "finalizers": [
+        "foregroundDeleteVirtualMachine"
+      ],
+      "uid": "4106caa7-836f-40fe-b872-6f46be4eb6cf"
+    },
+    "spec": {
+      "domain": {
+        "devices": {
+          "disks": [
+            {
+              "disk": {
+                "bus": "virtio"
+              },
+              "name": "containerdisk"
+            },
+            {
+              "disk": {
+                "bus": "virtio"
+              },
+              "name": "cloudinitdisk"
+            }
+          ],
+          "interfaces": [
+            {
+              "name": "default",
+              "bridge": {}
+            }
+          ]
+        },
+        "firmware": {
+          "uuid": "5a9fc181-957e-5c32-9e5a-2de5e9673531"
+        },
+        "machine": {
+          "type": "q35"
+        },
+        "resources": {
+          "requests": {
+            "cpu": "100m",
+            "memory": "64M"
+          }
+        },
+        "features": {
+          "acpi": {
+            "enabled": true
+          }
+        }
+      },
+      "networks": [
+        {
+          "name": "default",
+          "pod": {}
+        }
+      ],
+      "volumes": [
+        {
+          "name": "containerdisk",
+          "containerDisk": {
+            "image": "kubevirt/cirros-registry-disk-demo",
+            "imagePullPolicy": "Always"
+          }
+        },
+        {
+          "cloudInitNoCloud": {
+            "userDataBase64": "SGkuXG4="
+          },
+          "name": "cloudinitdisk"
+        }
+      ]
+    }
+  }

@@ -21,15 +21,10 @@ from libcloud.utils.py3 import b
 
 CHUNK_SIZE = 8096
 
-__all__ = [
-    'read_in_chunks',
-    'exhaust_iterator',
-    'guess_file_mime_type'
-]
+__all__ = ["read_in_chunks", "exhaust_iterator", "guess_file_mime_type"]
 
 
-def read_in_chunks(iterator, chunk_size=None, fill_size=False,
-                   yield_empty=False):
+def read_in_chunks(iterator, chunk_size=None, fill_size=False, yield_empty=False):
     """
     Return a generator which yields data in chunks.
 
@@ -55,12 +50,12 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
 
     try:
         get_data = iterator.read
-        args = (chunk_size, )
+        args = (chunk_size,)
     except AttributeError:
         get_data = next
-        args = (iterator, )
+        args = (iterator,)
 
-    data = b('')
+    data = b("")
     empty = False
 
     while not empty or len(data) > 0:
@@ -76,7 +71,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
 
         if len(data) == 0:
             if empty and yield_empty:
-                yield b('')
+                yield b("")
 
             return
 
@@ -86,7 +81,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
                 data = data[chunk_size:]
         else:
             yield data
-            data = b('')
+            data = b("")
 
 
 def exhaust_iterator(iterator):
@@ -100,12 +95,12 @@ def exhaust_iterator(iterator):
     :rtype ``str``
     :return Data returned by the iterator.
     """
-    data = b('')
+    data = b("")
 
     try:
         chunk = b(next(iterator))
     except StopIteration:
-        chunk = b('')
+        chunk = b("")
 
     while len(chunk) > 0:
         data += chunk
@@ -113,7 +108,7 @@ def exhaust_iterator(iterator):
         try:
             chunk = b(next(iterator))
         except StopIteration:
-            chunk = b('')
+            chunk = b("")
 
     return data
 

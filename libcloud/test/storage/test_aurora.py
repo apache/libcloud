@@ -16,6 +16,7 @@
 import sys
 import unittest
 
+from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.auroraobjects import AuroraObjectsStorageDriver
 from libcloud.test.storage.test_s3 import S3MockHttp, S3Tests
 
@@ -30,6 +31,13 @@ class AuroraObjectsTests(S3Tests, unittest.TestCase):
         S3MockHttp.type = None
         self.driver = self.create_driver()
 
+    def test_get_object_cdn_url(self):
+        self.mock_response_klass.type = "get_object"
+        obj = self.driver.get_object(container_name="test2", object_name="test")
 
-if __name__ == '__main__':
+        with self.assertRaises(LibcloudError):
+            self.driver.get_object_cdn_url(obj)
+
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

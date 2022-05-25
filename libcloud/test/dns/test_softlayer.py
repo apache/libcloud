@@ -28,37 +28,36 @@ from libcloud.utils.py3 import xmlrpclib
 
 
 class SoftLayerTests(unittest.TestCase):
-
     def setUp(self):
         SoftLayerDNSDriver.connectionCls.conn_class = SoftLayerDNSMockHttp
         SoftLayerDNSMockHttp.type = None
         self.driver = SoftLayerDNSDriver(*SOFTLAYER_PARAMS)
 
     def test_create_zone(self):
-        zone = self.driver.create_zone(domain='bar.com')
-        self.assertEqual(zone.id, '123')
-        self.assertEqual(zone.domain, 'bar.com')
+        zone = self.driver.create_zone(domain="bar.com")
+        self.assertEqual(zone.id, "123")
+        self.assertEqual(zone.domain, "bar.com")
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 1)
 
         zone = zones[0]
-        self.assertEqual(zone.id, '123')
-        self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.domain, 'bar.com')
+        self.assertEqual(zone.id, "123")
+        self.assertEqual(zone.type, "master")
+        self.assertEqual(zone.domain, "bar.com")
 
     def test_get_zone(self):
-        zone = self.driver.get_zone(zone_id='123')
-        self.assertEqual(zone.id, '123')
-        self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.domain, 'bar.com')
+        zone = self.driver.get_zone(zone_id="123")
+        self.assertEqual(zone.id, "123")
+        self.assertEqual(zone.type, "master")
+        self.assertEqual(zone.domain, "bar.com")
 
     def test_get_zone_does_not_exist(self):
-        SoftLayerDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+        SoftLayerDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
 
         with self.assertRaises(ZoneDoesNotExistError):
-            self.driver.get_zone(zone_id='333')
+            self.driver.get_zone(zone_id="333")
 
     def test_delete_zone(self):
         zone = self.driver.list_zones()[0]
@@ -68,7 +67,7 @@ class SoftLayerTests(unittest.TestCase):
     def test_delete_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
 
-        SoftLayerDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+        SoftLayerDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
 
         with self.assertRaises(ZoneDoesNotExistError):
             self.driver.delete_zone(zone=zone)
@@ -78,30 +77,30 @@ class SoftLayerTests(unittest.TestCase):
 
         records = zone.list_records()
 
-        self.assertEqual(records[0].id, '50772366')
+        self.assertEqual(records[0].id, "50772366")
         self.assertEqual(records[0].type, RecordType.SOA)
-        self.assertEqual(records[0].data, 'ns1.softlayer.com.')
+        self.assertEqual(records[0].data, "ns1.softlayer.com.")
         self.assertEqual(
             records[0].extra,
             {
-                'mxPriority': '',
-                'expire': 604800,
-                'retry': 300,
-                'refresh': 3600,
-                'ttl': 86400
-            }
+                "mxPriority": "",
+                "expire": 604800,
+                "retry": 300,
+                "refresh": 3600,
+                "ttl": 86400,
+            },
         )
-        self.assertEqual(records[1].id, '50772367')
+        self.assertEqual(records[1].id, "50772367")
         self.assertEqual(records[1].type, RecordType.NS)
-        self.assertEqual(records[1].data, 'ns1.softlayer.com.')
+        self.assertEqual(records[1].data, "ns1.softlayer.com.")
 
-        self.assertEqual(records[2].id, '50772368')
+        self.assertEqual(records[2].id, "50772368")
         self.assertEqual(records[2].type, RecordType.NS)
-        self.assertEqual(records[2].data, 'ns2.softlayer.com.')
+        self.assertEqual(records[2].data, "ns2.softlayer.com.")
 
-        self.assertEqual(records[3].id, '50772365')
+        self.assertEqual(records[3].id, "50772365")
         self.assertEqual(records[3].type, RecordType.A)
-        self.assertEqual(records[3].data, '127.0.0.1')
+        self.assertEqual(records[3].data, "127.0.0.1")
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
@@ -109,28 +108,27 @@ class SoftLayerTests(unittest.TestCase):
         self.assertTrue(RecordType.A in record_types)
 
     def test_get_record(self):
-        record = self.driver.get_record(zone_id='123', record_id='50772366')
+        record = self.driver.get_record(zone_id="123", record_id="50772366")
 
-        self.assertEqual(record.id, '50772366')
+        self.assertEqual(record.id, "50772366")
         self.assertEqual(record.type, RecordType.SOA)
-        self.assertEqual(record.data, 'ns1.softlayer.com.')
+        self.assertEqual(record.data, "ns1.softlayer.com.")
 
     def test_get_record_record_does_not_exist(self):
-        SoftLayerDNSMockHttp.type = 'RECORD_DOES_NOT_EXIST'
+        SoftLayerDNSMockHttp.type = "RECORD_DOES_NOT_EXIST"
 
         with self.assertRaises(RecordDoesNotExistError):
-            self.driver.get_record(zone_id='123',
-                                   record_id='1')
+            self.driver.get_record(zone_id="123", record_id="1")
 
     def test_delete_record(self):
-        record = self.driver.get_record(zone_id='123', record_id='50772366')
+        record = self.driver.get_record(zone_id="123", record_id="50772366")
         status = self.driver.delete_record(record=record)
         self.assertTrue(status)
 
     def test_delete_record_does_not_exist(self):
-        record = self.driver.get_record(zone_id='123', record_id='50772366')
+        record = self.driver.get_record(zone_id="123", record_id="50772366")
 
-        SoftLayerDNSMockHttp.type = 'RECORD_DOES_NOT_EXIST'
+        SoftLayerDNSMockHttp.type = "RECORD_DOES_NOT_EXIST"
 
         with self.assertRaises(RecordDoesNotExistError):
             self.driver.delete_record(record=record)
@@ -138,41 +136,44 @@ class SoftLayerTests(unittest.TestCase):
     def test_create_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.create_record(
-            name='www', zone=zone,
-            type=RecordType.A, data='127.0.0.1',
-            extra={'ttl': 30}
+            name="www",
+            zone=zone,
+            type=RecordType.A,
+            data="127.0.0.1",
+            extra={"ttl": 30},
         )
 
-        self.assertEqual(record.id, '50772870')
-        self.assertEqual(record.name, 'www')
+        self.assertEqual(record.id, "50772870")
+        self.assertEqual(record.name, "www")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, '127.0.0.1')
+        self.assertEqual(record.data, "127.0.0.1")
 
     def test_update_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[1]
 
-        SoftLayerDNSMockHttp.type = 'CHANGED'
+        SoftLayerDNSMockHttp.type = "CHANGED"
         params = {
-            'record': record,
-            'name': 'www',
-            'type': RecordType.A,
-            'data': '1.1.1.1',
-            'extra': {'ttl': 30}}
+            "record": record,
+            "name": "www",
+            "type": RecordType.A,
+            "data": "1.1.1.1",
+            "extra": {"ttl": 30},
+        }
         updated_record = self.driver.update_record(**params)
 
-        self.assertEqual(record.data, 'ns1.softlayer.com.')
+        self.assertEqual(record.data, "ns1.softlayer.com.")
 
-        self.assertEqual(updated_record.id, '123')
-        self.assertEqual(updated_record.name, 'www')
+        self.assertEqual(updated_record.id, "123")
+        self.assertEqual(updated_record.name, "www")
         self.assertEqual(updated_record.zone, record.zone)
         self.assertEqual(updated_record.type, RecordType.A)
-        self.assertEqual(updated_record.data, '1.1.1.1')
+        self.assertEqual(updated_record.data, "1.1.1.1")
 
 
 class SoftLayerDNSMockHttp(MockHttp):
-    fixtures = DNSFileFixtures('softlayer')
+    fixtures = DNSFileFixtures("softlayer")
 
     def _get_method_name(self, type, use_param, qs, path):
         return "_xmlrpc"
@@ -183,72 +184,75 @@ class SoftLayerDNSMockHttp(MockHttp):
         meth_name = "%s_%s" % (url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_createObject(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'v3_SoftLayer_Dns_Domain_createObject.xml')
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_createObject(self, method, url, body, headers):
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_getByDomainName(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'v3_SoftLayer_Dns_Domain_getByDomainName.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_getByDomainName.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_getObject(
-            self, method, url, body, headers):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_getObject(self, method, url, body, headers):
         fixture = {
-            None: 'v3_SoftLayer_Dns_Domain_getObject.xml',
-            'ZONE_DOES_NOT_EXIST': 'not_found.xml',
+            None: "v3_SoftLayer_Dns_Domain_getObject.xml",
+            "ZONE_DOES_NOT_EXIST": "not_found.xml",
         }[self.type]
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_deleteObject(
-            self, method, url, body, headers):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_deleteObject(self, method, url, body, headers):
         fixture = {
-            None: 'v3_SoftLayer_Dns_Domain_deleteObject.xml',
-            'ZONE_DOES_NOT_EXIST': 'not_found.xml',
+            None: "v3_SoftLayer_Dns_Domain_deleteObject.xml",
+            "ZONE_DOES_NOT_EXIST": "not_found.xml",
         }[self.type]
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_getResourceRecords(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'v3_SoftLayer_Dns_Domain_getResourceRecords.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_getResourceRecords.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_getObject(
-            self, method, url, body, headers):
+        self, method, url, body, headers
+    ):
         fixture = {
-            None: 'v3_SoftLayer_Dns_Domain_ResourceRecord_getObject.xml',
-            'RECORD_DOES_NOT_EXIST': 'not_found.xml',
-            'CHANGED': 'v3_SoftLayer_Dns_Domain_ResourceRecord_getObject_changed.xml',
+            None: "v3_SoftLayer_Dns_Domain_ResourceRecord_getObject.xml",
+            "RECORD_DOES_NOT_EXIST": "not_found.xml",
+            "CHANGED": "v3_SoftLayer_Dns_Domain_ResourceRecord_getObject_changed.xml",
         }[self.type]
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_deleteObject(
-            self, method, url, body, headers):
+        self, method, url, body, headers
+    ):
         fixture = {
-            None: 'v3_SoftLayer_Dns_Domain_ResourceRecord_deleteObject.xml',
-            'RECORD_DOES_NOT_EXIST': 'not_found.xml',
+            None: "v3_SoftLayer_Dns_Domain_ResourceRecord_deleteObject.xml",
+            "RECORD_DOES_NOT_EXIST": "not_found.xml",
         }[self.type]
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_createObject(
-            self, method, url, body, headers):
+        self, method, url, body, headers
+    ):
         body = self.fixtures.load(
-            'v3_SoftLayer_Dns_Domain_ResourceRecord_createObject.xml')
+            "v3_SoftLayer_Dns_Domain_ResourceRecord_createObject.xml"
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_editObject(
-            self, method, url, body, headers):
+        self, method, url, body, headers
+    ):
         body = self.fixtures.load(
-            'v3_SoftLayer_Dns_Domain_ResourceRecord_editObject.xml')
+            "v3_SoftLayer_Dns_Domain_ResourceRecord_editObject.xml"
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

@@ -77,7 +77,32 @@
         "managed_by_apps": false,
         "managed_by_argo_tunnel": false
       }
-    }
+    },
+    {
+            "id": "r8",
+            "zone_id": "1234",
+            "zone_name": "foo.bar",
+            "name": "test1",
+            "type": "CAA",
+            "content": "0\tissue\ttest.example.com",
+            "proxiable": false,
+            "proxied": false,
+            "ttl": 1,
+            "locked": false,
+            "data": {
+                "flags": 0,
+                "tag": "issue",
+                "value": "test.example.com"
+            },
+            "meta": {
+                "auto_added": false,
+                "managed_by_apps": false,
+                "managed_by_argo_tunnel": false,
+                "source": "primary"
+            },
+            "created_on": "2020-06-01T14:02:37.544331Z",
+            "modified_on": "2020-06-01T14:02:37.544331Z"
+        }
   ],
   "result_info": {
     "page": 2,

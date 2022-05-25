@@ -29,8 +29,7 @@ from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.types import (NodeState, StorageVolumeState,
-                                    VolumeSnapshotState)
+from libcloud.compute.types import NodeState, StorageVolumeState, VolumeSnapshotState
 from libcloud.common.types import LibcloudError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
@@ -39,7 +38,27 @@ from libcloud.utils.py3 import basestring
 from libcloud.utils import iso8601
 
 
-RESOURCE_API_VERSION = '2016-04-30-preview'
+RESOURCE_API_VERSION = "2016-04-30-preview"
+DISK_API_VERSION = (
+    "2016-04-30-preview"  # need to upgrade and merge with DISK_RESIZE_API_VERSION
+)
+DISK_RESIZE_API_VERSION = "2018-06-01"
+IMAGES_API_VERSION = "2015-06-15"
+INSTANCE_VIEW_API_VERSION = "2015-06-15"
+IP_API_VERSION = "2019-06-01"
+LOCATIONS_API_VERSION = "2015-01-01"
+NIC_API_VERSION = "2018-06-01"
+NSG_API_VERSION = "2016-09-01"
+RATECARD_API_VERSION = "2016-08-31-preview"
+RESOURCE_GROUP_API_VERSION = "2016-09-01"
+SNAPSHOT_API_VERSION = "2016-04-30-preview"
+STORAGE_ACCOUNT_API_VERSION = "2015-05-01-preview"
+SUBNET_API_VERSION = "2015-06-15"
+TAG_API_VERSION = "2018-06-01"
+VIRTUAL_NETWORK_API_VERSION = "2018-06-01"
+VM_API_VERSION = "2021-11-01"
+VM_EXTENSION_API_VERSION = "2015-06-15"
+VM_SIZE_API_VERSION = "2015-06-15"  # this API is deprecated
 
 
 class AzureImage(NodeImage):
@@ -51,30 +70,52 @@ class AzureImage(NodeImage):
         self.sku = sku
         self.version = version
         self.location = location
-        urn = "%s:%s:%s:%s" % (self.publisher, self.offer,
-                               self.sku, self.version)
-        name = "%s %s %s %s" % (self.publisher, self.offer,
-                                self.sku, self.version)
+        urn = "%s:%s:%s:%s" % (self.publisher, self.offer, self.sku, self.version)
+        name = "%s %s %s %s" % (self.publisher, self.offer, self.sku, self.version)
         super(AzureImage, self).__init__(urn, name, driver)
 
     def __repr__(self):
-        return (('<AzureImage: id=%s, name=%s, location=%s>')
-                % (self.id, self.name, self.location))
+        return ("<AzureImage: id=%s, name=%s, location=%s>") % (
+            self.id,
+            self.name,
+            self.location,
+        )
 
 
 class AzureVhdImage(NodeImage):
     """Represents a VHD node image that an Azure VM can boot from."""
 
     def __init__(self, storage_account, blob_container, name, driver):
-        urn = "https://%s.blob%s/%s/%s" % (storage_account,
-                                           driver.connection.storage_suffix,
-                                           blob_container,
-                                           name)
+        urn = "https://%s.blob%s/%s/%s" % (
+            storage_account,
+            driver.connection.storage_suffix,
+            blob_container,
+            name,
+        )
         super(AzureVhdImage, self).__init__(urn, name, driver)
 
     def __repr__(self):
-        return (('<AzureVhdImage: id=%s, name=%s>')
-                % (self.id, self.name))
+        return ("<AzureVhdImage: id=%s, name=%s>") % (self.id, self.name)
+
+
+class AzureComputeGalleryImage(NodeImage):
+    """Represents a Compute Gallery image that an Azure VM can boot from."""
+
+    def __init__(self, subscription_id, resource_group, gallery, name, driver):
+        id = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Compute/galleries/%s/images/%s"
+            % (
+                subscription_id,
+                resource_group,
+                gallery,
+                name,
+            )
+        )
+        super(AzureComputeGalleryImage, self).__init__(id, name, driver)
+
+    def __repr__(self):
+        return ("<AzureComputeGalleryImage: id=%s, name=%s>") % (self.id, self.name)
 
 
 class AzureResourceGroup(object):
@@ -87,8 +128,11 @@ class AzureResourceGroup(object):
         self.extra = extra
 
     def __repr__(self):
-        return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
-                % (self.id, self.name, self.location))
+        return ("<AzureResourceGroup: id=%s, name=%s, location=%s ...>") % (
+            self.id,
+            self.name,
+            self.location,
+        )
 
 
 class AzureNetworkSecurityGroup(object):
@@ -101,9 +145,11 @@ class AzureNetworkSecurityGroup(object):
         self.extra = extra
 
     def __repr__(self):
-        return (
-            ('<AzureNetworkSecurityGroup: id=%s, name=%s, location=%s ...>')
-            % (self.id, self.name, self.location))
+        return ("<AzureNetworkSecurityGroup: id=%s, name=%s, location=%s ...>") % (
+            self.id,
+            self.name,
+            self.location,
+        )
 
 
 class AzureNetwork(object):
@@ -116,8 +162,11 @@ class AzureNetwork(object):
         self.extra = extra
 
     def __repr__(self):
-        return (('<AzureNetwork: id=%s, name=%s, location=%s ...>')
-                % (self.id, self.name, self.location))
+        return ("<AzureNetwork: id=%s, name=%s, location=%s ...>") % (
+            self.id,
+            self.name,
+            self.location,
+        )
 
 
 class AzureSubnet(object):
@@ -129,8 +178,7 @@ class AzureSubnet(object):
         self.extra = extra
 
     def __repr__(self):
-        return (('<AzureSubnet: id=%s, name=%s ...>')
-                % (self.id, self.name))
+        return ("<AzureSubnet: id=%s, name=%s ...>") % (self.id, self.name)
 
 
 class AzureNic(object):
@@ -143,8 +191,7 @@ class AzureNic(object):
         self.extra = extra
 
     def __repr__(self):
-        return (('<AzureNic: id=%s, name=%s ...>')
-                % (self.id, self.name))
+        return ("<AzureNic: id=%s, name=%s ...>") % (self.id, self.name)
 
 
 class AzureIPAddress(object):
@@ -156,18 +203,17 @@ class AzureIPAddress(object):
         self.extra = extra
 
     def __repr__(self):
-        return (('<AzureIPAddress: id=%s, name=%s ...>')
-                % (self.id, self.name))
+        return ("<AzureIPAddress: id=%s, name=%s ...>") % (self.id, self.name)
 
 
 class AzureNodeDriver(NodeDriver):
     """Compute node driver for Azure Resource Manager."""
 
     connectionCls = AzureResourceManagementConnection
-    name = 'Azure Virtual machines'
-    website = 'http://azure.microsoft.com/en-us/services/virtual-machines/'
+    name = "Azure Virtual machines"
+    website = "http://azure.microsoft.com/en-us/services/virtual-machines/"
     type = Provider.AZURE_ARM
-    features = {'create_node': ['ssh_key', 'password']}
+    features = {"create_node": ["ssh_key", "password"]}
 
     # The API doesn't provide state or country information, so fill it in.
     # Information from https://azure.microsoft.com/en-us/regions/
@@ -188,34 +234,46 @@ class AzureNodeDriver(NodeDriver):
         "japanwest": "Osaka, Japan",
         "brazilsouth": "Sao Paulo State, Brazil",
         "australiaeast": "New South Wales, Australia",
-        "australiasoutheast": "Victoria, Australia"
+        "australiasoutheast": "Victoria, Australia",
     }
 
     SNAPSHOT_STATE_MAP = {
-        'creating': VolumeSnapshotState.CREATING,
-        'updating': VolumeSnapshotState.UPDATING,
-        'succeeded': VolumeSnapshotState.AVAILABLE,
-        'failed': VolumeSnapshotState.ERROR
+        "creating": VolumeSnapshotState.CREATING,
+        "updating": VolumeSnapshotState.UPDATING,
+        "succeeded": VolumeSnapshotState.AVAILABLE,
+        "failed": VolumeSnapshotState.ERROR,
     }
 
-    def __init__(self, tenant_id, subscription_id, key, secret,
-                 secure=True, host=None, port=None,
-                 api_version=None, region=None, **kwargs):
+    def __init__(
+        self,
+        tenant_id,
+        subscription_id,
+        key,
+        secret,
+        secure=True,
+        host=None,
+        port=None,
+        api_version=None,
+        region=None,
+        **kwargs,
+    ):
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
         self.cloud_environment = kwargs.get("cloud_environment")
-        super(AzureNodeDriver, self).__init__(key=key, secret=secret,
-                                              secure=secure,
-                                              host=host, port=port,
-                                              api_version=api_version,
-                                              region=region, **kwargs)
+        super(AzureNodeDriver, self).__init__(
+            key=key,
+            secret=secret,
+            secure=secure,
+            host=host,
+            port=port,
+            api_version=api_version,
+            region=region,
+            **kwargs,
+        )
         if self.region is not None:
             loc_id = self.region.lower().replace(" ", "")
             country = self._location_to_country.get(loc_id)
-            self.default_location = NodeLocation(loc_id,
-                                                 self.region,
-                                                 country,
-                                                 self)
+            self.default_location = NodeLocation(loc_id, self.region, country, self)
         else:
             self.default_location = None
 
@@ -228,13 +286,15 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "/subscriptions/%s/providers/Microsoft.Compute" % (
-            self.subscription_id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-01-01"})
+            self.subscription_id
+        )
+        r = self.connection.request(
+            action, params={"api-version": LOCATIONS_API_VERSION}
+        )
 
         for rt in r.object["resourceTypes"]:
             if rt["resourceType"] == "virtualMachines":
-                return [self._to_location(l) for l in rt["locations"]]
+                return [self._to_location(location) for location in rt["locations"]]
 
         return []
 
@@ -255,16 +315,21 @@ class AzureNodeDriver(NodeDriver):
                 location = self.default_location
             else:
                 raise ValueError("location is required.")
-        action = \
-            "/subscriptions/%s/providers/Microsoft" \
-            ".Compute/locations/%s/vmSizes" \
-            % (self.subscription_id, location.id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+        action = (
+            "/subscriptions/%s/providers/Microsoft"
+            ".Compute/locations/%s/vmSizes" % (self.subscription_id, location.id)
+        )
+        r = self.connection.request(action, params={"api-version": VM_SIZE_API_VERSION})
         return [self._to_node_size(d) for d in r.object["value"]]
 
-    def list_images(self, location=None, ex_publisher=None, ex_offer=None,
-                    ex_sku=None, ex_version=None):
+    def list_images(
+        self,
+        location=None,
+        ex_publisher=None,
+        ex_offer=None,
+        ex_sku=None,
+        ex_version=None,
+    ):
         """
         List available VM images to boot from.
 
@@ -300,18 +365,25 @@ class AzureNodeDriver(NodeDriver):
             if not ex_publisher:
                 publishers = self.ex_list_publishers(loc)
             else:
-                publishers = [(
-                    "/subscriptions/%s/providers/Microsoft"
-                    ".Compute/locations/%s/publishers/%s" %
-                    (self.subscription_id, loc.id, ex_publisher),
-                    ex_publisher)]
+                publishers = [
+                    (
+                        "/subscriptions/%s/providers/Microsoft"
+                        ".Compute/locations/%s/publishers/%s"
+                        % (self.subscription_id, loc.id, ex_publisher),
+                        ex_publisher,
+                    )
+                ]
 
             for pub in publishers:
                 if not ex_offer:
                     offers = self.ex_list_offers(pub[0])
                 else:
-                    offers = [("%s/artifacttypes/vmimage/offers/%s" % (
-                        pub[0], ex_offer), ex_offer)]
+                    offers = [
+                        (
+                            "%s/artifacttypes/vmimage/offers/%s" % (pub[0], ex_offer),
+                            ex_offer,
+                        )
+                    ]
 
                 for off in offers:
                     if not ex_sku:
@@ -323,14 +395,21 @@ class AzureNodeDriver(NodeDriver):
                         if not ex_version:
                             versions = self.ex_list_image_versions(sku[0])
                         else:
-                            versions = [("%s/versions/%s" % (
-                                sku[0], ex_version), ex_version)]
+                            versions = [
+                                ("%s/versions/%s" % (sku[0], ex_version), ex_version)
+                            ]
 
                         for v in versions:
-                            images.append(AzureImage(v[1], sku[1],
-                                                     off[1], pub[1],
-                                                     loc.id,
-                                                     self.connection.driver))
+                            images.append(
+                                AzureImage(
+                                    v[1],
+                                    sku[1],
+                                    off[1],
+                                    pub[1],
+                                    loc.id,
+                                    self.connection.driver,
+                                )
+                            )
         return images
 
     def get_image(self, image_id, location=None):
@@ -356,13 +435,12 @@ class AzureNodeDriver(NodeDriver):
             return AzureVhdImage(storageAccount, blobContainer, blob, self)
         else:
             (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
-            i = self.list_images(location, ex_publisher,
-                                 ex_offer, ex_sku, ex_version)
+            i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
-    def list_nodes(self, ex_resource_group=None,
-                   ex_fetch_nic=True,
-                   ex_fetch_power_state=True):
+    def list_nodes(
+        self, ex_resource_group=None, ex_fetch_nic=True, ex_fetch_power_state=True
+    ):
         """
         List all nodes.
 
@@ -385,38 +463,45 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if ex_resource_group:
-            action = "/subscriptions/%s/resourceGroups/%s/" \
-                     "providers/Microsoft.Compute/virtualMachines" \
-                     % (self.subscription_id, ex_resource_group)
+            action = (
+                "/subscriptions/%s/resourceGroups/%s/"
+                "providers/Microsoft.Compute/virtualMachines"
+                % (self.subscription_id, ex_resource_group)
+            )
         else:
-            action = "/subscriptions/%s/providers/Microsoft.Compute/" \
-                     "virtualMachines" \
-                     % (self.subscription_id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
-        return [self._to_node(n,
-                              fetch_nic=ex_fetch_nic,
-                              fetch_power_state=ex_fetch_power_state)
-                for n in r.object["value"]]
+            action = (
+                "/subscriptions/%s/providers/Microsoft.Compute/"
+                "virtualMachines" % (self.subscription_id)
+            )
+        r = self.connection.request(action, params={"api-version": VM_API_VERSION})
+        return [
+            self._to_node(
+                n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state
+            )
+            for n in r.object["value"]
+        ]
 
-    def create_node(self,
-                    name,
-                    size,
-                    image,
-                    auth,
-                    ex_resource_group,
-                    ex_storage_account,
-                    ex_blob_container="vhds",
-                    location=None,
-                    ex_user_name="azureuser",
-                    ex_network=None,
-                    ex_subnet=None,
-                    ex_nic=None,
-                    ex_tags={},
-                    ex_customdata="",
-                    ex_use_managed_disks=False,
-                    ex_disk_size=None,
-                    ex_storage_account_type="Standard_LRS"):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        auth,
+        ex_resource_group,
+        ex_storage_account=None,
+        ex_blob_container="vhds",
+        location=None,
+        ex_user_name="azureuser",
+        ex_network=None,
+        ex_subnet=None,
+        ex_nic=None,
+        ex_tags={},
+        ex_customdata="",
+        ex_use_managed_disks=False,
+        ex_disk_size=None,
+        ex_storage_account_type="Standard_LRS",
+        ex_os_disk_delete=False,
+    ):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -451,8 +536,8 @@ class AzureNodeDriver(NodeDriver):
                             (required)
         :type size:   :class:`.NodeSize`
 
-        :param image:  OS Image to boot on node. (required)
-        :type image:  :class:`.AzureImage`
+        :param image:  OS Image to boot on node (required)
+        :type image:  :class:`.AzureImage` or :class:`.AzureVhdImage` or :class:`.AzureComputeGalleryImage`
 
         :param location: Which data center to create a node in.
         (if None, use default location specified as 'region' in __init__)
@@ -521,9 +606,17 @@ class AzureNodeDriver(NodeDriver):
             ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
         :type ex_storage_account_type: str
 
+        :param ex_os_disk_delete: Enable this feature to have Azure
+            automatically delete the OS disk when you delete the VM.
+        :type ex_os_disk_delete: ``bool``
+
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
+        if not ex_use_managed_disks and ex_storage_account is None:
+            raise ValueError(
+                "ex_use_managed_disks is False, " "must provide ex_storage_account"
+            )
 
         if location is None:
             location = self.default_location
@@ -533,61 +626,71 @@ class AzureNodeDriver(NodeDriver):
             if ex_subnet is None:
                 ex_subnet = "default"
 
-            subnet_id = "/subscriptions/%s/resourceGroups/%s/providers" \
-                        "/Microsoft.Network/virtualnetworks/%s/subnets/%s" % \
-                        (self.subscription_id, ex_resource_group,
-                         ex_network, ex_subnet)
+            subnet_id = (
+                "/subscriptions/%s/resourceGroups/%s/providers"
+                "/Microsoft.Network/virtualnetworks/%s/subnets/%s"
+                % (self.subscription_id, ex_resource_group, ex_network, ex_subnet)
+            )
             subnet = AzureSubnet(subnet_id, ex_subnet, {})
-            ex_nic = self.ex_create_network_interface(name + "-nic",
-                                                      subnet,
-                                                      ex_resource_group,
-                                                      location)
+            ex_nic = self.ex_create_network_interface(
+                name + "-nic", subnet, ex_resource_group, location
+            )
 
         auth = self._get_and_check_auth(auth)
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers" \
-                 "/Microsoft.Compute/virtualMachines/%s" % \
-                 (self.subscription_id, ex_resource_group, name)
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/providers"
+            "/Microsoft.Compute/virtualMachines/%s"
+            % (self.subscription_id, ex_resource_group, name)
+        )
 
         if isinstance(image, AzureVhdImage):
             instance_vhd = self._get_instance_vhd(
                 name=name,
                 ex_resource_group=ex_resource_group,
                 ex_storage_account=ex_storage_account,
-                ex_blob_container=ex_blob_container)
+                ex_blob_container=ex_blob_container,
+            )
             storage_profile = {
                 "osDisk": {
                     "name": name,
                     "osType": "linux",
                     "caching": "ReadWrite",
                     "createOption": "FromImage",
-                    "image": {
-                        "uri": image.id
-                    },
-                    "vhd": {
-                        "uri": instance_vhd,
-                    }
+                    "image": {"uri": image.id},
+                    "vhd": {"uri": instance_vhd},
                 }
             }
+            if ex_os_disk_delete:
+                storage_profile["osDisk"]["deleteOption"] = "Delete"
             if ex_use_managed_disks:
                 raise LibcloudError(
                     "Creating managed OS disk from %s image "
-                    "type is not supported." % type(image))
-        elif isinstance(image, AzureImage):
-            storage_profile = {
-                "imageReference": {
+                    "type is not supported." % type(image)
+                )
+        elif isinstance(image, AzureImage) or isinstance(
+            image, AzureComputeGalleryImage
+        ):
+            if isinstance(image, AzureImage):
+                imageReference = {
                     "publisher": image.publisher,
                     "offer": image.offer,
                     "sku": image.sku,
-                    "version": image.version
-                },
+                    "version": image.version,
+                }
+            else:
+                imageReference = {"id": image.id}
+            storage_profile = {
+                "imageReference": imageReference,
                 "osDisk": {
                     "name": name,
                     "osType": "linux",
                     "caching": "ReadWrite",
-                    "createOption": "FromImage"
-                }
+                    "createOption": "FromImage",
+                },
             }
+            if ex_os_disk_delete:
+                storage_profile["osDisk"]["deleteOption"] = "Delete"
             if ex_use_managed_disks:
                 storage_profile["osDisk"]["managedDisk"] = {
                     "storageAccountType": ex_storage_account_type
@@ -597,14 +700,14 @@ class AzureNodeDriver(NodeDriver):
                     name=name,
                     ex_resource_group=ex_resource_group,
                     ex_storage_account=ex_storage_account,
-                    ex_blob_container=ex_blob_container)
-                storage_profile["osDisk"]["vhd"] = {
-                    "uri": instance_vhd
-                }
+                    ex_blob_container=ex_blob_container,
+                )
+                storage_profile["osDisk"]["vhd"] = {"uri": instance_vhd}
         else:
             raise LibcloudError(
                 "Unknown image type %s, expected one of AzureImage, "
-                "AzureVhdImage." % type(image))
+                "AzureVhdImage, AzureComputeGalleryImage." % type(image)
+            )
 
         data = {
             "id": target,
@@ -613,48 +716,39 @@ class AzureNodeDriver(NodeDriver):
             "location": location.id,
             "tags": ex_tags,
             "properties": {
-                "hardwareProfile": {
-                    "vmSize": size.id
-                },
+                "hardwareProfile": {"vmSize": size.id},
                 "storageProfile": storage_profile,
-                "osProfile": {
-                    "computerName": name
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": ex_nic.id
-                        }
-                    ]
-                }
-            }
+                "osProfile": {"computerName": name},
+                "networkProfile": {"networkInterfaces": [{"id": ex_nic.id}]},
+            },
         }
 
         if ex_disk_size:
-            data['properties']['storageProfile']['osDisk'].update({
-                'diskSizeGB': ex_disk_size
-            })
+            data["properties"]["storageProfile"]["osDisk"].update(
+                {"diskSizeGB": ex_disk_size}
+            )
 
         if ex_customdata:
-            data["properties"]["osProfile"]["customData"] = \
-                base64.b64encode(ex_customdata)
+            data["properties"]["osProfile"]["customData"] = base64.b64encode(
+                ex_customdata
+            )
 
         data["properties"]["osProfile"]["adminUsername"] = ex_user_name
 
         if isinstance(auth, NodeAuthSSHKey):
-            data["properties"]["osProfile"]["adminPassword"] = \
-                binascii.hexlify(os.urandom(20)).decode("utf-8")
+            data["properties"]["osProfile"]["adminPassword"] = binascii.hexlify(
+                os.urandom(20)
+            ).decode("utf-8")
             data["properties"]["osProfile"]["linuxConfiguration"] = {
                 "disablePasswordAuthentication": "true",
                 "ssh": {
                     "publicKeys": [
                         {
-                            "path": '/home/%s/.ssh/authorized_keys' % (
-                                ex_user_name),
-                            "keyData": auth.pubkey  # pylint: disable=no-member
+                            "path": "/home/%s/.ssh/authorized_keys" % (ex_user_name),
+                            "keyData": auth.pubkey,  # pylint: disable=no-member
                         }
                     ]
-                }
+                },
             }
         elif isinstance(auth, NodeAuthPassword):
             data["properties"]["osProfile"]["linuxConfiguration"] = {
@@ -662,14 +756,14 @@ class AzureNodeDriver(NodeDriver):
             }
             data["properties"]["osProfile"]["adminPassword"] = auth.password
         else:
-            raise ValueError(
-                "Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
+            raise ValueError("Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
 
         r = self.connection.request(
             target,
-            params={"api-version": RESOURCE_API_VERSION},
+            params={"api-version": VM_API_VERSION},
             data=data,
-            method="PUT")
+            method="PUT",
+        )
 
         node = self._to_node(r.object)
         node.size = size
@@ -690,9 +784,8 @@ class AzureNodeDriver(NodeDriver):
         target = "%s/restart" % node.id
         try:
             self.connection.request(
-                target,
-                params={"api-version": RESOURCE_API_VERSION},
-                method='POST')
+                target, params={"api-version": VM_API_VERSION}, method="POST"
+            )
             return True
         except BaseHTTPError as h:
             if h.code == 202:
@@ -700,11 +793,14 @@ class AzureNodeDriver(NodeDriver):
             else:
                 return False
 
-    def destroy_node(self, node,
-                     ex_destroy_nic=True,
-                     ex_destroy_vhd=True,
-                     ex_poll_qty=10,
-                     ex_poll_wait=10):
+    def destroy_node(
+        self,
+        node,
+        ex_destroy_nic=True,
+        ex_destroy_vhd=True,
+        ex_poll_qty=10,
+        ex_poll_wait=10,
+    ):
         """
         Destroy a node.
 
@@ -731,7 +827,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        do_node_polling = (ex_destroy_nic or ex_destroy_vhd)
+        do_node_polling = ex_destroy_nic or ex_destroy_vhd
 
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
@@ -739,9 +835,9 @@ class AzureNodeDriver(NodeDriver):
         # failed to clean up its related resources, so it isn't taken as a
         # failure.
         try:
-            self.connection.request(node.id,
-                                    params={"api-version": "2015-06-15"},
-                                    method='DELETE')
+            self.connection.request(
+                node.id, params={"api-version": VM_API_VERSION}, method="DELETE"
+            )
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
@@ -757,9 +853,7 @@ class AzureNodeDriver(NodeDriver):
         while do_node_polling and retries > 0:
             try:
                 time.sleep(ex_poll_wait)
-                self.connection.request(
-                    node.id,
-                    params={"api-version": RESOURCE_API_VERSION})
+                self.connection.request(node.id, params={"api-version": VM_API_VERSION})
                 retries -= 1
             except BaseHTTPError as h:
                 if h.code in (204, 404):
@@ -770,8 +864,7 @@ class AzureNodeDriver(NodeDriver):
 
         # Optionally clean up the network
         # interfaces that were attached to this node.
-        interfaces = \
-            node.extra["properties"]["networkProfile"]["networkInterfaces"]
+        interfaces = node.extra["properties"]["networkProfile"]["networkInterfaces"]
         if ex_destroy_nic:
             for nic in interfaces:
                 retries = ex_poll_qty
@@ -781,9 +874,11 @@ class AzureNodeDriver(NodeDriver):
                         break
                     except BaseHTTPError as h:
                         retries -= 1
-                        if (h.code == 400 and
-                                h.message.startswith("[NicInUse]") and
-                                retries > 0):
+                        if (
+                            h.code == 400
+                            and h.message.startswith("[NicInUse]")
+                            and retries > 0
+                        ):
                             time.sleep(ex_poll_wait)
                         else:
                             raise
@@ -815,9 +910,16 @@ class AzureNodeDriver(NodeDriver):
 
         return True
 
-    def create_volume(self, size, name, location=None, snapshot=None,
-                      ex_resource_group=None, ex_account_type=None,
-                      ex_tags=None):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        ex_resource_group=None,
+        ex_account_type=None,
+        ex_tags=None,
+    ):
         """
         Create a new managed volume.
 
@@ -854,8 +956,8 @@ class AzureNodeDriver(NodeDriver):
             raise ValueError("Must provide `ex_resource_group` value.")
 
         action = (
-            u'/subscriptions/{subscription_id}/resourceGroups/{resource_group}'
-            u'/providers/Microsoft.Compute/disks/{volume_name}'
+            "/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            "/providers/Microsoft.Compute/disks/{volume_name}"
         ).format(
             subscription_id=self.subscription_id,
             resource_group=ex_resource_group,
@@ -863,36 +965,28 @@ class AzureNodeDriver(NodeDriver):
         )
         tags = ex_tags if ex_tags is not None else {}
 
-        creation_data = {
-            'createOption': 'Empty'
-        } if snapshot is None else {
-            'createOption': 'Copy',
-            'sourceUri': snapshot.id
-        }
+        creation_data = (
+            {"createOption": "Empty"}
+            if snapshot is None
+            else {"createOption": "Copy", "sourceUri": snapshot.id}
+        )
         data = {
-            'location': location.id,
-            'tags': tags,
-            'properties': {
-                'creationData': creation_data,
-                'diskSizeGB': size
-            }
+            "location": location.id,
+            "tags": tags,
+            "properties": {"creationData": creation_data, "diskSizeGB": size},
         }
         if ex_account_type is not None:
-            data['properties']['accountType'] = ex_account_type
+            data["properties"]["accountType"] = ex_account_type
 
         response = self.connection.request(
             action,
-            method='PUT',
-            params={
-                'api-version': RESOURCE_API_VERSION,
-            },
-            data=data
+            method="PUT",
+            params={"api-version": DISK_API_VERSION},
+            data=data,
         )
 
         return self._to_volume(
-            response.object,
-            name=name,
-            ex_resource_group=ex_resource_group
+            response.object, name=name, ex_resource_group=ex_resource_group
         )
 
     def list_volumes(self, ex_resource_group=None):
@@ -906,28 +1000,33 @@ class AzureNodeDriver(NodeDriver):
         :rtype: list of :class:`StorageVolume`
         """
         if ex_resource_group:
-            action = u'/subscriptions/{subscription_id}/resourceGroups' \
-                     u'/{resource_group}/providers/Microsoft.Compute/disks'
+            action = (
+                "/subscriptions/{subscription_id}/resourceGroups"
+                "/{resource_group}/providers/Microsoft.Compute/disks"
+            )
         else:
-            action = u'/subscriptions/{subscription_id}' \
-                     u'/providers/Microsoft.Compute/disks'
+            action = (
+                "/subscriptions/{subscription_id}" "/providers/Microsoft.Compute/disks"
+            )
 
         action = action.format(
-            subscription_id=self.subscription_id,
-            resource_group=ex_resource_group
+            subscription_id=self.subscription_id, resource_group=ex_resource_group
         )
 
         response = self.connection.request(
-            action,
-            method='GET',
-            params={
-                'api-version': RESOURCE_API_VERSION
-            }
+            action, method="GET", params={"api-version": DISK_API_VERSION}
         )
-        return [self._to_volume(volume) for volume in response.object['value']]
+        return [self._to_volume(volume) for volume in response.object["value"]]
 
-    def attach_volume(self, node, volume, ex_lun=None,
-                      ex_vhd_uri=None, ex_vhd_create=False, **ex_kwargs):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        ex_lun=None,
+        ex_vhd_uri=None,
+        ex_vhd_create=False,
+        **ex_kwargs,
+    ):
         """
         Attach a volume to node.
 
@@ -952,13 +1051,13 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        action = node.extra['id']
-        location = node.extra['location']
-        disks = node.extra['properties']['storageProfile']['dataDisks']
+        action = node.extra["id"]
+        location = node.extra["location"]
+        disks = node.extra["properties"]["storageProfile"]["dataDisks"]
 
         if ex_lun is None:
             # find the smallest unused logical unit number
-            used_luns = [disk['lun'] for disk in disks]
+            used_luns = [disk["lun"] for disk in disks]
             free_luns = [lun for lun in range(0, 64) if lun not in used_luns]
             if len(free_luns) > 0:
                 ex_lun = free_luns[0]
@@ -967,34 +1066,30 @@ class AzureNodeDriver(NodeDriver):
 
         if ex_vhd_uri is not None:
             new_disk = {
-                'name': volume.name,
-                'diskSizeGB': volume.size,
-                'lun': ex_lun,
-                'createOption': 'empty' if ex_vhd_create else 'attach',
-                'vhd': {'uri': ex_vhd_uri},
+                "name": volume.name,
+                "diskSizeGB": volume.size,
+                "lun": ex_lun,
+                "createOption": "empty" if ex_vhd_create else "attach",
+                "vhd": {"uri": ex_vhd_uri},
             }
         else:
             # attach existing managed disk
             new_disk = {
-                'lun': ex_lun,
-                'createOption': 'attach',
-                'managedDisk': {'id': volume.id}}
+                "lun": ex_lun,
+                "createOption": "attach",
+                "managedDisk": {"id": volume.id},
+            }
 
         disks.append(new_disk)
         self.connection.request(
             action,
-            method='PUT',
-            params={
-                'api-version': RESOURCE_API_VERSION
-            },
+            method="PUT",
+            params={"api-version": VM_API_VERSION},
             data={
-                'properties': {
-                    'storageProfile': {
-                        'dataDisks': disks
-                    }
-                },
-                'location': location
-            })
+                "properties": {"storageProfile": {"dataDisks": disks}},
+                "location": location,
+            },
+        )
         return True
 
     def ex_resize_volume(self, volume, new_size, resource_group):
@@ -1013,8 +1108,8 @@ class AzureNodeDriver(NodeDriver):
 
         """
         action = (
-            u'/subscriptions/{subscription_id}/resourceGroups/{resource_group}'
-            u'/providers/Microsoft.Compute/disks/{volume_name}'
+            "/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            "/providers/Microsoft.Compute/disks/{volume_name}"
         ).format(
             subscription_id=self.subscription_id,
             resource_group=resource_group,
@@ -1022,26 +1117,22 @@ class AzureNodeDriver(NodeDriver):
         )
 
         data = {
-            'location': volume.extra['location'],
-            'properties': {
-                'diskSizeGB': new_size,
-                'creationData': volume.extra['properties']['creationData']
-            }
+            "location": volume.extra["location"],
+            "properties": {
+                "diskSizeGB": new_size,
+                "creationData": volume.extra["properties"]["creationData"],
+            },
         }
 
         response = self.connection.request(
             action,
-            method='PUT',
-            params={
-                'api-version': '2018-06-01',
-            },
-            data=data
+            method="PUT",
+            params={"api-version": DISK_RESIZE_API_VERSION},
+            data=data,
         )
 
         return self._to_volume(
-            response.object,
-            name=volume.name,
-            ex_resource_group=resource_group
+            response.object, name=volume.name, ex_resource_group=resource_group
         )
 
     def detach_volume(self, volume, ex_node=None):
@@ -1051,31 +1142,26 @@ class AzureNodeDriver(NodeDriver):
         if ex_node is None:
             raise ValueError("Must provide `ex_node` value.")
 
-        action = ex_node.extra['id']
-        location = ex_node.extra['location']
-        disks = ex_node.extra['properties']['storageProfile']['dataDisks']
+        action = ex_node.extra["id"]
+        location = ex_node.extra["location"]
+        disks = ex_node.extra["properties"]["storageProfile"]["dataDisks"]
 
         # remove volume from `properties.storageProfile.dataDisks`
         disks[:] = [
-            disk for disk in disks if
-            disk.get('name') != volume.name and
-            disk.get('managedDisk', {}).get('id') != volume.id
+            disk
+            for disk in disks
+            if disk.get("name") != volume.name
+            and disk.get("managedDisk", {}).get("id") != volume.id
         ]
 
         self.connection.request(
             action,
-            method='PUT',
-            params={
-                'api-version': RESOURCE_API_VERSION
-            },
+            method="PUT",
+            params={"api-version": VM_API_VERSION},
             data={
-                'properties': {
-                    'storageProfile': {
-                        'dataDisks': disks
-                    }
-                },
-                'location': location
-            }
+                "properties": {"storageProfile": {"dataDisks": disks}},
+                "location": location,
+            },
         )
         return True
 
@@ -1086,8 +1172,9 @@ class AzureNodeDriver(NodeDriver):
         self.ex_delete_resource(volume)
         return True
 
-    def create_volume_snapshot(self, volume, name=None, location=None,
-                               ex_resource_group=None, ex_tags=None):
+    def create_volume_snapshot(
+        self, volume, name=None, location=None, ex_resource_group=None, ex_tags=None
+    ):
         """
         Create snapshot from volume.
 
@@ -1117,10 +1204,10 @@ class AzureNodeDriver(NodeDriver):
             raise ValueError("Must provide `ex_resource_group` value")
 
         snapshot_id = (
-            u'/subscriptions/{subscription_id}'
-            u'/resourceGroups/{resource_group}'
-            u'/providers/Microsoft.Compute'
-            u'/snapshots/{snapshot_name}'
+            "/subscriptions/{subscription_id}"
+            "/resourceGroups/{resource_group}"
+            "/providers/Microsoft.Compute"
+            "/snapshots/{snapshot_name}"
         ).format(
             subscription_id=self.subscription_id,
             resource_group=ex_resource_group,
@@ -1129,33 +1216,29 @@ class AzureNodeDriver(NodeDriver):
         tags = ex_tags if ex_tags is not None else {}
 
         data = {
-            'location': location.id,
-            'tags': tags,
-            'properties': {
-                'creationData': {
-                    'createOption': 'Copy',
-                    'sourceUri': volume.id
-                },
-            }
+            "location": location.id,
+            "tags": tags,
+            "properties": {
+                "creationData": {"createOption": "Copy", "sourceUri": volume.id},
+            },
         }
         response = self.connection.request(
             snapshot_id,
-            method='PUT',
+            method="PUT",
             data=data,
-            params={
-                'api-version': RESOURCE_API_VERSION
-            },
+            params={"api-version": SNAPSHOT_API_VERSION},
         )
 
         return self._to_snapshot(
-            response.object,
-            name=name,
-            ex_resource_group=ex_resource_group
+            response.object, name=name, ex_resource_group=ex_resource_group
         )
 
     def list_volume_snapshots(self, volume):
-        return [snapshot for snapshot in self.list_snapshots()
-                if snapshot.extra['source_id'] == volume.id]
+        return [
+            snapshot
+            for snapshot in self.list_snapshots()
+            if snapshot.extra["source_id"] == volume.id
+        ]
 
     def list_snapshots(self, ex_resource_group=None):
         """
@@ -1168,25 +1251,24 @@ class AzureNodeDriver(NodeDriver):
         :rtype: list of :class:`VolumeSnapshot`
         """
         if ex_resource_group:
-            action = u'/subscriptions/{subscription_id}/resourceGroups' \
-                     u'/{resource_group}/providers/Microsoft.Compute/snapshots'
+            action = (
+                "/subscriptions/{subscription_id}/resourceGroups"
+                "/{resource_group}/providers/Microsoft.Compute/snapshots"
+            )
         else:
-            action = u'/subscriptions/{subscription_id}' \
-                     u'/providers/Microsoft.Compute/snapshots'
+            action = (
+                "/subscriptions/{subscription_id}"
+                "/providers/Microsoft.Compute/snapshots"
+            )
 
         action = action.format(
-            subscription_id=self.subscription_id,
-            resource_group=ex_resource_group
+            subscription_id=self.subscription_id, resource_group=ex_resource_group
         )
 
         response = self.connection.request(
-            action,
-            method='GET',
-            params={
-                'api-version': RESOURCE_API_VERSION
-            }
+            action, method="GET", params={"api-version": SNAPSHOT_API_VERSION}
         )
-        return [self._to_snapshot(snap) for snap in response.object['value']]
+        return [self._to_snapshot(snap) for snap in response.object["value"]]
 
     def destroy_volume_snapshot(self, snapshot):
         """
@@ -1210,45 +1292,42 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: :class:`StorageVolume`
         """
-        volume_id = volume_obj.get('id')
-        volume_name = volume_obj.get('name')
+        volume_id = volume_obj.get("id")
+        volume_name = volume_obj.get("name")
         extra = dict(volume_obj)
-        properties = extra['properties']
-        size = properties.get('diskSizeGB')
+        properties = extra["properties"]
+        size = properties.get("diskSizeGB")
         if size is not None:
             size = int(size)
 
-        provisioning_state = properties.get('provisioningState', '').lower()
-        disk_state = properties.get('diskState', '').lower()
+        provisioning_state = properties.get("provisioningState", "").lower()
+        disk_state = properties.get("diskState", "").lower()
 
-        if provisioning_state == 'creating':
+        if provisioning_state == "creating":
             state = StorageVolumeState.CREATING
-        elif provisioning_state == 'updating':
+        elif provisioning_state == "updating":
             state = StorageVolumeState.UPDATING
-        elif provisioning_state == 'succeeded':
-            if disk_state in ('attached', 'reserved', 'activesas'):
+        elif provisioning_state == "succeeded":
+            if disk_state in ("attached", "reserved", "activesas"):
                 state = StorageVolumeState.INUSE
-            elif disk_state == 'unattached':
+            elif disk_state == "unattached":
                 state = StorageVolumeState.AVAILABLE
             else:
                 state = StorageVolumeState.UNKNOWN
         else:
             state = StorageVolumeState.UNKNOWN
 
-        if volume_id is None \
-                and ex_resource_group is not None \
-                and name is not None:
+        if volume_id is None and ex_resource_group is not None and name is not None:
             volume_id = (
-                u'/subscriptions/{subscription_id}'
-                u'/resourceGroups/{resource_group}'
-                u'/providers/Microsoft.Compute/disks/{volume_name}'
+                "/subscriptions/{subscription_id}"
+                "/resourceGroups/{resource_group}"
+                "/providers/Microsoft.Compute/disks/{volume_name}"
             ).format(
                 subscription_id=self.subscription_id,
                 resource_group=ex_resource_group,
-                volume_name=name
+                volume_name=name,
             )
-        if volume_name is None and \
-                name is not None:
+        if volume_name is None and name is not None:
             volume_name = name
 
         return StorageVolume(
@@ -1257,7 +1336,7 @@ class AzureNodeDriver(NodeDriver):
             size=size,
             driver=self,
             state=state,
-            extra=extra
+            extra=extra,
         )
 
     def _to_snapshot(self, snapshot_obj, name=None, ex_resource_group=None):
@@ -1275,36 +1354,33 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: :class:`VolumeSnapshot`
         """
-        snapshot_id = snapshot_obj.get('id')
-        name = snapshot_obj.get('name', name)
-        properties = snapshot_obj['properties']
-        size = properties.get('diskSizeGB')
+        snapshot_id = snapshot_obj.get("id")
+        name = snapshot_obj.get("name", name)
+        properties = snapshot_obj["properties"]
+        size = properties.get("diskSizeGB")
         if size is not None:
             size = int(size)
         extra = dict(snapshot_obj)
-        extra['source_id'] = properties['creationData']['sourceUri']
-        if '/providers/Microsoft.Compute/disks/' in extra['source_id']:
-            extra['volume_id'] = extra['source_id']
+        extra["source_id"] = properties["creationData"]["sourceUri"]
+        if "/providers/Microsoft.Compute/disks/" in extra["source_id"]:
+            extra["volume_id"] = extra["source_id"]
         state = self.SNAPSHOT_STATE_MAP.get(
-            properties.get('provisioningState', '').lower(),
-            VolumeSnapshotState.UNKNOWN
+            properties.get("provisioningState", "").lower(), VolumeSnapshotState.UNKNOWN
         )
         try:
-            created_at = iso8601.parse_date(properties.get('timeCreated'))
+            created_at = iso8601.parse_date(properties.get("timeCreated"))
         except (TypeError, ValueError, iso8601.ParseError):
             created_at = None
 
-        if snapshot_id is None \
-                and ex_resource_group is not None \
-                and name is not None:
+        if snapshot_id is None and ex_resource_group is not None and name is not None:
             snapshot_id = (
-                u'/subscriptions/{subscription_id}'
-                u'/resourceGroups/{resource_group}'
-                u'/providers/Microsoft.Compute/snapshots/{snapshot_name}'
+                "/subscriptions/{subscription_id}"
+                "/resourceGroups/{resource_group}"
+                "/providers/Microsoft.Compute/snapshots/{snapshot_name}"
             ).format(
                 subscription_id=self.subscription_id,
                 resource_group=ex_resource_group,
-                snapshot_name=name
+                snapshot_name=name,
             )
 
         return VolumeSnapshot(
@@ -1314,7 +1390,7 @@ class AzureNodeDriver(NodeDriver):
             driver=self,
             state=state,
             extra=extra,
-            created=created_at
+            created=created_at,
         )
 
     def ex_delete_resource(self, resource):
@@ -1325,15 +1401,14 @@ class AzureNodeDriver(NodeDriver):
             resource = resource.id
         r = self.connection.request(
             resource,
-            method='DELETE',
-            params={
-                'api-version': RESOURCE_API_VERSION
-            },
+            method="DELETE",
+            params={"api-version": RESOURCE_API_VERSION},
         )
         return r.status in [200, 202, 204]
 
-    def ex_get_ratecard(self, offer_durable_id, currency='USD',
-                        locale='en-US', region='US'):
+    def ex_get_ratecard(
+        self, offer_durable_id, currency="USD", locale="en-US", region="US"
+    ):
         """
         Get rate card
 
@@ -1355,14 +1430,16 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
 
-        action = "/subscriptions/%s/providers/Microsoft.Commerce/" \
-                 "RateCard" % (self.subscription_id,)
-        params = {"api-version": "2016-08-31-preview",
-                  "$filter": "OfferDurableId eq 'MS-AZR-%s' and "
-                             "Currency eq '%s' and "
-                             "Locale eq '%s' and "
-                             "RegionInfo eq '%s'" %
-                             (offer_durable_id, currency, locale, region)}
+        action = "/subscriptions/%s/providers/Microsoft.Commerce/" "RateCard" % (
+            self.subscription_id,
+        )
+        params = {
+            "api-version": RATECARD_API_VERSION,
+            "$filter": "OfferDurableId eq 'MS-AZR-%s' and "
+            "Currency eq '%s' and "
+            "Locale eq '%s' and "
+            "RegionInfo eq '%s'" % (offer_durable_id, currency, locale, region),
+        }
         r = self.connection.request(action, params=params)
         return r.object
 
@@ -1385,11 +1462,11 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        action = "/subscriptions/%s/providers/Microsoft.Compute/" \
-                 "locations/%s/publishers" \
-                 % (self.subscription_id, location.id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+        action = (
+            "/subscriptions/%s/providers/Microsoft.Compute/"
+            "locations/%s/publishers" % (self.subscription_id, location.id)
+        )
+        r = self.connection.request(action, params={"api-version": IMAGES_API_VERSION})
         return [(p["id"], p["name"]) for p in r.object]
 
     def ex_list_offers(self, publisher):
@@ -1406,8 +1483,7 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "%s/artifacttypes/vmimage/offers" % (publisher)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+        r = self.connection.request(action, params={"api-version": IMAGES_API_VERSION})
         return [(p["id"], p["name"]) for p in r.object]
 
     def ex_list_skus(self, offer):
@@ -1424,8 +1500,7 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "%s/skus" % offer
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+        r = self.connection.request(action, params={"api-version": IMAGES_API_VERSION})
         return [(sku["id"], sku["name"]) for sku in r.object]
 
     def ex_list_image_versions(self, sku):
@@ -1442,8 +1517,7 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "%s/versions" % (sku)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+        r = self.connection.request(action, params={"api-version": IMAGES_API_VERSION})
         return [(img["id"], img["name"]) for img in r.object]
 
     def ex_list_resource_groups(self):
@@ -1455,11 +1529,15 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "/subscriptions/%s/resourceGroups/" % (self.subscription_id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2016-09-01"})
-        return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
-                                   grp["properties"])
-                for grp in r.object["value"]]
+        r = self.connection.request(
+            action, params={"api-version": RESOURCE_GROUP_API_VERSION}
+        )
+        return [
+            AzureResourceGroup(
+                grp["id"], grp["name"], grp["location"], grp["properties"]
+            )
+            for grp in r.object["value"]
+        ]
 
     def ex_list_network_security_groups(self, resource_group):
         """
@@ -1473,19 +1551,20 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNetworkSecurityGroup`
         """
 
-        action = "/subscriptions/%s/resourceGroups/%s/providers/" \
-                 "Microsoft.Network/networkSecurityGroups" \
-                 % (self.subscription_id, resource_group)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
-        return [AzureNetworkSecurityGroup(net["id"],
-                                          net["name"],
-                                          net["location"],
-                                          net["properties"])
-                for net in r.object["value"]]
+        action = (
+            "/subscriptions/%s/resourceGroups/%s/providers/"
+            "Microsoft.Network/networkSecurityGroups"
+            % (self.subscription_id, resource_group)
+        )
+        r = self.connection.request(action, params={"api-version": NSG_API_VERSION})
+        return [
+            AzureNetworkSecurityGroup(
+                net["id"], net["name"], net["location"], net["properties"]
+            )
+            for net in r.object["value"]
+        ]
 
-    def ex_create_network_security_group(self, name, resource_group,
-                                         location=None):
+    def ex_create_network_security_group(self, name, resource_group, location=None):
         """
         Update tags on any resource supporting tags.
 
@@ -1507,19 +1586,19 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Network/networkSecurityGroups/%s" \
-                 % (self.subscription_id, resource_group, name)
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Network/networkSecurityGroups/%s"
+            % (self.subscription_id, resource_group, name)
+        )
         data = {
             "location": location.id,
         }
-        self.connection.request(target,
-                                params={"api-version": "2016-09-01"},
-                                data=data,
-                                method='PUT')
+        self.connection.request(
+            target, params={"api-version": NSG_API_VERSION}, data=data, method="PUT"
+        )
 
-    def ex_delete_network_security_group(self, name, resource_group,
-                                         location=None):
+    def ex_delete_network_security_group(self, name, resource_group, location=None):
         """
         Update tags on any resource supporting tags.
 
@@ -1541,16 +1620,17 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Network/networkSecurityGroups/%s" \
-                 % (self.subscription_id, resource_group, name)
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Network/networkSecurityGroups/%s"
+            % (self.subscription_id, resource_group, name)
+        )
         data = {
             "location": location.id,
         }
-        self.connection.request(target,
-                                params={"api-version": "2016-09-01"},
-                                data=data,
-                                method='DELETE')
+        self.connection.request(
+            target, params={"api-version": NSG_API_VERSION}, data=data, method="DELETE"
+        )
 
     def ex_list_networks(self):
         """
@@ -1560,13 +1640,16 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNetwork`
         """
 
-        action = "/subscriptions/%s/providers/" \
-                 "Microsoft.Network/virtualnetworks" \
-                 % (self.subscription_id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
-        return [AzureNetwork(net["id"], net["name"], net["location"],
-                             net["properties"]) for net in r.object["value"]]
+        action = "/subscriptions/%s/providers/" "Microsoft.Network/virtualnetworks" % (
+            self.subscription_id
+        )
+        r = self.connection.request(
+            action, params={"api-version": VIRTUAL_NETWORK_API_VERSION}
+        )
+        return [
+            AzureNetwork(net["id"], net["name"], net["location"], net["properties"])
+            for net in r.object["value"]
+        ]
 
     def ex_list_subnets(self, network):
         """
@@ -1580,10 +1663,11 @@ class AzureNodeDriver(NodeDriver):
         """
 
         action = "%s/subnets" % (network.id)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
-        return [AzureSubnet(net["id"], net["name"], net["properties"])
-                for net in r.object["value"]]
+        r = self.connection.request(action, params={"api-version": SUBNET_API_VERSION})
+        return [
+            AzureSubnet(net["id"], net["name"], net["properties"])
+            for net in r.object["value"]
+        ]
 
     def ex_list_nics(self, resource_group=None):
         """
@@ -1598,15 +1682,17 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureNic`
         """
         if resource_group is None:
-            action = "/subscriptions/%s/providers/Microsoft.Network" \
-                     "/networkInterfaces" % self.subscription_id
+            action = (
+                "/subscriptions/%s/providers/Microsoft.Network"
+                "/networkInterfaces" % self.subscription_id
+            )
         else:
-            action = "/subscriptions/%s/resourceGroups/%s/providers" \
-                     "/Microsoft.Network/networkInterfaces" % \
-                     (self.subscription_id, resource_group)
-        r = self.connection.request(
-            action,
-            params={"api-version": "2015-06-15"})
+            action = (
+                "/subscriptions/%s/resourceGroups/%s/providers"
+                "/Microsoft.Network/networkInterfaces"
+                % (self.subscription_id, resource_group)
+            )
+        r = self.connection.request(action, params={"api-version": NIC_API_VERSION})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
@@ -1620,11 +1706,10 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureNic`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(id, params={"api-version": NIC_API_VERSION})
         return self._to_nic(r.object)
 
-    def ex_update_nic_properties(self, network_interface,
-                                 resource_group, properties):
+    def ex_update_nic_properties(self, network_interface, resource_group, properties):
         """
         Update the properties of an already existing virtual network
         interface (NIC).
@@ -1642,22 +1727,26 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureNic`
         """
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers" \
-                 "/Microsoft.Network/networkInterfaces/%s" \
-                 % (self.subscription_id, resource_group,
-                    network_interface.name)
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/providers"
+            "/Microsoft.Network/networkInterfaces/%s"
+            % (self.subscription_id, resource_group, network_interface.name)
+        )
 
         data = {
             "properties": properties,
             "location": network_interface.location,
         }
 
-        r = self.connection.request(target,
-                                    params={"api-version": '2018-06-01'},
-                                    data=data,
-                                    method='PUT')
-        return AzureNic(r.object["id"], r.object["name"], r.object["location"],
-                        r.object["properties"])
+        r = self.connection.request(
+            target, params={"api-version": NIC_API_VERSION}, data=data, method="PUT"
+        )
+        return AzureNic(
+            r.object["id"],
+            r.object["name"],
+            r.object["location"],
+            r.object["properties"],
+        )
 
     def ex_update_network_profile_of_node(self, node, network_profile):
         """
@@ -1670,23 +1759,20 @@ class AzureNodeDriver(NodeDriver):
         :param network_profile: The new network profile to update.
         :type network_profile: ``dict``
         """
-        action = node.extra['id']
-        location = node.extra['location']
+        action = node.extra["id"]
+        location = node.extra["location"]
         self.connection.request(
             action,
-            method='PUT',
-            params={
-                'api-version': '2018-06-01'
-            },
+            method="PUT",
+            params={"api-version": VM_API_VERSION},
             data={
                 "id": node.id,
                 "name": node.name,
                 "type": "Microsoft.Compute/virtualMachines",
                 "location": location,
-                'properties': {
-                    'networkProfile': network_profile
-                }
-            })
+                "properties": {"networkProfile": network_profile},
+            },
+        )
 
     def ex_destroy_nic(self, nic):
         """
@@ -1701,9 +1787,8 @@ class AzureNodeDriver(NodeDriver):
 
         try:
             self.connection.request(
-                nic.id,
-                params={"api-version": "2015-06-15"},
-                method='DELETE')
+                nic.id, params={"api-version": NIC_API_VERSION}, method="DELETE"
+            )
             return True
         except BaseHTTPError as h:
             if h.code in (202, 204):
@@ -1713,8 +1798,7 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise
 
-    def ex_check_ip_address_availability(self, resource_group, network,
-                                         ip_address):
+    def ex_check_ip_address_availability(self, resource_group, network, ip_address):
         """
         Checks whether a private IP address is available for use. Also
         returns an object that contains the available IPs in the subnet.
@@ -1728,16 +1812,16 @@ class AzureNodeDriver(NodeDriver):
         :param ip_address: The private IP address to be verified.
         :type ip_address: ``str``
         """
-        params = {"api-version": '2018-06-01'}
-        action = "/subscriptions/%s/resourceGroups/%s/providers" \
-                 "/Microsoft.Network/virtualNetworks/%s/" \
-                 "CheckIPAddressAvailability" % \
-                 (self.subscription_id, resource_group, network.name)
+        params = {"api-version": VIRTUAL_NETWORK_API_VERSION}
+        action = (
+            "/subscriptions/%s/resourceGroups/%s/providers"
+            "/Microsoft.Network/virtualNetworks/%s/"
+            "CheckIPAddressAvailability"
+            % (self.subscription_id, resource_group, network.name)
+        )
         if ip_address is not None:
             params["ipAddress"] = ip_address
-        r = self.connection.request(
-            action,
-            params=params)
+        r = self.connection.request(action, params=params)
         return r.object
 
     def ex_get_node(self, id):
@@ -1751,8 +1835,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.Node`
         """
 
-        r = self.connection.request(
-            id, params={"api-version": RESOURCE_API_VERSION})
+        r = self.connection.request(id, params={"api-version": VM_API_VERSION})
         return self._to_node(r.object)
 
     def ex_get_volume(self, id):
@@ -1766,8 +1849,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.StorageVolume`
         """
 
-        r = self.connection.request(
-            id, params={"api-version": RESOURCE_API_VERSION})
+        r = self.connection.request(id, params={"api-version": DISK_API_VERSION})
         return self._to_volume(r.object)
 
     def ex_get_snapshot(self, id):
@@ -1781,8 +1863,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.VolumeSnapshot`
         """
 
-        r = self.connection.request(
-            id, params={"api-version": RESOURCE_API_VERSION})
+        r = self.connection.request(id, params={"api-version": SNAPSHOT_API_VERSION})
         return self._to_snapshot(r.object)
 
     def ex_get_public_ip(self, id):
@@ -1796,7 +1877,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureIPAddress`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(id, params={"api-version": IP_API_VERSION})
         return self._to_ip_address(r.object)
 
     def ex_list_public_ips(self, resource_group):
@@ -1810,15 +1891,17 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
 
-        action = "/subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Network/publicIPAddresses" \
-                 % (self.subscription_id, resource_group)
-        r = self.connection.request(action,
-                                    params={"api-version": "2015-06-15"})
+        action = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Network/publicIPAddresses"
+            % (self.subscription_id, resource_group)
+        )
+        r = self.connection.request(action, params={"api-version": IP_API_VERSION})
         return [self._to_ip_address(net) for net in r.object["value"]]
 
-    def ex_create_public_ip(self, name, resource_group, location=None,
-                            public_ip_allocation_method=None):
+    def ex_create_public_ip(
+        self, name, resource_group, location=None, public_ip_allocation_method=None
+    ):
         """
         Create a public IP resources.
 
@@ -1847,24 +1930,23 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Network/publicIPAddresses/%s" \
-                 % (self.subscription_id, resource_group, name)
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Network/publicIPAddresses/%s"
+            % (self.subscription_id, resource_group, name)
+        )
         data = {
             "location": location.id,
             "tags": {},
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
-            }
+            "properties": {"publicIPAllocationMethod": "Dynamic"},
         }
 
         if public_ip_allocation_method == "Static":
-            data['properties']['publicIPAllocationMethod'] = "Static"
+            data["properties"]["publicIPAllocationMethod"] = "Static"
 
-        r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
-                                    data=data,
-                                    method='PUT')
+        r = self.connection.request(
+            target, params={"api-version": IP_API_VERSION}, data=data, method="PUT"
+        )
         return self._to_ip_address(r.object)
 
     def ex_delete_public_ip(self, public_ip):
@@ -1875,20 +1957,19 @@ class AzureNodeDriver(NodeDriver):
         :type public_ip: `.AzureIPAddress`
         """
         # NOTE: This operation requires API version 2018-11-01 so
-        # "ex_delete_resource" won't for for deleting an IP address
+        # "ex_delete_resource" won't work for deleting an IP address
         resource = public_ip.id
         r = self.connection.request(
             resource,
-            method='DELETE',
-            params={
-                'api-version': '2019-06-01'
-            },
+            method="DELETE",
+            params={"api-version": IP_API_VERSION},
         )
 
         return r.status in [200, 202, 204]
 
-    def ex_create_network_interface(self, name, subnet, resource_group,
-                                    location=None, public_ip=None):
+    def ex_create_network_interface(
+        self, name, subnet, resource_group, location=None, public_ip=None
+    ):
         """
         Create a virtual network interface (NIC).
 
@@ -1919,38 +2000,41 @@ class AzureNodeDriver(NodeDriver):
             else:
                 raise ValueError("location is required.")
 
-        target = "/subscriptions/%s/resourceGroups/%s/providers" \
-                 "/Microsoft.Network/networkInterfaces/%s" \
-                 % (self.subscription_id, resource_group, name)
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/providers"
+            "/Microsoft.Network/networkInterfaces/%s"
+            % (self.subscription_id, resource_group, name)
+        )
 
         data = {
             "location": location.id,
             "tags": {},
             "properties": {
-                "ipConfigurations": [{
-                    "name": "myip1",
-                    "properties": {
-                        "subnet": {
-                            "id": subnet.id
+                "ipConfigurations": [
+                    {
+                        "name": "myip1",
+                        "properties": {
+                            "subnet": {"id": subnet.id},
+                            "privateIPAllocationMethod": "Dynamic",
                         },
-                        "privateIPAllocationMethod": "Dynamic"
                     }
-                }]
-            }
+                ]
+            },
         }
 
         if public_ip:
             ip_config = data["properties"]["ipConfigurations"][0]
-            ip_config["properties"]["publicIPAddress"] = {
-                "id": public_ip.id
-            }
+            ip_config["properties"]["publicIPAddress"] = {"id": public_ip.id}
 
-        r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
-                                    data=data,
-                                    method='PUT')
-        return AzureNic(r.object["id"], r.object["name"], r.object["location"],
-                        r.object["properties"])
+        r = self.connection.request(
+            target, params={"api-version": NIC_API_VERSION}, data=data, method="PUT"
+        )
+        return AzureNic(
+            r.object["id"],
+            r.object["name"],
+            r.object["location"],
+            r.object["properties"],
+        )
 
     def ex_create_tags(self, resource, tags, replace=False):
         """
@@ -1969,9 +2053,7 @@ class AzureNodeDriver(NodeDriver):
 
         if not isinstance(resource, basestring):
             resource = resource.id
-        r = self.connection.request(
-            resource,
-            params={"api-version": '2018-06-01'})
+        r = self.connection.request(resource, params={"api-version": TAG_API_VERSION})
         if replace:
             r.object["tags"] = tags
         else:
@@ -1979,8 +2061,9 @@ class AzureNodeDriver(NodeDriver):
         self.connection.request(
             resource,
             data={"tags": r.object["tags"]},
-            params={"api-version": '2018-06-01'},
-            method="PATCH")
+            params={"api-version": TAG_API_VERSION},
+            method="PATCH",
+        )
 
     def start_node(self, node):
         """
@@ -1991,9 +2074,9 @@ class AzureNodeDriver(NodeDriver):
         """
 
         target = "%s/start" % node.id
-        r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
-                                    method='POST')
+        r = self.connection.request(
+            target, params={"api-version": VM_API_VERSION}, method="POST"
+        )
         return r.object
 
     def stop_node(self, node, ex_deallocate=True):
@@ -2014,9 +2097,9 @@ class AzureNodeDriver(NodeDriver):
             target = "%s/deallocate" % node.id
         else:
             target = "%s/powerOff" % node.id
-        r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
-                                    method='POST')
+        r = self.connection.request(
+            target, params={"api-version": VM_API_VERSION}, method="POST"
+        )
         return r.object
 
     def ex_start_node(self, node):
@@ -2047,25 +2130,27 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``.dict``
         """
 
-        action = "/subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Storage/storageAccounts/%s/listKeys" \
-                 % (self.subscription_id,
-                    resource_group,
-                    storage_account)
+        action = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Storage/storageAccounts/%s/listKeys"
+            % (self.subscription_id, resource_group, storage_account)
+        )
 
-        r = self.connection.request(action,
-                                    params={
-                                        "api-version": "2015-05-01-preview"},
-                                    method="POST")
+        r = self.connection.request(
+            action, params={"api-version": STORAGE_ACCOUNT_API_VERSION}, method="POST"
+        )
         return r.object
 
-    def ex_run_command(self, node,
-                       command,
-                       filerefs=[],
-                       timestamp=0,
-                       storage_account_name=None,
-                       storage_account_key=None,
-                       location=None):
+    def ex_run_command(
+        self,
+        node,
+        command,
+        filerefs=[],
+        timestamp=0,
+        storage_account_name=None,
+        storage_account_key=None,
+        location=None,
+    ):
         """
         Run a command on the node as root.
 
@@ -2122,41 +2207,42 @@ class AzureNodeDriver(NodeDriver):
                 "settings": {
                     "fileUris": filerefs,
                     "commandToExecute": command,
-                    "timestamp": timestamp
-                }
-            }
+                    "timestamp": timestamp,
+                },
+            },
         }
 
         if storage_account_name and storage_account_key:
             data["properties"]["protectedSettings"] = {
                 "storageAccountName": storage_account_name,
-                "storageAccountKey": storage_account_key}
+                "storageAccountKey": storage_account_key,
+            }
 
-        r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
-                                    data=data,
-                                    method='PUT')
+        r = self.connection.request(
+            target,
+            params={"api-version": VM_EXTENSION_API_VERSION},
+            data=data,
+            method="PUT",
+        )
         return r.object
 
     def _ex_delete_old_vhd(self, resource_group, uri):
         try:
             (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
-            keys = self.ex_get_storage_account_keys(resource_group,
-                                                    storageAccount)
+            keys = self.ex_get_storage_account_keys(resource_group, storageAccount)
             blobdriver = AzureBlobsStorageDriver(
                 storageAccount,
                 keys["key1"],
-                host="%s.blob%s" % (storageAccount,
-                                    self.connection.storage_suffix))
-            return blobdriver.delete_object(
-                blobdriver.get_object(blobContainer, blob))
+                host="%s.blob%s" % (storageAccount, self.connection.storage_suffix),
+            )
+            return blobdriver.delete_object(blobdriver.get_object(blobContainer, blob))
         except ObjectDoesNotExistError:
             return True
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
-        kwargs['tenant_id'] = self.tenant_id
-        kwargs['subscription_id'] = self.subscription_id
+        kwargs["tenant_id"] = self.tenant_id
+        kwargs["subscription_id"] = self.subscription_id
         kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
@@ -2164,8 +2250,9 @@ class AzureNodeDriver(NodeDriver):
         state = NodeState.UNKNOWN
         try:
             action = "%s/InstanceView" % (data["id"])
-            r = self.connection.request(action,
-                                        params={"api-version": "2015-06-15"})
+            r = self.connection.request(
+                action, params={"api-version": INSTANCE_VIEW_API_VERSION}
+            )
             for status in r.object["statuses"]:
                 if status["code"] in ["ProvisioningState/creating"]:
                     state = NodeState.PENDING
@@ -2205,12 +2292,14 @@ class AzureNodeDriver(NodeDriver):
             for nic in nics:
                 try:
                     n = self.ex_get_nic(nic["id"])
-                    priv = n.extra["ipConfigurations"][0]["properties"] \
-                        .get("privateIPAddress")
+                    priv = n.extra["ipConfigurations"][0]["properties"].get(
+                        "privateIPAddress"
+                    )
                     if priv:
                         private_ips.append(priv)
                     pub = n.extra["ipConfigurations"][0]["properties"].get(
-                        "publicIPAddress")
+                        "publicIPAddress"
+                    )
                     if pub:
                         pub_addr = self.ex_get_public_ip(pub["id"])
                         addr = pub_addr.extra.get("ipAddress")
@@ -2235,32 +2324,39 @@ class AzureNodeDriver(NodeDriver):
             elif ps == "succeeded":
                 state = NodeState.RUNNING
 
-        node = Node(data["id"],
-                    data["name"],
-                    state,
-                    public_ips,
-                    private_ips,
-                    driver=self.connection.driver,
-                    extra=data)
+        node = Node(
+            data["id"],
+            data["name"],
+            state,
+            public_ips,
+            private_ips,
+            driver=self.connection.driver,
+            extra=data,
+        )
 
         return node
 
     def _to_node_size(self, data):
-        return NodeSize(id=data["name"],
-                        name=data["name"],
-                        ram=data["memoryInMB"],
-                        # convert to disk from MB to GB
-                        disk=data["resourceDiskSizeInMB"] / 1024,
-                        bandwidth=0,
-                        price=0,
-                        driver=self.connection.driver,
-                        extra={"numberOfCores": data["numberOfCores"],
-                               "osDiskSizeInMB": data["osDiskSizeInMB"],
-                               "maxDataDiskCount": data["maxDataDiskCount"]})
+        return NodeSize(
+            id=data["name"],
+            name=data["name"],
+            ram=data["memoryInMB"],
+            # convert to disk from MB to GB
+            disk=data["resourceDiskSizeInMB"] / 1024,
+            bandwidth=0,
+            price=0,
+            driver=self.connection.driver,
+            extra={
+                "numberOfCores": data["numberOfCores"],
+                "osDiskSizeInMB": data["osDiskSizeInMB"],
+                "maxDataDiskCount": data["maxDataDiskCount"],
+            },
+        )
 
     def _to_nic(self, data):
-        return AzureNic(data["id"], data.get("name"), data.get("location"),
-                        data.get("properties"))
+        return AzureNic(
+            data["id"], data.get("name"), data.get("location"), data.get("properties")
+        )
 
     def _to_ip_address(self, data):
         return AzureIPAddress(data["id"], data["name"], data["properties"])
@@ -2270,22 +2366,24 @@ class AzureNodeDriver(NodeDriver):
         # "East US" instead of "eastus" which is what is actually needed
         # for other API calls, so do a name->id fixup.
         loc_id = loc.lower().replace(" ", "")
-        return NodeLocation(loc_id, loc, self._location_to_country.get(loc_id),
-                            self.connection.driver)
+        return NodeLocation(
+            loc_id, loc, self._location_to_country.get(loc_id), self.connection.driver
+        )
 
-    def _get_instance_vhd(self, name, ex_resource_group, ex_storage_account,
-                          ex_blob_container="vhds"):
+    def _get_instance_vhd(
+        self, name, ex_resource_group, ex_storage_account, ex_blob_container="vhds"
+    ):
         n = 0
         errors = []
         while n < 10:
             try:
-                instance_vhd = "https://%s.blob%s" \
-                               "/%s/%s-os_%i.vhd" \
-                               % (ex_storage_account,
-                                  self.connection.storage_suffix,
-                                  ex_blob_container,
-                                  name,
-                                  n)
+                instance_vhd = "https://%s.blob%s" "/%s/%s-os_%i.vhd" % (
+                    ex_storage_account,
+                    self.connection.storage_suffix,
+                    ex_blob_container,
+                    name,
+                    n,
+                )
                 if self._ex_delete_old_vhd(ex_resource_group, instance_vhd):
                     # We were able to remove it or it doesn't exist,
                     # so we can use it.
@@ -2293,14 +2391,15 @@ class AzureNodeDriver(NodeDriver):
             except LibcloudError as lce:
                 errors.append(str(lce))
             n += 1
-        raise LibcloudError("Unable to find a name for a VHD to use for "
-                            "instance in 10 tries, errors were:\n  - %s" %
-                            ("\n  - ".join(errors)))
+        raise LibcloudError(
+            "Unable to find a name for a VHD to use for "
+            "instance in 10 tries, errors were:\n  - %s" % ("\n  - ".join(errors))
+        )
 
 
 def _split_blob_uri(uri):
-    uri = uri.split('/')
-    storage_account = uri[2].split('.')[0]
+    uri = uri.split("/")
+    storage_account = uri[2].split(".")[0]
     blob_container = uri[3]
-    blob_name = '/'.join(uri[4:])
+    blob_name = "/".join(uri[4:])
     return storage_account, blob_container, blob_name

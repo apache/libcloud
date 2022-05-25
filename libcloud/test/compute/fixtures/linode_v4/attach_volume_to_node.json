@@ -1,0 +1,15 @@
+{
+    "id": 92030,
+    "status": "active",
+    "label": "Test_volume1",
+    "created": "2020-10-11T16:07:44",
+    "updated": "2020-10-11T16:07:44",
+    "filesystem_path": "/dev/disk/by-id/scsi-0Linode_Volume_Test_volume1",
+    "size": 10,
+    "linode_id": 22344420,
+    "linode_label": "Test_123",
+    "region": "eu-west",
+    "tags": [
+        "attached_test"
+    ]
+}

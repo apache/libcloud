@@ -207,7 +207,7 @@ For example
 
 .. sourcecode:: bash
 
-    ./dist/verify_checksums.sh apache-libcloud-0.13.2
+    ./dist/verify_checksums.sh apache-libcloud-3.5.0
 
 9. Updating doap_libcloud.rdf, __init__.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -233,13 +233,14 @@ To:
 10. Updating website
 ~~~~~~~~~~~~~~~~~~~~
 
-Check out the website using SVN: ``svn co https://svn.apache.org/repos/asf/libcloud/site/trunk``
+Check out the website using git: ``git clone http://gitbox.apache.org/repos/asf/libcloud-site.git``
 
 * Update the front page (``source/index.html`` file)
 * Update "Downloads" page (``source/downloads.md`` file)
 * Add a blog entry in the ``_posts`` directory.
 
-Build the site locally and make sure everything is correct. Check the ``README.md`` file.
+Build the site locally and make sure everything is correct before pushing website updated. Check
+the ``README.md`` file in that repo on how to do that.
 
 11. Sending announcements
 ~~~~~~~~~~~~~~~~~~~~~~~~~

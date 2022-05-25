@@ -1,0 +1,37 @@
+{
+    "data": [
+        {
+            "id": 12345,
+            "status": "active",
+            "label": "Testvolume1",
+            "created": "2020-10-09T17:58:44",
+            "updated": "2020-10-09T17:58:44",
+            "filesystem_path": "/dev/disk/by-id/scsi-0Linode_Volume_Testvolume1",
+            "size": 100,
+            "linode_id": 456353688,
+            "linode_label": "new_name",
+            "region": "eu-west",
+            "tags": [
+                "attached_test"
+            ]
+        },
+        {
+            "id": 123456,
+            "status": "active",
+            "label": "Test_unattached_volume",
+            "created": "2020-10-09T17:58:45",
+            "updated": "2020-10-09T17:58:45",
+            "filesystem_path": "/dev/disk/by-id/scsi-0Linode_Volume_Test_unattached_volume",
+            "size": 100,
+            "linode_id": null,
+            "linode_label": null,
+            "region": "eu-west",
+            "tags": [
+                "unattached_test"
+            ]
+        }
+    ],
+    "page": 1,
+    "pages": 1,
+    "results": 2
+}

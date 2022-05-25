@@ -23,55 +23,52 @@ from libcloud.test import MockHttp
 
 
 class DockerUtilitiesTestCase(unittest.TestCase):
-
     def setUp(self):
         HubClient.connectionCls.conn_class = DockerMockHttp
         DockerMockHttp.type = None
-        DockerMockHttp.use_param = 'a'
+        DockerMockHttp.use_param = "a"
         self.driver = HubClient()
 
     def test_list_tags(self):
-        tags = self.driver.list_images('ubuntu', max_count=100)
+        tags = self.driver.list_images("ubuntu", max_count=100)
         self.assertEqual(len(tags), 88)
-        self.assertEqual(tags[0].name, 'registry.hub.docker.com/ubuntu:xenial')
+        self.assertEqual(tags[0].name, "registry.hub.docker.com/ubuntu:xenial")
 
     def test_get_repository(self):
-        repo = self.driver.get_repository('ubuntu')
-        self.assertEqual(repo['name'], 'ubuntu')
+        repo = self.driver.get_repository("ubuntu")
+        self.assertEqual(repo["name"], "ubuntu")
 
     def test_get_image(self):
-        image = self.driver.get_image('ubuntu', 'latest')
-        self.assertEqual(image.id, '2343')
-        self.assertEqual(image.name, 'registry.hub.docker.com/ubuntu:latest')
-        self.assertEqual(image.path, 'registry.hub.docker.com/ubuntu:latest')
+        image = self.driver.get_image("ubuntu", "latest")
+        self.assertEqual(image.id, "2343")
+        self.assertEqual(image.name, "registry.hub.docker.com/ubuntu:latest")
+        self.assertEqual(image.path, "registry.hub.docker.com/ubuntu:latest")
 
 
 class DockerMockHttp(MockHttp):
-    fixtures = ContainerFileFixtures('docker_utils')
+    fixtures = ContainerFileFixtures("docker_utils")
 
-    def _v2_repositories_library_ubuntu_tags_latest(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('v2_repositories_library_ubuntu_tags_latest.json')
+    def _v2_repositories_library_ubuntu_tags_latest(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("v2_repositories_library_ubuntu_tags_latest.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v2_repositories_library_ubuntu_tags(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('v2_repositories_library_ubuntu_tags.json')
+    def _v2_repositories_library_ubuntu_tags(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("v2_repositories_library_ubuntu_tags.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v2_repositories_library_ubuntu(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('v2_repositories_library_ubuntu.json')
+    def _v2_repositories_library_ubuntu(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("v2_repositories_library_ubuntu.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

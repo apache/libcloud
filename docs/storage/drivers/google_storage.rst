@@ -16,7 +16,22 @@ project id header.
 Known limitations
 -----------------
 
-1. Meta data / tags aren't returned when using list_container_objects method
+1. Only lower case values are supported for metadata keys
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Google Storage driver is implemented on top of the S3 compatible XML API. In
+the XML API (and per AWS API docs), metadata values are sent as part of HTTP
+request headers which means mixed casing is not supported for metadata keys (
+all the metadata keys are lower cased).
+
+Native Google Storage JSON API does  support mixed casing for metadata keys,
+but that API is not supported by Libcloud.
+
+To make migrating across different providers easier and for compatibility
+reasons, you are encouraged to not rely on mixed casing for metadata header keys
+even with the providers which support it.
+
+2. Meta data / tags aren't returned when using list_container_objects method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta data / tags associated with an object are only returned when using

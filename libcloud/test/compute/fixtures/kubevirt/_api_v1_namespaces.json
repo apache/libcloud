@@ -1,0 +1,98 @@
+{
+    "apiVersion": "v1",
+    "metadata": {
+      "selfLink": "/api/v1/namespaces",
+      "resourceVersion": "227032"
+    },
+    "kind": "NamespaceList",
+    "items": [
+      {
+        "spec": {
+          "finalizers": [
+            "kubernetes"
+          ]
+        },
+        "metadata": {
+          "name": "default",
+          "creationTimestamp": "2019-12-01T15:54:25Z",
+          "selfLink": "/api/v1/namespaces/default",
+          "resourceVersion": "146",
+          "uid": "a5370eda-e8d8-4a1b-a97b-aeb9271bdcf8"
+        },
+        "status": {
+          "phase": "Active"
+        }
+      },
+      {
+        "spec": {
+          "finalizers": [
+            "kubernetes"
+          ]
+        },
+        "metadata": {
+          "name": "kube-node-lease",
+          "creationTimestamp": "2019-12-01T15:54:23Z",
+          "selfLink": "/api/v1/namespaces/kube-node-lease",
+          "resourceVersion": "39",
+          "uid": "0f934934-aefd-4d8d-862a-dd123b51b966"
+        },
+        "status": {
+          "phase": "Active"
+        }
+      },
+      {
+        "spec": {
+          "finalizers": [
+            "kubernetes"
+          ]
+        },
+        "metadata": {
+          "name": "kube-public",
+          "creationTimestamp": "2019-12-01T15:54:23Z",
+          "selfLink": "/api/v1/namespaces/kube-public",
+          "resourceVersion": "38",
+          "uid": "8f7c5fec-fc55-4057-9cf4-b2b0441848bd"
+        },
+        "status": {
+          "phase": "Active"
+        }
+      },
+      {
+        "spec": {
+          "finalizers": [
+            "kubernetes"
+          ]
+        },
+        "metadata": {
+          "name": "kube-system",
+          "creationTimestamp": "2019-12-01T15:54:23Z",
+          "selfLink": "/api/v1/namespaces/kube-system",
+          "resourceVersion": "37",
+          "uid": "9263771e-166e-4b6b-8fbf-6a9af569ac93"
+        },
+        "status": {
+          "phase": "Active"
+        }
+      },
+      {
+        "spec": {
+          "finalizers": [
+            "kubernetes"
+          ]
+        },
+        "metadata": {
+          "labels": {
+            "kubevirt.io": ""
+          },
+          "selfLink": "/api/v1/namespaces/kubevirt",
+          "name": "kubevirt",
+          "creationTimestamp": "2019-12-01T15:58:27Z",
+          "resourceVersion": "689",
+          "uid": "e6d3d7e8-0ee5-428b-8e17-5187779e5627"
+        },
+        "status": {
+          "phase": "Active"
+        }
+      }
+    ]
+  }

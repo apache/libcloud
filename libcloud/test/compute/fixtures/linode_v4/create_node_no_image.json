@@ -1,0 +1,42 @@
+{
+    "alerts": {
+        "cpu": 90,
+        "io": 10000,
+        "network_in": 10,
+        "network_out": 10,
+        "transfer_quota": 80
+    },
+    "backups": {
+        "enabled": false,
+        "last_successful": null,
+        "schedule": {
+            "day": null,
+            "window": null
+        }
+    },
+    "created": "2020-10-09T10:43:51",
+    "group": "",
+    "hypervisor": "kvm",
+    "id": 33431975,
+    "image": null,
+    "ipv4": [
+        "45.32.179.25"
+    ],
+    "ipv6": "2d01:7ec0::fa3c:92ff:fe77:be77/64",
+    "label": "TestNode",
+    "region": "eu-west",
+    "specs": {
+        "disk": 25600,
+        "gpus": 0,
+        "memory": 1024,
+        "transfer": 1000,
+        "vcpus": 1
+    },
+    "status": "provisioning",
+    "tags": [
+        "testing123"
+    ],
+    "type": "g6-nanode-1",
+    "updated": "2020-10-09T10:43:51",
+    "watchdog_enabled": true
+}

@@ -16,6 +16,26 @@
       "zone": "us-central1-a"
     },
     {
+      "creationTimestamp": "2016-04-25T13:32:49.088-07:00",
+      "description": "12 vCPU and 85 GB RAM",
+      "guestCpus": 12,
+      "id": "1133568312750571514",
+      "imageSpaceGb": 10,
+      "kind": "compute#machineType",
+      "maximumPersistentDisks": 16,
+      "maximumPersistentDisksSizeGb": "10240",
+      "memoryMb": 87040,
+      "name": "a2-highgpu-1g",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/machineTypes/a2-highgpu-1g",
+      "accelerators": [
+       {
+          "guestAcceleratorType": "nvidia-tesla-v100",
+          "guestAcceleratorCount": 1
+       }
+      ],
+      "zone": "europe-west1-a"
+    },
+    {
       "creationTimestamp": "2013-04-25T13:32:45.550-07:00",
       "description": "1 vCPU (shared physical core) and 1.7 GB RAM",
       "guestCpus": 1,

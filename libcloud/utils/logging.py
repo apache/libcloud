@@ -19,9 +19,7 @@ from __future__ import absolute_import
 
 import logging
 
-__all__ = [
-    'ExtraLogFormatter'
-]
+__all__ = ["ExtraLogFormatter"]
 
 
 class ExtraLogFormatter(logging.Formatter):
@@ -32,16 +30,18 @@ class ExtraLogFormatter(logging.Formatter):
     For example:
     extra={'_id': 'user-1', '_path': '/foo/bar'}
     """
+
     def format(self, record):
-        custom_attributes = dict([(k, v) for k, v in record.__dict__.items()
-                                  if k.startswith('_')])
+        custom_attributes = dict(
+            [(k, v) for k, v in record.__dict__.items() if k.startswith("_")]
+        )
         custom_attributes = self._dict_to_str(custom_attributes)
 
         msg = logging.Formatter.format(self, record)
-        msg = '%s (%s)' % (msg, custom_attributes)
+        msg = "%s (%s)" % (msg, custom_attributes)
         return msg
 
     def _dict_to_str(self, dictionary):
-        result = ['%s=%s' % (k[1:], str(v)) for k, v in dictionary.items()]
-        result = ','.join(result)
+        result = ["%s=%s" % (k[1:], str(v)) for k, v in dictionary.items()]
+        result = ",".join(result)
         return result

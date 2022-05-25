@@ -1,0 +1,11 @@
+[{
+  "id": "XXXX-YYYY-ZZZZ",
+  "name": "my-server",
+  "power": "on",
+  "datacenter": "IL",
+  "networks": [
+    {"network" : "wan-il", "ips":  ["1.2.3.4"]},
+    {"network" : "12345-my-vlan", "ips":  ["5.6.7.8"]}
+  ],
+  "billing": "monthly"
+}]

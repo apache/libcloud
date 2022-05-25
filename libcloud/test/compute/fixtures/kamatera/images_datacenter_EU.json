@@ -1,0 +1,604 @@
+[
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C2987c9641fd2619a149ba2ca01a",
+    "name": "CentOS 8.0 64-bit - Minimal Configuration",
+    "code": "8.0 64bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C29b85c6367d215d403f44c28f48",
+    "name": "CentOS 8.0 64-bit - Basic Server Configuration",
+    "code": "8.0 64bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C296c6b68a57dd7054c4d3c6eef2",
+    "name": "CentOS 7.7 64-bit - minimal Configuration",
+    "code": "7.7 64bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C29c28b0fa58c52bb361202dc2be",
+    "name": "CentOS 7.7 64-bit - Basic Server Configuration",
+    "code": "7.7 64bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C291195abef23f2815c6f7cc301a",
+    "name": "CentOS 7.4 64-bit - Minimal Configuration",
+    "code": "7.4 64bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C291a7dbc4a539dc4500ed1975c5",
+    "name": "CentOS 7.4 64-bit - Basic Server Configuration",
+    "code": "7.4 64bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C2979e186bf7a61242f3bc49c945",
+    "name": "CentOS 6.9 64-bit - Minimal Configuration",
+    "code": "6.9 64bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C2924b678625c2b07d04b4978e18",
+    "name": "CentOS 6.9 64-bit - Basic Server Configuration",
+    "code": "6.9 64bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C296c816785af0416189ce873152",
+    "name": "CentOS 6.9 32-bit - Minimal Configuration",
+    "code": "6.9 32bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C2982cc1f899e74c4f39a9e81998",
+    "name": "CentOS 6.9 32-bit - Basic Server Configuration",
+    "code": "6.9 32bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C29c258bce8d868fa38afb946073",
+    "name": "CentOS 5.11 64-bit - Minimal Configuration",
+    "code": "5.11 64bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C29c9bfc5ab3a09ff3a80dfe46ce",
+    "name": "CentOS 5.11 64-bit - Basic Server Configuration",
+    "code": "5.11 64bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C29786f615663312af9d49bba1ef",
+    "name": "CentOS 5.11 32-bit - Minimal Configuration",
+    "code": "5.11 32bit_minimal",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "CentOS",
+    "id": "EU:6000C29b6395b4cc22896d745fa1a5c4",
+    "name": "CentOS 5.11 32-bit Basic Server Configuration",
+    "code": "5.11 32bit_basic_server",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Debian",
+    "id": "EU:6000C291c63645ada7e3b2f48f1b7c14",
+    "name": "Debian version 9.11 (stretch) 64-bit",
+    "code": "9.11 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Debian",
+    "id": "EU:6000C29bb8fde673f515caf9bed695a1",
+    "name": "Debian version 8.9 (jessie) 64-bit",
+    "code": "8.9 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Debian",
+    "id": "EU:6000C29a9eb2046f9d486e0297051ec8",
+    "name": "Debian version 8.9 (jessie) 32-bit",
+    "code": "8.9 32bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Debian",
+    "id": "EU:6000C29541e39a9892043d7237503d06",
+    "name": "Debian version 7.11 (wheezy) 64-bit",
+    "code": "7.11 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Debian",
+    "id": "EU:6000C29cebd37daa2ee4d7f6de19e931",
+    "name": "Debian version 7.11 (wheezy) 32-bit",
+    "code": "7.11 32bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Debian",
+    "id": "EU:6000C2905f500f62665b27b1510cdbe3",
+    "name": "Debian version 10.0 (buster) 64-bit",
+    "code": "10.0 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "FreeBSD",
+    "id": "EU:6000C29e4131d66b806c25c48ab0b810",
+    "name": "FreeBSD 12.1 64-bit",
+    "code": "12.1 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "FreeBSD",
+    "id": "EU:6000C2903191e36bbd4f9e8b089291d5",
+    "name": "FreeBSD 11.3 64-bit",
+    "code": "11.3 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "FreeBSD",
+    "id": "EU:6000C298bb2e4ea0f1891cd81735d24e",
+    "name": "FreeBSD 11.1 64-bit",
+    "code": "11.1 64bit",
+    "osDiskSizeGB": 2,
+    "ramMBMin": {
+      "A": 512,
+      "B": 512,
+      "T": 512,
+      "D": 512
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "FreeBSD",
+    "id": "EU:6000C2983bdd8b531ecfc6d892a35aa4",
+    "name": "FreeBSD 11.1 32-bit",
+    "code": "11.1 32bit",
+    "osDiskSizeGB": 2,
+    "ramMBMin": {
+      "A": 512,
+      "B": 512,
+      "T": 512,
+      "D": 512
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C2904fc6d8295d2b6d9687ed955e",
+    "name": "Ubuntu Server version 18.04 LTS (bionic) 64-bit, \n\nOptimized for best performance and with minimal OS services (OS use only 80MB RAM).\n\nProvisioning of this server takes 5 minutes longer as latest OS updates are downloaded and installed.",
+    "code": "18.04 64bit_optimized_updated",
+    "osDiskSizeGB": 4,
+    "ramMBMin": {
+      "A": 512,
+      "B": 512,
+      "T": 512,
+      "D": 512
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C29040fd67b51a229d7e641fba22",
+    "name": "Ubuntu Server version 18.04 LTS (bionic) 64-bit.\nOptimized for best performance and with minimal OS services (OS use only 80MB RAM).",
+    "code": "18.04 64bit_optimized",
+    "osDiskSizeGB": 4,
+    "ramMBMin": {
+      "A": 512,
+      "B": 512,
+      "T": 512,
+      "D": 512
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C29a5a7220dcf84716e7bba74215",
+    "name": "Ubuntu Server version 18.04 LTS (bionic) 64-bit",
+    "code": "18.04 64bit",
+    "osDiskSizeGB": 4,
+    "ramMBMin": {
+      "A": 512,
+      "B": 512,
+      "T": 512,
+      "D": 512
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C298bbb2d3b6e9721f4f4f3c5bf0",
+    "name": "Ubuntu Server version 16.04 LTS (xenial) 64-bit",
+    "code": "16.04 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 512,
+      "B": 512,
+      "T": 512,
+      "D": 512
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C2901a61dff371f4d1d34bd9548b",
+    "name": "Ubuntu Server version 16.04 LTS (xenial) 32-bit",
+    "code": "16.04 32bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C29188a2a1c97070d1d6fb71ee89",
+    "name": "Ubuntu Server version 15.04 (vivid) 64-bit",
+    "code": "15.04 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C299f04969dee8d55d2d3f0dbb96",
+    "name": "Ubuntu Server version 14.04 LTS (trusty) 64-bit",
+    "code": "14.04 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C295834b332b89f79521cdabca9e",
+    "name": "Ubuntu Server version 14.04 LTS (trusty) 32-bit",
+    "code": "14.04 32bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C29574cbda93387eac758727a6c9",
+    "name": "Ubuntu Server version 12.04 LTS (precise) 64-bit",
+    "code": "12.04 64bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Ubuntu",
+    "id": "EU:6000C296d934a62e14bd45586beeec3f",
+    "name": "Ubuntu Server version 12.04 LTS (precise) 32-bit",
+    "code": "12.04 32bit",
+    "osDiskSizeGB": 5,
+    "ramMBMin": {
+      "A": 256,
+      "B": 256,
+      "T": 256,
+      "D": 256
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C29e1066cc75286eac3058d7204a",
+    "name": "Microsoft Windows Server 2019 Standard 64-bit",
+    "code": "2019_standard 64bit",
+    "osDiskSizeGB": 30,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C29d57e683a6170662bb6c4386e1",
+    "name": "Microsoft Windows Server 2019 Datacenter 64-bit",
+    "code": "2019_datacenter 64bit",
+    "osDiskSizeGB": 30,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C29a99c7cc5d67b773c85d017307",
+    "name": "Microsoft Windows Server 2016 Standard 64-bit",
+    "code": "2016_standard 64bit",
+    "osDiskSizeGB": 25,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C298abe9aa378af7832e3d7de7b6",
+    "name": "Microsoft Windows Server 2016 Datacenter 64-bit",
+    "code": "2016_datacenter 64bit",
+    "osDiskSizeGB": 25,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C294c507a05a21df616f2da61aa5",
+    "name": "Microsoft Windows Server 2012 R2 Standard 64-bit",
+    "code": "2012_r2_standard 64bit",
+    "osDiskSizeGB": 30,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C298807c04093ca0b86ab7486044",
+    "name": "Microsoft Windows Server 2012 R2 Datacenter 64-bit",
+    "code": "2012_r2_datacenter 64bit",
+    "osDiskSizeGB": 30,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C29e684efebf574b286df3b4ff4f",
+    "name": "Microsoft Windows Server 2008 R2 Standard 64-bit",
+    "code": "2008_r2_standard 64bit",
+    "osDiskSizeGB": 25,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C298c677d7da830e4f3ae1765c7e",
+    "name": "Microsoft Windows Server 2008 R2 Enterpriser 64-bit",
+    "code": "2008_r2_enterprise 64bit",
+    "osDiskSizeGB": 25,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  },
+  {
+    "datacenter": "EU",
+    "os": "Windows",
+    "id": "EU:6000C2960d7769492105a558d145c7d3",
+    "name": "Microsoft Windows Server 2008 R2 Datacenter 64-bit",
+    "code": "2008_r2_datacenter 64bit",
+    "osDiskSizeGB": 25,
+    "ramMBMin": {
+      "A": 1024,
+      "B": 1024,
+      "T": 1024,
+      "D": 1024
+    }
+  }
+]

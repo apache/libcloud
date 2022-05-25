@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'Provider',
-    'ContainerState'
-]
+__all__ = ["Provider", "ContainerState"]
 
 
 class Type(object):
@@ -46,14 +43,15 @@ class Provider(object):
     Non-Dummy drivers are sorted in alphabetical order. Please preserve this
     ordering when adding new drivers.
     """
-    DUMMY = 'dummy'
-    DOCKER = 'docker'
-    ECS = 'ecs'
-    GKE = 'GKE'
-    JOYENT = 'joyent'
-    KUBERNETES = 'kubernetes'
-    LXD = 'lxd'
-    RANCHER = 'rancher'
+
+    DUMMY = "dummy"
+    DOCKER = "docker"
+    ECS = "ecs"
+    GKE = "GKE"
+    JOYENT = "joyent"
+    KUBERNETES = "kubernetes"
+    LXD = "lxd"
+    RANCHER = "rancher"
 
 
 class ContainerState(Type):
@@ -74,12 +72,13 @@ class ContainerState(Type):
     :cvar PAUSED: Container is paused.
     :cvar UNKNOWN: Container state is unknown.
     """
-    RUNNING = 'running'
-    REBOOTING = 'rebooting'
-    TERMINATED = 'terminated'
-    PENDING = 'pending'
-    UNKNOWN = 'unknown'
-    STOPPED = 'stopped'
-    SUSPENDED = 'suspended'
-    ERROR = 'error'
-    PAUSED = 'paused'
+
+    RUNNING = "running"
+    REBOOTING = "rebooting"
+    TERMINATED = "terminated"
+    PENDING = "pending"
+    UNKNOWN = "unknown"
+    STOPPED = "stopped"
+    SUSPENDED = "suspended"
+    ERROR = "error"
+    PAUSED = "paused"

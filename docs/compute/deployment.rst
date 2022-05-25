@@ -21,6 +21,28 @@ Once your server has been bootstrapped, libcloud.deploy task should be finished
 and replaced by other tools such as previously mentioned configuration
 management software.
 
+.. note::
+
+  paramiko v2.9.0 introduced a change to prefer SHA-2 variants of RSA key
+  verification algorithm.
+
+  With this version paramiko would fail to connect to older OpenSSH
+  servers which don't support this algorithm (e.g. default setup on Ubuntu
+  14.04) and throw authentication error.
+
+  Libcloud code has been updated to be backward compatible. It first tries to
+  connect to the server using default preferred algorithm values and in case
+  that fails, it will fall back to the old approach with SHA-2 variants
+  disabled.
+
+  This functionality can be disabled by setting
+  ``LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY`` environment variable to
+  ``false``.
+
+  For security reasons (to prevent possible downgrade attacks and similar) you
+  are encouraged to do that in case you know you won't be connecting to any old
+  OpenSSH servers.
+
 Supported private SSH key types
 -------------------------------
 
@@ -31,6 +53,9 @@ Supported private SSH key types
 
 `paramiko`_ Python library we use for deployment only supports RSA, DSS and
 ECDSA private keys in PEM format.
+
+Since Libcloud v3.0.0, ``Ed25519`` private keys are also supported when using
+paramiko 2.2.0 or higher
 
 If you try to use key in an other format such as newer OpenSSH and PKCS#8
 format an exception will be thrown and deployment will fail.

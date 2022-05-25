@@ -25,7 +25,7 @@ from libcloud.dns.types import Provider, RecordType
 from libcloud.utils.py3 import httplib
 
 __all__ = [
-    'NFSNDNSDriver',
+    "NFSNDNSDriver",
 ]
 
 # The NFSN API does not return any internal "ID" strings for any DNS records.
@@ -41,19 +41,19 @@ __all__ = [
 
 class NFSNDNSDriver(DNSDriver):
     type = Provider.NFSN
-    name = 'NFSN DNS'
-    website = 'https://www.nearlyfreespeech.net'
+    name = "NFSN DNS"
+    website = "https://www.nearlyfreespeech.net"
     connectionCls = NFSNConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'NS',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT',
-        RecordType.PTR: 'PTR',
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.NS: "NS",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
+        RecordType.PTR: "PTR",
     }
 
     def list_records(self, zone):
@@ -81,14 +81,12 @@ class NFSNDNSDriver(DNSDriver):
         # We will check if there is a serial property for this zone. If so,
         # then the zone exists.
         try:
-            self.connection.request(action='/dns/%s/serial' % zone_id)
+            self.connection.request(action="/dns/%s/serial" % zone_id)
         except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
-                raise ZoneDoesNotExistError(zone_id=None, driver=self,
-                                            value=e.message)
+                raise ZoneDoesNotExistError(zone_id=None, driver=self, value=e.message)
             raise e
-        return Zone(id=None, domain=zone_id, type='master', ttl=3600,
-                    driver=self)
+        return Zone(id=None, domain=zone_id, type="master", ttl=3600, driver=self)
 
     def ex_get_records_by(self, zone, name=None, type=None):
         """
@@ -111,13 +109,12 @@ class NFSNDNSDriver(DNSDriver):
         """
         payload = {}
         if name is not None:
-            payload['name'] = name
+            payload["name"] = name
         if type is not None:
-            payload['type'] = type
+            payload["type"] = type
 
-        action = '/dns/%s/listRRs' % zone.domain
-        response = self.connection.request(action=action, data=payload,
-                                           method='POST')
+        action = "/dns/%s/listRRs" % zone.domain
+        response = self.connection.request(action=action, data=payload, method="POST")
         return self._to_records(response, zone)
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -145,19 +142,20 @@ class NFSNDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = '/dns/%s/addRR' % zone.domain
-        payload = {'name': name, 'data': data, 'type': type}
-        if extra is not None and extra.get('ttl', None) is not None:
-            payload['ttl'] = extra['ttl']
+        action = "/dns/%s/addRR" % zone.domain
+        payload = {"name": name, "data": data, "type": type}
+        if extra is not None and extra.get("ttl", None) is not None:
+            payload["ttl"] = extra["ttl"]
         try:
-            self.connection.request(action=action, data=payload, method='POST')
+            self.connection.request(action=action, data=payload, method="POST")
         except BaseHTTPError as e:
-            exists_re = re.compile(r'That RR already exists on the domain')
-            if e.code == httplib.BAD_REQUEST and \
-               re.search(exists_re, e.message) is not None:
+            exists_re = re.compile(r"That RR already exists on the domain")
+            if (
+                e.code == httplib.BAD_REQUEST
+                and re.search(exists_re, e.message) is not None
+            ):
                 value = '"%s" already exists in %s' % (name, zone.domain)
-                raise RecordAlreadyExistsError(value=value, driver=self,
-                                               record_id=None)
+                raise RecordAlreadyExistsError(value=value, driver=self, record_id=None)
             raise e
         return self.ex_get_records_by(zone=zone, name=name, type=type)[0]
 
@@ -170,22 +168,29 @@ class NFSNDNSDriver(DNSDriver):
 
         :rtype: Bool
         """
-        action = '/dns/%s/removeRR' % record.zone.domain
-        payload = {'name': record.name, 'data': record.data,
-                   'type': record.type}
+        action = "/dns/%s/removeRR" % record.zone.domain
+        payload = {"name": record.name, "data": record.data, "type": record.type}
         try:
-            self.connection.request(action=action, data=payload, method='POST')
+            self.connection.request(action=action, data=payload, method="POST")
         except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
-                raise RecordDoesNotExistError(value=e.message, driver=self,
-                                              record_id=None)
+                raise RecordDoesNotExistError(
+                    value=e.message, driver=self, record_id=None
+                )
             raise e
         return True
 
     def _to_record(self, item, zone):
-        ttl = int(item['ttl'])
-        return Record(id=None, name=item['name'], data=item['data'],
-                      type=item['type'], zone=zone, driver=self, ttl=ttl)
+        ttl = int(item["ttl"])
+        return Record(
+            id=None,
+            name=item["name"],
+            data=item["data"],
+            type=item["type"],
+            zone=zone,
+            driver=self,
+            ttl=ttl,
+        )
 
     def _to_records(self, items, zone):
         records = []

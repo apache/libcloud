@@ -1,0 +1,43 @@
+{
+    "alerts": {
+        "cpu": 90,
+        "io": 10000,
+        "network_in": 10,
+        "network_out": 10,
+        "transfer_quota": 80
+    },
+    "backups": {
+        "enabled": true,
+        "last_successful": null,
+        "schedule": {
+            "day": null,
+            "window": null
+        }
+    },
+    "created": "2020-10-09T10:21:35",
+    "group": "",
+    "hypervisor": "kvm",
+    "id": 45501392,
+    "image": "linode/centos7",
+    "ipv4": [
+        "45.32.179.25",
+        "192.168.206.100"
+    ],
+    "ipv6": "2a39:7b00::f03c:92dd:f277:4ff4/64",
+    "label": "TestNode",
+    "region": "eu-west",
+    "specs": {
+        "disk": 25600,
+        "gpus": 0,
+        "memory": 1024,
+        "transfer": 1000,
+        "vcpus": 1
+    },
+    "status": "provisioning",
+    "tags": [
+        "testing123"
+    ],
+    "type": "g6-nanode-1",
+    "updated": "2020-10-09T10:21:37",
+    "watchdog_enabled": true
+}

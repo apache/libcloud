@@ -1,0 +1,108 @@
+{
+    "allocation_pool": null,
+    "auto_start": false,
+    "context": true,
+    "cpu": 1000,
+    "cpu_model": null,
+    "cpu_type": "intel",
+    "cpus_instead_of_cores": true,
+    "drives": [
+        {
+            "boot_order": 1,
+            "dev_channel": "0:0",
+            "device": "virtio",
+            "drive": {
+                "resource_uri": "/api/2.0/drives/9d1d2cf3-08c1-462f-8485-f4b073560809/",
+                "uuid": "9d1d2cf3-08c1-462f-8485-f4b073560809"
+            },
+            "runtime": null
+        }
+    ],
+    "enable_numa": true,
+    "grantees": [],
+    "hv_relaxed": false,
+    "hv_tsc": false,
+    "hypervisor": "kvm",
+    "jobs": [],
+    "mem": 536870912,
+    "meta": {
+        "description": "",
+        "optimize_for": "linux_vm",
+        "ssh_public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9E5ykn/RPmJlTN9HJ2wkjjMJu5AB8YfcGX9uKCA9jVq0urN+LPqVy1jzCzPaxi2z05Cia0IH/G0w99SMdmkuDUQ/j+F8/U0Ja2whsiINgqvM0QWAClI7UCSoFny1UvaCk9S5J1ork/eU+ORu3jd2CdOEjIy82iLSDueALovqz3rQm8Gq5qY693zBVpb9WlvJmsqpHC+awwfWkYSuFIB4SsiY53AzzC0J10tLc7ifF+2zTqnIRwaG6m8fyWmH2r6MonGmDvCFSQ4nJmgw3VeAO+1EVvP0++XGo/RI55wQc/7jII6ANwlrr0tIUXGaVKiD0GK0K/mpEXCu8oawxhx6x"
+    },
+    "name": "test_server",
+    "nics": [
+        {
+            "boot_order": null,
+            "firewall_policy": null,
+            "ip_v4_conf": {
+                "conf": "dhcp",
+                "ip": null
+            },
+            "ip_v6_conf": null,
+            "mac": "22:61:ce:67:cd:09",
+            "model": "virtio",
+            "runtime": {
+                "interface_type": "public",
+                "io": {
+                    "bytes_recv": 0,
+                    "bytes_sent": 0,
+                    "packets_recv": 0,
+                    "packets_sent": 0
+                },
+                "ip_v4": {
+                    "resource_uri": "/api/2.0/ips/162.213.38.202/",
+                    "uuid": "162.213.38.202"
+                },
+                "ip_v6": null,
+                "rx_foreign": 0,
+                "rx_local": 0,
+                "tx_foreign": 0,
+                "tx_local": 0
+            },
+            "vlan": null
+        }
+    ],
+    "owner": {
+        "resource_uri": "/api/2.0/user/69fcfc03-d635-4f99-a8b3-e1b73637cb5d/",
+        "uuid": "69fcfc03-d635-4f99-a8b3-e1b73637cb5d"
+    },
+    "permissions": [],
+    "pubkeys": [
+        {
+            "resource_uri": "/api/2.0/pubkeys/186106ac-afb5-40e5-a0de-6f0feba5a3d5/",
+            "uuid": "186106ac-afb5-40e5-a0de-6f0feba5a3d5"
+        }
+    ],
+    "requirements": [],
+    "resource_uri": "/api/2.0/servers/3df825cb-9c1b-470d-acbd-03e1a966c046/",
+    "runtime": {
+        "active_since": "2021-03-01T11:14:30+00:00",
+        "nics": [
+            {
+                "interface_type": "public",
+                "io": {
+                    "bytes_recv": 0,
+                    "bytes_sent": 0,
+                    "packets_recv": 0,
+                    "packets_sent": 0
+                },
+                "ip_v4": {
+                    "resource_uri": "/api/2.0/ips/162.213.38.202/",
+                    "uuid": "162.213.38.202"
+                },
+                "ip_v6": null,
+                "mac": "22:61:ce:67:cd:09",
+                "rx_foreign": 0,
+                "rx_local": 0,
+                "tx_foreign": 0,
+                "tx_local": 0
+            }
+        ]
+    },
+    "smp": 1,
+    "status": "running",
+    "tags": [],
+    "uuid": "3df825cb-9c1b-470d-acbd-03e1a966c046",
+    "vnc_password": "vnc_password"
+}

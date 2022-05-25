@@ -1,47 +1,1253 @@
-﻿Changelog
+Changelog
 =========
 
-Changes in Apache Libcloud in development (3.0.0)
--------------------------------------------------
+Changes in Apache Libcloud 3.6.0
+--------------------------------
 
-General
+Compute
 ~~~~~~~
 
-- This release drops support for Python versions older than 3.5.0.
+- [OpenStack] Fix error attaching/detaching a Floating IP to an OpenStack node
+  when `ex_force_microversion` is set with 2.44 or newer microversion.
 
-  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
-  that by using the latest release which still supported those Python versions
-  (Libcloud v2.8.0).
-  (GITHUB-1377)
+  (GITHUB-1674)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Error in volume api calls if microversion is set in OpenStack.
+  In previous version if `ex_force_microversion` is set, it is assumed to set
+  it to the compute service. Now if only a version is set `2.67`, compute
+  service is assumed but it can be also set the service name `volume 3.21`.
+
+  (GITHUB-1675)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix error creating and getting node in OpenStack when
+  ex_force_microversion is set to a version newer than 2.47.
+
+  (GITHUB-1672)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Add support for new ``af-south-1`` region.
+  (GITHUB-1688)
+  [Balazs Baranyi - @balazsbaranyi]
+
+- [SSH] Update deploy node and ParamikoSSHClient related code so it works
+  with paramiko >= 2.9.0 and older OpenSSH server versions which doesn't
+  support SHA-2 variants of RSA key verification algorithm.
+
+  paramiko v2.9.0 introduced a change to prefer SHA-2 variants of RSA key
+  verification algorithm. With this version paramiko would fail to connect
+  to older OpenSSH servers which don't support this algorithm (e.g. default
+  setup on Ubuntu 14.04) and throw authentication error.
+
+  The code has been updated to be backward compatible. It first tries to
+  connect to the server using default preferred algorithm values and in case
+  this fails, it will fall back to the old approach with SHA-2 variants
+  disabled.
+
+  This functionality can be disabled by setting
+  ``LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY``environment variable to
+  ``false``.
+
+  For security reasons (to prevent possible downgrade attacks and similar) you
+  are encouraged to do that in case you know you won't be connecting to any old
+  OpenSSH servers.
   [Tomaz Muraus]
 
-- Make sure unit tests now also pass on Windows.
-  (GITHUB-1396)
+Storage
+~~~~~~~
+
+- [Google Storage] Fix public objects retrieval. In some scenarios, Google
+  doesn't return ``etag`` header in the response (e.g. for gzip content
+  encoding). The code has been updated to take this into account and not
+  throw if the header is not present.
+
+  (GITHUB-1682, GITHUB-1683)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+- [Azure Blobs] Add support for authenticating with Azure AD by passing
+  ``auth_type="azureAd"`` argument to the driver constructor.
+
+  (GITHUB-1663)
+  [Brooke White - @brookewhite9]
+
+DNS
+~~~
+
+- [GoDaddy] Fix ``list_zones()`` method so it doesn't throw if an item is
+  missing ``expires`` attribute.
+  (GITHUB-1681)
+  [Dave Grenier - @livegrenier]
+
+Container
+~~~~~~~~~
+
+- [Kubernetes] Various improvements in the driver - implement list methods for
+  nodes, services, deployments, node/pod metrics, add more fields to Pods and
+  Containers, rename clusters to namespaces, add type annotations.
+
+  (GITHUB-1667)
+  [Dimitris Galanis - @dimgal1]
+
+Other
+~~~~~
+
+- Test code has been updated to utilize stdlib ``unittest.mock`` module instead
+  of 3rd party PyPi ``mock`` package.
+
+  (GITHUG-1684)
+  Reported by @pgajdos.
+
+Changes in Apache Libcloud 3.5.1
+--------------------------------
+
+Common
+~~~~~~
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
+
+Compute
+~~~~~~~
+
+- [GCE] Retrieve regions and zones lazily when they are first accessed (via
+  self.zone_{dict,list} and self.region_{dict,list} attribute) instead of
+  retrieving them inside the driver constructor.
+
+  (GITHUB-1661, GITHUB-1661)
+  [Dimitris Galanis - @dimgal1]
+
+Changes in Apache Libcloud 3.5.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+  (GITHUB-1620)
+
+- Update AWS error response parsing code so it also correctly handles error XML
+  responses without a namespace in the response body.
+
+  In some scenarios AWS returns error response without the namespace in the body
+  and previous version of the code didn't handle that scenario.
+  [Tomaz Muraus - @Kami]
+
+Compute
+~~~~~~~
+
+- [EC2] Add support for new ``ap-east-1`` region.
+  (GITHUB-1628)
+  [Arturo Noha - @r2ronoha, Tomaz Muraus - @Kami]
+
+- [OpenStack] Add Server Groups functions in OpenStack driver.
+  (GITHUB-1629)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] OpenStack: Move floating IP functions to use network service
+  instead of nova.
+
+  This change affects all the floating ip related functions of the
+  ``OpenStack_2_NodeDriver`` class. Two new classes have been added
+  ``OpenStack_2_FloatingIpPool`` and ``OpenStack_2_FloatingIpAddress``.
+  The main change applies to the FloatingIP class where ``node_id``
+  property cannot be directly obtained from FloatingIP information and it
+  must be gotten from the related Port information with the ``get_node_id``
+  method.
+  (GITHUB-1638)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Avoid raising exception if ip is not found.
+  (GITHUB-1595)
+  [Miguel Caballer - @micafer]
+
+- [Azure ARM] Add option to create node from Compute Gallery image.
+  (GITHUB-1643)
+  [Robert Harris - @rgharris]
+
+- [Azure ARM] Add create node OS disk delete option.
+  (GITHUB-1644)
+  [Robert Harris - @rgharris]
+
+- [EC2] Add missing ``creation_date`` NodeImage extra.
+  (GITHUB-1641)
+  [Thomas JOUANNOT - @mazerty]
+
+- [GCE] Allow ``credentials`` argument which is provided to the driver
+  constructor to also be either a Python dictionary with the credentials object
+  or a JSON string with the serialized credentials object. That's in addition
+  to supporting passing in path to the credentials file or string PEM version of
+  the key.
+  (GITHUB-1214)
+  [@bverschueren]
+
+- [OpenStack] Personality field in the server requests of OpenStack must
+  be optional
+  (GITHUB-1649)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] headers field are overwrited in case of POST of
+  PUT methods in OpenStack connection
+  (GITHUB-1650)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Update supported EC2 regions and instance sizes and add support
+  for eu-south-1 region.
+  (GITHUB-1656)
+  [Arturo Noha - @r2ronoha]
+
+- [OpenStack] Add new ``ex_force_microversion`` constructor argument with which
+  user can specify which micro version to use (
+  https://docs.openstack.org/api-guide/compute/microversions.html).
+  (GITHUB-1647, GITHUB-1648)
+
+- [GCE] Add ``paginated_request()`` method to GCEConnection and update
+  ``ex_list_project_images()`` method to utilize it.
+  (GITHUB-1646, GITHUB-1655)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix regression which was inadvertently introduced in #1557 which
+  would cause some OpenStack authentication methods to not work and result in
+  an exception.
+
+  Reported by @LanderOtto via #1659.
+  (GITHUB-1659, GITHUB-1660)
+  [Tomaz Muraus - @Kami]
+
+Storage
+~~~~~~~
+
+- [Local Storage] Fix object name prefix based filtering in the
+  ``list_container_objects()`` method.
+
+  A change in the previous release inadvertently introduced a regression which
+  changed the behavior so the object name prefix based filtering didn't work
+  correctly in all the scenarios.
+
+  Reported by @louis-van-der-stam.
+  (GITHUB-1631)
+  [Tomaz Muraus - @Kami]
+
+- [Local Storage] Objects returned by the ``list_container_objects()`` method
+  are now returned sorted in the ascending order based on the object name.
+
+  Previously the order was arbitrary and not stable and consistent across
+  different environments and runs.
+
+  (GITHUB-1631)
+  [Tomaz Muraus - @Kami]
+
+- [Scaleway] Add new driver for the Scaleway Object Storage.
+  (GITHUB-1633)
+  [@reixd]
+
+Other
+~~~~~
+
+- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
+  (GITHUB-1626)
+
+- All the code has been reformatted using black v21.10b0 and we will enforce
+  black code style for all the new code going forward.
+
+  Developers can re-format their code using new ``black`` tox target (``black
+  -etox``) and they can check if there are any violations by running
+  ``black-check`` target (``tox -eblack-check``).
+  (GITHUB-1623, GITHUB-1624)
+
+Changes in Apache Libcloud 3.4.1
+--------------------------------
+
+.. note::
+
+  Libcloud depends on the ``requests`` library for performing HTTP(s) requests.
+
+  Prior to ``requests`` v2.26.0, ``requests`` depended on ``chardet`` library
+  which is licensed under LGPL (requests library itself is licensed under the
+  Apache License 2.0 license).
+
+  Since Libcloud is not an application, but a library which is usually used
+  along many other libraries in the same (virtual) environment, we can't have
+  a strict dependency on requests >= 2.26.0 since that would break a lot of
+  installations where users already depend on and have an older version of
+  requests installed.
+
+  If you are using requests < 2.26.0 along the Libcloud library you are using
+  version of chardet library (chardet is a direct dependency of the requests
+  library) which license is not compatible with Apache Libcloud.
+
+  If using a LGPL dependency is a problem for your application, you should
+  ensure you are using requests >= 2.26.0.
+
+  It's also worth noting that Apache Libcloud doesn't bundle any 3rd party
+  dependencies with our release artifacts - we only provide source code
+  artifacts on our website.
+
+  When installing Libcloud from PyPi using pip, pip will also download and use
+  the latest version of requests without the problematic chardet dependency,
+  unless you already have older version of the requests library installed in
+  the same environment where you also want to use Libcloud - in that case,
+  Libcloud will use the dependency which is already available and installed.
+
+Common
+~~~~~~
+
+- Fix a regression which was inadvertently introduced in v3.4.0 which prevented
+  users from installing Libcloud under Python 3.5.
+
+  Also revert ``requests`` minimum version required change and relax the
+  minimum version requirement.
+
+  Previous change would prevent Libcloud from being installed in environments
+  where a conflicting (lower) version of requests library is required and
+  already installed.
+
+  As a library and not an application, Libcloud should specify as loose
+  requirements as possible to prevent issues with conflicting requirements
+  versions which could prevent Libcloud from being installed.
+  (GITHUB-1594)
+
+Changes in Apache Libcloud 3.4.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix how we set HTTP request timeout on the underlying requests session
+  object. requests library has changed how timeout is set so our old
+  code had no affect.
+
+  (GITHUB-1575, GITHUB-1576)
+  [Dimitris Galanis - @dimgal1]
+
+- Update setup.py metadata and indicate we also support Python 3.10.
+
+- [Google] Update Google authentication code so so we don't try to contact
+  GCE metadata server when determining auth credentials type when oAuth 2.0 /
+  installed app type of credentials are used.
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- [Google] Update Google authentication code so we don't try to retry failed
+  request when trying to determine if GCE metadata server is available when
+  retrying is enabled globally (either via module level constant or via
+  environment variable value).
+
+  This will speed up scenarios when trying is enabled globally, but GCE
+  metadata server is not available and different type of credentials are used
+  (e.g. oAuth 2).
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- Update minimum ``requests`` version we require as part for install_requires
+  in setup.py to ``2.26.0`` when using Python >= 3.6.
+
+  This was done to avoid licensing issue with transitive dependency
+  (``chardet``).
+
+  NOTE: requests ``>=2.25.1`` will be used when using Python 3.5 since 2.26.0
+  doesn't support Python 3.5 anymore.
+
+  For more context, see https://github.com/psf/requests/pull/5797.
+  (GITHUB-1594)
+
+  Reported by Jarek Potiuk - @potiuk.
+
+- Update HTTP connection and request retry code to be more flexible so user
+  can specify and utilize custom retry logic which can be configured via
+  connection retryCls attribute
+  (``driver.connection.retryCls = MyRetryClass``).
+
+  (GITHUB-1558)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+- HTTP connection and request retry logic has been updated so we still respect
+  ``timeout`` argument when retrying requests due to rate limit being reached
+  errors. Previously, we would try to retry indefinitely on
+  ``RateLimitReachedError`` exceptions.
+
+Storage
+~~~~~~~
+
+- [Azure Blobs] Respect Content-Encoding, Content-Language and Cache-Control
+  headers when uploading blobs via stream.
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+  (GITHUB-1550)
+
+- [Azure Blobs] Enable the Azure storage driver to be used with
+  Azure Government, Azure China, and Azure Private Link by setting
+  the driver host argument to the endpoint suffix for the environment.
+
+  Reported by Melissa Kersh - @mkcello96
+  (GITHUB-1551)
+
+- [Local Storage] Optimize ``iterate_container_objects`` method to perform
+  early filtering if ``prefix`` argument is provided.
+  (GITHUB-1584)
+  [@Ido-Levi]
+
+Compute
+~~~~~~~
+
+- [Equinix Metal] Various improvements to the driver.
+
+  (GITHUB-1548)
+  [Dimitris Galanis - @dimgal1]
+
+- [OpenStack] Fix error getting non existing description of Ports.
+
+  (GITHUB-1543)
+  [Miguel Caballer - @micafer]
+
+- [Outscale] Various updates to the driver.
+  (GITHUB-1549)
+  [Tio Gobin - @tgn-outscale]
+
+- [Ovh] Fix driver so it doesn't throw if a node is in resizing state.
+  (GITHUB-1555)
+  [Rob Juffermans - @robjuffermans]
+
+- [OpenStack] Support volume v3 API endpoint in OpenStack driver.
+
+  (GITHUB-1561)
+  [Miguel Caballer - @micafer]
+
+- [GCE] Get accelerators field in the GCE machineType.
+
+  (GITHUB-1565)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Support updating ``allowed_address_pairs`` on OpenStack ports
+  using ``ex_update_port`` method.
+  (GITHUB-1569)
+  [@dpeschman]
+
+- [OpenStack] Enable to get Volume Quota details in OpenStack driver.
+
+  (GITHUB-1586)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Add disabled property to OpenStack images.
+
+  (GITHUB-1615)
+  [Miguel Caballer - @micafer]
+
+- [CloudSigma] Various updates, improvements and new functionality in the 
+  driver (support for new regions, instance types, additional standard API an 
+  extension methods, etc.).
+
+  (GITHUB-1558)
+  [Dimitris Galanis - @dimgal1]
+
+- [OpenStack] Add binding:host_id value to the OpenStack port information.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Add support for ``gp3`` and ``io2`` volume types. Also add
+  ``ex_throughput`` argument to the ``create_volume`` method.
+  (GITHUB-1596)
+  [Palash Gandhi - @palashgandhi]
+
+- [OpenStack] Add support for authenticating using application credentials.
+  (GITHUB-1597, GITHUB-1598)
+  [Daniela Bauer - @marianne013]
+
+- [OpenStack] Add support for using optional external cache for auth tokens
+
+  This cache can be shared by multiple processes which results in much less
+  tokens being allocated when many different instances / processes
+  are utilizing the same set of credentials.
+
+  This functionality can be used by implementing a custom cache class with
+  caching logic (e.g. storing cache context on a local filesystem, external
+  system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
+  argument.
+  (GITHUB-1460, GITHUB-1557)
+  [@dpeschman]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
+DNS
+~~~
+
+- [CloudFlare] Enable authentication via API Tokens.
+  [Clemens Wolff - @c-w]
+
+- [DigitalOcean] Fix ``create_record()`` and ``update_record()`` method and
+  pass ``None`` instead of string value ``null`` for priority, port and weight
+  parameters if they are not provided as method arguments.
+  (GITHUB-1570)
+  [Gasper Vozel - @karantan]
+
+- [NSOne] Fix MX records and root domain handling.
+  (GITHUB-1571)
+  [Gasper Vozel - @karantan]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
+Other
+~~~~~
+
+- Fix ``python_requires`` setup.py metadata item value.
+  (GITHUB-1606)
+  [Michał Górny - @mgorny]
+
+- Update tox targets for unit tests to utilize ``pytest-xdist`` plugin to run
+  tests in parallel in multiple processes to speed up the test runs.
+  (GITHUB-1625)
+
+Changes in Apache Libcloud 3.3.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [EC2] Fix a regression introduced in v3.3.0 which would break EC2 driver for
+  some regions because the driver would incorrectly try to use signature version
+  2 for all the regions whereas some newer regions require signature version 4
+  to be used.
+
+  If you are unable to upgrade, you can use the following workaround, as long
+  as you only use code which supports / works with authentication signature
+  algorithm version 4:
+
+  .. sourcecode:: python
+
+    import libcloud.common.aws
+    libcloud.common.aws.DEFAULT_SIGNATURE_VERSION = "4"
+
+    # Instantiate affected driver here...
+
+  Reported by @olegrtecno.
+  (GITHUB-1545, GITHUB-1546)
+
+- [EC2] Allow user to override which signature algorithm version is used for
+  authentication by passing ``signature_version`` keyword argument to the EC2
+  driver constructor.
+  (GITHUB-1546)
+
+Storage
+~~~~~~~
+
+- [Google Cloud Storage] Fix a bug and make sure we also correctly handle
+  scenario in ``get_object()`` method when the object size is returned in
+  ``x-goog-stored-content-length`` and not ``content-length`` header.
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+  (GITHUB-1544, GITHUB-1547)
+
+- [Google Cloud Storage] Update ``get_object()`` method and ensure
+  ``object.size`` attribute is an integer and not a string. This way it's
+  consistent with ``list_objects()`` method.
+  (GITHUB-1547)
+
+Changes in Apache Libcloud 3.3.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix a bug which would cause some prepared requests with empty bodies to be
+  chunked which would cause some of the provider APIs such as OpenStack to
+  return HTTP 400 errors.
+  (GITHUB-1487, GITHUB-1488)
+  [Michael Spagon - @mspagon]
+
+- Optimize various code imports (remove unnecessary imports, make some lazy,
+  etc.), so now importing most of the modules is around ~20-40% faster (~70
+  vs ~140 ms) and in some cases such as EC2 driver even more.
+
+  Now majority of the import time is spent in importing ``requests`` library.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
+- ``libcloud.pricing.get_size_price()`` function has been updated so it only
+  caches pricing data in memory for the requested drivers.
+
+  This way we avoid caching data in memory for drivers which may never be
+  used.
+
+  If you want to revert to old behavior (cache pricing data for all the
+  drivers in memory), you can do that by passing ``cache_all=True`` argument
+  to that function or set ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module
+  level variable to ``True``.
+
+  Passing ``cache_all=True`` might come handy in situations where you know the
+  application will work with a lot of different drivers - this way you can
+  avoid multiple disk reads when requesting pricing data for different drivers.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
+- Advertise Python 3.9 support in setup.py.
+
+Compute
+~~~~~~~
+
+- [GCE] Fix ``ex_set_image_labels`` method using incorrect API path.
+  (GITHUB-1485)
+  [Poul Petersen - @petersen-poul]
+
+- [OpenStack] Fix error setting ``ex_force_XXX_url`` without setting
+  ``ex_force_base_url``.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Update supported EC2 regions and instance sizes and add support 
+  for eu-north-1 region.
+  (GITHUB-1486)
+  [Arturo Noha - @r2ronoha]
+
+- [Ovh] Add support for multiple regions to the driver. User can select
+  a region (location) by passing ``location`` argument to the driver
+  constructor (e.g. ``location=ca``).
+  (GITHUB-1494)
+  [Dan Hunsaker - @danhunsaker]
+
+- [GCE] Add support for creating nodes without a service account associated
+  with them. Now when an empty list is passed for ``ex_service_accounts``
+  argument, VM will be created without service account attached.
+
+  For backward compatibility reasons, default value of ``None`` still means to
+  use a default service account.
+  (GITHUB-1497, GITHUB-1495)
+  [David Tomaschik - Matir]
+
+- [VSphere] Add new VMware VSphere driver which utilizes ``pyvmomi`` library
+  and works under Python 3.
+
+  If you want to use this driver, you need to install ``pyvmomi`` dependency -
+  ``pip install pyvmomi``
+  (GITHUB-1481)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [OpenStack] Enable to get Quota Set detail.
+  (GITHUB-1495)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Add ex_get_size_extra_specs function to OpenStack driver.
+  (GITHUB-1517)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
+- [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
+  attributes are also set correctly and populated on the ``Node`` object.
+  (GITHUB-1507, GITHUB-1508)
+  [@sergerdn]
+
+- [Vultr] Make sure ``private_ips`` attribute on the ``Node`` object is
+  correctly populated when listing nodes. Also add additional values to the
+  ``node.extra`` dictionary.
+  (GITHUB-1506)
+  [@sergerdn]
+
+- [EC2] Optimize EC2 driver imports and move all the large constant files to
+  separate modules in ``libcloud/compute/constants/ec2_*.py`` files.
+
+  Previously all the constants were contained in
+  ``libcloud/compute/constants.py`` file. That file was imported when importing
+  EC2 driver which would add unnecessary import time and memory overhead in case
+  this data was not actually used.
+
+  Now most of the large imports are lazy and only happen when that data is
+  needed (aka when ``list_sizes()`` method is called).
+
+  ``libcloud/compute/constants.py`` file has also been removed.
+  (GITHUB-1519)
+  [Tomaz Muraus - @Kami]
+
+- [Packet / Equinix Metal] Packet driver has been renamed to Equinix Metal. If
+  your code uses Packet.net driver, you need to update it as per example in
+  Upgrade Notes documentation section.
+  (GITHUB-1511)
+  [Dimitris Galanis - @dimgal1]
+
+- [OutScale] Add various extension methods to the driver. For information on
+  available extenion methods, please refer to the driver documentation.
+  (GITHUB-1499)
+  [@tgn-outscale]
+
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
+
+Storage
+~~~~~~~
+
+- Deprecated ``lockfile`` library which is used by the Local Storage driver has
+  been replaced with ``fasteners`` library.
+  [Tomaz Muraus - @Kami]
+
+- [S3] Add support for ``us-gov-east-1`` region.
+  (GITHUB-1509, GITHUB-1510)
+  [Andy Spohn - @spohnan]
+
+- [DigitalOcean Spaces] Add support for sfo2 regon.
+  (GITHUB-1525)
+  [Cristian Rasch - @cristianrasch]
+
+- [MinIO] Add new driver for MinIO object storage (https://min.io).
+  (GITHUB-1528, GITHUB-1454)
+  [Tomaz Muraus - @Kami]
+
+- [S3] Update S3 and other drivers which are based on the S3 one (Google
+  Storage, RGW, MinIO) to correctly throw ``ContainerAlreadyExistsError`` if
+  container creation fails because container with this name already exists.
+
+  Previously in such scenario, ``InvalidContainerNameError`` exception which
+  does not comply with the Libcloud standard API was thrown.
+  (GITHUB-1528)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` module level
+  variable.
+
+  When this value is set to ``True`` (defaults to ``False`` for backward
+  compatibility reasons), Libcloud won't try to sanitize the URL path and
+  remove any double slashes.
+
+  In most cases, this won't matter and sanitzing double slashes is a safer
+  default, but in some cases such as S3, where double slashes can be a valid
+  path (e.g. ``/my-bucket//path1/file.txt``), this option may come handy.
+
+  When this variable is set to ``True``, behavior is also consistent with
+  Libcloud versions prior to v2.0.0.
+
+  Reported by Jonathan Hanson - @triplepoint.
+  (GITHUB-1529)
+  [Tomaz Muraus - @Kami]
+
+DNS
+~~~
+
+- [Common] Fix a bug with the header value returned by the
+  ``export_zone_to_bind_format`` method containing an invalid timestamp (value
+  for the minute part of the timestamp was wrong and contained month number
+  instead of the minutes value).
+
+  Reported by Kurt Schwehr - @schwehr.
+
+  (GITHUB-1500)
+  [Tomaz Muraus - @Kami]
+
+- [CloudFlare DNS] Add support for creating ``SSHFP`` records.
+  (GITHUB-1512, GITHUB-1513)
+  [Will Hughes - @insertjokehere]
+
+- [DigitalOcean] Update driver and make sure request data is sent as part of
+  HTTP request body on POST and PUT operations (previously it was sent as
+  part of query params).
+  (GITHUB-1505)
+  [Andrew Starr-Bochicchio - @andrewsomething]
+
+- [AuroraDNS] Throw correct exception on 403 authorization failed API error.
+  (GITHUB-1521, GITHUB-1522)
+  [Freek Dijkstra - @macfreek]
+
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
+
+- [CloudFlare] Update driver so it correctly throws
+  ``RecordAlreadyExists`` error on various error responses which represent
+  this error.
+  [Tomaz Muraus - @Kami]
+
+Changes in Apache Libcloud 3.2.0
+--------------------------------
+
+Common
+~~~~~~
+
+- ``libcloud.pricing.download_pricing_file`` function has been updated so it
+  tries to download latest ``pricing.json`` file from our public read-only S3
+  bucket.
+
+  We now run a daily job as part of our CI/CD which scrapes provider prices and
+  publishes the latest version of the ``pricing.json`` file to that bucket.
+
+  For more information, please see
+  https://libcloud.readthedocs.io/en/latest/compute/pricing.html.
+
+Compute
+~~~~~~~
+
+- [OpenStack] Add `ex_get_network()` to the OpenStack driver to make it
+  possible to retrieve a single network by using the ID.
+
+  (GITHUB-1474)
+  [Sander Roosingh - @SanderRoosingh]
+
+- [OpenStack] Fix pagination in the ``list_images()`` method and make sure
+  method returns all the images, even if the result is spread across multiple
+  pages.
+
+  (GITHUB-1467)
+  [Thomas Bechtold - @toabctl]
+
+- [GCE] Add script for scraping GCE pricing data and improve price addition in
+  ``_to_node_size`` method.
+  (GITHUB-1468)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [AWS EC2] Update script for scraping AWS EC2 pricing and update EC2 pricing
+  data.
+  (GITHUB-1469)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [Deployment] Add new ``wait_period`` argument to the ``deploy_node`` method
+  and default it to 5 seconds.
+
+  This argument tells Libcloud how long to wait between each poll interval when
+  waiting for a node to come online and have IP address assigned to it.
+
+  Previously this argument was not exposed to the end user and defaulted to 3
+  seconds which means it would be quite easy to reach rate limits with some
+  providers when spinning up many instances concurrently using the same
+  credentials.
+  [Tomaz Muraus - @Kami]
+
+- [Azure ARM] Add script for scraping Azure ARM instance pricing data.
+  (GITHUB-1470)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- Update ``deploy_node()`` method to try to re-connect to the server if we
+  receive "SSH connection not active" error when trying to run a deployment
+  step.
+
+  In some scenarios, connection may get closed by the server for whatever
+  reason before finishing all the deployment steps and in this case only
+  re-connecting would help and result in a successful outcome.
+  [Tomaz Muraus - @Kami]
+
+- [Deployment] Make ``FileDeployment`` class much faster and more efficient
+  when working with large files or when running multiple ``FileDeployment``
+  steps on a single node.
+
+  This was achieved by implementing two changes on the ``ParamikoSSHClient``
+  class:
+
+  1. ``put()`` method now tries to re-use the existing open SFTP connection
+     if one already exists instead of re-creating a new one for each
+     ``put()`` call.
+  2. New ``putfo()`` method has been added to the ``ParamikoSSHClient`` class
+     which utilizes the underlying ``sftp.putfo()`` method.
+
+     This method doesn't need to buffer the whole file content in memory and
+     also supports pipelining which makes uploads much faster and more
+     efficient for larger files.
+
+  [Tomaz Muraus - @Kami]
+
+- [Deployment] Add ``__repr__()`` and ``__str__()`` methods to all the
+  Deployment classes.
+  [Tomaz Muraus - @Kami]
+
+- [Deployment] New ``keep_alive`` and ``use_compression`` arguments have been
+  added to the ``ParamikoSSHClient`` class constructor.
+
+  Right now those are not exposed yet to the ``deploy_node()`` method.
+  [Tomaz Muraus - @Kami]
+
+- [Deployment] Update ``ParamikoSSHClient.put()`` method so it returns a
+  correct path when commands are being executed on a Windows machine.
+
+  Also update related deployment classes so they correctly handle situation
+  when we are executing commands on a Windows server.
+  [Arthur Kamalov, Tomaz Muraus]
+
+- [Outscale] Add a new driver for the Outscale provider. Existing Outscale
+  driver utilizes the EC2 compatible API and this one utilizes native Outscale
+  API.
+  (GITHUB-1476)
+  [Tio Gobin - @tgn-outscale]
+
+- [KubeVirt] Add new methods for managing services which allows users to expose
+  ports for the VMs (``ex_list_services``, ``ex_create_service``,
+  ``ex_delete_service``).
+  (GITHUB-1478)
+  [Eis D. Zaster - @Eis-D-Z]
+
+Container
+~~~~~~~~~
+
+- [LXD] Add new methods for managing network and storage pool capabilities and
+  include other improvements in some of the existing methods.
+  (GITHUB-1477)
+  [Eis D. Zaster - @Eis-D-Z]
+
+Changes in Apache Libcloud 3.1.0
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Add latest Ubuntu image families (Ubuntu 20.04) to the driver.
+
+  (GITHUB-1449)
+  [Christopher Lambert - @XN137]
+
+- [DigitalOcean] Add ``location`` argument to the ``list_sizes()`` method.
+
+  NOTE: Location filtering is performed on the client.
+  (GITHUB-1455, GITHUB-1456)
+  [RobertH1993]
+
+- Fix ``deploy_node()`` so an exception is not thrown if any of the output
+  (stdout / stderr) produced by the deployment script contains a non-valid utf-8
+  character.
+
+  Previously, user would see an error similar to "Failed after 3 tries: 'utf-8'
+  codec can't decode byte 0xc0 in position 37: invalid start byte".
+
+  And now we simply ignore byte sequences which we can't decode and include
+  rest of the output which can be decoded.
+
+  (GITHUB-1459)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``timeout`` argument to ``ScriptDeployment`` and
+  ``ScriptFileDeployment`` class constructor.
+
+  With this argument, user can specify an optional run timeout for that
+  deployment step run.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- [GiG G8] Fix retry functionality when creating port forwards and add support
+  for automatically refresing the JWT auth token inside the connection class if
+  it's about to expire in 60 seconds or less.
+  (GITHUB-1465)
+  [Jo De Boeck - @grimpy]
+
+- [Azure ARM] Update ``create_node`` so an exception is thrown if user passes
+  ``ex_use_managed_disks=False``, but doesn't provide a value for the
+  ``ex_storage_account`` argument.
+  (GITHUB-1448)
+  [@antoinebourayne]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Make sure driver works correctly for objects with ``~`` in the name.
+
+  Now when sanitizing the object name, we don't url encode ``~`` character.
+
+  Reported by Michael Militzer - @mmilitzer.
+  (GITHUB-1452, GITHUB-1457)
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- [CloudFlare] Update driver to include the whole error chain the thrown
+  exception message field.
+
+  This makes various issues easier to debug since the whole error context is
+  included.
+  [Tomaz Muraus]
+
+- [Gandi Live, CloudFlare, GCE] Add support for managing ``CAA`` record types.
+
+  When creating a ``CAA`` record, data field needs to be in the following
+  format:
+
+  ``<flags> <tag> <domain name>``
+
+  For example:
+
+  - ``0 issue caa.example.com``
+  - ``0 issuewild caa.example.com``
+  - ``0 iodef https://example.com/reports``
+
+  (GITHUB-1463, GITHUB-1464)
+  [Tomaz Muraus]
+
+- [Gandi Live] Don't throw if ``extra['rrset_ttl']`` argument is not passed
+  to the ``create_record`` method.
+  (GITHUB-1463)
+  [Tomaz Muraus]
+
+Other
+~~~~~
+
+- Update ``contrib/Dockerfile`` which can be used for running tests so
+  it only run tests with Python versions we support. This means dropping
+  support for Python < 3.5 and adding support for Python 3.7 and 3.8.
+
+  Also update it to use a more recent Ubuntu version (18.04) and Python 3
+  for running tox target.
+  (GITHUB-1451)
+  [Tomaz Muraus - @Kami, HuiFeng Tang - @99Kies]
+
+Changes in Apache Libcloud 3.0.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Make sure ``auth_user_info`` variable on the OpenStack identify connection
+  class is populated when using auth version ``3.x_password`` and
+  ``3.x_oidc_access_token``.
+
+  (GITHUB-1436)
+  [@lln-ijinus, Tomaz Muraus)
+
+- [OpenStack] Update OpenStack identity driver so a custom project can be
+  selected using ``domain_name`` keyword argument containing a project id.
+
+  Previously this argument value could only contain a project name, now the
+  value will be checked against project name and id.
+
+  (GITHUB-1439)
+  [Miguel Caballer - @micafer]
+
+Compute
+~~~~~~~
+
+- [GCE] Update ``create_node()`` method so it throws an exception if node
+  location can't be inferred and location is not specified by the user (
+  either by passing ``datacenter`` constructor argument or by passing
+  ``location`` argument to the method).
+
+  Reported by Kevin K. - @kbknapp.
+  (GITHUB-1443)
+  [Tomaz Muraus]
+
+- [GCE] Update ``ex_get_disktype`` method so it works if ``zone`` argument is
+  not set.
+  (GITHUB-1443)
+  [Tomaz Muraus]
+
+- [GiG G8] Add new driver for GiG G8 provider (https://gig.tech/).
+  (GITHUB-1437)
+  [Jo De Boeck - @grimpy]
+
+- Add new ``at_exit_func`` argument to ``deploy_node()`` method. With this
+  argument user can specify which function will be called before exiting
+  with the created node in question if the deploy process has been canceled
+  after the node has been created, but before the method has fully finished.
+
+  This comes handy since it simplifies various cleanup scenarios.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- [OpenStack] Fix auto assignment of volume device when using device name
+  ``auto`` in the ``attach_volume`` method.
+  (GITHUB-1444)
+  [Joshua Hesketh - @jhesketh]
+
+- [Kamatera] Add new driver for Kamatera provider (https://www.kamatera.com).
+  (GITHUB-1442)
+  [Ori Hoch - @OriHoch]
+
+Storage
+~~~~~~~
+
+- Add new ``download_object_range`` and ``download_object_range_as_stream``
+  methods for downloading part of the object content (aka range downloads) to
+  the base storage API.
+
+  Currently those methods are implemented for the local storage Azure Blobs,
+  CloudFiles, S3 and any other provider driver which is based on the S3 one
+  (such as Google Storage and DigitalOcean Spaces).
+  (GITHUB-1431)
+  [Tomaz Muraus]
+
+- Add type annotations for the base storage API.
+  (GITHUB-1410)
+  [Clemens Wolff - @c-w]
+
+- [Google Storage] Update the driver so it supports service account HMAC
+  credentials.
+
+  There was a bug in the code where we used the user id length check to
+  determine the account type and that code check didn't take service
+  account HMAC credentials (which contain a longer string) into account.
+
+  Reported by Patrick Mézard - pmezard.
+  (GITHUB-1437, GITHUB-1440)
+  [Yoan Tournade - @MonsieurV]
+
+DNS
+~~~
+
+- Add type annotations for the base DNS API.
+  (GITHUB-1434)
+  [Tomaz Muraus]
+
+Container
+~~~~~~~~~
+
+- [Kubernetes] Add support for the client certificate and static token based
+  authentication to the driver.
+  (GITHUB-1421)
+  [Tomaz Muraus]
+
+- Add type annotations for the base container API.
+  (GITHUB-1435)
+  [Tomaz Muraus]
+
+
+Changes in Apache Libcloud v2.8.3
+---------------------------------
+
+Compute
+~~~~~~~
+
+- Fix ``deploy_node()`` so an exception is not thrown if any of the output
+  (stdout / stderr) produced by the deployment script contains a non-valid utf-8
+  character.
+
+  Previously, user would see an error similar to "Failed after 3 tries: 'utf-8'
+  codec can't decode byte 0xc0 in position 37: invalid start byte".
+
+  And now we simply ignore byte sequences which we can't decode and include
+  rest of the output which can be decoded.
+
+  (GITHUB-1459)
+  [Tomaz Muraus - @Kami]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Make sure driver works correctly for objects with ``~`` in the name.
+
+  Now when sanitizing the object name, we don't url encode ``~`` character.
+
+  Reported by Michael Militzer - @mmilitzer.
+  (GITHUB-1452, GITHUB-1457)
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud v2.8.2
+---------------------------------
+
+Compute
+~~~~~~~
+
+- Add support for Ed25519 private keys for ``deploy_node()`` functionality
+  when using paramiko >= 2.2.0.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` so it correctly propagates an exception is a private key
+  which is used is password protected, but no password is specified.
+
+  Previously it incorrectly tried to retry on such exception. This means the
+  exception would only bubble up after all the retry attempts have been
+  exhausted.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Allow user to specify password for encrypted keys by passing
+  ``ssh_key_password`` argument to the ``deploy_node()`` method.
+
+  Previously they
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` so it correctly propagates an exception if invalid
+  or unsupported private key is used.
+
+  Previously it incorrectly tried to retry on such exception. This means the
+  exception would only bubble up after all the retry attempts have been
+  exhausted.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` method so we don't retry on fatal
+  ``SSHCommandTimeoutError`` exception (exception which is thrown when a
+  command which is running on remote host times out).
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``timeout`` argument to ``ScriptDeployment`` and
+  ``ScriptFileDeployment`` class constructor.
+
+  With this argument, user can specify an optional run timeout for that
+  deployment step run.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``stdout`` and ``stderr`` attribute to ``SSHCommandTimeoutError``
+  class.
+
+  Those attributes contain value of stdout and stderr produced so far.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- [OpenStack] Fix auto assignment of volume device when using device name
+  ``auto`` in the ``attach_volume`` method.
+  (GITHUB-1444)
+  [Joshua Hesketh - @jhesketh]
+
+Changes in Apache Libcloud v2.8.1
+---------------------------------
+
+Common
+~~~~~~
+
+- Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
+  works correctly under Python 3 when ``response.read()`` function returns
+  unicode and not bytes.
+
+  (GITHUB-1430)
   [Tomaz Muraus]
 
 Compute
 ~~~~~~~
 
-- [VMware vSphere] vSphere driver relies on ``pysphere`` Python library which
-  doesn't support Python 3 so it has been removed.
+- [GCE] Fix ``list_nodes()`` method so it correctly handles pagination
+  and returns all the nodes if there are more than 500 nodes available
+  in total.
 
-  There is an unofficial ``pysphere`` fork which adds Python 3 support, but
-  it's out of date and not maintained (https://github.com/machalekj/pysphere/tree/2to3).
-  (GITHUB-1377)
+  Previously, only first 500 nodes were returned.
+
+  Reported by @TheSushiChef.
+  (GITHUB-1409, GITHUB-1360)
   [Tomaz Muraus]
 
-- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
-  attribute is not present in the response.
+- Fix some incorrect type annotations in the base compute API.
 
-  Reported by Kartik Subbarao (@kartiksubbarao)
-  (GITHUB-1346)
+  Reported by @dpeschman.
+  (GITHUB-1413)
   [Tomaz Muraus]
 
-- [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
-  and optionally also ``ex_spot_max_price`` keyword argument in the
-  ``create_node`` method.
-  (GITHUB-1398)
-  [Peter Yu - @yukw777]
+- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
+  when region is not called ``nova``.
+  (GITHUB-1411, GITHUB-1412)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
+  being ignored / not working correctly.
+
+  NOTE: This regression has been inadvertently introduced in v2.8.0.
+  (GITHUB-1426)
+  [Dan Chaffelson - @Chaffelson]
+
+- [EC2] Update ``create_volume`` method to automatically select first available
+  availability zone if one is not explicitly provided via ``location`` argument.
+  [Tomaz Muraus]
 
 Storage
 ~~~~~~~
@@ -58,73 +1264,41 @@ Storage
   (GITHUB-1401, GITHUB-1406)
   [Tomaz Muraus - @Kami]
 
-Container
-~~~~~~~~~
+- [Google Storage] Fix a bug when uploading an object would fail and result
+  in 401 "invalid signature" error when object mime type contained mixed
+  casing and when S3 Interoperability authentication method was used.
 
-- [LXD] Add new LXD driver.
-  (GITHUB-1395)
-  [Alexandros Giavaras - @pockerman]
+  Reported by Will Abson - wabson.
+  (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
 
-Storage
-~~~~~~~
+- Fix ``upload_object_via_stream`` method so "Illegal seek" errors which
+  can arise when calculating iterator content hash are ignored. Those errors
+  likely indicate that the underlying file handle / iterator is a pipe which
+  doesn't support seek and that the error is not fatal and we should still
+  proceed.
 
-- [Azure Blobs] Implement chunked upload in the Azure Storage driver.
+  Reported by Per Buer - @perbu.
 
-  Previously, the maximum object size that could be uploaded with the
-  Azure Storage driver was capped at 100 MB: the maximum size that could
-  be uploaded in a single request to Azure. Chunked upload removes this
-  limitation and now enables uploading objects up to Azure's maximum block
-  blob size (~5 TB). The size of the chunks uploaded by the driver can be
-  configured via the ``LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB`` environment
-  variable and defaults to 4 MB per chunk. Increasing this number trades-off
-  higher memory usage for a lower number of http requests executed by the
-  driver.
+  (GITHUB-1424, GITHUB-1427)
+  [Tomaz Muraus]
 
-  Reported by @rvolykh.
-  (GITHUB-1399, GITHUB-1400)
-  [Clemens Wolff - @c-w]
+DNS
+~~~
 
-- [Azure Blobs] Drop support for uploading PageBlob objects via the Azure
-  Storage driver.
+- [Gandi Live] Update the driver and make sure it matches the latest service /
+  API updates.
+  (GITHUB-1416)
+  [Ryan Lee - @zepheiryan]
 
-  Previously, both PageBlob and BlockBlob objects could be uploaded via the
-  ``upload_object`` and ``upload_object_via_stream`` methods by specifying the
-  ``ex_blob_type`` and ``ex_page_blob_size`` arguments. To simplify the API,
-  these options were removed and all uploaded objects are now of BlockBlob
-  type. Passing ``ex_blob_type`` or ``ex_page_blob_size`` will now raise a
-  ``ValueError``.
+- [CloudFlare] Fix ``export_zone_to_bind_format`` method.
 
-  (GITHUB-1400)
-  [Clemens Wolff - @c-w]
+  Previously it threw an exception, because ``record.extra`` dictionary
+  didn't contain ``priority`` key.
 
-- [Common] Add ``prefix`` argument to ``iterate_container_objects`` and
-  ``list_container_objects`` to support object-list filtering in all
-  StorageDriver implementations.
-
-  A lot of the existing storage drivers already implemented the filtering
-  functionality via the ``ex_prefix`` extension argument so it was decided
-  to promote the argument to be part of the standard Libcloud storage API.
-  For any storage driver that doesn't natively implement filtering the results
-  list, a fall-back was implemented which filters the full object stream on
-  the client side.
-
-  For backward compatibility reasons, the ``ex_prefix`` argument will still
-  be respected until a next major release.
-  (GITHUB-1397)
-  [Clemens Wolff - @c-w]
-
-- [Azure Blobs] Implement ``get_object_cdn_url`` for the Azure Storage driver.
-
-  Leveraging Azure storage service shared access signatures, the Azure Storage
-  driver can now be used to generate temporary URLs that grant clients read
-  access to objects. The URLs expire after a certain period of time, either
-  configured via the ``ex_expiry`` argument or the
-  ``LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
-  (default: 24 hours).
-
-  Reported by @rvolykh.
-  (GITHUB-1403, GITHUB-1408)
-  [Clemens Wolff - @c-w]
+  Reported by James Montgomery - @gh-jamesmontgomery.
+  (GITHUB-1428, GITHUB-1429)
+  [Tomaz Muraus]
 
 Changes in Apache Libcloud v2.8.0
 ---------------------------------

@@ -6,18 +6,17 @@ import libcloud.security
 # Get dimension data driver
 libcloud.security.VERIFY_SSL_CERT = True
 cls = get_driver(Provider.DIMENSIONDATA)
-driver = cls('myusername', 'mypassword', region='dd-au')
+driver = cls("myusername", "mypassword", region="dd-au")
 
 # Get location
-location = driver.ex_get_location_by_id(id='AU9')
+location = driver.ex_get_location_by_id(id="AU9")
 
 # Get network domain by location
 networkDomainName = "Test Apache Libcloud"
 network_domains = driver.ex_list_network_domains(location=location)
-my_network_domain = [d for d in network_domains if
-                     d.name == networkDomainName][0]
+my_network_domain = [d for d in network_domains if d.name == networkDomainName][0]
 
-vlan = driver.ex_list_vlans(name='Libcloud Test VLAN')[0]
+vlan = driver.ex_list_vlans(name="Libcloud Test VLAN")[0]
 
 # Get Image
 images = driver.ex_list_customer_images(location=location)
@@ -27,17 +26,17 @@ tags = driver.ex_list_tags()
 pprint(tags)
 
 ex_tagname_value_pairs = {}
-ex_tagname_value_pairs['AA_Tag1'] = 'demo 1'
-ex_tagname_value_pairs['AA_Tag2'] = 'demo 2'
+ex_tagname_value_pairs["AA_Tag1"] = "demo 1"
+ex_tagname_value_pairs["AA_Tag2"] = "demo 2"
 
 ex_tagid_value_pairs = {}
-ex_tagid_value_pairs['4927c8fd-7f41-4206-a7d5-c5def927c6d2'] = 'demo 1'
-ex_tagid_value_pairs['2579fc7c-a89c-47cd-ac3b-67999dded93b'] = 'demo 2'
+ex_tagid_value_pairs["4927c8fd-7f41-4206-a7d5-c5def927c6d2"] = "demo 1"
+ex_tagid_value_pairs["2579fc7c-a89c-47cd-ac3b-67999dded93b"] = "demo 2"
 
 
 # Create node using vlan instead of private IPv4
 node = driver.ex_create_node_uncustomized(
-    name='test_server_05',
+    name="test_server_05",
     image=image,
     ex_network_domain=my_network_domain,
     ex_is_started=False,
@@ -51,7 +50,7 @@ node = driver.ex_create_node_uncustomized(
     ex_additional_nics=None,
     ex_disks=None,
     ex_tagid_value_pairs=ex_tagid_value_pairs,
-    ex_tagname_value_pairs=None
+    ex_tagname_value_pairs=None,
 )
 
 pprint(node)

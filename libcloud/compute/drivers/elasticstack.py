@@ -40,9 +40,9 @@ from libcloud.compute.deployment import MultiStepDeployment
 
 
 NODE_STATE_MAP = {
-    'active': NodeState.RUNNING,
-    'dead': NodeState.TERMINATED,
-    'dumped': NodeState.TERMINATED,
+    "active": NodeState.RUNNING,
+    "dead": NodeState.TERMINATED,
+    "dumped": NodeState.TERMINATED,
 }
 
 # Default timeout (in seconds) for the drive imaging process
@@ -54,53 +54,53 @@ IMAGING_TIMEOUT = 10 * 60
 # Basically for CPU any value between 500Mhz and 20000Mhz should work,
 # 256MB to 8192MB for ram and 1GB to 2TB for disk.
 INSTANCE_TYPES = {
-    'small': {
-        'id': 'small',
-        'name': 'Small instance',
-        'cpu': 2000,
-        'memory': 1700,
-        'disk': 160,
-        'bandwidth': None,
+    "small": {
+        "id": "small",
+        "name": "Small instance",
+        "cpu": 2000,
+        "memory": 1700,
+        "disk": 160,
+        "bandwidth": None,
     },
-    'medium': {
-        'id': 'medium',
-        'name': 'Medium instance',
-        'cpu': 3000,
-        'memory': 4096,
-        'disk': 500,
-        'bandwidth': None,
+    "medium": {
+        "id": "medium",
+        "name": "Medium instance",
+        "cpu": 3000,
+        "memory": 4096,
+        "disk": 500,
+        "bandwidth": None,
     },
-    'large': {
-        'id': 'large',
-        'name': 'Large instance',
-        'cpu': 4000,
-        'memory': 7680,
-        'disk': 850,
-        'bandwidth': None,
+    "large": {
+        "id": "large",
+        "name": "Large instance",
+        "cpu": 4000,
+        "memory": 7680,
+        "disk": 850,
+        "bandwidth": None,
     },
-    'extra-large': {
-        'id': 'extra-large',
-        'name': 'Extra Large instance',
-        'cpu': 8000,
-        'memory': 8192,
-        'disk': 1690,
-        'bandwidth': None,
+    "extra-large": {
+        "id": "extra-large",
+        "name": "Extra Large instance",
+        "cpu": 8000,
+        "memory": 8192,
+        "disk": 1690,
+        "bandwidth": None,
     },
-    'high-cpu-medium': {
-        'id': 'high-cpu-medium',
-        'name': 'High-CPU Medium instance',
-        'cpu': 5000,
-        'memory': 1700,
-        'disk': 350,
-        'bandwidth': None,
+    "high-cpu-medium": {
+        "id": "high-cpu-medium",
+        "name": "High-CPU Medium instance",
+        "cpu": 5000,
+        "memory": 1700,
+        "disk": 350,
+        "bandwidth": None,
     },
-    'high-cpu-extra-large': {
-        'id': 'high-cpu-extra-large',
-        'name': 'High-CPU Extra Large instance',
-        'cpu': 20000,
-        'memory': 7168,
-        'disk': 1690,
-        'bandwidth': None,
+    "high-cpu-extra-large": {
+        "id": "high-cpu-extra-large",
+        "name": "High-CPU Extra Large instance",
+        "cpu": 20000,
+        "memory": 7168,
+        "disk": 1690,
+        "bandwidth": None,
     },
 }
 
@@ -123,8 +123,8 @@ class ElasticStackResponse(JsonResponse):
         return 200 <= self.status <= 299
 
     def parse_error(self):
-        error_header = self.headers.get('x-elastic-error', '')
-        return 'X-Elastic-Error: %s (%s)' % (error_header, self.body.strip())
+        error_header = self.headers.get("x-elastic-error", "")
+        return "X-Elastic-Error: %s (%s)" % (error_header, self.body.strip())
 
 
 class ElasticStackNodeSize(NodeSize):
@@ -139,10 +139,19 @@ class ElasticStackNodeSize(NodeSize):
         self.driver = driver
 
     def __repr__(self):
-        return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s '
-                 'disk=%s bandwidth=%s price=%s driver=%s ...>')
-                % (self.id, self.name, self.cpu, self.ram,
-                   self.disk, self.bandwidth, self.price, self.driver.name))
+        return (
+            "<NodeSize: id=%s, name=%s, cpu=%s, ram=%s "
+            "disk=%s bandwidth=%s price=%s driver=%s ...>"
+        ) % (
+            self.id,
+            self.name,
+            self.cpu,
+            self.ram,
+            self.disk,
+            self.bandwidth,
+            self.price,
+            self.driver.name,
+        )
 
 
 class ElasticStackBaseConnection(ConnectionUserAndKey):
@@ -154,17 +163,16 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
     responseCls = ElasticStackResponse
 
     def add_default_headers(self, headers):
-        headers['Accept'] = 'application/json'
-        headers['Content-Type'] = 'application/json'
-        headers['Authorization'] = \
-            ('Basic %s' % (base64.b64encode(b('%s:%s' % (self.user_id,
-                                                         self.key))))
-                .decode('utf-8'))
+        headers["Accept"] = "application/json"
+        headers["Content-Type"] = "application/json"
+        headers["Authorization"] = "Basic %s" % (
+            base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        ).decode("utf-8")
         return headers
 
 
 class ElasticStackBaseNodeDriver(NodeDriver):
-    website = 'http://www.elasticstack.com'
+    website = "http://www.elasticstack.com"
     connectionCls = ElasticStackBaseConnection
     features = {"create_node": ["generates_password"]}
 
@@ -174,16 +182,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     def reboot_node(self, node):
         # Reboots the node
         response = self.connection.request(
-            action='/servers/%s/reset' % (node.id),
-            method='POST'
+            action="/servers/%s/reset" % (node.id), method="POST"
         )
         return response.status == 204
 
     def destroy_node(self, node):
         # Kills the server immediately
         response = self.connection.request(
-            action='/servers/%s/destroy' % (node.id),
-            method='POST'
+            action="/servers/%s/destroy" % (node.id), method="POST"
         )
         return response.status == 204
 
@@ -192,12 +198,10 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         images = []
         for key, value in self._standard_drives.items():
             image = NodeImage(
-                id=value['uuid'],
-                name=value['description'],
+                id=value["uuid"],
+                name=value["description"],
                 driver=self.connection.driver,
-                extra={
-                    'size_gunzipped': value['size_gunzipped']
-                }
+                extra={"size_gunzipped": value["size_gunzipped"]},
             )
             images.append(image)
 
@@ -207,11 +211,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         sizes = []
         for key, value in INSTANCE_TYPES.items():
             size = ElasticStackNodeSize(
-                id=value['id'],
-                name=value['name'], cpu=value['cpu'], ram=value['memory'],
-                disk=value['disk'], bandwidth=value['bandwidth'],
-                price=self._get_size_price(size_id=value['id']),
-                driver=self.connection.driver
+                id=value["id"],
+                name=value["name"],
+                cpu=value["cpu"],
+                ram=value["memory"],
+                disk=value["disk"],
+                bandwidth=value["bandwidth"],
+                price=self._get_size_price(size_id=value["id"]),
+                driver=self.connection.driver,
             )
             sizes.append(size)
 
@@ -219,7 +226,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     def list_nodes(self):
         # Returns a list of active (running) nodes
-        response = self.connection.request(action='/servers/info').object
+        response = self.connection.request(action="/servers/info").object
 
         nodes = []
         for data in response:
@@ -228,8 +235,16 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         return nodes
 
-    def create_node(self, name, size, image, smp='auto', nic_model='e1000',
-                    vnc_password=None, drive_type='hdd'):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        smp="auto",
+        nic_model="e1000",
+        vnc_password=None,
+        drive_type="hdd",
+    ):
         """Creates an ElasticStack instance
 
         @inherits: :class:`NodeDriver.create_node`
@@ -253,68 +268,69 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         """
         ssh_password = vnc_password
 
-        if nic_model not in ('e1000', 'rtl8139', 'virtio'):
-            raise ElasticStackException('Invalid NIC model specified')
+        if nic_model not in ("e1000", "rtl8139", "virtio"):
+            raise ElasticStackException("Invalid NIC model specified")
 
         # check that drive size is not smaller than pre installed image size
 
         # First we create a drive with the specified size
         drive_data = {}
-        drive_data.update({'name': name,
-                           'size': '%sG' % (size.disk)})
+        drive_data.update({"name": name, "size": "%sG" % (size.disk)})
 
-        response = self.connection.request(action='/drives/create',
-                                           data=json.dumps(drive_data),
-                                           method='POST').object
+        response = self.connection.request(
+            action="/drives/create", data=json.dumps(drive_data), method="POST"
+        ).object
 
         if not response:
-            raise ElasticStackException('Drive creation failed')
+            raise ElasticStackException("Drive creation failed")
 
-        drive_uuid = response['drive']
+        drive_uuid = response["drive"]
 
         # Then we image the selected pre-installed system drive onto it
         response = self.connection.request(
-            action='/drives/%s/image/%s/gunzip' % (drive_uuid, image.id),
-            method='POST'
+            action="/drives/%s/image/%s/gunzip" % (drive_uuid, image.id), method="POST"
         )
 
         if response.status not in (200, 204):
-            raise ElasticStackException('Drive imaging failed')
+            raise ElasticStackException("Drive imaging failed")
 
         # We wait until the drive is imaged and then boot up the node
         # (in most cases, the imaging process shouldn't take longer
         # than a few minutes)
         response = self.connection.request(
-            action='/drives/%s/info' % (drive_uuid)
+            action="/drives/%s/info" % (drive_uuid)
         ).object
 
         imaging_start = time.time()
-        while 'imaging' in response:
+        while "imaging" in response:
             response = self.connection.request(
-                action='/drives/%s/info' % (drive_uuid)
+                action="/drives/%s/info" % (drive_uuid)
             ).object
 
             elapsed_time = time.time() - imaging_start
-            if ('imaging' in response and elapsed_time >= IMAGING_TIMEOUT):
-                raise ElasticStackException('Drive imaging timed out')
+            if "imaging" in response and elapsed_time >= IMAGING_TIMEOUT:
+                raise ElasticStackException("Drive imaging timed out")
 
             time.sleep(1)
 
         node_data = {}
-        node_data.update({'name': name,
-                          'cpu': size.cpu,
-                          'mem': size.ram,
-                          'ide:0:0': drive_uuid,
-                          'boot': 'ide:0:0',
-                          'smp': smp})
-        node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
+        node_data.update(
+            {
+                "name": name,
+                "cpu": size.cpu,
+                "mem": size.ram,
+                "ide:0:0": drive_uuid,
+                "boot": "ide:0:0",
+                "smp": smp,
+            }
+        )
+        node_data.update({"nic:0:model": nic_model, "nic:0:dhcp": "auto"})
 
         if vnc_password:
-            node_data.update({'vnc': 'auto', 'vnc:password': vnc_password})
+            node_data.update({"vnc": "auto", "vnc:password": vnc_password})
 
         response = self.connection.request(
-            action='/servers/create', data=json.dumps(node_data),
-            method='POST'
+            action="/servers/create", data=json.dumps(node_data), method="POST"
         ).object
 
         if isinstance(response, list):
@@ -337,12 +353,25 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        valid_keys = ('^name$', '^parent$', '^cpu$', '^smp$', '^mem$',
-                      '^boot$', '^nic:0:model$', '^nic:0:dhcp',
-                      '^nic:1:model$', '^nic:1:vlan$', '^nic:1:mac$',
-                      '^vnc:ip$', '^vnc:password$', '^vnc:tls',
-                      '^ide:[0-1]:[0-1](:media)?$',
-                      '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
+        valid_keys = (
+            "^name$",
+            "^parent$",
+            "^cpu$",
+            "^smp$",
+            "^mem$",
+            "^boot$",
+            "^nic:0:model$",
+            "^nic:0:dhcp",
+            "^nic:1:model$",
+            "^nic:1:vlan$",
+            "^nic:1:mac$",
+            "^vnc:ip$",
+            "^vnc:password$",
+            "^vnc:tls",
+            "^ide:[0-1]:[0-1](:media)?$",
+            "^scsi:0:[0-7](:media)?$",
+            "^block:[0-7](:media)?$",
+        )
 
         invalid_keys = []
         keys = list(kwargs.keys())
@@ -357,16 +386,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         if invalid_keys:
             raise ElasticStackException(
-                'Invalid configuration key specified: %s'
-                % (',' .join(invalid_keys))
+                "Invalid configuration key specified: %s" % (",".join(invalid_keys))
             )
 
         response = self.connection.request(
-            action='/servers/%s/set' % (node.id), data=json.dumps(kwargs),
-            method='POST'
+            action="/servers/%s/set" % (node.id), data=json.dumps(kwargs), method="POST"
         )
 
-        return (response.status == httplib.OK and response.body != '')
+        return response.status == httplib.OK and response.body != ""
 
     def deploy_node(self, **kwargs):
         """
@@ -379,42 +406,46 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                                  and default 'toor' account will be deleted.
         :type       enable_root: ``bool``
         """
-        image = kwargs['image']
-        vnc_password = kwargs.get('vnc_password', None)
-        enable_root = kwargs.get('enable_root', False)
+        image = kwargs["image"]
+        vnc_password = kwargs.get("vnc_password", None)
+        enable_root = kwargs.get("enable_root", False)
 
         if not vnc_password:
-            raise ValueError('You need to provide vnc_password argument '
-                             'if you want to use deployment')
+            raise ValueError(
+                "You need to provide vnc_password argument "
+                "if you want to use deployment"
+            )
 
-        if (image in self._standard_drives and
-                not self._standard_drives[image]['supports_deployment']):
-            raise ValueError('Image %s does not support deployment'
-                             % (image.id))
+        if (
+            image in self._standard_drives
+            and not self._standard_drives[image]["supports_deployment"]
+        ):
+            raise ValueError("Image %s does not support deployment" % (image.id))
 
         if enable_root:
-            script = ("unset HISTFILE;"
-                      "echo root:%s | chpasswd;"
-                      "sed -i '/^toor.*$/d' /etc/passwd /etc/shadow;"
-                      "history -c") % vnc_password
-            root_enable_script = ScriptDeployment(script=script,
-                                                  delete=True)
-            deploy = kwargs.get('deploy', None)
+            script = (
+                "unset HISTFILE;"
+                "echo root:%s | chpasswd;"
+                "sed -i '/^toor.*$/d' /etc/passwd /etc/shadow;"
+                "history -c"
+            ) % vnc_password
+            root_enable_script = ScriptDeployment(script=script, delete=True)
+            deploy = kwargs.get("deploy", None)
             if deploy:
-                if (isinstance(deploy, ScriptDeployment) or
-                        isinstance(deploy, SSHKeyDeployment)):
-                    deployment = MultiStepDeployment([deploy,
-                                                      root_enable_script])
+                if isinstance(deploy, ScriptDeployment) or isinstance(
+                    deploy, SSHKeyDeployment
+                ):
+                    deployment = MultiStepDeployment([deploy, root_enable_script])
                 elif isinstance(deploy, MultiStepDeployment):
                     deployment = deploy
                     deployment.add(root_enable_script)
             else:
                 deployment = root_enable_script
 
-            kwargs['deploy'] = deployment
+            kwargs["deploy"] = deployment
 
-        if not kwargs.get('ssh_username', None):
-            kwargs['ssh_username'] = 'toor'
+        if not kwargs.get("ssh_username", None):
+            kwargs["ssh_username"] = "toor"
 
         return super(ElasticStackBaseNodeDriver, self).deploy_node(**kwargs)
 
@@ -428,8 +459,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         response = self.connection.request(
-            action='/servers/%s/shutdown' % (node.id),
-            method='POST'
+            action="/servers/%s/shutdown" % (node.id), method="POST"
         )
         return response.status == 204
 
@@ -443,42 +473,40 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         response = self.connection.request(
-            action='/drives/%s/destroy' % (drive_uuid),
-            method='POST'
+            action="/drives/%s/destroy" % (drive_uuid), method="POST"
         )
         return response.status == 204
 
     # Helper methods
     def _to_node(self, data, ssh_password=None):
         try:
-            state = NODE_STATE_MAP[data['status']]
+            state = NODE_STATE_MAP[data["status"]]
         except KeyError:
             state = NodeState.UNKNOWN
 
-        if 'nic:0:dhcp:ip' in data:
-            if isinstance(data['nic:0:dhcp:ip'], list):
-                public_ip = data['nic:0:dhcp:ip']
+        if "nic:0:dhcp:ip" in data:
+            if isinstance(data["nic:0:dhcp:ip"], list):
+                public_ip = data["nic:0:dhcp:ip"]
             else:
-                public_ip = [data['nic:0:dhcp:ip']]
+                public_ip = [data["nic:0:dhcp:ip"]]
         else:
             public_ip = []
 
-        extra = {'cpu': data['cpu'],
-                 'mem': data['mem']}
+        extra = {"cpu": data["cpu"], "mem": data["mem"]}
 
-        if 'started' in data:
-            extra['started'] = data['started']
+        if "started" in data:
+            extra["started"] = data["started"]
 
-        if 'smp' in data:
-            extra['smp'] = data['smp']
+        if "smp" in data:
+            extra["smp"] = data["smp"]
 
-        if 'vnc:ip' in data:
-            extra['vnc:ip'] = data['vnc:ip']
+        if "vnc:ip" in data:
+            extra["vnc:ip"] = data["vnc:ip"]
 
-        if 'vnc:password' in data:
-            extra['vnc:password'] = data['vnc:password']
+        if "vnc:password" in data:
+            extra["vnc:password"] = data["vnc:password"]
 
-        boot_device = data['boot']
+        boot_device = data["boot"]
 
         if isinstance(boot_device, list):
             for device in boot_device:
@@ -487,11 +515,16 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             extra[boot_device] = data[boot_device]
 
         if ssh_password:
-            extra.update({'password': ssh_password})
+            extra.update({"password": ssh_password})
 
-        node = Node(id=data['server'], name=data['name'], state=state,
-                    public_ips=public_ip, private_ips=None,
-                    driver=self.connection.driver,
-                    extra=extra)
+        node = Node(
+            id=data["server"],
+            name=data["name"],
+            state=state,
+            public_ips=public_ip,
+            private_ips=None,
+            driver=self.connection.driver,
+            extra=extra,
+        )
 
         return node

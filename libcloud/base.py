@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+
 from libcloud.backup.providers import Provider as BackupProvider
 from libcloud.backup.providers import get_driver as get_backup_driver
 
@@ -26,15 +28,15 @@ from libcloud.dns.providers import Provider as DnsProvider
 from libcloud.dns.providers import get_driver as get_dns_driver
 
 from libcloud.loadbalancer.providers import Provider as LoadBalancerProvider
-from libcloud.loadbalancer.providers import get_driver as \
-    get_loadbalancer_driver
+from libcloud.loadbalancer.providers import get_driver as get_loadbalancer_driver
 
 from libcloud.storage.providers import Provider as StorageProvider
 from libcloud.storage.providers import get_driver as get_storage_driver
 
 
 class DriverType(object):
-    """ Backup-as-a-service driver """
+    """Backup-as-a-service driver"""
+
     BACKUP = BackupProvider
 
     """ Compute-as-a-Service driver """
@@ -59,8 +61,8 @@ DriverTypeFactoryMap = {
     DriverType.CONTAINER: get_container_driver,
     DriverType.DNS: get_dns_driver,
     DriverType.LOADBALANCER: get_loadbalancer_driver,
-    DriverType.STORAGE: get_storage_driver
-}
+    DriverType.STORAGE: get_storage_driver,
+}  # type: Dict
 
 
 class DriverTypeNotFoundError(KeyError):

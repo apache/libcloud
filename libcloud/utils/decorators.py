@@ -17,9 +17,7 @@ from functools import wraps
 
 from libcloud.common.types import LibcloudError
 
-__all__ = [
-    'wrap_non_libcloud_exceptions'
-]
+__all__ = ["wrap_non_libcloud_exceptions"]
 
 
 def wrap_non_libcloud_exceptions(func):
@@ -30,6 +28,7 @@ def wrap_non_libcloud_exceptions(func):
     Note: This function should only be used to wrap methods on the driver
     classes.
     """
+
     @wraps(func)
     def decorated_function(*args, **kwargs):
         try:
@@ -44,12 +43,13 @@ def wrap_non_libcloud_exceptions(func):
             else:
                 driver = None
 
-            fault = getattr(e, 'fault', None)
+            fault = getattr(e, "fault", None)
 
-            if fault and getattr(fault, 'string', None):
+            if fault and getattr(fault, "string", None):
                 message = fault.string
             else:
                 message = str(e)
 
             raise LibcloudError(value=message, driver=driver)
+
     return decorated_function

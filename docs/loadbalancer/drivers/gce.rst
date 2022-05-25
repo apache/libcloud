@@ -35,7 +35,13 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_lb_demo.py
 2. Getting Driver with Authentication Information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+With local key file:
+
 .. literalinclude:: /examples/loadbalancer/gce/gce_authentication.py
+
+With Service Account credentials as dict:
+
+.. literalinclude:: /examples/loadbalancer/gce/gce_service_account_infile.py
 
 API Docs
 --------
@@ -43,4 +49,3 @@ API Docs
 .. autoclass:: libcloud.loadbalancer.drivers.gce.GCELBDriver
     :members:
     :inherited-members:
-

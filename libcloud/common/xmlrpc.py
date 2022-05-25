@@ -48,7 +48,7 @@ class ErrorCodeMixin(object):
         context = self.connection.context
         driver = self.connection.driver
         params = {}
-        if hasattr(exceptionCls, 'kwargs'):
+        if hasattr(exceptionCls, "kwargs"):
             for key in exceptionCls.kwargs:
                 if key in context:
                     params[key] = context[key]
@@ -70,11 +70,11 @@ class XMLRPCResponse(ErrorCodeMixin, Response):
             return params
         except xmlrpclib.Fault as e:
             self.raise_exception_for_error(e.faultCode, e.faultString)
-            error_string = '%s: %s' % (e.faultCode, e.faultString)
+            error_string = "%s: %s" % (e.faultCode, e.faultString)
             raise self.defaultExceptionCls(error_string)
 
     def parse_error(self):
-        msg = 'Server returned an invalid xmlrpc response (%d)' % (self.status)
+        msg = "Server returned an invalid xmlrpc response (%d)" % (self.status)
         raise ProtocolError(msg)
 
 
@@ -91,7 +91,7 @@ class XMLRPCConnection(Connection):
     endpoint = None  # type: str
 
     def add_default_headers(self, headers):
-        headers['Content-Type'] = 'text/xml'
+        headers["Content-Type"] = "text/xml"
         return headers
 
     def request(self, method_name, *args, **kwargs):
@@ -105,8 +105,6 @@ class XMLRPCConnection(Connection):
         :type args: ``tuple``
         :param args: Arguments to invoke with method with.
         """
-        endpoint = kwargs.get('endpoint', self.endpoint)
+        endpoint = kwargs.get("endpoint", self.endpoint)
         data = xmlrpclib.dumps(args, methodname=method_name, allow_none=True)
-        return super(XMLRPCConnection, self).request(endpoint,
-                                                     data=data,
-                                                     method='POST')
+        return super(XMLRPCConnection, self).request(endpoint, data=data, method="POST")

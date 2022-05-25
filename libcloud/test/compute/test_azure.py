@@ -34,8 +34,10 @@ class AzureNodeDriverTests(LibcloudTestCase):
     #  required otherwise we get client side SSL verification
     libcloud.security.VERIFY_SSL_CERT = False
 
-    SUBSCRIPTION_ID = '3761b98b-673d-526c-8d55-fee918758e6e'
-    KEY_FILE = os.path.join(os.path.dirname(__file__), 'fixtures/azure/libcloud.pem')  # empty file is fine
+    SUBSCRIPTION_ID = "3761b98b-673d-526c-8d55-fee918758e6e"
+    KEY_FILE = os.path.join(
+        os.path.dirname(__file__), "fixtures/azure/libcloud.pem"
+    )  # empty file is fine
 
     def setUp(self):
         Azure = get_driver(Provider.AZURE)
@@ -48,46 +50,40 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
         location_names_result = list(a.name for a in locations)
         location_names_expected = [
-            'East Asia',
-            'Southeast Asia',
-            'North Europe',
-            'West Europe',
-            'East US',
-            'North Central US',
-            'West US'
+            "East Asia",
+            "Southeast Asia",
+            "North Europe",
+            "West Europe",
+            "East US",
+            "North Central US",
+            "West US",
         ]
 
         self.assertListEqual(location_names_result, location_names_expected)
 
         matched_location = next(
-            location for location in locations
-            if location.name == 'Southeast Asia'
+            location for location in locations if location.name == "Southeast Asia"
         )
         services_result = matched_location.available_services
-        services_expected = [
-            'Compute',
-            'Storage',
-            'PersistentVMRole',
-            'HighMemory'
-        ]
+        services_expected = ["Compute", "Storage", "PersistentVMRole", "HighMemory"]
         self.assertListEqual(services_result, services_expected)
 
         vm_role_sizes_result = matched_location.virtual_machine_role_sizes
 
         vm_role_sizes_expected = [
-            'A5',
-            'A6',
-            'A7',
-            'Basic_A0',
-            'Basic_A1',
-            'Basic_A2',
-            'Basic_A3',
-            'Basic_A4',
-            'ExtraLarge',
-            'ExtraSmall',
-            'Large',
-            'Medium',
-            'Small'
+            "A5",
+            "A6",
+            "A7",
+            "Basic_A0",
+            "Basic_A1",
+            "Basic_A2",
+            "Basic_A3",
+            "Basic_A4",
+            "ExtraLarge",
+            "ExtraSmall",
+            "Large",
+            "Medium",
+            "Small",
         ]
         self.assertListEqual(vm_role_sizes_result, vm_role_sizes_expected)
 
@@ -101,9 +97,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(len(images), 207)
 
     def test_list_nodes_returned_successfully(self):
-        vmimages = self.driver.list_nodes(
-            ex_cloud_service_name="dcoddkinztest01"
-        )
+        vmimages = self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest01")
         self.assertEqual(len(vmimages), 2)
 
         img0 = vmimages[0]
@@ -115,14 +109,12 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(img0.state, NodeState.RUNNING)
         self.assertTrue(isinstance(img0.extra, dict))
         extra = img0.extra
-        self.assertEqual(extra["instance_size"], 'Small')
-        self.assertEqual(extra["power_state"], 'Started')
-        self.assertEqual(extra["ssh_port"], '22')
+        self.assertEqual(extra["instance_size"], "Small")
+        self.assertEqual(extra["power_state"], "Started")
+        self.assertEqual(extra["ssh_port"], "22")
 
     def test_list_nodes_returned_no_deployments(self):
-        nodes = self.driver.list_nodes(
-            ex_cloud_service_name="dcoddkinztest03"
-        )
+        nodes = self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest03")
         self.assertEqual(nodes, [])
 
     def test_list_nodes_returned_no_cloud_service(self):
@@ -137,12 +129,12 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
         result = self.driver.reboot_node(
             node=node,
             ex_cloud_service_name="dcoddkinztest01",
-            ex_deployment_slot="Production"
+            ex_deployment_slot="Production",
         )
 
         self.assertTrue(result)
@@ -156,14 +148,14 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         with self.assertRaises(LibcloudError):
             self.driver.reboot_node(
                 node=node,
                 ex_cloud_service_name="dcoddkinztest02",
-                ex_deployment_slot="Production"
+                ex_deployment_slot="Production",
             )
 
     def test_restart_node_fail_no_cloud_service(self):
@@ -174,14 +166,14 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         with self.assertRaises(LibcloudError):
             self.driver.reboot_node(
                 node=node,
                 ex_cloud_service_name="dcoddkinztest03",
-                ex_deployment_slot="Production"
+                ex_deployment_slot="Production",
             )
 
     def test_restart_node_fail_node_not_found(self):
@@ -192,13 +184,13 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         result = self.driver.reboot_node(
             node=node,
             ex_cloud_service_name="dcoddkinztest01",
-            ex_deployment_slot="Production"
+            ex_deployment_slot="Production",
         )
         self.assertFalse(result)
 
@@ -210,13 +202,11 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         result = self.driver.destroy_node(
-            node=node,
-            ex_cloud_service_name="oddkinz1",
-            ex_deployment_slot="Production"
+            node=node, ex_cloud_service_name="oddkinz1", ex_deployment_slot="Production"
         )
         self.assertTrue(result)
 
@@ -228,13 +218,11 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         result = self.driver.destroy_node(
-            node=node,
-            ex_cloud_service_name="oddkinz2",
-            ex_deployment_slot="Production"
+            node=node, ex_cloud_service_name="oddkinz2", ex_deployment_slot="Production"
         )
         self.assertTrue(result)
 
@@ -246,14 +234,14 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         with self.assertRaises(LibcloudError):
             self.driver.destroy_node(
                 node=node,
                 ex_cloud_service_name="oddkinz2",
-                ex_deployment_slot="Production"
+                ex_deployment_slot="Production",
             )
 
     def test_destroy_node_success_cloud_service_not_found(self):
@@ -264,25 +252,26 @@ class AzureNodeDriverTests(LibcloudTestCase):
             state=NodeState.RUNNING,
             public_ips=[],
             private_ips=[],
-            driver=self.driver
+            driver=self.driver,
         )
 
         with self.assertRaises(LibcloudError):
             self.driver.destroy_node(
                 node=node,
                 ex_cloud_service_name="oddkinz5",
-                ex_deployment_slot="Production"
+                ex_deployment_slot="Production",
             )
 
     def test_ex_create_cloud_service(self):
-        result = self.driver.ex_create_cloud_service(name="testdc123", location="North Europe")
+        result = self.driver.ex_create_cloud_service(
+            name="testdc123", location="North Europe"
+        )
         self.assertTrue(result)
 
     def test_ex_create_cloud_service_service_exists(self):
         with self.assertRaises(LibcloudError):
             self.driver.ex_create_cloud_service(
-                name="testdc1234",
-                location="North Europe"
+                name="testdc1234", location="North Europe"
             )
 
     def test_ex_destroy_cloud_service(self):
@@ -294,15 +283,14 @@ class AzureNodeDriverTests(LibcloudTestCase):
             self.driver.ex_destroy_cloud_service(name="testdc1234")
 
     def test_ex_create_storage_service(self):
-        result = self.driver.ex_create_storage_service(name="testdss123", location="East US")
+        result = self.driver.ex_create_storage_service(
+            name="testdss123", location="East US"
+        )
         self.assertTrue(result)
 
     def test_ex_create_storage_service_service_exists(self):
         with self.assertRaises(LibcloudError):
-            self.driver.ex_create_storage_service(
-                name="dss123",
-                location="East US"
-            )
+            self.driver.ex_create_storage_service(name="dss123", location="East US")
 
     def test_ex_destroy_storage_service(self):
         result = self.driver.ex_destroy_storage_service(name="testdss123")
@@ -317,7 +305,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
             "ex_storage_service_name": "mtlytics",
             "ex_deployment_name": "dcoddkinztest02",
             "ex_deployment_slot": "Production",
-            "ex_admin_user_id": "azurecoder"
+            "ex_admin_user_id": "azurecoder",
         }
 
         auth = NodeAuthPassword("Pa55w0rd", False)
@@ -331,21 +319,16 @@ class AzureNodeDriverTests(LibcloudTestCase):
             disk="30gb",
             bandwidth=0,
             price=0,
-            driver=self.driver
+            driver=self.driver,
         )
         kwargs["image"] = NodeImage(
             id="5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415",
             name="FakeImage",
             driver=self.driver,
-            extra={
-                'vm_image': False
-            }
+            extra={"vm_image": False},
         )
 
-        result = self.driver.create_node(
-            ex_cloud_service_name="testdcabc",
-            **kwargs
-        )
+        result = self.driver.create_node(ex_cloud_service_name="testdcabc", **kwargs)
         self.assertIsNotNone(result)
 
     def test_create_node_and_deployment_second_node(self):
@@ -353,7 +336,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
             "ex_storage_service_name": "mtlytics",
             "ex_deployment_name": "dcoddkinztest02",
             "ex_deployment_slot": "Production",
-            "ex_admin_user_id": "azurecoder"
+            "ex_admin_user_id": "azurecoder",
         }
 
         auth = NodeAuthPassword("Pa55w0rd", False)
@@ -366,183 +349,288 @@ class AzureNodeDriverTests(LibcloudTestCase):
             disk="30gb",
             bandwidth=0,
             price=0,
-            driver=self.driver
+            driver=self.driver,
         )
         kwargs["image"] = NodeImage(
             id="5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140415",
             name="FakeImage",
             driver=self.driver,
-            extra={
-                'vm_image': False
-            }
+            extra={"vm_image": False},
         )
         kwargs["name"] = "dcoddkinztest03"
 
-        result = self.driver.create_node(
-            ex_cloud_service_name="testdcabc2",
-            **kwargs
-        )
+        result = self.driver.create_node(ex_cloud_service_name="testdcabc2", **kwargs)
         self.assertIsNotNone(result)
 
 
 class AzureMockHttp(MockHttp):
 
-    fixtures = ComputeFileFixtures('azure')
+    fixtures = ComputeFileFixtures("azure")
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deployments_dc01(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deployments_dc01(
+        self, method, url, body, headers
+    ):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deploymentslots_Production.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz1(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz1(
+        self, method, url, body, headers
+    ):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz2(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz2_deployments_dc03_roles_oddkinz2(
+        self, method, url, body, headers
+    ):
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz5_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz5_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz5_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz5_deploymentslots_Production.xml"
+            )
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deploymentslots_Production.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc03(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc03(
+        self, method, url, body, headers
+    ):
         headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest02_deploymentslots_Production.xml"
+            )
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03_deploymentslots_Production.xml"
+            )
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01_deployments_dc03_roleinstances_dc13.xml"
+            )
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest01.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest03.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest04(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest04(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest04.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_dcoddkinztest04.xml"
+            )
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_images(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_images(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_images.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_images.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_locations(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_locations(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_locations.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_locations.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices(
+        self, method, url, body, headers
+    ):
         # request url is the same irrespective of serviceName, only way to differentiate
         if "<ServiceName>testdc123</ServiceName>" in body:
             return (httplib.CREATED, body, headers, httplib.responses[httplib.CREATED])
         elif "<ServiceName>testdc1234</ServiceName>" in body:
-            return (httplib.CONFLICT, body, headers, httplib.responses[httplib.CONFLICT])
+            return (
+                httplib.CONFLICT,
+                body,
+                headers,
+                httplib.responses[httplib.CONFLICT],
+            )
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc123(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc123(
+        self, method, url, body, headers
+    ):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices(
+        self, method, url, body, headers
+    ):
         # request url is the same irrespective of serviceName, only way to differentiate
         if "<ServiceName>testdss123</ServiceName>" in body:
-            return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+            return (
+                httplib.ACCEPTED,
+                body,
+                headers,
+                httplib.responses[httplib.ACCEPTED],
+            )
         elif "<ServiceName>dss123</ServiceName>" in body:
-            return (httplib.CONFLICT, body, headers, httplib.responses[httplib.CONFLICT])
+            return (
+                httplib.CONFLICT,
+                body,
+                headers,
+                httplib.responses[httplib.CONFLICT],
+            )
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_testdss123(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_testdss123(
+        self, method, url, body, headers
+    ):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_dss123(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_dss123(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_dss123.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_storageservices_dss123.xml"
+            )
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdc1234(
+        self, method, url, body, headers
+    ):
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc_deployments(
+        self, method, url, body, headers
+    ):
         headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
 
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2(
+        self, method, url, body, headers
+    ):
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production(
+        self, method, url, body, headers
+    ):
 
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deployments_dcoddkinztest02_roles(
+        self, method, url, body, headers
+    ):
         headers["x-ms-request-id"] = "acc33f6756cda6fd96826394fce4c9f3"
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3(self, method, url, body, headers):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3(
+        self, method, url, body, headers
+    ):
 
         if method == "GET":
-            body = self.fixtures.load('_3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3.xml')
+            body = self.fixtures.load(
+                "_3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3.xml"
+            )
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

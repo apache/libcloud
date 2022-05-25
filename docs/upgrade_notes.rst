@@ -5,6 +5,209 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.6.0
+--------------
+
+* Compatibility layer has been introduced for paramiko SSH based deployment
+  functionality.
+
+  paramiko v2.9.0 introduced a change to prefer SHA-2 variants of RSA key
+  verification algorithm (https://github.com/paramiko/paramiko/blob/2.9.0/sites/www/changelog.rst#changelog).
+  With this version paramiko would fail to connect to older OpenSSH
+  servers which don't support this algorithm (e.g. default setup on Ubuntu
+  14.04) and throw authentication error.
+
+  The code has been updated to be backward compatible. It first tries to
+  connect to the server using default preferred algorithm values and in case
+  that fails, it will fall back to the old approach with SHA-2 variants
+  disabled.
+
+  This functionality can be disabled by setting
+  ``LIBCLOUD_PARAMIKO_SHA2_BACKWARD_COMPATIBILITY``environment variable to
+  ``false``.
+
+  For security reasons (to prevent possible downgrade attacks and similar) you
+  are encouraged to do that in case you know you won't be connecting to any old
+
+Libcloud 3.5.0
+--------------
+
+* Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+
+* The OpenStack compute driver has moved the floating ip related functions
+  from nova to neutron. This change affects all the floating ip related
+  functions of the ``OpenStack_2_NodeDriver`` class. Two new classes have been
+  added ``OpenStack_2_FloatingIpPool`` and ``OpenStack_2_FloatingIpAddress``.
+  The main change applies to the FloatingIP class where ``node_id`` property
+  cannot be directly obtained from FloatingIP information and it must be
+  gotten from the related Port information with the ``get_node_id()`` method.
+
+Libcloud 3.4.0
+--------------
+
+* Exception message changed in OpenStack drivers
+
+  Attempting to use an identity API that requires authentication without an
+  authentication token raises a ValueError.  The exception message used to be
+  "Not to be authenticated to perform this request", but has now been changed
+  to "Need to be authenticated to perform this request".
+
+* Code which retries HTTP requests on 429 rate limit reached status code has
+  been updated to respect ``timeout`` argument and stop retrying if timeout
+  has been reached.
+
+  Previously if API kept returning 429 status code back to the client, the code
+  would try to retry for ever and in some scenarios when Retry-After value is
+  not available in the response headers, also use 0 seconds for the sleep /
+  retry delay which would cause busy waiting.
+
+  If you want to preserve old behavior, you can do that by setting
+  ``retryCls`` variable on the driver connection instance to
+  ``RetryForeverOnRateLimitError`` as shown below.:
+
+  .. sourcecode:: python
+
+    from libcloud.utils.retry import RetryForeverOnRateLimitError
+
+    driver.connection.retryCls = RetryForeverOnRateLimitError
+    ...
+
+Libcloud 3.3.0
+--------------
+
+* ``libcloud.pricing.get_size_pricing()`` now only caches pricing data in
+  memory for the requested drivers.
+
+  This way we avoid unnecessary overhead of caching data in memory for all the
+  drivers.
+
+  If you want to revert to the old behavior (cache pricing data for all the
+  drivers in memory), you can do that by passing ``cache_all=True`` argument
+  to that function as shown below:
+
+  .. sourcecode:: python
+
+    from libcloud.pricing import get_size_pricing
+
+    price = get_size_price("compute", "bluebox", cache_all=True)
+
+  Or by setting ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module level
+  variable to ``True``:
+
+  .. sourcecode:: python
+
+    import libcloud.pricing
+
+    libcloud.pricing.CACHE_ALL_PRICING_DATA = True
+
+    # Your code here
+    # ...
+
+  Passing ``cache_all=True`` might come handy in situations where you know the
+  application will work with a lot of different drivers - this way you can
+  avoid multiple disk reads when requesting pricing data for different drivers.
+
+* Packet driver has been renamed to Equinix Metal. Provider name
+  has changed from ``Provider.PACKET`` to ``Provider.EQUINIXMETAL``,
+  while everything else works as before.
+
+  Before:
+
+    .. sourcecode:: python
+
+      from libcloud.compute.types import Provider
+      from libcloud.compute.providers import get_driver
+
+      cls = get_driver(Provider.PACKET)
+      driver = cls('api_key')
+
+  After:
+
+    .. sourcecode:: python
+
+      from libcloud.compute.types import Provider
+      from libcloud.compute.providers import get_driver
+
+      cls = get_driver(Provider.EQUINIXMETAL)
+      driver = cls('api_key')
+
+* New ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` module level variable
+  has been added which defaults to ``False`` for backward compatibility reasons.
+
+  When set to ``True``, Libcloud code won't perform any URL path sanitization
+  and will allow URL paths with double slashes (e.g.
+  ``/my-bucket//foo/1.txt``).
+
+  This may come handy to the users who have S3 paths which contains double
+  slashes or similar and are upgrading from Libcloud ``v2.3.0`` or older where
+  no path sanitization was performed.
+
+  Example S3 bucket layout with this option disabled (default) and enabled.
+
+  Object with the following name: ``/my-bucket/sub-directory/file.txt``
+
+    .. code-block:: bash
+
+      # Disabled
+
+      root
+      +-- my-bucket/
+        +-- sub-directory/
+          +-- file.txt
+
+      # Enabled
+
+      root
+      +-- /
+        +-- my-bucket/
+          +-- sub-directory/
+            +-- file.txt
+
+  Object with the following name: ``/my-bucket//directory1/file.txt``
+
+    .. code-block:: bash
+
+      # Disabled
+
+      root
+      +-- my-bucket/
+        +-- directory1/
+          +-- file.txt
+
+      # Enabled
+
+      root
+      +-- /
+        +-- my-bucket/
+          +-- /
+            +-- directory1/
+              +-- file.txt
+
+  As you can see from the examples above, directory layout is not the same
+  with this option enabled and disabled so you should be careful when you
+  use it.
+
+  This change affects all the drivers which are used when that module level
+  variable is set.
+
+Libcloud 3.2.0
+--------------
+
+* To accommodate for more complex pricing schemes, pricing data format for AWS
+  EC2 inside ``libcloud/data/pricing.json`` file has changes.
+
+  Previously, it contained a mapping of ``<driver name>_<driver rigion>`` ->
+  ``<instance size>`` -> ``<price>`` and now the pricing is in the following
+  format: ``ec_{linux,windows}`` -> ``<instance size>`` -> ``<region>`` ->
+  ``<price>``.
+
+  This format gives us more flexibility for more complex pricing schemes and
+  also allows us to store prices for non-Linux instances.
+
 Libcloud 3.0.0
 --------------
 
