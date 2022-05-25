@@ -188,7 +188,7 @@ class PricingTestCase(unittest.TestCase):
         self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
         self.assertTrue("bar" in libcloud.pricing.PRICING_DATA["compute"])
         self.assertTrue("baz" in libcloud.pricing.PRICING_DATA["compute"])
-    
+
     def test_get_gce_image_price_non_premium_image(self):
         image_name = "debian-10-buster-v20220519"
         cores = 4

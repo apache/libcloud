@@ -241,7 +241,6 @@ def get_gce_image_price(image_name, size_name, cores=1):
     elif 'g1' in size_name:
         size_type = 'g1'
 
-
     price_dict_keys = price_dict.keys()
 
     # search keys to find the one we want
@@ -348,13 +347,14 @@ def download_pricing_file(
     with open(file_path, "w") as file_handle:
         file_handle.write(body)
 
+
 # helper function to get image family for gce images
 def get_gce_image_family(image_name):
     image_family = None
 
     # Decide if the image is a premium image
     if "sql" in image_name:
-        image_family='SQL Server'
+        image_family = 'SQL Server'
     elif 'windows' in image_name:
         image_family = 'Windows Server'
     elif "rhel" in image_name and "sap" in image_name:
