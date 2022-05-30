@@ -1,6 +1,22 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [EC2] Update ``list_images()`` method to better handle scenario when an image
+  doesn't contain ``creationDate`` attribute (previously the code would throw if
+  an image without ``creationDate`` was encountered).
+
+  Reported by Juan Marcos Caicedo Mejía  - @juanmarcosdev.
+
+  (GITHUB-1700, GITHUB-1701)
+  [Tomaz Muraus - @Kami]
+
+
 Changes in Apache Libcloud 3.6.0
 --------------------------------
 
