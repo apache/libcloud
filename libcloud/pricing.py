@@ -48,7 +48,7 @@ __all__ = [
 ]
 
 # Default URL to the pricing file in a git repo
-DEFAULT_FILE_URL_GIT = "https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json"  # NOQA
+DEFAULT_FILE_URL_GIT = "https://git.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json"  # NOQA
 
 DEFAULT_FILE_URL_S3_BUCKET = (
     "https://libcloud-pricing-data.s3.amazonaws.com/pricing.json"  # NOQA
