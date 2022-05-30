@@ -32,6 +32,7 @@ from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.utils.iso8601 import parse_date
+from libcloud.utils.iso8601 import parse_date_allow_empty
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
 from libcloud.common.types import (
@@ -637,7 +638,10 @@ Define the extra dictionary for specific resources
 """
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     "ebs_instance_block_device": {
-        "attach_time": {"xpath": "ebs/attachTime", "transform_func": parse_date},
+        "attach_time": {
+            "xpath": "ebs/attachTime",
+            "transform_func": parse_date_allow_empty,
+        },
         "delete": {"xpath": "ebs/deleteOnTermination", "transform_func": str},
         "status": {"xpath": "ebs/status", "transform_func": str},
         "volume_id": {"xpath": "ebs/volumeId", "transform_func": str},
@@ -674,7 +678,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         "ramdisk_id": {"xpath": "ramdiskId", "transform_func": str},
         "ena_support": {"xpath": "enaSupport", "transform_func": str},
         "sriov_net_support": {"xpath": "sriovNetSupport", "transform_func": str},
-        "creation_date": {"xpath": "creationDate", "transform_func": parse_date},
+        "creation_date": {
+            "xpath": "creationDate",
+            "transform_func": parse_date_allow_empty,
+        },
     },
     "network": {
         "state": {"xpath": "state", "transform_func": str},
@@ -701,7 +708,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         "owner_id": {"xpath": "attachment/instanceOwnerId", "transform_func": str},
         "device_index": {"xpath": "attachment/deviceIndex", "transform_func": int},
         "status": {"xpath": "attachment/status", "transform_func": str},
-        "attach_time": {"xpath": "attachment/attachTime", "transform_func": parse_date},
+        "attach_time": {
+            "xpath": "attachment/attachTime",
+            "transform_func": parse_date_allow_empty,
+        },
         "delete": {"xpath": "attachment/deleteOnTermination", "transform_func": str},
     },
     "node": {
@@ -758,7 +768,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         "state": {"xpath": "status", "transform_func": str},
         "description": {"xpath": "description", "transform_func": str},
         "progress": {"xpath": "progress", "transform_func": str},
-        "start_time": {"xpath": "startTime", "transform_func": parse_date},
+        "start_time": {"xpath": "startTime", "transform_func": parse_date_allow_empty},
     },
     "subnet": {
         "cidr_block": {"xpath": "cidrBlock", "transform_func": str},
@@ -774,7 +784,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         "iops": {"xpath": "iops", "transform_func": int},
         "zone": {"xpath": "availabilityZone", "transform_func": str},
-        "create_time": {"xpath": "createTime", "transform_func": parse_date},
+        "create_time": {
+            "xpath": "createTime",
+            "transform_func": parse_date_allow_empty,
+        },
         "state": {"xpath": "status", "transform_func": str},
         "encrypted": {
             "xpath": "encrypted",
@@ -782,7 +795,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         "attach_time": {
             "xpath": "attachmentSet/item/attachTime",
-            "transform_func": parse_date,
+            "transform_func": parse_date_allow_empty,
         },
         "attachment_status": {
             "xpath": "attachmentSet/item/status",
@@ -802,13 +815,13 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
 }
 
 VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
-    "end_time": {"xpath": "endTime", "transform_func": parse_date},
+    "end_time": {"xpath": "endTime", "transform_func": parse_date_allow_empty},
     "modification_state": {"xpath": "modificationState", "transform_func": str},
     "original_iops": {"xpath": "originalIops", "transform_func": int},
     "original_size": {"xpath": "originalSize", "transform_func": int},
     "original_volume_type": {"xpath": "originalVolumeType", "transform_func": str},
     "progress": {"xpath": "progress", "transform_func": int},
-    "start_time": {"xpath": "startTime", "transform_func": parse_date},
+    "start_time": {"xpath": "startTime", "transform_func": parse_date_allow_empty},
     "status_message": {"xpath": "statusMessage", "transform_func": str},
     "target_iops": {"xpath": "targetIops", "transform_func": int},
     "target_size": {"xpath": "targetSize", "transform_func": int},
@@ -4430,7 +4443,7 @@ class BaseEC2NodeDriver(NodeDriver):
         except KeyError:
             state = NodeState.UNKNOWN
 
-        created = parse_date(
+        created = parse_date_allow_empty(
             findtext(element=element, xpath="launchTime", namespace=NAMESPACE)
         )
         instance_id = findtext(element=element, xpath="instanceId", namespace=NAMESPACE)
@@ -4573,7 +4586,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_snapshot(self, element, name=None):
         snapId = findtext(element=element, xpath="snapshotId", namespace=NAMESPACE)
         size = findtext(element=element, xpath="volumeSize", namespace=NAMESPACE)
-        created = parse_date(
+        created = parse_date_allow_empty(
             findtext(element=element, xpath="startTime", namespace=NAMESPACE)
         )
 

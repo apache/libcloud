@@ -605,7 +605,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         billing_product2 = images[1].extra["billing_products"][0]
         self.assertEqual(billing_product2, "as-6dr90319")
         self.assertEqual(size, 20)
-        self.assertIsInstance(images[1].extra["creation_date"], datetime)
+        self.assertIsNone(images[1].extra["creation_date"])
 
         self.assertEqual(images[2].id, "ami-85b2a8ac")
         self.assertEqual(images[2].name, "Test Image 3")
