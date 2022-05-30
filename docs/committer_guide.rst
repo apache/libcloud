@@ -314,7 +314,7 @@ Body::
     This bug could manifest itself while uploading a file with some of the storage providers.
 
     Besides this bug fix, it includes a couple of other smaller bug fixes and changes. Full change log
-    can be found at https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=b7747f777afdeb63bcacf496d1d034f1b3287c31;hb=c4b3daae946049652a500a8515929b4cbf14a6b4
+    can be found at https://git.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=b7747f777afdeb63bcacf496d1d034f1b3287c31;hb=c4b3daae946049652a500a8515929b4cbf14a6b4
 
     Release artifacts can be found at http://people.apache.org/~tomaz/libcloud/.
 
@@ -406,7 +406,7 @@ Body::
     Content-Length regression which broke create and update operations in
     the Bluebox Compute and Azure Storage driver (LIBCLOUD-362, LIBCLOUD-3901).
 
-    Full change log can be found at <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=ca90c84e296ca82e2206eb86ed7364c588aad503;hb=602b6a7a27dca6990a38eb887e1d6615826387d5>
+    Full change log can be found at <https://git.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=ca90c84e296ca82e2206eb86ed7364c588aad503;hb=602b6a7a27dca6990a38eb887e1d6615826387d5>
 
     Download
 
@@ -446,6 +446,6 @@ Body::
 
     Thanks to everyone who contributed and made this release possible! Full list of
     people who contributed to this release can be found in the CHANGES file
-    <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=ca90c84e296ca82e2206eb86ed7364c588aad503;hb=602b6a7a27dca6990a38eb887e1d6615826387d5>.
+    <https://git.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=ca90c84e296ca82e2206eb86ed7364c588aad503;hb=602b6a7a27dca6990a38eb887e1d6615826387d5>.
 
 .. _`PyPi release management page`: https://pypi.python.org/pypi?%3Aaction=pkg_edit&name=apache-libcloud
