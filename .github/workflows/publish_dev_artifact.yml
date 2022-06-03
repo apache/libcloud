@@ -13,6 +13,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+
 jobs:
   generate_and_publish_dev_release_artifacts:
     name: Generate and Publish Dev Release Artifacts
