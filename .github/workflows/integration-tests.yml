@@ -12,6 +12,9 @@ on:
   schedule:
     - cron: '0 1 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   # Special job which skips duplicate jobs
   pre_job:

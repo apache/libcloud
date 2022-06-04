@@ -6,6 +6,9 @@ on:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   generate_and_publish_pricing_data:
     name: Generate and Publish Pricing file to S3
