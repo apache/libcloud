@@ -52,7 +52,7 @@ jobs:
           - 3.8
           - 3.9
           - "3.10"
-          - pypy3.7
+          - "pypy3.7"
           - pyjion
         os:
           - ubuntu-latest
@@ -117,7 +117,7 @@ jobs:
          script -e -c "tox -e py${{ matrix.python_version }}"
 
       - name: Run dist install checks tox target
-        if: ${{ matrix.python_version != 'pypy3' && matrix.python_version != 'pyjion' }}
+        if: ${{ matrix.python_version != 'pypy3.7' && matrix.python_version != 'pyjion' }}
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
 
