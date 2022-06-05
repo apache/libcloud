@@ -33,7 +33,7 @@ jobs:
       - id: skip_check
         # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
         # actions
-        uses: ./.github/actions/skip-duplicate-actions # v3.4.0
+        uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
           github_token: ${{ github.token }}
 
