@@ -52,7 +52,7 @@ jobs:
           - 3.8
           - 3.9
           - "3.10"
-          - pypy3
+          #- "pypy3.7"
           - pyjion
         os:
           - ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
 
       - name: Use Python ${{ matrix.python_version }}
         if: ${{ matrix.python_version != 'pyjion' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -75,7 +75,7 @@ jobs:
 
       - name: Use Python 3.10
         if: ${{ matrix.python_version == 'pyjion' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: "3.10"
 
@@ -117,7 +117,7 @@ jobs:
          script -e -c "tox -e py${{ matrix.python_version }}"
 
       - name: Run dist install checks tox target
-        if: ${{ matrix.python_version != 'pypy3' && matrix.python_version != 'pyjion' }}
+        if: ${{ matrix.python_version != 'pypy3.7' && matrix.python_version != 'pyjion' }}
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
 
@@ -138,7 +138,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -180,7 +180,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -222,7 +222,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -269,7 +269,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python_version }}
 
