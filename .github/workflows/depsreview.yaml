@@ -1,12 +1,8 @@
 name: 'Dependency Review'
 
 on:
-  push:
-    branches: [ trunk ]
   pull_request:
     branches: [ trunk ]
-  schedule:
-    - cron: '0 3 * * *'
 
 permissions:
   contents: read
