@@ -371,7 +371,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         headers = response.headers
         scheme = "https" if self.secure else "http"
-        
+
         extra = {
             "url": "%s://%s%s"
             % (scheme, response.connection.host, response.connection.action),
