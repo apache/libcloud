@@ -514,6 +514,13 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue(container.extra["lease"]["state"], "available")
         self.assertTrue(container.extra["meta_data"]["meta1"], "value1")
 
+        if self.driver.secure:
+            expected_url = "https://account.blob.core.windows.net/test_container200"
+        else:
+            expected_url = "http://localhost/account/test_container200"
+
+        self.assertEqual(container.extra["url"], expected_url)
+
     def test_get_object_cdn_url(self):
         obj = self.driver.get_object(
             container_name="test_container200", object_name="test"
