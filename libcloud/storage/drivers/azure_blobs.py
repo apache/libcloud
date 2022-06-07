@@ -370,9 +370,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
 
         headers = response.headers
+        scheme = "https" if self.secure else "http"
+        
         extra = {
-            "url": "http://%s%s"
-            % (response.connection.host, response.connection.action),
+            "url": "%s://%s%s"
+            % (scheme, response.connection.host, response.connection.action),
             "etag": headers["etag"],
             "last_modified": headers["last-modified"],
             "lease": {
@@ -467,10 +469,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         headers = response.headers
         size = int(headers["content-length"])
         etag = headers["etag"]
+        scheme = "https" if self.secure else "http"
 
         extra = {
-            "url": "http://%s%s"
-            % (response.connection.host, response.connection.action),
+            "url": "%s://%s%s"
+            % (scheme, response.connection.host, response.connection.action),
             "etag": etag,
             "md5_hash": headers.get("content-md5", None),
             "content_type": headers.get("content-type", None),
