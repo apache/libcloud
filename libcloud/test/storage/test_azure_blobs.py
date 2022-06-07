@@ -442,6 +442,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue("etag" in containers[1].extra)
         self.assertTrue("lease" in containers[1].extra)
         self.assertTrue("meta_data" in containers[1].extra)
+        self.assertEqual(containers[1].extra["etag"], "0x8CFBAB7B5B82D8E")
 
     def test_list_container_objects_empty(self):
         self.mock_response_klass.type = "EMPTY"
@@ -513,6 +514,13 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue(container.extra["lease"]["status"], "unlocked")
         self.assertTrue(container.extra["lease"]["state"], "available")
         self.assertTrue(container.extra["meta_data"]["meta1"], "value1")
+
+        if self.driver.secure:
+            expected_url = "https://account.blob.core.windows.net/test_container200"
+        else:
+            expected_url = "http://localhost/account/test_container200"
+
+        self.assertEqual(container.extra["url"], expected_url)
 
     def test_get_object_cdn_url(self):
         obj = self.driver.get_object(
