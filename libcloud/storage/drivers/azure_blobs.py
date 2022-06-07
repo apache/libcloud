@@ -349,6 +349,11 @@ class AzureBlobsStorageDriver(StorageDriver):
             "meta_data": {},
         }
 
+        if extra["etag"]:
+            # Remove redundant double quotes around etag value
+            # "0x8CFBAB7B5B82D8E" -> 0x8CFBAB7B5B82D8E
+            extra["etag"] = extra["etag"].replace('"', "")
+
         if metadata is not None:
             for meta in list(metadata):
                 extra["meta_data"][meta.tag] = meta.text

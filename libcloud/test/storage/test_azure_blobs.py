@@ -442,6 +442,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue("etag" in containers[1].extra)
         self.assertTrue("lease" in containers[1].extra)
         self.assertTrue("meta_data" in containers[1].extra)
+        self.assertEqual(containers[1].extra["etag"], "0x8CFBAB7B5B82D8E")
 
     def test_list_container_objects_empty(self):
         self.mock_response_klass.type = "EMPTY"
