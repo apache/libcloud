@@ -6,6 +6,9 @@ on:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   generate_and_publish_pricing_data:
     name: Generate and Publish Pricing file to S3
@@ -27,7 +30,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 

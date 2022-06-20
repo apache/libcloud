@@ -7,6 +7,9 @@ on:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   install_and_verify:
     name: Install latest stable version
@@ -23,7 +26,7 @@ jobs:
           - 3.8
           - 3.9
           - "3.10"
-          - pypy3
+          - "pypy-3.7"
 
     steps:
       - uses: actions/checkout@master
@@ -31,7 +34,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 

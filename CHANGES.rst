@@ -1,6 +1,38 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [EC2] Update ``list_images()`` method to better handle scenario when an image
+  doesn't contain ``creationDate`` attribute (previously the code would throw if
+  an image without ``creationDate`` was encountered).
+
+  Reported by Juan Marcos Caicedo Mejía  - @juanmarcosdev.
+
+  (GITHUB-1700, GITHUB-1701)
+  [Tomaz Muraus - @Kami]
+
+Storage
+~~~~~~~
+
+- [Azure Blobs] Fix ``get_container()`` method and make sure Container ``etag``
+  extra attribute contains the correct scheme (https or http), depending on the
+  used endpoint.
+
+  (GITHUB-1703, GITHUB-1712)
+  [@KatiRG]
+
+- [Azure Blobs] Fix `list_containers()`` method and make sure Container ``etag``
+  extra attribute doesn't contain unncessary double quotes around the value
+  (``"0x8CFBAB7B5B82D8E"`` -> ``0x8CFBAB7B5B82D8E``).
+
+  (GITHUB-1712)
+  [Timaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.6.0
 --------------------------------
 

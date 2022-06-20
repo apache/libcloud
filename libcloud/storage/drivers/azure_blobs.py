@@ -349,6 +349,11 @@ class AzureBlobsStorageDriver(StorageDriver):
             "meta_data": {},
         }
 
+        if extra["etag"]:
+            # Remove redundant double quotes around etag value
+            # "0x8CFBAB7B5B82D8E" -> 0x8CFBAB7B5B82D8E
+            extra["etag"] = extra["etag"].replace('"', "")
+
         if metadata is not None:
             for meta in list(metadata):
                 extra["meta_data"][meta.tag] = meta.text
@@ -370,9 +375,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
 
         headers = response.headers
+        scheme = "https" if self.secure else "http"
+
         extra = {
-            "url": "http://%s%s"
-            % (response.connection.host, response.connection.action),
+            "url": "%s://%s%s"
+            % (scheme, response.connection.host, response.connection.action),
             "etag": headers["etag"],
             "last_modified": headers["last-modified"],
             "lease": {
@@ -467,10 +474,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         headers = response.headers
         size = int(headers["content-length"])
         etag = headers["etag"]
+        scheme = "https" if self.secure else "http"
 
         extra = {
-            "url": "http://%s%s"
-            % (response.connection.host, response.connection.action),
+            "url": "%s://%s%s"
+            % (scheme, response.connection.host, response.connection.action),
             "etag": etag,
             "md5_hash": headers.get("content-md5", None),
             "content_type": headers.get("content-type", None),

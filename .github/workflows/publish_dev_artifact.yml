@@ -13,6 +13,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+
 jobs:
   generate_and_publish_dev_release_artifacts:
     name: Generate and Publish Dev Release Artifacts
@@ -30,7 +33,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 

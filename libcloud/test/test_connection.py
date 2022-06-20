@@ -429,7 +429,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         con.connection = Mock()
 
         mock_connect.side_effect = socket.gaierror("")
-        retry_request = Retry(timeout=0.2, retry_delay=0.1, backoff=1)
+        retry_request = Retry(timeout=1, retry_delay=0.1, backoff=1)
         self.assertRaises(socket.gaierror, retry_request(con.request), action="/")
 
         self.assertGreater(mock_connect.call_count, 1, "Retry logic failed")
@@ -440,7 +440,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         con.connection = Mock()
 
         mock_connect.side_effect = socket.gaierror("")
-        retry_request = Retry(timeout=0.2, retry_delay=0.1, backoff=1)
+        retry_request = Retry(timeout=1, retry_delay=0.1, backoff=1)
         self.assertRaises(socket.gaierror, retry_request(con.request), action="/")
 
         self.assertGreater(mock_connect.call_count, 1, "Retry logic failed")
@@ -451,7 +451,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         con.connection = Mock()
 
         mock_connect.side_effect = socket.gaierror("")
-        retry_request = Retry(timeout=0.2, retry_delay=0.1, backoff=1)
+        retry_request = Retry(timeout=1, retry_delay=0.1, backoff=1)
         self.assertRaises(socket.gaierror, retry_request(con.request), action="/")
         self.assertGreater(mock_connect.call_count, 1, "Retry logic failed")
 
@@ -463,9 +463,9 @@ class ConnectionClassTestCase(unittest.TestCase):
         mock_connect.__name__ = "mock_connect"
         headers = {"retry-after": 0.2}
         mock_connect.side_effect = RateLimitReachedError(headers=headers)
-        retry_request = Retry(timeout=0.4, retry_delay=0.1, backoff=1)
+        retry_request = Retry(timeout=1, retry_delay=0.1, backoff=1)
         self.assertRaises(RateLimitReachedError, retry_request(con.request), action="/")
-        self.assertEqual(mock_connect.call_count, 2, "Retry logic failed")
+        self.assertGreater(mock_connect.call_count, 1, "Retry logic failed")
 
     @patch("libcloud.common.base.Connection.request")
     def test_retry_rate_limit_error_forever_with_old_retry_class(self, mock_connect):
@@ -486,7 +486,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         mock_connect.__name__ = "mock_connect"
         mock_connect.side_effect = mock_connect_side_effect
         retry_request = RetryForeverOnRateLimitError(
-            timeout=0.1, retry_delay=0.1, backoff=1
+            timeout=1, retry_delay=0.1, backoff=1
         )
         retry_request(con.request)(action="/")
 
@@ -533,7 +533,7 @@ class ConnectionClassTestCase(unittest.TestCase):
 
         mock_connect.__name__ = "mock_connect"
         mock_connect.side_effect = mock_connect_side_effect
-        retry_request = Retry(timeout=0.6, retry_delay=0.1, backoff=1)
+        retry_request = Retry(timeout=1, retry_delay=0.1, backoff=1)
         result = retry_request(con.request)(action="/")
         self.assertEqual(result, "success")
 
@@ -556,7 +556,7 @@ class ConnectionClassTestCase(unittest.TestCase):
 
         mock_connect.__name__ = "mock_connect"
         mock_connect.side_effect = mock_connect_side_effect
-        retry_request = Retry(timeout=0.6, retry_delay=0.1, backoff=1)
+        retry_request = Retry(timeout=1, retry_delay=0.1, backoff=1)
         result = retry_request(con.request)(action="/")
         self.assertEqual(result, "success")
 

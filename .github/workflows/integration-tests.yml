@@ -12,6 +12,9 @@ on:
   schedule:
     - cron: '0 1 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   # Special job which skips duplicate jobs
   pre_job:
@@ -30,7 +33,7 @@ jobs:
       - id: skip_check
         # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
         # actions
-        uses: ./.github/actions/skip-duplicate-actions # v3.4.0
+        uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
           github_token: ${{ github.token }}
 
@@ -52,7 +55,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -62,7 +65,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', 'integration/storage/requirements.txt') }}

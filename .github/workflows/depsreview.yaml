@@ -1,12 +1,11 @@
-name: "CodeQL Analysis"
+name: 'Dependency Review'
 
 on:
-  push:
-    branches: [ trunk ]
   pull_request:
     branches: [ trunk ]
-  schedule:
-    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
 
 jobs:
   # Special job which skips duplicate jobs
@@ -30,34 +29,14 @@ jobs:
         with:
           github_token: ${{ github.token }}
 
-  analyze:
-    permissions:
-      actions: read  # for github/codeql-action/init to get workflow details
-      contents: read  # for actions/checkout to fetch code
-      security-events: write  # for github/codeql-action/autobuild to send a status report
-    name: Analyze
+  dependency-review:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'python' ]
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v3
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v1

@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - trunk
-      - pyjion_cicd_tests
   pull_request:
     branches:
       - trunk
   schedule:
     - cron: '0 1 * * *'
+
+permissions:
+  contents: read
 
 jobs:
   # Special job which skips duplicate jobs
@@ -29,7 +31,7 @@ jobs:
       - id: skip_check
         # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
         # actions
-        uses: ./.github/actions/skip-duplicate-actions # v3.4.1
+        uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
           github_token: ${{ github.token }}
 
@@ -50,7 +52,7 @@ jobs:
           - 3.8
           - 3.9
           - "3.10"
-          - pypy3
+          - "pypy-3.7"
           - pyjion
         os:
           - ubuntu-latest
@@ -62,7 +64,7 @@ jobs:
 
       - name: Use Python ${{ matrix.python_version }}
         if: ${{ matrix.python_version != 'pyjion' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -73,7 +75,7 @@ jobs:
 
       - name: Use Python 3.10
         if: ${{ matrix.python_version == 'pyjion' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
@@ -89,12 +91,12 @@ jobs:
 
       - name: Setup Dotnet 6
         if: ${{ matrix.python_version == 'pyjion' }}
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v2
         with:
           dotnet-version: "6.0.100"
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', '') }}
@@ -115,7 +117,7 @@ jobs:
          script -e -c "tox -e py${{ matrix.python_version }}"
 
       - name: Run dist install checks tox target
-        if: ${{ matrix.python_version != 'pypy3' && matrix.python_version != 'pyjion' }}
+        if: ${{ matrix.python_version != 'pypy-3.7' && matrix.python_version != 'pyjion' }}
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
 
@@ -136,7 +138,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -146,7 +148,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
@@ -178,7 +180,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -188,7 +190,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
@@ -220,7 +222,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -230,7 +232,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
@@ -267,7 +269,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -277,7 +279,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
