@@ -776,7 +776,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
             # method.
             return action
 
-        return request_path
+        return super(OpenStackIdentityConnection, self).morph_action_hook(action=action)
 
     def add_default_headers(self, headers):
         headers["Accept"] = "application/json"
