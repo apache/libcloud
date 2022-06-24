@@ -78,32 +78,29 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             ),
         ]
 
-        APPEND = 0
-        NOTAPPEND = 1
-
         auth_urls = [
-            ("https://auth.api.example.com", APPEND, ""),
-            ("https://auth.api.example.com/", NOTAPPEND, "/"),
-            ("https://auth.api.example.com/foo/bar", NOTAPPEND, "/foo/bar"),
-            ("https://auth.api.example.com/foo/bar/", NOTAPPEND, "/foo/bar/"),
+            ("https://auth.api.example.com", ""),
+            ("https://auth.api.example.com/", "/"),
+            ("https://auth.api.example.com/foo/bar", "/foo/bar"),
+            ("https://auth.api.example.com/foo/bar/", "/foo/bar/"),
         ]
 
         actions = {
-            "1.0": "/v1.0",
-            "1.1": "/v1.1/auth",
-            "2.0": "/v2.0/tokens",
-            "2.0_apikey": "/v2.0/tokens",
-            "2.0_password": "/v2.0/tokens",
-            "3.x_password": "/v3/auth/tokens",
-            "3.x_appcred": "/v3/auth/tokens",
-            "3.x_oidc_access_token": "/v3/OS-FEDERATION/identity_providers/user_name/protocols/tenant-name/auth",
+            "1.0": "{url_path}/v1.0",
+            "1.1": "{url_path}/v1.1/auth",
+            "2.0": "{url_path}/v2.0/tokens",
+            "2.0_apikey": "{url_path}/v2.0/tokens",
+            "2.0_password": "{url_path}/v2.0/tokens",
+            "3.x_password": "{url_path}/v3/auth/tokens",
+            "3.x_appcred": "{url_path}/v3/auth/tokens",
+            "3.x_oidc_access_token": "{url_path}/v3/OS-FEDERATION/identity_providers/user_name/protocols/tenant-name/auth",
         }
 
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
         for (auth_version, mock_http_class, kwargs) in tuples:
-            for (url, should_append_default_path, expected_path) in auth_urls:
+            for (url, url_path) in auth_urls:
                 connection = self._get_mock_connection(
                     mock_http_class=mock_http_class, auth_url=url
                 )
@@ -123,10 +120,14 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
                 except Exception:
                     pass
 
-                if should_append_default_path == APPEND:
-                    expected_path = actions[auth_version]
+                expected_path = (
+                    actions[auth_version].format(url_path=url_path).replace("//", "/")
+                )
 
-                self.assertEqual(osa.action, expected_path)
+                self.assertEqual(
+                    osa.action,
+                    expected_path,
+                )
 
     def test_basic_authentication(self):
         tuples = [
