@@ -47,6 +47,16 @@ class CloudwattAuthConnection(OpenStackIdentityConnection):
         self._ex_tenant_id = kwargs.pop("ex_tenant_id")
         super(CloudwattAuthConnection, self).__init__(*args, **kwargs)
 
+    def morph_action_hook(self, action):
+        (_, _, _, request_path) = self._tuple_from_url(self.auth_url)
+
+        if request_path == "":
+            # No path is provided in the auth_url, use action passed to this
+            # method.
+            return action
+
+        return request_path
+
     def authenticate(self, force=False):
         reqbody = json.dumps(
             {
