@@ -201,8 +201,15 @@ def get_size_price(driver_type, driver_name, size_id, region=None):
 
     return price
 
+def get_image_price(driver_name, image_name, size_name=None, cores=1):
 
-def get_gce_image_price(image_name, size_name, cores=1):
+    #for now only images of GCE have pricing data
+    if driver_name == 'gce_images':
+        return _get_gce_image_price(image_name=image_name, size_name=size_name, cores=cores)
+
+    return 0
+
+def _get_gce_image_price(image_name, size_name, cores=1):
     """
     Return price per hour for an gce image.
     Price depends on the size of the VM.
@@ -222,8 +229,25 @@ def get_gce_image_price(image_name, size_name, cores=1):
     :rtype: ``float``
     :return: Image price
     """
+    # helper function to get image family for gce images
+    def _get_gce_image_family(image_name):
+        image_family = None
 
-    image_family = get_gce_image_family(image_name)
+        # Decide if the image is a premium image
+        if "sql" in image_name:
+            image_family = "SQL Server"
+        elif "windows" in image_name:
+            image_family = "Windows Server"
+        elif "rhel" in image_name and "sap" in image_name:
+            image_family = "RHEL with Update Services"
+        elif "sles" in image_name and "sap" in image_name:
+            image_family = "SLES for SAP"
+        elif "rhel" in image_name:
+            image_family = "RHEL"
+        elif "sles" in image_name:
+            image_family = "SLES"
+        return image_family
+    image_family = _get_gce_image_family(image_name)
     # if there is no premium image return 0
     if not image_family:
         return 0
@@ -346,23 +370,3 @@ def download_pricing_file(
     # No need to stream it since file is small
     with open(file_path, "w") as file_handle:
         file_handle.write(body)
-
-
-# helper function to get image family for gce images
-def get_gce_image_family(image_name):
-    image_family = None
-
-    # Decide if the image is a premium image
-    if "sql" in image_name:
-        image_family = "SQL Server"
-    elif "windows" in image_name:
-        image_family = "Windows Server"
-    elif "rhel" in image_name and "sap" in image_name:
-        image_family = "RHEL with Update Services"
-    elif "sles" in image_name and "sap" in image_name:
-        image_family = "SLES for SAP"
-    elif "rhel" in image_name:
-        image_family = "RHEL"
-    elif "sles" in image_name:
-        image_family = "SLES"
-    return image_family
