@@ -20,6 +20,7 @@
 import os
 import re
 import json
+import atexit
 import copy
 import time
 from collections import defaultdict, OrderedDict
@@ -36,7 +37,7 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRICING_FILE_PATH = os.path.join(BASE_PATH, "../libcloud/data/pricing.json")
 PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 
-TEMPFILE = os.environ.get("TMP_JSON", "/tmp/ec.json")
+FILEPATH = os.environ.get("TMP_JSON", "/tmp/ec.json")
 
 INSTANCE_SIZES = [
     "micro",
@@ -50,22 +51,44 @@ INSTANCE_SIZES = [
 
 
 def download_json():
-    response = requests.get(URL, stream=True)
-    try:
-        return open(TEMPFILE, "r")
-    except IOError:
-        with open(TEMPFILE, "wb") as fo:
-            for chunk in response.iter_content(chunk_size=2**20):
-                if chunk:
-                    fo.write(chunk)
-    return open(TEMPFILE, "r")
+    if os.path.isfile(FILEPATH):
+        print("Using data from existing cached file %s" % (FILEPATH))
+        return open(FILEPATH, "r")
+
+    def remove_partial_cached_file():
+        if os.path.isfile(FILEPATH):
+            os.remove(FILEPATH)
+
+    # File not cached locally, download data and cache it
+    with requests.get(URL, stream=True) as response:
+        atexit.register(remove_partial_cached_file)
+
+        total_size_in_bytes = int(response.headers.get("content-length", 0))
+        progress_bar = tqdm.tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
+
+        chunk_size = 10 * 1024 * 1024
+
+        with open(FILEPATH, "wb") as fp:
+            # NOTE: We use shutil.copyfileobj with large chunk size instead of
+            # response.iter_content with large chunk size since data we
+            # download is massive and copyfileobj is more efficient.
+            # shutil.copyfileobj(response.raw, fp, 10 * 1024 * 1024)
+            for chunk_data in response.iter_content(chunk_size):
+                progress_bar.update(len(chunk_data))
+                fp.write(chunk_data)
+
+        progress_bar.close()
+        atexit.unregister(remove_partial_cached_file)
+
+    return FILEPATH, False
 
 
 def get_json():
-    try:
-        return open(TEMPFILE, "r")
-    except IOError:
-        return download_json()
+    if not os.path.isfile(FILEPATH):
+        return download_json(), False
+
+    print("Using data from existing cached file %s" % (FILEPATH))
+    return FILEPATH, True
 
 
 # Prices and sizes are in different dicts and categorized by sku
@@ -76,32 +99,33 @@ def get_all_prices():
     current_sku = ""
     current_rate_code = ""
     amazonEC2_offer_code = "JRTCKXETXF"
-    json_file = get_json()
-    parser = ijson.parse(json_file)
-    # use parser because file is very large
-    for prefix, event, value in parser:
-        if "products" in prefix:
-            continue
-        if (prefix, event) == ("terms.OnDemand", "map_key"):
-            current_sku = value
-            prices[current_sku] = {}
-        elif (prefix, event) == (
-            f"terms.OnDemand.{current_sku}.{current_sku}.{amazonEC2_offer_code}.priceDimensions",
-            "map_key",
-        ):
-            current_rate_code = value
-        elif (prefix, event) == (
-            f"terms.OnDemand.{current_sku}.{current_sku}.{amazonEC2_offer_code}.priceDimensions"
-            f".{current_rate_code}.unit",
-            "string",
-        ):
-            prices[current_sku]["unit"] = value
-        elif (prefix, event) == (
-            f"terms.OnDemand.{current_sku}.{current_sku}.{amazonEC2_offer_code}.priceDimensions"
-            f".{current_rate_code}.pricePerUnit.USD",
-            "string",
-        ):
-            prices[current_sku]["price"] = value
+    json_file, from_file = get_json()
+    with open(json_file, 'r') as f:
+        parser = ijson.parse(f)
+        # use parser because file is very large
+        for prefix, event, value in parser:
+            if "products" in prefix:
+                continue
+            if (prefix, event) == ("terms.OnDemand", "map_key"):
+                current_sku = value
+                prices[current_sku] = {}
+            elif (prefix, event) == (
+                f"terms.OnDemand.{current_sku}.{current_sku}.{amazonEC2_offer_code}.priceDimensions",
+                "map_key",
+            ):
+                current_rate_code = value
+            elif (prefix, event) == (
+                f"terms.OnDemand.{current_sku}.{current_sku}.{amazonEC2_offer_code}.priceDimensions"
+                f".{current_rate_code}.unit",
+                "string",
+            ):
+                prices[current_sku]["unit"] = value
+            elif (prefix, event) == (
+                f"terms.OnDemand.{current_sku}.{current_sku}.{amazonEC2_offer_code}.priceDimensions"
+                f".{current_rate_code}.pricePerUnit.USD",
+                "string",
+            ):
+                prices[current_sku]["price"] = value
     return prices
 
 
@@ -110,39 +134,40 @@ def get_all_prices():
 def scrape_ec2_pricing():
     skus = {}
     prices = get_all_prices()
-    json_file = get_json()
-    parser = ijson.parse(json_file)
-    current_sku = ""
+    json_file, from_file = get_json()
+    with open(json_file, 'r') as f:
+        parser = ijson.parse(f)
+        current_sku = ""
 
-    for prefix, event, value in parser:
-        if "terms" in prefix:
-            break
-        if (prefix, event) == ("products", "map_key"):
-            current_sku = value
-            skus[current_sku] = {'sku': value}
-        elif (prefix, event) == (f'products.{current_sku}.productFamily', 'string'):
-            skus[current_sku]['family'] = value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.location', 'string'):
-            skus[current_sku]['locationName'] = value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.locationType', 'string'):
-            skus[current_sku]['locationType'] = value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.instanceType', 'string'):
-            skus[current_sku]['size'] = value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.operatingSystem', 'string'):
-            skus[current_sku]['os'] = value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.usagetype', 'string'):
-            skus[current_sku]['usage_type'] = value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.preInstalledSw', 'string'):
-            skus[current_sku]['preInstalledSw'] =  value
-        elif (prefix, event) == (f'products.{current_sku}.attributes.regionCode', 'string'):
-            skus[current_sku]['location'] = value
-        # only get prices of compute instances atm
-        elif (prefix, event) == (f"products.{current_sku}", "end_map"):
-            if (
-                "Compute Instance" not in skus[current_sku]["family"]
-                and "Dedicated Host" not in skus[current_sku]["family"]
-            ):
-                del skus[current_sku]
+        for prefix, event, value in parser:
+            if "terms" in prefix:
+                break
+            if (prefix, event) == ("products", "map_key"):
+                current_sku = value
+                skus[current_sku] = {'sku': value}
+            elif (prefix, event) == (f'products.{current_sku}.productFamily', 'string'):
+                skus[current_sku]['family'] = value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.location', 'string'):
+                skus[current_sku]['locationName'] = value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.locationType', 'string'):
+                skus[current_sku]['locationType'] = value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.instanceType', 'string'):
+                skus[current_sku]['size'] = value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.operatingSystem', 'string'):
+                skus[current_sku]['os'] = value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.usagetype', 'string'):
+                skus[current_sku]['usage_type'] = value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.preInstalledSw', 'string'):
+                skus[current_sku]['preInstalledSw'] =  value
+            elif (prefix, event) == (f'products.{current_sku}.attributes.regionCode', 'string'):
+                skus[current_sku]['location'] = value
+            # only get prices of compute instances atm
+            elif (prefix, event) == (f"products.{current_sku}", "end_map"):
+                if (
+                    "Compute Instance" not in skus[current_sku]["family"]
+                    and "Dedicated Host" not in skus[current_sku]["family"]
+                ):
+                    del skus[current_sku]
     ec2_linux = defaultdict(OrderedDict)
     ec2_windows = defaultdict(OrderedDict)
     ec2_rhel = defaultdict(OrderedDict)
