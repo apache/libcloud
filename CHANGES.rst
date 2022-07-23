@@ -39,7 +39,15 @@ Storage
   (``"0x8CFBAB7B5B82D8E"`` -> ``0x8CFBAB7B5B82D8E``).
 
   (GITHUB-1712)
-  [Timaz Muraus - @Kami]
+  [Tomaz Muraus - @Kami]
+
+Common
+~~~~~~
+
+- Update EC2 price scraping script to utilize official pricing API endpoint.
+
+  (GITHUB-1715)
+  [Eis D. Zaster - @Eis-D-Z]
 
 Changes in Apache Libcloud 3.6.0
 --------------------------------
