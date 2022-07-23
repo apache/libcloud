@@ -101,7 +101,7 @@ def get_all_prices():
     current_rate_code = ""
     amazonEC2_offer_code = "JRTCKXETXF"
     json_file, from_file = get_json()
-    with open(json_file, 'r') as f:
+    with open(json_file, "r") as f:
         parser = ijson.parse(f)
         # use parser because file is very large
         for prefix, event, value in parser:
@@ -136,7 +136,7 @@ def scrape_ec2_pricing():
     skus = {}
     prices = get_all_prices()
     json_file, from_file = get_json()
-    with open(json_file, 'r') as f:
+    with open(json_file, "r") as f:
         parser = ijson.parse(f)
         current_sku = ""
 
@@ -145,23 +145,44 @@ def scrape_ec2_pricing():
                 break
             if (prefix, event) == ("products", "map_key"):
                 current_sku = value
-                skus[current_sku] = {'sku': value}
-            elif (prefix, event) == (f'products.{current_sku}.productFamily', 'string'):
-                skus[current_sku]['family'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.location', 'string'):
-                skus[current_sku]['locationName'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.locationType', 'string'):
-                skus[current_sku]['locationType'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.instanceType', 'string'):
-                skus[current_sku]['size'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.operatingSystem', 'string'):
-                skus[current_sku]['os'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.usagetype', 'string'):
-                skus[current_sku]['usage_type'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.preInstalledSw', 'string'):
-                skus[current_sku]['preInstalledSw'] = value
-            elif (prefix, event) == (f'products.{current_sku}.attributes.regionCode', 'string'):
-                skus[current_sku]['location'] = value
+                skus[current_sku] = {"sku": value}
+            elif (prefix, event) == (f"products.{current_sku}.productFamily", "string"):
+                skus[current_sku]["family"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.location",
+                "string",
+            ):
+                skus[current_sku]["locationName"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.locationType",
+                "string",
+            ):
+                skus[current_sku]["locationType"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.instanceType",
+                "string",
+            ):
+                skus[current_sku]["size"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.operatingSystem",
+                "string",
+            ):
+                skus[current_sku]["os"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.usagetype",
+                "string",
+            ):
+                skus[current_sku]["usage_type"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.preInstalledSw",
+                "string",
+            ):
+                skus[current_sku]["preInstalledSw"] = value
+            elif (prefix, event) == (
+                f"products.{current_sku}.attributes.regionCode",
+                "string",
+            ):
+                skus[current_sku]["location"] = value
             # only get prices of compute instances atm
             elif (prefix, event) == (f"products.{current_sku}", "end_map"):
                 if (
@@ -186,10 +207,10 @@ def scrape_ec2_pricing():
         if skus[sku]["locationType"] != "AWS Region":
             continue
         # skip any SQL
-        if skus[sku]['preInstalledSw'] != 'NA':
+        if skus[sku]["preInstalledSw"] != "NA":
             continue
 
-        os = skus[sku]['os']
+        os = skus[sku]["os"]
         if os == "NA":
             continue
         os_dict = os_map.get(os)
@@ -204,12 +225,15 @@ def scrape_ec2_pricing():
             os_dict[size] = {}
 
         # if price already exists pick the BoxUsage usage type which means on demand
-        if os_dict.get(size, {}).get(location) and 'BoxUsage' not in skus[sku]['usage_type']:
+        if (
+            os_dict.get(size, {}).get(location)
+            and "BoxUsage" not in skus[sku]["usage_type"]
+        ):
             continue
 
         # if price is not a number then label it as not available
         try:
-            price = float(prices[sku]['price'])
+            price = float(prices[sku]["price"])
             os_dict[size][location] = price
         except ValueError:
             os_dict[size][location] = "n/a"
