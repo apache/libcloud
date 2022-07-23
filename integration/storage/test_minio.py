@@ -30,7 +30,10 @@ class MinioTest(Integration.ContainerTestBase):
     port = 9000
     environment = {'MINIO_ROOT_USER': account, 'MINIO_ROOT_PASSWORD': secret}
     command = ['server', '/data']
-    ready_message = b'Console endpoint is listening on a dynamic port'
+    # Output seemed to have changed recently, see
+    # https://github.com/apache/libcloud/runs/7481114211?check_suite_focus=true
+    #ready_message = b'Console endpoint is listening on a dynamic port'
+    ready_message = b'1 Online'
 
     def test_cdn_url(self):
         self.skipTest('Not implemented in driver')
