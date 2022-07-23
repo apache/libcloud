@@ -27,6 +27,7 @@ from collections import defaultdict, OrderedDict
 
 import requests
 import ijson  # pylint: disable=import-error
+import tqdm  # pylint: disable=import-error
 
 # same URL as the one used by scrape-ec2-sizes.py, now it has official data on pricing
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"
@@ -158,7 +159,7 @@ def scrape_ec2_pricing():
             elif (prefix, event) == (f'products.{current_sku}.attributes.usagetype', 'string'):
                 skus[current_sku]['usage_type'] = value
             elif (prefix, event) == (f'products.{current_sku}.attributes.preInstalledSw', 'string'):
-                skus[current_sku]['preInstalledSw'] =  value
+                skus[current_sku]['preInstalledSw'] = value
             elif (prefix, event) == (f'products.{current_sku}.attributes.regionCode', 'string'):
                 skus[current_sku]['location'] = value
             # only get prices of compute instances atm
@@ -201,7 +202,7 @@ def scrape_ec2_pricing():
         # size is first seen
         if not os_dict.get(size):
             os_dict[size] = {}
-        
+
         # if price already exists pick the BoxUsage usage type which means on demand
         if os_dict.get(size, {}).get(location) and 'BoxUsage' not in skus[sku]['usage_type']:
             continue
