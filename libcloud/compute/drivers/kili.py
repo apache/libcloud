@@ -26,7 +26,7 @@ __all__ = ["KiliCloudNodeDriver"]
 
 ENDPOINT_ARGS = {"service_type": "compute", "name": "nova", "region": "RegionOne"}
 
-AUTH_URL = "https://api.kili.io/keystone/v2.0/tokens"
+AUTH_URL = "https://api.kili.io/keystone"
 
 
 class KiliCloudConnection(OpenStack_1_1_Connection):

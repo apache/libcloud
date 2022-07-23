@@ -4,6 +4,14 @@ Changelog
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+~~~~~~
+
+- [OpenStack] Fix OpenStack Identitiy bug when auth url contains a path.
+
+  (GITHUB-1717, GITHUB-1718)
+  [Dimitris Galanis - @dimgal1]
+
 Compute
 ~~~~~~~
 
