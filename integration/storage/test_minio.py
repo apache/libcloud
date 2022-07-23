@@ -32,7 +32,7 @@ class MinioTest(Integration.ContainerTestBase):
     command = ['server', '/data']
     # Output seemed to have changed recently, see
     # https://github.com/apache/libcloud/runs/7481114211?check_suite_focus=true
-    #ready_message = b'Console endpoint is listening on a dynamic port'
+    # ready_message = b'Console endpoint is listening on a dynamic port'
     ready_message = b'1 Online'
 
     def test_cdn_url(self):
