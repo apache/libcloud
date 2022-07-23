@@ -57,7 +57,6 @@ through a unified and easy to use API.
 .. image:: https://img.shields.io/twitter/follow/Libcloud.svg?style=social&label=Follow
         :target: https://twitter.com/Libcloud
 
-  
 :Code:          https://github.com/apache/libcloud
 :License:       Apache 2.0; see LICENSE file
 :Issues:        https://issues.apache.org/jira/projects/LIBCLOUD/issues
