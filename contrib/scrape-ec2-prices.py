@@ -29,6 +29,10 @@ import requests
 import ijson  # pylint: disable=import-error
 import tqdm  # pylint: disable=import-error
 
+# Buffer size for ijson.parse() function. Larger buffer size results in increased memory
+# consumption, but faster parsing.
+IJSON_BUF_SIZE = 10 * 65536
+
 # same URL as the one used by scrape-ec2-sizes.py, now it has official data on pricing
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"
 
@@ -102,9 +106,10 @@ def get_all_prices():
     amazonEC2_offer_code = "JRTCKXETXF"
     json_file, from_file = get_json()
     with open(json_file, "r") as f:
-        parser = ijson.parse(f)
+        print("Starting to parse pricing data, this could take up to 15 minutes...")
+        parser = ijson.parse(f, buf_size=IJSON_BUF_SIZE)
         # use parser because file is very large
-        for prefix, event, value in parser:
+        for prefix, event, value in tqdm.tqdm(parser):
             if "products" in prefix:
                 continue
             if (prefix, event) == ("terms.OnDemand", "map_key"):
@@ -137,7 +142,8 @@ def scrape_ec2_pricing():
     prices = get_all_prices()
     json_file, from_file = get_json()
     with open(json_file, "r") as f:
-        parser = ijson.parse(f)
+        print("Starting to parse pricing data, this could take up to 15 minutes...")
+        parser = ijson.parse(f, buf_size=IJSON_BUF_SIZE)
         current_sku = ""
 
         for prefix, event, value in parser:
