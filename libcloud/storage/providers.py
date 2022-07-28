@@ -96,8 +96,8 @@ DRIVERS = {
     ),
     Provider.MINIO: ("libcloud.storage.drivers.minio", "MinIOStorageDriver"),
     Provider.SCALEWAY: ("libcloud.storage.drivers.scaleway", "ScalewayStorageDriver"),
+    Provider.OVH: ("libcloud.storage.drivers.ovh", "OvhStorageDriver"),
 }
-
 
 def get_driver(provider):
     # type: (Union[Provider, str]) -> Type[StorageDriver]
