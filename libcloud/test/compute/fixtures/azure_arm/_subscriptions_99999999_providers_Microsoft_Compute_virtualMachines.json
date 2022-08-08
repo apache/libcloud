@@ -3,6 +3,10 @@
     {
       "properties": {
         "vmId": "CCEEBF63-E92B-4A50-9949-6E44BFC61D3F",
+        "additionalCapabilities": {
+          "ultraSSDEnabled": "False",
+          "hibernationEnabled": "False"
+        },
         "hardwareProfile": {
           "vmSize": "Standard_A1"
         },
