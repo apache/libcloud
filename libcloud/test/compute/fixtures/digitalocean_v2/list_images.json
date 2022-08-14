@@ -9,6 +9,10 @@
       "regions": [
         "nyc1"
       ],
+      "tags": [
+        "base-image",
+        "prod"
+      ],
       "created_at": "2014-07-29T14:35:40Z",
       "min_disk_size": 20
     },
@@ -20,6 +24,9 @@
       "public": true,
       "regions": [
         "nyc1"
+      ],
+      "tags": [
+        "dev"
       ],
       "created_at": "2014-07-29T14:35:40Z",
       "min_disk_size": 20
