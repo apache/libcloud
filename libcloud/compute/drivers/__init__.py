@@ -23,7 +23,6 @@ __all__ = [
     "dimensiondata",
     "dummy",
     "ec2",
-    "elasticstack",
     "cloudsigma",
     "gce",
     "linode",
