@@ -163,7 +163,6 @@ class Provider(Type):
     VULTR = "vultr"
 
     # OpenStack based providers
-    CLOUDWATT = "cloudwatt"
     HPCLOUD = "hpcloud"
     KILI = "kili"
     ONAPP = "onapp"

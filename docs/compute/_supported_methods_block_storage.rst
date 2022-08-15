@@ -14,7 +14,6 @@ Provider                              list volumes create volume destroy volume 
 `Cloudscale`_                         no           no            no             no            no            no             no             
 `CloudSigma (API v2.0)`_              yes          yes           yes            yes           yes           no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
-`Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
 `DigitalOcean`_                       yes          yes           yes            yes           yes           yes            yes            
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
@@ -82,7 +81,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
-.. _`Cloudwatt`: https://www.cloudwatt.com/
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/

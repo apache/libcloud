@@ -126,7 +126,6 @@ DRIVERS = {
         "libcloud.compute.drivers.auroracompute",
         "AuroraComputeNodeDriver",
     ),
-    Provider.CLOUDWATT: ("libcloud.compute.drivers.cloudwatt", "CloudwattNodeDriver"),
     Provider.EQUINIXMETAL: (
         "libcloud.compute.drivers.equinixmetal",
         "EquinixMetalNodeDriver",
