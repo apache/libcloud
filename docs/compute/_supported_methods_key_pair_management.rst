@@ -34,7 +34,6 @@ Provider                              list key pairs get key pair create key pai
 `Linode`_                             no             no           no              no                            no                          no             
 `Maxihost`_                           yes            no           yes             no                            no                          no             
 `MedOne`_                             no             no           no              no                            no                          no             
-`NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
 `NTTAmerica`_                         no             no           no              no                            no                          no             
 `NTTC-CIS`_                           no             no           no              no                            no                          no             
@@ -90,7 +89,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
-.. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`NTTC-CIS`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html

@@ -62,7 +62,6 @@ class Provider(Type):
     :cvar KUBEVIRT: kubevirt driver
     :cvar LIBVIRT: Libvirt driver
     :cvar LINODE: Linode.com
-    :cvar NEPHOSCALE: NephoScale driver
     :cvar NIMBUS: Nimbus
     :cvar NINEFOLD: Ninefold
     :cvar NTTC-CIS: NTT Communications CIS
@@ -118,7 +117,6 @@ class Provider(Type):
     LINODE = "linode"
     MAXIHOST = "maxihost"
     MEDONE = "medone"
-    NEPHOSCALE = "nephoscale"
     NIMBUS = "nimbus"
     NINEFOLD = "ninefold"
     NTTA = "ntta"
