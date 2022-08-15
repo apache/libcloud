@@ -88,7 +88,6 @@ DRIVERS = {
         "CloudStackNodeDriver",
     ),
     Provider.LIBVIRT: ("libcloud.compute.drivers.libvirt_driver", "LibvirtNodeDriver"),
-    Provider.JOYENT: ("libcloud.compute.drivers.joyent", "JoyentNodeDriver"),
     Provider.VCL: ("libcloud.compute.drivers.vcl", "VCLNodeDriver"),
     Provider.KTUCLOUD: ("libcloud.compute.drivers.ktucloud", "KTUCloudNodeDriver"),
     Provider.HOSTVIRTUAL: (

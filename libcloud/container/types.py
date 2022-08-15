@@ -48,7 +48,6 @@ class Provider(object):
     DOCKER = "docker"
     ECS = "ecs"
     GKE = "GKE"
-    JOYENT = "joyent"
     KUBERNETES = "kubernetes"
     LXD = "lxd"
     RANCHER = "rancher"

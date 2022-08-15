@@ -26,7 +26,6 @@ Provider                              list images get image create image delete 
 `Ikoula`_                             yes         no        no           no           no        
 `Indosat`_                            yes         no        no           no           no        
 `InternetSolutions`_                  yes         no        no           no           no        
-`Joyent`_                             yes         no        no           no           no        
 `Kamatera`_                           yes         no        no           no           no        
 `Kili Public Cloud`_                  yes         yes       yes          yes          no        
 `KTUCloud`_                           yes         no        no           no           no        
@@ -88,7 +87,6 @@ Provider                              list images get image create image delete 
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
-.. _`Joyent`: http://www.joyentcloud.com
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/

@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 DRIVERS = {
     Provider.DUMMY: ("libcloud.container.drivers.dummy", "DummyContainerDriver"),
     Provider.DOCKER: ("libcloud.container.drivers.docker", "DockerContainerDriver"),
-    Provider.JOYENT: ("libcloud.container.drivers.joyent", "JoyentContainerDriver"),
     Provider.ECS: ("libcloud.container.drivers.ecs", "ElasticContainerDriver"),
     Provider.KUBERNETES: (
         "libcloud.container.drivers.kubernetes",

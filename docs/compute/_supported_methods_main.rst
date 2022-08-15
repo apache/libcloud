@@ -26,7 +26,6 @@ Provider                              list nodes create node reboot node destroy
 `Ikoula`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Indosat`_                            yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `InternetSolutions`_                  yes        yes         yes         yes          yes        yes       yes         yes        yes        
-`Joyent`_                             yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Kamatera`_                           yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Kili Public Cloud`_                  yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `KTUCloud`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
@@ -88,7 +87,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
-.. _`Joyent`: http://www.joyentcloud.com
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
