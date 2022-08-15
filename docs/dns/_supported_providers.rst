@@ -13,7 +13,6 @@ Provider            Documentation                             Provider Constant 
 `Gandi LiveDNS`_                                              GANDI_LIVE        single region driver :mod:`libcloud.dns.drivers.gandi_live`   :class:`GandiLiveDNSDriver`   
 `GoDaddy DNS`_      :doc:`Click </dns/drivers/godaddy>`       GODADDY           single region driver :mod:`libcloud.dns.drivers.godaddy`      :class:`GoDaddyDNSDriver`     
 `Google DNS`_       :doc:`Click </dns/drivers/google>`        GOOGLE            single region driver :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
-`Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                 LINODE            single region driver :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
 `Liquidweb DNS`_    :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         single region driver :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
 `Luadns`_           :doc:`Click </dns/drivers/luadns>`        LUADNS            single region driver :mod:`libcloud.dns.drivers.luadns`       :class:`LuadnsDNSDriver`      
@@ -41,7 +40,6 @@ Provider            Documentation                             Provider Constant 
 .. _`Gandi LiveDNS`: http://www.gandi.net/domain
 .. _`GoDaddy DNS`: https://www.godaddy.com/
 .. _`Google DNS`: https://cloud.google.com/
-.. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
 .. _`Luadns`: https://www.luadns.com

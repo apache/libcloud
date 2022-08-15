@@ -22,7 +22,6 @@ Provider                              list volumes create volume destroy volume 
 `Google Compute Engine`_              yes          yes           yes            yes           yes           yes            yes            
 `GiG G8 Node Provider`_               yes          yes           yes            yes           yes           no             no             
 `Gridscale`_                          yes          yes           yes            yes           yes           yes            yes            
-`HostVirtual`_                        no           no            no             no            no            no             no             
 `Ikoula`_                             yes          yes           yes            yes           yes           no             yes            
 `Indosat`_                            no           no            no             no            no            no             no             
 `InternetSolutions`_                  no           no            no             no            no            no             no             
@@ -77,7 +76,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GiG G8 Node Provider`: https://gig.tech
 .. _`Gridscale`: https://gridscale.io
-.. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/

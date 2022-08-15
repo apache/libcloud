@@ -36,7 +36,6 @@ DRIVERS = {
     Provider.LINODE: ("libcloud.dns.drivers.linode", "LinodeDNSDriver"),
     Provider.ZERIGO: ("libcloud.dns.drivers.zerigo", "ZerigoDNSDriver"),
     Provider.RACKSPACE: ("libcloud.dns.drivers.rackspace", "RackspaceDNSDriver"),
-    Provider.HOSTVIRTUAL: ("libcloud.dns.drivers.hostvirtual", "HostVirtualDNSDriver"),
     Provider.ROUTE53: ("libcloud.dns.drivers.route53", "Route53DNSDriver"),
     Provider.GANDI: ("libcloud.dns.drivers.gandi", "GandiDNSDriver"),
     Provider.GANDI_LIVE: ("libcloud.dns.drivers.gandi_live", "GandiLiveDNSDriver"),

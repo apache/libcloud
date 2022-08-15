@@ -80,10 +80,6 @@ DRIVERS = {
     Provider.LIBVIRT: ("libcloud.compute.drivers.libvirt_driver", "LibvirtNodeDriver"),
     Provider.VCL: ("libcloud.compute.drivers.vcl", "VCLNodeDriver"),
     Provider.KTUCLOUD: ("libcloud.compute.drivers.ktucloud", "KTUCloudNodeDriver"),
-    Provider.HOSTVIRTUAL: (
-        "libcloud.compute.drivers.hostvirtual",
-        "HostVirtualNodeDriver",
-    ),
     Provider.ABIQUO: ("libcloud.compute.drivers.abiquo", "AbiquoNodeDriver"),
     Provider.DIGITAL_OCEAN: (
         "libcloud.compute.drivers.digitalocean",

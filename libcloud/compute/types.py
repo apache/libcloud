@@ -105,7 +105,6 @@ class Provider(Type):
     GCE = "gce"
     GIG_G8 = "gig_g8"
     GRIDSCALE = "gridscale"
-    HOSTVIRTUAL = "hostvirtual"
     IBM = "ibm"
     IKOULA = "ikoula"
     INDOSAT = "indosat"

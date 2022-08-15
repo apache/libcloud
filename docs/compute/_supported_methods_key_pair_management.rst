@@ -22,7 +22,6 @@ Provider                              list key pairs get key pair create key pai
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GiG G8 Node Provider`_               no             no           no              no                            no                          no             
 `Gridscale`_                          yes            no           no              yes                           no                          no             
-`HostVirtual`_                        no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Indosat`_                            no             no           no              no                            no                          no             
 `InternetSolutions`_                  no             no           no              no                            no                          no             
@@ -77,7 +76,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GiG G8 Node Provider`: https://gig.tech
 .. _`Gridscale`: https://gridscale.io
-.. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/

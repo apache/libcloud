@@ -47,7 +47,6 @@ class Provider(object):
     GANDI_LIVE = "gandi_live"
     GODADDY = "godaddy"
     GOOGLE = "google"
-    HOSTVIRTUAL = "hostvirtual"
     LINODE = "linode"
     LIQUIDWEB = "liquidweb"
     LUADNS = "luadns"

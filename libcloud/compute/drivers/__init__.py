@@ -26,7 +26,6 @@ __all__ = [
     "elasticstack",
     "cloudsigma",
     "gce",
-    "hostvirtual",
     "linode",
     "nttcis",
     "opennebula",
