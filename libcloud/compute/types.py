@@ -96,7 +96,6 @@ class Provider(Type):
     ALIYUN_ECS = "aliyun_ecs"
     AURORACOMPUTE = "aurora_compute"
     BRIGHTBOX = "brightbox"
-    BSNL = "bsnl"
     CISCOCCS = "ciscoccs"
     CLOUDFRAMES = "cloudframes"
     CLOUDSIGMA = "cloudsigma"

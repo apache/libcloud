@@ -246,19 +246,6 @@ API_ENDPOINTS = {
         "host": "iaas-afapi.indosat.com",
         "vendor": "Indosat",
     },
-    "bsnl-in": {"name": "India (IN)", "host": "api.bsnlcloud.com", "vendor": "BSNL"},
-    "bsnl-na": {
-        "name": "North America (NA)",
-        "host": "usapi.bsnlcloud.com",
-        "vendor": "BSNL",
-    },
-    "bsnl-eu": {"name": "Europe (EU)", "host": "euapi.bsnlcloud.com", "vendor": "BSNL"},
-    "bsnl-au": {
-        "name": "Australia (AU)",
-        "host": "auapi.bsnlcloud.com",
-        "vendor": "BSNL",
-    },
-    "bsnl-af": {"name": "Africa (AF)", "host": "afapi.bsnlcloud.com", "vendor": "BSNL"},
 }
 
 # Default API end-point for the base connection class.

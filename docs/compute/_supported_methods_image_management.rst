@@ -9,7 +9,6 @@ Provider                              list images get image create image delete 
 `Azure Virtual machines`_             yes         no        no           no           no        
 `Azure Virtual machines`_             yes         yes       no           no           no        
 `Brightbox`_                          yes         no        no           no           no        
-`BSNL`_                               yes         no        no           no           no        
 `Cloudscale`_                         yes         no        no           no           no        
 `CloudSigma (API v2.0)`_              yes         no        no           no           no        
 `CloudStack`_                         yes         no        no           no           no        
@@ -75,7 +74,6 @@ Provider                              list images get image create image delete 
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Brightbox`: http://www.brightbox.co.uk/
-.. _`BSNL`: http://www.bsnlcloud.com/
 .. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/

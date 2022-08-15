@@ -9,7 +9,6 @@ Provider                              list nodes create node reboot node destroy
 `Azure Virtual machines`_             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Azure Virtual machines`_             yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Brightbox`_                          yes        yes         no          yes          no         no        yes         yes        no         
-`BSNL`_                               yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Cloudscale`_                         yes        yes         yes         yes          yes        yes       yes         yes        no         
 `CloudSigma (API v2.0)`_              yes        yes         yes         yes          yes        yes       yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          no         no        yes         yes        yes        
@@ -75,7 +74,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Brightbox`: http://www.brightbox.co.uk/
-.. _`BSNL`: http://www.bsnlcloud.com/
 .. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/

@@ -9,7 +9,6 @@ Provider                              list key pairs get key pair create key pai
 `Azure Virtual machines`_             no             no           no              no                            no                          no             
 `Azure Virtual machines`_             no             no           no              no                            no                          no             
 `Brightbox`_                          no             no           no              no                            no                          no             
-`BSNL`_                               no             no           no              no                            no                          no             
 `Cloudscale`_                         no             no           no              no                            no                          no             
 `CloudSigma (API v2.0)`_              yes            yes          yes             yes                           no                          yes            
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
@@ -75,7 +74,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Brightbox`: http://www.brightbox.co.uk/
-.. _`BSNL`: http://www.bsnlcloud.com/
 .. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
