@@ -58,7 +58,6 @@ DRIVERS = {
         "libcloud.compute.drivers.rimuhosting",
         "RimuHostingNodeDriver",
     ),
-    Provider.VOXEL: ("libcloud.compute.drivers.voxel", "VoxelNodeDriver"),
     Provider.EUCALYPTUS: ("libcloud.compute.drivers.ec2", "EucNodeDriver"),
     Provider.OPENNEBULA: (
         "libcloud.compute.drivers.opennebula",

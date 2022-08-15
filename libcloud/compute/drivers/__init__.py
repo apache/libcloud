@@ -33,7 +33,6 @@ __all__ = [
     "rackspace",
     "rimuhosting",
     "vcloud",
-    "voxel",
     "vpsnet",
     "onapp",
 ]

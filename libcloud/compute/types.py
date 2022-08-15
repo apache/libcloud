@@ -140,7 +140,6 @@ class Provider(Type):
     UPCLOUD = "upcloud"
     VCL = "vcl"
     VCLOUD = "vcloud"
-    VOXEL = "voxel"
     VPSNET = "vpsnet"
     VSPHERE = "vsphere"
     VULTR = "vultr"

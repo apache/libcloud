@@ -54,7 +54,6 @@ Provider                              list volumes create volume destroy volume 
 `Upcloud`_                            no           no            no             no            no            no             no             
 `VCL`_                                no           no            no             no            no            no             no             
 `vCloud`_                             no           no            no             no            no            no             no             
-`Voxel VoxCLOUD`_                     no           no            no             no            no            no             no             
 `vps.net`_                            no           no            no             no            no            no             no             
 `VMware vSphere`_                     no           no            no             no            no            no             no             
 `Vultr`_                              yes          yes           yes            yes           yes           no             no             
@@ -111,7 +110,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`Upcloud`: https://www.upcloud.com
 .. _`VCL`: http://incubator.apache.org/vcl/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
-.. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
 .. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com
