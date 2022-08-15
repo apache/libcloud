@@ -138,7 +138,6 @@ class Provider(Type):
     RUNABOVE = "runabove"
     SCALEWAY = "scaleway"
     SERVERLOVE = "serverlove"
-    SKALICLOUD = "skalicloud"
     SOFTLAYER = "softlayer"
     TERREMARK = "terremark"
     UPCLOUD = "upcloud"

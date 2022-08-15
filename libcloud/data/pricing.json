@@ -54291,14 +54291,6 @@
             "high-cpu-extra-large": 0.776,
             "high-cpu-medium": 0.291
         },
-        "skalicloud": {
-            "small": 0.136,
-            "medium": 0.301,
-            "large": 0.505,
-            "extra-large": 0.654,
-            "high-cpu-extra-large": 0.936,
-            "high-cpu-medium": 0.249
-        },
         "softlayer": {
             "0": 0.023,
             "1": 0.024,

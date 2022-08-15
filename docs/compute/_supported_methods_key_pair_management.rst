@@ -52,7 +52,6 @@ Provider                              list key pairs get key pair create key pai
 `RimuHosting`_                        no             no           no              no                            no                          no             
 `Scaleway`_                           yes            no           no              yes                           no                          yes            
 `ServerLove`_                         no             no           no              no                            no                          no             
-`skalicloud`_                         no             no           no              no                            no                          no             
 `SoftLayer`_                          yes            yes          yes             yes                           no                          yes            
 `vCloud`_                             no             no           no              no                            no                          no             
 `Upcloud`_                            no             no           no              no                            no                          no             
@@ -113,7 +112,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
 .. _`ServerLove`: http://www.serverlove.com/
-.. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com

@@ -52,7 +52,6 @@ Provider                              list images get image create image delete 
 `RimuHosting`_                        yes         no        no           no           no        
 `Scaleway`_                           yes         yes       yes          yes          no        
 `ServerLove`_                         yes         no        no           no           no        
-`skalicloud`_                         yes         no        no           no           no        
 `SoftLayer`_                          yes         yes       no           no           no        
 `vCloud`_                             yes         no        no           no           no        
 `Upcloud`_                            yes         no        no           no           no        
@@ -113,7 +112,6 @@ Provider                              list images get image create image delete 
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
 .. _`ServerLove`: http://www.serverlove.com/
-.. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com

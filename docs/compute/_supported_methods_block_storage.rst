@@ -52,7 +52,6 @@ Provider                              list volumes create volume destroy volume 
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `Scaleway`_                           yes          yes           yes            no            no            yes            yes            
 `ServerLove`_                         no           no            no             no            no            no             no             
-`skalicloud`_                         no           no            no             no            no            no             no             
 `SoftLayer`_                          no           no            no             no            no            no             no             
 `vCloud`_                             no           no            no             no            no            no             no             
 `Upcloud`_                            no           no            no             no            no            no             no             
@@ -113,7 +112,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
 .. _`ServerLove`: http://www.serverlove.com/
-.. _`skalicloud`: http://www.skalicloud.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com
