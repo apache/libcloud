@@ -55,7 +55,6 @@ class Provider(Type):
     :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
     :cvar GRIDSCALE: gridscale
-    :cvar GRIDSPOT: Gridspot driver
     :cvar IBM: IBM Developer Cloud
     :cvar IKOULA: Ikoula driver.
     :cvar KAMATERA: Kamatera driver
@@ -107,7 +106,6 @@ class Provider(Type):
     GCE = "gce"
     GIG_G8 = "gig_g8"
     GRIDSCALE = "gridscale"
-    GRIDSPOT = "gridspot"
     HOSTVIRTUAL = "hostvirtual"
     IBM = "ibm"
     IKOULA = "ikoula"
