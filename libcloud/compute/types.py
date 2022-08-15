@@ -101,7 +101,6 @@ class Provider(Type):
     DIGITAL_OCEAN = "digitalocean"
     DIMENSIONDATA = "dimensiondata"
     EC2 = "ec2"
-    ECP = "ecp"
     EQUINIXMETAL = "equinixmetal"
     EUCALYPTUS = "eucalyptus"
     EXOSCALE = "exoscale"
