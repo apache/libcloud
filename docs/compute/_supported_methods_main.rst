@@ -42,7 +42,6 @@ Provider                              list nodes create node reboot node destroy
 `Outscale INC`_                       yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Ovh`_                                yes        yes         no          yes          no         no        yes         yes        yes        
-`ProfitBricks`_                       yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `RimuHosting`_                        yes        yes         yes         yes          no         no        yes         yes        yes        
@@ -95,7 +94,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/

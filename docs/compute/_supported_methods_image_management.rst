@@ -42,7 +42,6 @@ Provider                              list images get image create image delete 
 `Outscale INC`_                       yes         yes       yes          yes          yes       
 `Outscale SAS`_                       yes         yes       yes          yes          yes       
 `Ovh`_                                yes         yes       no           no           no        
-`ProfitBricks`_                       yes         no        no           no           no        
 `Rackspace Cloud (Next Gen)`_         yes         yes       yes          yes          no        
 `Rackspace Cloud (First Gen)`_        yes         yes       yes          yes          no        
 `RimuHosting`_                        yes         no        no           no           no        
@@ -95,7 +94,6 @@ Provider                              list images get image create image delete 
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/

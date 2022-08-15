@@ -89,10 +89,6 @@ DRIVERS = {
     Provider.OUTSCALE_SAS: ("libcloud.compute.drivers.ec2", "OutscaleSASNodeDriver"),
     Provider.OUTSCALE_INC: ("libcloud.compute.drivers.ec2", "OutscaleINCNodeDriver"),
     Provider.OUTSCALE: ("libcloud.compute.drivers.outscale", "OutscaleNodeDriver"),
-    Provider.PROFIT_BRICKS: (
-        "libcloud.compute.drivers.profitbricks",
-        "ProfitBricksNodeDriver",
-    ),
     Provider.VSPHERE: ("libcloud.compute.drivers.vsphere", "VSphereNodeDriver"),
     Provider.VULTR: ("libcloud.compute.drivers.vultr", "VultrNodeDriver"),
     Provider.AURORACOMPUTE: (
