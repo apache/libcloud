@@ -48472,14 +48472,6 @@
                 "us-west-2": 12.432
             }
         },
-        "elastichosts": {
-            "small": 0.1,
-            "medium": 0.223,
-            "large": 0.378,
-            "extra-large": 0.579,
-            "high-cpu-extra-large": 0.77,
-            "high-cpu-medium": 0.18
-        },
         "gandi": {
             "small": 0.02,
             "medium": 0.03,

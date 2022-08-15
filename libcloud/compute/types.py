@@ -52,7 +52,6 @@ class Provider(Type):
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
-    :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
     :cvar GOGRID: GoGrid
@@ -104,7 +103,6 @@ class Provider(Type):
     DIMENSIONDATA = "dimensiondata"
     EC2 = "ec2"
     ECP = "ecp"
-    ELASTICHOSTS = "elastichosts"
     EQUINIXMETAL = "equinixmetal"
     EUCALYPTUS = "eucalyptus"
     EXOSCALE = "exoscale"
@@ -185,15 +183,6 @@ class Provider(Type):
     EC2_AP_SOUTHEAST2 = "ec2_ap_southeast_2"
     EC2_CA_CENTRAL1 = "ec2_ca_central_1"
 
-    ELASTICHOSTS_UK1 = "elastichosts_uk1"
-    ELASTICHOSTS_UK2 = "elastichosts_uk2"
-    ELASTICHOSTS_US1 = "elastichosts_us1"
-    ELASTICHOSTS_US2 = "elastichosts_us2"
-    ELASTICHOSTS_US3 = "elastichosts_us3"
-    ELASTICHOSTS_CA1 = "elastichosts_ca1"
-    ELASTICHOSTS_AU1 = "elastichosts_au1"
-    ELASTICHOSTS_CN1 = "elastichosts_cn1"
-
     CLOUDSIGMA_US = "cloudsigma_us"
 
     # Removed
@@ -229,15 +218,6 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
     Provider.EC2_CA_CENTRAL1: Provider.EC2,
-    # ElasticHosts
-    Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_UK2: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_US1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_US2: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_US3: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_CA1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_AU1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_CN1: Provider.ELASTICHOSTS,
 }
 
 

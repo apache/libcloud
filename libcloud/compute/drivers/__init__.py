@@ -25,7 +25,6 @@ __all__ = [
     "ec2",
     "ecp",
     "elasticstack",
-    "elastichosts",
     "cloudsigma",
     "gce",
     "gogrid",

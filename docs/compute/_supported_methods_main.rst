@@ -15,7 +15,6 @@ Provider                              list nodes create node reboot node destroy
 `DigitalOcean`_                       yes        yes         yes         yes          no         no        yes         yes        no         
 `DimensionData`_                      yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Amazon EC2`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          no         no        yes         yes        yes        
 `EquinixMetal`_                       yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Eucalyptus`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Exoscale`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
@@ -79,7 +78,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.com/

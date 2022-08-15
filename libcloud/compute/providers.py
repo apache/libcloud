@@ -42,10 +42,6 @@ DRIVERS = {
     Provider.DUMMY: ("libcloud.compute.drivers.dummy", "DummyNodeDriver"),
     Provider.EC2: ("libcloud.compute.drivers.ec2", "EC2NodeDriver"),
     Provider.ECP: ("libcloud.compute.drivers.ecp", "ECPNodeDriver"),
-    Provider.ELASTICHOSTS: (
-        "libcloud.compute.drivers.elastichosts",
-        "ElasticHostsNodeDriver",
-    ),
     Provider.SKALICLOUD: (
         "libcloud.compute.drivers.skalicloud",
         "SkaliCloudNodeDriver",

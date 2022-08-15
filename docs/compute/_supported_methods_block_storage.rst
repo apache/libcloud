@@ -15,7 +15,6 @@ Provider                              list volumes create volume destroy volume 
 `DigitalOcean`_                       yes          yes           yes            yes           yes           yes            yes            
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
-`ElasticHosts`_                       no           no            no             no            no            no             no             
 `EquinixMetal`_                       yes          yes           yes            yes           yes           yes            yes            
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
 `Exoscale`_                           yes          yes           yes            yes           yes           no             yes            
@@ -79,7 +78,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.com/
