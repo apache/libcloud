@@ -23,7 +23,6 @@ Provider                              list nodes create node reboot node destroy
 `GiG G8 Node Provider`_               yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Gridscale`_                          yes        yes         yes         yes          yes        no        yes         no         yes        
 `Ikoula`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
-`Indosat`_                            yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `InternetSolutions`_                  yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Kamatera`_                           yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `KTUCloud`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
@@ -74,7 +73,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`GiG G8 Node Provider`: https://gig.tech
 .. _`Gridscale`: https://gridscale.io
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
-.. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/

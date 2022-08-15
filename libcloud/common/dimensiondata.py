@@ -181,31 +181,6 @@ API_ENDPOINTS = {
         "host": "iaas-api-ca.cisco-ccs.com",
         "vendor": "Cisco",
     },
-    "indosat-id": {
-        "name": "Indonesia (ID)",
-        "host": "iaas-api.indosat.com",
-        "vendor": "Indosat",
-    },
-    "indosat-na": {
-        "name": "North America (NA)",
-        "host": "iaas-usapi.indosat.com",
-        "vendor": "Indosat",
-    },
-    "indosat-eu": {
-        "name": "Europe (EU)",
-        "host": "iaas-euapi.indosat.com",
-        "vendor": "Indosat",
-    },
-    "indosat-au": {
-        "name": "Australia (AU)",
-        "host": "iaas-auapi.indosat.com",
-        "vendor": "Indosat",
-    },
-    "indosat-af": {
-        "name": "Africa (AF)",
-        "host": "iaas-afapi.indosat.com",
-        "vendor": "Indosat",
-    },
 }
 
 # Default API end-point for the base connection class.

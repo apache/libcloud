@@ -23,7 +23,6 @@ Provider                              list images get image create image delete 
 `GiG G8 Node Provider`_               yes         no        no           no           no        
 `Gridscale`_                          yes         yes       yes          yes          no        
 `Ikoula`_                             yes         no        no           no           no        
-`Indosat`_                            yes         no        no           no           no        
 `InternetSolutions`_                  yes         no        no           no           no        
 `Kamatera`_                           yes         no        no           no           no        
 `KTUCloud`_                           yes         no        no           no           no        
@@ -74,7 +73,6 @@ Provider                              list images get image create image delete 
 .. _`GiG G8 Node Provider`: https://gig.tech
 .. _`Gridscale`: https://gridscale.io
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
-.. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/

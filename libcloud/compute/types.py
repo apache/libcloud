@@ -106,7 +106,6 @@ class Provider(Type):
     GRIDSCALE = "gridscale"
     IBM = "ibm"
     IKOULA = "ikoula"
-    INDOSAT = "indosat"
     INTERNETSOLUTIONS = "internetsolutions"
     KAMATERA = "kamatera"
     KTUCLOUD = "ktucloud"

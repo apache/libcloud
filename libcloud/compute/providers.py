@@ -105,7 +105,6 @@ DRIVERS = {
         "libcloud.compute.drivers.internetsolutions",
         "InternetSolutionsNodeDriver",
     ),
-    Provider.INDOSAT: ("libcloud.compute.drivers.indosat", "IndosatNodeDriver"),
     Provider.NTTA: ("libcloud.compute.drivers.ntta", "NTTAmericaNodeDriver"),
     Provider.ALIYUN_ECS: ("libcloud.compute.drivers.ecs", "ECSDriver"),
     Provider.CLOUDSCALE: (
