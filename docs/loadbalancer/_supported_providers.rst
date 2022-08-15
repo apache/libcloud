@@ -10,7 +10,6 @@ Provider                               Documentation                            
 `Dimension Data Load Balancer`_        :doc:`Click </loadbalancer/drivers/dimensiondata>` DIMENSIONDATA     single region driver         :mod:`libcloud.loadbalancer.drivers.dimensiondata` :class:`DimensionDataLBDriver`
 `Amazon Elastic Load Balancing`_       :doc:`Click </loadbalancer/drivers/elb>`           ELB               single region driver         :mod:`libcloud.loadbalancer.drivers.elb`           :class:`ElasticLBDriver`      
 `Google Compute Engine Load Balancer`_ :doc:`Click </loadbalancer/drivers/gce>`           GCE               single region driver         :mod:`libcloud.loadbalancer.drivers.gce`           :class:`GCELBDriver`          
-`GoGrid LB`_                                                                              GOGRID            single region driver         :mod:`libcloud.loadbalancer.drivers.gogrid`        :class:`GoGridLBDriver`       
 `Ninefold LB`_                                                                            NINEFOLD          single region driver         :mod:`libcloud.loadbalancer.drivers.ninefold`      :class:`NinefoldLBDriver`     
 `NTTC-CIS Load Balancer`_              :doc:`Click </loadbalancer/drivers/nttcis>`        NTTCIS            single region driver         :mod:`libcloud.loadbalancer.drivers.nttcis`        :class:`NttCisLBDriver`       
 `Rackspace LB`_                                                                           RACKSPACE         dfw, hkg, iad, lon, ord, syd :mod:`libcloud.loadbalancer.drivers.rackspace`     :class:`RackspaceLBDriver`    
@@ -24,7 +23,6 @@ Provider                               Documentation                            
 .. _`Dimension Data Load Balancer`: https://cloud.dimensiondata.com/
 .. _`Amazon Elastic Load Balancing`: http://aws.amazon.com/elasticloadbalancing/
 .. _`Google Compute Engine Load Balancer`: https://cloud.google.com/
-.. _`GoGrid LB`: http://www.gogrid.com/
 .. _`Ninefold LB`: http://ninefold.com/
 .. _`NTTC-CIS Load Balancer`: https://cloud.nttcis.com/
 .. _`Rackspace LB`: http://www.rackspace.com/

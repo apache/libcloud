@@ -29,7 +29,6 @@ DRIVERS = {
         "libcloud.loadbalancer.drivers.rackspace",
         "RackspaceLBDriver",
     ),
-    Provider.GOGRID: ("libcloud.loadbalancer.drivers.gogrid", "GoGridLBDriver"),
     Provider.NINEFOLD: ("libcloud.loadbalancer.drivers.ninefold", "NinefoldLBDriver"),
     Provider.BRIGHTBOX: (
         "libcloud.loadbalancer.drivers.brightbox",

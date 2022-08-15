@@ -21,7 +21,6 @@ Provider                              list nodes create node reboot node destroy
 `Gandi`_                              yes        yes         yes         yes          no         no        yes         yes        no         
 `Google Compute Engine`_              yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `GiG G8 Node Provider`_               yes        yes         yes         yes          yes        yes       yes         yes        no         
-`GoGrid`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Gridscale`_                          yes        yes         yes         yes          yes        no        yes         no         yes        
 `HostVirtual`_                        yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Ikoula`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
@@ -84,7 +83,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GiG G8 Node Provider`: https://gig.tech
-.. _`GoGrid`: http://www.gogrid.com/
 .. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack

@@ -142,10 +142,10 @@ class UuidMixin(object):
         The hash is a function of an SHA1 hash of the node, node image,
         or node size's ID and its driver which means that it should be
         unique between all objects of its type.
-        In some subclasses (e.g. GoGridNode) there is no ID
-        available so the public IP address is used.  This means that,
-        unlike a properly done system UUID, the same UUID may mean a
-        different system install at a different time
+        In some subclasses there is no ID available so the public IP
+        address is used.  This means that, unlike a properly done system
+        UUID, the same UUID may mean a different system install at a
+        different time
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> driver = DummyNodeDriver(0)

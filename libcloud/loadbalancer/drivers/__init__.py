@@ -13,4 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["rackspace", "gogrid", "nttcis"]
+__all__ = [
+    "rackspace",
+    "nttcis"
+]

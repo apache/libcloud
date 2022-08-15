@@ -55,7 +55,6 @@ DRIVERS = {
         "CloudSigmaNodeDriver",
     ),
     Provider.GCE: ("libcloud.compute.drivers.gce", "GCENodeDriver"),
-    Provider.GOGRID: ("libcloud.compute.drivers.gogrid", "GoGridNodeDriver"),
     Provider.RACKSPACE: ("libcloud.compute.drivers.rackspace", "RackspaceNodeDriver"),
     Provider.RACKSPACE_FIRST_GEN: (
         "libcloud.compute.drivers.rackspace",

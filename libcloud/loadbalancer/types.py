@@ -49,7 +49,6 @@ class Provider(object):
     DIMENSIONDATA = "dimensiondata"
     ELB = "elb"
     GCE = "gce"
-    GOGRID = "gogrid"
     NINEFOLD = "ninefold"
     NTTCIS = "nttcis"
     RACKSPACE = "rackspace"
