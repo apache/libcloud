@@ -47,7 +47,6 @@ class Provider(Type):
     :cvar AURORACOMPUTE: Aurora Compute driver.
     :cvar AZURE: Azure (classic) driver.
     :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
-    :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSCALE: cloudscale.ch
     :cvar CLOUDSTACK: CloudStack
@@ -96,7 +95,6 @@ class Provider(Type):
     ABIQUO = "abiquo"
     ALIYUN_ECS = "aliyun_ecs"
     AURORACOMPUTE = "aurora_compute"
-    BLUEBOX = "bluebox"
     BRIGHTBOX = "brightbox"
     BSNL = "bsnl"
     CISCOCCS = "ciscoccs"

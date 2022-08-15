@@ -34103,12 +34103,6 @@
                 "westus2": 4.424
             }
         },
-        "bluebox": {
-            "1gb": 0.15,
-            "2gb": 0.25,
-            "4gb": 0.35,
-            "8gb": 0.45
-        },
         "cloudsigma_lvs": {
             "high-cpu-extra-large": 0.0,
             "high-cpu-medium": 0.0,

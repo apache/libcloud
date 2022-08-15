@@ -81,7 +81,6 @@ DRIVERS = {
     ),
     Provider.BRIGHTBOX: ("libcloud.compute.drivers.brightbox", "BrightboxNodeDriver"),
     Provider.NIMBUS: ("libcloud.compute.drivers.ec2", "NimbusNodeDriver"),
-    Provider.BLUEBOX: ("libcloud.compute.drivers.bluebox", "BlueboxNodeDriver"),
     Provider.GANDI: ("libcloud.compute.drivers.gandi", "GandiNodeDriver"),
     Provider.DIMENSIONDATA: (
         "libcloud.compute.drivers.dimensiondata",

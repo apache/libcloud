@@ -8,7 +8,6 @@ Provider                              list images get image create image delete 
 `PCextreme AuroraCompute`_            yes         no        no           no           no        
 `Azure Virtual machines`_             yes         no        no           no           no        
 `Azure Virtual machines`_             yes         yes       no           no           no        
-`Bluebox Blocks`_                     yes         no        no           no           no        
 `Brightbox`_                          yes         no        no           no           no        
 `BSNL`_                               yes         no        no           no           no        
 `Cloudscale`_                         yes         no        no           no           no        
@@ -75,7 +74,6 @@ Provider                              list images get image create image delete 
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
-.. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
 .. _`Cloudscale`: https://www.cloudscale.ch

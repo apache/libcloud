@@ -8,7 +8,6 @@ Provider                              list nodes create node reboot node destroy
 `PCextreme AuroraCompute`_            yes        yes         yes         yes          no         no        yes         yes        yes        
 `Azure Virtual machines`_             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Azure Virtual machines`_             yes        yes         yes         yes          yes        yes       yes         yes        yes        
-`Bluebox Blocks`_                     yes        yes         yes         yes          no         no        yes         yes        yes        
 `Brightbox`_                          yes        yes         no          yes          no         no        yes         yes        no         
 `BSNL`_                               yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Cloudscale`_                         yes        yes         yes         yes          yes        yes       yes         yes        no         
@@ -75,7 +74,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
-.. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
 .. _`Cloudscale`: https://www.cloudscale.ch
