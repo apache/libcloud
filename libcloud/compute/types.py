@@ -114,7 +114,6 @@ class Provider(Type):
     LIBVIRT = "libvirt"
     LINODE = "linode"
     MAXIHOST = "maxihost"
-    MEDONE = "medone"
     NIMBUS = "nimbus"
     NINEFOLD = "ninefold"
     NTTA = "ntta"

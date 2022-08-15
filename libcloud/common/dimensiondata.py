@@ -181,46 +181,6 @@ API_ENDPOINTS = {
         "host": "iaas-api-ca.cisco-ccs.com",
         "vendor": "Cisco",
     },
-    "med1-il": {
-        "name": "Israel (IL)",
-        "host": "api.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-na": {
-        "name": "North America (NA)",
-        "host": "api-na.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-eu": {
-        "name": "Europe (EU)",
-        "host": "api-eu.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-au": {
-        "name": "Australia (AU)",
-        "host": "api-au.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-af": {
-        "name": "Africa (AF)",
-        "host": "api-af.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-ap": {
-        "name": "Asia Pacific (AP)",
-        "host": "api-ap.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-latam": {
-        "name": "South America (LATAM)",
-        "host": "api-sa.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
-    "med1-canada": {
-        "name": "Canada (CA)",
-        "host": "api-ca.cloud.med-1.com",
-        "vendor": "Med-1",
-    },
     "indosat-id": {
         "name": "Indonesia (ID)",
         "host": "iaas-api.indosat.com",

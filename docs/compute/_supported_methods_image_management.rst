@@ -31,7 +31,6 @@ Provider                              list images get image create image delete 
 `Libvirt`_                            no          no        no           no           no        
 `Linode`_                             yes         no        yes          yes          no        
 `Maxihost`_                           yes         no        no           no           no        
-`MedOne`_                             yes         no        no           no           no        
 `Nimbus`_                             yes         yes       yes          yes          yes       
 `NTTAmerica`_                         yes         no        no           no           no        
 `NTTC-CIS`_                           yes         no        no           no           no        
@@ -83,7 +82,6 @@ Provider                              list images get image create image delete 
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/
-.. _`MedOne`: http://www.med-1.com/
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`NTTC-CIS`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html

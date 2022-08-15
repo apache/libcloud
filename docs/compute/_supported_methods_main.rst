@@ -31,7 +31,6 @@ Provider                              list nodes create node reboot node destroy
 `Libvirt`_                            yes        no          yes         yes          yes        yes       no          no         no         
 `Linode`_                             yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Maxihost`_                           yes        yes         yes         yes          yes        yes       yes         yes        no         
-`MedOne`_                             yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Nimbus`_                             yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `NTTAmerica`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `NTTC-CIS`_                           yes        yes         yes         yes          yes        yes       yes         yes        yes        
@@ -83,7 +82,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/
-.. _`MedOne`: http://www.med-1.com/
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`NTTC-CIS`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html
