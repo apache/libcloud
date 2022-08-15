@@ -41,10 +41,6 @@ DRIVERS = {
     Provider.AZURE_ARM: ("libcloud.compute.drivers.azure_arm", "AzureNodeDriver"),
     Provider.DUMMY: ("libcloud.compute.drivers.dummy", "DummyNodeDriver"),
     Provider.EC2: ("libcloud.compute.drivers.ec2", "EC2NodeDriver"),
-    Provider.SERVERLOVE: (
-        "libcloud.compute.drivers.serverlove",
-        "ServerLoveNodeDriver",
-    ),
     Provider.CLOUDSIGMA: (
         "libcloud.compute.drivers.cloudsigma",
         "CloudSigmaNodeDriver",

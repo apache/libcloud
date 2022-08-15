@@ -51,7 +51,6 @@ Provider                              list key pairs get key pair create key pai
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
 `RimuHosting`_                        no             no           no              no                            no                          no             
 `Scaleway`_                           yes            no           no              yes                           no                          yes            
-`ServerLove`_                         no             no           no              no                            no                          no             
 `SoftLayer`_                          yes            yes          yes             yes                           no                          yes            
 `vCloud`_                             no             no           no              no                            no                          no             
 `Upcloud`_                            no             no           no              no                            no                          no             
@@ -111,7 +110,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
-.. _`ServerLove`: http://www.serverlove.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com

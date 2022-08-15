@@ -54283,14 +54283,6 @@
             "7": 0.96,
             "8": 1.2
         },
-        "serverlove": {
-            "small": 0.161,
-            "medium": 0.404,
-            "large": 0.534,
-            "extra-large": 0.615,
-            "high-cpu-extra-large": 0.776,
-            "high-cpu-medium": 0.291
-        },
         "softlayer": {
             "0": 0.023,
             "1": 0.024,

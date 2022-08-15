@@ -137,7 +137,6 @@ class Provider(Type):
     RIMUHOSTING = "rimuhosting"
     RUNABOVE = "runabove"
     SCALEWAY = "scaleway"
-    SERVERLOVE = "serverlove"
     SOFTLAYER = "softlayer"
     TERREMARK = "terremark"
     UPCLOUD = "upcloud"

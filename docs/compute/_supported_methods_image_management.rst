@@ -51,7 +51,6 @@ Provider                              list images get image create image delete 
 `Rackspace Cloud (First Gen)`_        yes         yes       yes          yes          no        
 `RimuHosting`_                        yes         no        no           no           no        
 `Scaleway`_                           yes         yes       yes          yes          no        
-`ServerLove`_                         yes         no        no           no           no        
 `SoftLayer`_                          yes         yes       no           no           no        
 `vCloud`_                             yes         no        no           no           no        
 `Upcloud`_                            yes         no        no           no           no        
@@ -111,7 +110,6 @@ Provider                              list images get image create image delete 
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
-.. _`ServerLove`: http://www.serverlove.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com
