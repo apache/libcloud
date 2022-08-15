@@ -15,7 +15,6 @@ Provider                              list images get image create image delete 
 `DigitalOcean`_                       yes         yes       yes          yes          no        
 `DimensionData`_                      yes         no        no           no           no        
 `Amazon EC2`_                         yes         yes       yes          yes          yes       
-`Enomaly Elastic Computing Platform`_ yes         no        no           no           no        
 `ElasticHosts`_                       yes         no        no           no           no        
 `EquinixMetal`_                       yes         no        no           no           no        
 `Eucalyptus`_                         yes         yes       yes          yes          yes       
@@ -80,7 +79,6 @@ Provider                              list images get image create image delete 
 .. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/

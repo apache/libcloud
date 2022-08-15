@@ -52,7 +52,6 @@ class Provider(Type):
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
-    :cvar ECP: Enomaly
     :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
