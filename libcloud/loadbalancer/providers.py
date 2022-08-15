@@ -41,10 +41,6 @@ DRIVERS = {
         "CloudStackLBDriver",
     ),
     Provider.GCE: ("libcloud.loadbalancer.drivers.gce", "GCELBDriver"),
-    Provider.SOFTLAYER: (
-        "libcloud.loadbalancer.drivers.softlayer",
-        "SoftlayerLBDriver",
-    ),
     Provider.DIMENSIONDATA: (
         "libcloud.loadbalancer.drivers.dimensiondata",
         "DimensionDataLBDriver",

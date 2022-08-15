@@ -51,7 +51,6 @@ Provider                              list volumes create volume destroy volume 
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `Scaleway`_                           yes          yes           yes            no            no            yes            yes            
-`SoftLayer`_                          no           no            no             no            no            no             no             
 `vCloud`_                             no           no            no             no            no            no             no             
 `Upcloud`_                            no           no            no             no            no            no             no             
 `VCL`_                                no           no            no             no            no            no             no             
@@ -110,7 +109,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
-.. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com
 .. _`VCL`: http://incubator.apache.org/vcl/

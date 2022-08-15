@@ -51,7 +51,6 @@ Provider                              list nodes create node reboot node destroy
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `RimuHosting`_                        yes        yes         yes         yes          no         no        yes         yes        yes        
 `Scaleway`_                           yes        yes         yes         yes          no         no        yes         yes        no         
-`SoftLayer`_                          yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `vCloud`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Upcloud`_                            yes        yes         yes         yes          no         no        yes         yes        yes        
 `VCL`_                                yes        yes         no          yes          no         no        yes         yes        no         
@@ -110,7 +109,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
-.. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com
 .. _`VCL`: http://incubator.apache.org/vcl/

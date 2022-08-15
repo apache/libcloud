@@ -59,7 +59,6 @@ class Provider(object):
     RACKSPACE = "rackspace"
     RCODEZERO = "rcodezero"
     ROUTE53 = "route53"
-    SOFTLAYER = "softlayer"
     VULTR = "vultr"
     WORLDWIDEDNS = "worldwidedns"
     ZERIGO = "zerigo"

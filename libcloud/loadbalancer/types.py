@@ -52,7 +52,6 @@ class Provider(object):
     NINEFOLD = "ninefold"
     NTTCIS = "nttcis"
     RACKSPACE = "rackspace"
-    SOFTLAYER = "softlayer"
 
     # Deprecated
     RACKSPACE_US = "rackspace_us"

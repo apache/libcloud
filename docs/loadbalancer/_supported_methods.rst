@@ -13,7 +13,6 @@ Provider                               create balancer list balancers list membe
 `Ninefold LB`_                         yes             yes            yes          yes           yes           no                 
 `NTTC-CIS Load Balancer`_              yes             yes            yes          yes           yes           no                 
 `Rackspace LB`_                        yes             yes            yes          yes           yes           no                 
-`Softlayer Load Balancing`_            no              yes            yes          yes           yes           no                 
 ====================================== =============== ============== ============ ============= ============= ===================
 
 .. _`Amazon Application Load Balancing`: http://aws.amazon.com/elasticloadbalancing/
@@ -26,4 +25,3 @@ Provider                               create balancer list balancers list membe
 .. _`Ninefold LB`: http://ninefold.com/
 .. _`NTTC-CIS Load Balancer`: https://cloud.nttcis.com/
 .. _`Rackspace LB`: http://www.rackspace.com/
-.. _`Softlayer Load Balancing`: http://www.softlayer.com/

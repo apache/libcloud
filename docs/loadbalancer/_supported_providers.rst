@@ -13,7 +13,6 @@ Provider                               Documentation                            
 `Ninefold LB`_                                                                            NINEFOLD          single region driver         :mod:`libcloud.loadbalancer.drivers.ninefold`      :class:`NinefoldLBDriver`     
 `NTTC-CIS Load Balancer`_              :doc:`Click </loadbalancer/drivers/nttcis>`        NTTCIS            single region driver         :mod:`libcloud.loadbalancer.drivers.nttcis`        :class:`NttCisLBDriver`       
 `Rackspace LB`_                                                                           RACKSPACE         dfw, hkg, iad, lon, ord, syd :mod:`libcloud.loadbalancer.drivers.rackspace`     :class:`RackspaceLBDriver`    
-`Softlayer Load Balancing`_                                                               SOFTLAYER         single region driver         :mod:`libcloud.loadbalancer.drivers.softlayer`     :class:`SoftlayerLBDriver`    
 ====================================== ================================================== ================= ============================ ================================================== ==============================
 
 .. _`Amazon Application Load Balancing`: http://aws.amazon.com/elasticloadbalancing/
@@ -26,4 +25,3 @@ Provider                               Documentation                            
 .. _`Ninefold LB`: http://ninefold.com/
 .. _`NTTC-CIS Load Balancer`: https://cloud.nttcis.com/
 .. _`Rackspace LB`: http://www.rackspace.com/
-.. _`Softlayer Load Balancing`: http://www.softlayer.com/
