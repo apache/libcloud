@@ -143,7 +143,6 @@ class Provider(Type):
 
     # OpenStack based providers
     HPCLOUD = "hpcloud"
-    KILI = "kili"
     ONAPP = "onapp"
 
     # Deprecated constants which aren't supported anymore

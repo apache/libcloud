@@ -51,7 +51,6 @@ DRIVERS = {
         "libcloud.compute.drivers.rackspace",
         "RackspaceFirstGenNodeDriver",
     ),
-    Provider.KILI: ("libcloud.compute.drivers.kili", "KiliCloudNodeDriver"),
     Provider.VPSNET: ("libcloud.compute.drivers.vpsnet", "VPSNetNodeDriver"),
     Provider.LINODE: ("libcloud.compute.drivers.linode", "LinodeNodeDriver"),
     Provider.RIMUHOSTING: (
