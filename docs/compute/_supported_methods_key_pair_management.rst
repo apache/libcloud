@@ -39,7 +39,6 @@ Provider                              list key pairs get key pair create key pai
 `NTTAmerica`_                         no             no           no              no                            no                          no             
 `NTTC-CIS`_                           no             no           no              no                            no                          no             
 `OnApp`_                              yes            yes          no              yes                           no                          yes            
-`1and1`_                              no             no           no              no                            no                          no             
 `OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Outscale API`_                       yes            yes          yes             no                            no                          yes            
@@ -97,7 +96,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`NTTC-CIS`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html
 .. _`OnApp`: http://onapp.com/
-.. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale API`: http://www.outscale.com

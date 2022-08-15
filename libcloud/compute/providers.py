@@ -127,7 +127,6 @@ DRIVERS = {
         "libcloud.compute.drivers.cloudscale",
         "CloudscaleNodeDriver",
     ),
-    Provider.ONEANDONE: ("libcloud.compute.drivers.oneandone", "OneAndOneNodeDriver"),
     Provider.UPCLOUD: ("libcloud.compute.drivers.upcloud", "UpcloudDriver"),
     Provider.NTTCIS: ("libcloud.compute.drivers.nttcis", "NttCisNodeDriver"),
     Provider.SCALEWAY: ("libcloud.compute.drivers.scaleway", "ScalewayNodeDriver"),

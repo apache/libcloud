@@ -39,7 +39,6 @@ Provider                              list images get image create image delete 
 `NTTAmerica`_                         yes         no        no           no           no        
 `NTTC-CIS`_                           yes         no        no           no           no        
 `OnApp`_                              yes         no        no           no           no        
-`1and1`_                              yes         yes       no           no           no        
 `OpenNebula (v3.8)`_                  yes         no        no           no           no        
 `OpenStack`_                          yes         yes       no           no           no        
 `Outscale API`_                       yes         yes       yes          yes          no        
@@ -97,7 +96,6 @@ Provider                              list images get image create image delete 
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`NTTC-CIS`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html
 .. _`OnApp`: http://onapp.com/
-.. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale API`: http://www.outscale.com

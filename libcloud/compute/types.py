@@ -123,7 +123,6 @@ class Provider(Type):
     NINEFOLD = "ninefold"
     NTTA = "ntta"
     NTTCIS = "nttcis"
-    ONEANDONE = "oneandone"
     OPENNEBULA = "opennebula"
     OPENSTACK = "openstack"
     OPSOURCE = "opsource"

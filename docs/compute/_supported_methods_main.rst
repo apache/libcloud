@@ -39,7 +39,6 @@ Provider                              list nodes create node reboot node destroy
 `NTTAmerica`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `NTTC-CIS`_                           yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `OnApp`_                              yes        yes         no          yes          no         no        yes         no         no         
-`1and1`_                              yes        yes         yes         yes          no         no        yes         yes        no         
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          no         no        yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes        yes       yes         yes        no         
 `Outscale API`_                       yes        yes         yes         yes          yes        yes       yes         no         no         
@@ -97,7 +96,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`NTTC-CIS`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html
 .. _`OnApp`: http://onapp.com/
-.. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale API`: http://www.outscale.com
