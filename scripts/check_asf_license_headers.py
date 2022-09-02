@@ -37,6 +37,7 @@ IGNORED_PATHS = [
     'build',
     'dist',
     'docs',
+    'venv/',
 
     'libcloud/utils/iso8601.py'
 ]

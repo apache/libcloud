@@ -5,7 +5,7 @@ pylint==2.13.8
 codecov==2.1.12
 coverage==6.2.0
 requests>=2.27.1
-requests_mock==1.9.3
+requests_mock==1.10.0
 pytest==7.0.1
 pytest-xdist==2.5.0
 pytest-benchmark[histogram]==3.4.1
