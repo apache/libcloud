@@ -1,5 +1,5 @@
 pep8==1.7.1
-flake8==4.0.1
+flake8==5.0.4
 astroid==2.11.4
 pylint==2.13.8
 codecov==2.1.12
