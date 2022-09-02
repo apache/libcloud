@@ -214,6 +214,7 @@ jobs:
 
       - name: Run Checks
         run: |
+          rm -rf venv/ || true
           script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
 
   micro-benchmarks:
