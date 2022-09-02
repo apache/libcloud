@@ -1,0 +1,90 @@
+name: Self-test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  selftest-requirements:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        id: pip-audit
+        with:
+          inputs: ./test/vulnerable.txt
+          no-deps: true
+          # NOTE: We intentionally allow failure here, since the self-test
+          # explicitly uses a vulnerable requirements file.
+          internal-be-careful-allow-failure: true
+      - name: assert expected output
+        env:
+          PIP_AUDIT_OUTPUT: "${{ steps.pip-audit.outputs.internal-be-careful-output }}"
+        run: |
+          grep -E 'pyyaml\s+\|\s+5.1' <<< $(base64 -d <<< "${PIP_AUDIT_OUTPUT}")
+
+  selftest-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: make the environment vulnerable
+        run: |
+          python -m pip install --no-deps --requirement ./test/vulnerable.txt
+      - uses: ./
+        id: pip-audit
+        with:
+          # NOTE: We intentionally allow failure here, since the self-test
+          # explicitly uses a vulnerable requirements file.
+          internal-be-careful-allow-failure: true
+      - name: assert expected output
+        env:
+          PIP_AUDIT_OUTPUT: "${{ steps.pip-audit.outputs.internal-be-careful-output }}"
+        run: |
+          grep -E 'pyyaml\s+\|\s+5.1' <<< $(base64 -d <<< "${PIP_AUDIT_OUTPUT}")
+
+  selftest-virtualenv:
+    strategy:
+      matrix:
+        local: [true, false]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: make a virtual environment vulnerable
+        run: |
+          python -m venv env
+          ./env/bin/python -m pip install --upgrade pip wheel
+          ./env/bin/python -m pip install --no-deps --requirement ./test/vulnerable.txt
+      - uses: ./
+        id: pip-audit
+        with:
+          virtual-environment: env/
+          local: ${{ matrix.local }}
+          # NOTE: We intentionally allow failure here, since the self-test
+          # explicitly uses a vulnerable requirements file.
+          internal-be-careful-allow-failure: true
+      - name: assert expected output
+        env:
+          PIP_AUDIT_OUTPUT: "${{ steps.pip-audit.outputs.internal-be-careful-output }}"
+        run: |
+          grep -E 'pyyaml\s+\|\s+5.1' <<< $(base64 -d <<< "${PIP_AUDIT_OUTPUT}")
+
+  selftest-pyproject:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        id: pip-audit
+        with:
+          # should attempt to discover test/pyproject/pyproject.toml
+          inputs: test/pyproject/
+          # NOTE: We intentionally allow failure here, since the self-test
+          # explicitly uses a vulnerable requirements file.
+          internal-be-careful-allow-failure: true
+      - name: assert expected output
+        env:
+          PIP_AUDIT_OUTPUT: "${{ steps.pip-audit.outputs.internal-be-careful-output }}"
+        run: |
+          grep -E 'pyyaml\s+\|\s+5.1' <<< $(base64 -d <<< "${PIP_AUDIT_OUTPUT}")

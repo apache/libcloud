@@ -201,8 +201,20 @@ jobs:
         run: |
           pip install "tox==3.24.4"
 
+      - name: Install Library Into Virtualenv
+        run: |
+          python -m venv venv/
+          source venv/bin/activate
+          python -m pip install .
+
+      - name: Run Pip Audit Check
+        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
+        with:
+          virtual-environment: venv/
+
       - name: Run Checks
         run: |
+          rm -rf venv/ || true
           script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
 
   micro-benchmarks:
