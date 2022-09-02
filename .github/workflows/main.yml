@@ -208,7 +208,7 @@ jobs:
           python -m pip install .
 
       - name: Run Pip Audit Check
-        uses: pypa/gh-action-pip-audit@cce88443a7a495d91316565f5cc077f815a8f1c7  # v1.0.0
+        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           virtual-environment: venv/
 
