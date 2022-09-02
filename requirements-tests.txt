@@ -9,7 +9,7 @@ requests_mock==1.9.3
 pytest==7.0.1
 pytest-xdist==2.5.0
 pytest-benchmark[histogram]==3.4.1
-cryptography==36.0.1
+cryptography==37.0.4
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==22.0.0
 more-itertools==8.11.0
