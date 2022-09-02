@@ -1,15 +1,15 @@
 pep8==1.7.1
-flake8==4.0.1
+flake8==5.0.4
 astroid==2.11.4
 pylint==2.13.8
 codecov==2.1.12
-coverage==4.5.4
+coverage==6.2.0
 requests>=2.27.1
 requests_mock==1.9.3
 pytest==7.0.1
 pytest-xdist==2.5.0
 pytest-benchmark[histogram]==3.4.1
-cryptography==36.0.1
+cryptography==37.0.4
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==22.0.0
 more-itertools==8.11.0
