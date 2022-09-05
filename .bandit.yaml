@@ -1,0 +1,7 @@
+exclude_dirs:
+  - .tox
+  - .git
+  - build
+  - dist
+  - venv
+  - "tests/*"
