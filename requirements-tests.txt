@@ -13,4 +13,4 @@ cryptography==37.0.4
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==22.0.0
 more-itertools==8.14.0
-bandit==1.7.4
+bandit==1.7.4; python_version >= '3.7'
