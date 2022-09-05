@@ -38,6 +38,7 @@ RUN set -e && \
       python3.8-dev \
       python3.9-dev \
       python3.10-dev \
+      python3.6-distutils \
       python3.7-distutils \
       python3.8-distutils \
       pypy3 \
@@ -61,4 +62,4 @@ RUN if [ ! -f "/libcloud/README.rst" ]; then echo "libcloud/README.rst file not 
 
 WORKDIR /libcloud
 
-CMD ["tox", "-e", "lint,black-check,py3.6,py3.7,py3.8,py3.9,py3.10,pypypy3"]
+CMD ["tox", "-e", "lint,black-check,bandit,,py3.6,py3.7,py3.8,py3.9,py3.10,pypypy3"]
