@@ -17,6 +17,7 @@ import base64
 import hmac
 import os
 import sys
+import tempfile
 
 from io import BytesIO
 from hashlib import sha1
@@ -380,7 +381,8 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = None
         self.driver = self.create_driver()
 
-        self._file_path = os.path.abspath(__file__) + ".temp"
+        _, self._file_path = tempfile.mkstemp()
+        self._remove_test_file()
 
     def tearDown(self):
         self._remove_test_file()

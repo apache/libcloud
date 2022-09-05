@@ -39,10 +39,7 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = "2016-04-30-preview"
-DISK_API_VERSION = (
-    "2016-04-30-preview"  # need to upgrade and merge with DISK_RESIZE_API_VERSION
-)
-DISK_RESIZE_API_VERSION = "2018-06-01"
+DISK_API_VERSION = "2018-06-01"
 IMAGES_API_VERSION = "2015-06-15"
 INSTANCE_VIEW_API_VERSION = "2015-06-15"
 IP_API_VERSION = "2019-06-01"
@@ -917,8 +914,9 @@ class AzureNodeDriver(NodeDriver):
         location=None,
         snapshot=None,
         ex_resource_group=None,
-        ex_account_type=None,
+        ex_sku_name=None,
         ex_tags=None,
+        ex_zones=None,
     ):
         """
         Create a new managed volume.
@@ -939,12 +937,16 @@ class AzureNodeDriver(NodeDriver):
             create the volume. (required)
         :type ex_resource_group: ``str``
 
-        :param ex_account_type: The Storage Account type,
-            ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
-        :type ex_account_type: ``str``
+        :param ex_sku_name: The Disk SKU name. Refer to the API reference for
+            options.
+        :type ex_sku_name: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
         :type ex_tags: ``dict``
+
+        :param ex_zones: The list of availability zones to create the volume
+            in. Options are any or all of ["1", "2", "3"]. (optional)
+        :type ex_zones: ``list`` of ``str``
 
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
@@ -975,8 +977,11 @@ class AzureNodeDriver(NodeDriver):
             "tags": tags,
             "properties": {"creationData": creation_data, "diskSizeGB": size},
         }
-        if ex_account_type is not None:
-            data["properties"]["accountType"] = ex_account_type
+        if ex_sku_name is not None:
+            data["sku"] = {"name": ex_sku_name}
+
+        if ex_zones is not None:
+            data["zones"] = ex_zones
 
         response = self.connection.request(
             action,
@@ -1127,7 +1132,7 @@ class AzureNodeDriver(NodeDriver):
         response = self.connection.request(
             action,
             method="PUT",
-            params={"api-version": DISK_RESIZE_API_VERSION},
+            params={"api-version": DISK_API_VERSION},
             data=data,
         )
 

@@ -24,6 +24,20 @@ Compute
   (GITHUB-1700, GITHUB-1701)
   [Tomaz Muraus - @Kami]
 
+- [Azure ARM] Allow user to create volume / disks in specific zone by passing
+  ``ex_zones`` argument to the ``create_volume()`` method.
+
+  Also add new ``ex_sku_name`` and remove ``ex_account_type`` argument from
+  that method.
+
+  Also change ``DISK_API_VERSION`` version from ``2016-04-30-preview`` to
+  ``2018-06-01``. This is needed to be able to support those changes. Code
+  has been updated to handle slightly different response format for the
+  volume API operations.
+
+  (GITHUB-1736)
+  [Palash Gandhi - @palashgandhi]
+
 Storage
 ~~~~~~~
 

@@ -487,6 +487,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
             location,
             ex_resource_group="000000",
             ex_tags={"description": "MyVolume"},
+            ex_zones=["1", "2", "3"],
         )
 
         self.assertEqual(volume.size, 2)
@@ -495,11 +496,15 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(volume.extra["tags"], {"description": "MyVolume"})
         self.assertEqual(volume.extra["location"], location.id)
         self.assertEqual(
+            volume.extra["sku"], {"name": "Standard_LRS", "tier": "Standard"}
+        )
+        self.assertEqual(
             volume.extra["properties"]["creationData"]["createOption"], "Empty"
         )
         self.assertEqual(volume.extra["properties"]["provisioningState"], "Succeeded")
         self.assertEqual(volume.extra["properties"]["diskState"], "Attached")
         self.assertEqual(volume.state, StorageVolumeState.INUSE)
+        self.assertEqual(volume.extra["zones"], ["1", "2", "3"])
 
     def test_create_volume__with_snapshot(self):
         location = self.driver.list_locations()[0]
