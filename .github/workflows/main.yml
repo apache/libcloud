@@ -110,7 +110,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Run unit tests tox target
         run: |
@@ -157,7 +157,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Run Checks
         run: |
@@ -199,6 +199,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
+          pip install "tox==3.25.1"
 
       - name: Run Checks
         run: |
@@ -235,7 +236,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Install Library Into Virtualenv
         run: |
@@ -289,7 +290,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Run Micro Benchmarks
         run: |
@@ -336,7 +337,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Build Docs
         run: |
