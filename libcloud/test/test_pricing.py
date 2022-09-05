@@ -239,7 +239,6 @@ class PricingTestCase(unittest.TestCase):
         fetched_price = libcloud.pricing.get_image_price(
             "gce_images", image_name, size_name
         )
-        print("yooooooooooo", correct_price, fetched_price)
         self.assertTrue(fetched_price == correct_price)
 
 
