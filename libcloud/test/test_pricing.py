@@ -193,7 +193,9 @@ class PricingTestCase(unittest.TestCase):
         image_name = "debian-10-buster-v20220519"
         cores = 4
         size_name = "c2d-standard-4"
-        price = libcloud.pricing.get_image_price("gce", image_name, size_name, cores)
+        price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name, cores
+        )
         self.assertTrue(price == 0)
 
     def test_get_gce_image_price_RHEL_image(self):
@@ -203,7 +205,7 @@ class PricingTestCase(unittest.TestCase):
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["RHEL"]["4vcpu or less"]["price"])
         fetched_price = libcloud.pricing.get_image_price(
-            "gce", image_name, size_name, cores
+            "gce_images", image_name, size_name, cores
         )
         self.assertTrue(fetched_price == correct_price)
 
@@ -214,7 +216,7 @@ class PricingTestCase(unittest.TestCase):
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["Windows Server"]["any"]["price"]) * 2
         fetched_price = libcloud.pricing.get_image_price(
-            "gce", image_name, size_name, cores
+            "gce_images", image_name, size_name, cores
         )
         self.assertTrue(fetched_price == correct_price)
 
@@ -225,7 +227,7 @@ class PricingTestCase(unittest.TestCase):
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["SLES for SAP"]["1-2vcpu"]["price"])
         fetched_price = libcloud.pricing.get_image_price(
-            "gce", image_name, size_name, cores
+            "gce_images", image_name, size_name, cores
         )
         self.assertTrue(fetched_price == correct_price)
 
@@ -234,7 +236,10 @@ class PricingTestCase(unittest.TestCase):
         size_name = "g1 small"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["SQL Server"]["standard"]["price"])
-        fetched_price = libcloud.pricing.get_image_price("gce", image_name, size_name)
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name
+        )
+        print("yooooooooooo", correct_price, fetched_price)
         self.assertTrue(fetched_price == correct_price)
 
 
