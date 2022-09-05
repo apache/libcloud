@@ -226,8 +226,10 @@ jobs:
           docker build -f contrib/Dockerfile -t libcloud_runtest_img .
 
       - name: Verify Image Works
+        # This step runs checks under various Python versions and it's slow so
+        # we only run it on nightly basis
+        if: ${{ github.event.schedule == '0 1 * * *' }}
         run: |
-          # TODO: Only run it on daily basis since this check is slow
           docker run libcloud_runtest_img
 
   security_checks:
