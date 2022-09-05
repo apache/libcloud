@@ -227,7 +227,7 @@ jobs:
 
       - name: Verify Image Works
         run: |
-          # We run all the checks in the image to verify it works
+          # TODO: Only run it on daily basis since this check is slow
           docker run libcloud_runtest_img
 
   security_checks:
