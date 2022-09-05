@@ -193,7 +193,7 @@ class PricingTestCase(unittest.TestCase):
         image_name = "debian-10-buster-v20220519"
         cores = 4
         size_name = "c2d-standard-4"
-        price = libcloud.pricing.get_gce_image_price(image_name, size_name, cores)
+        price = libcloud.pricing.get_image_price("gce", image_name, size_name, cores)
         self.assertTrue(price == 0)
 
     def test_get_gce_image_price_RHEL_image(self):
@@ -202,8 +202,8 @@ class PricingTestCase(unittest.TestCase):
         size_name = "n2d-highcpu-2"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["RHEL"]["4vcpu or less"]["price"])
-        fetched_price = libcloud.pricing.get_gce_image_price(
-            image_name, size_name, cores
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce", image_name, size_name, cores
         )
         self.assertTrue(fetched_price == correct_price)
 
@@ -213,8 +213,8 @@ class PricingTestCase(unittest.TestCase):
         size_name = "n2d-highcpu-2"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["Windows Server"]["any"]["price"]) * 2
-        fetched_price = libcloud.pricing.get_gce_image_price(
-            image_name, size_name, cores
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce", image_name, size_name, cores
         )
         self.assertTrue(fetched_price == correct_price)
 
@@ -224,8 +224,8 @@ class PricingTestCase(unittest.TestCase):
         size_name = "n2d-highcpu-2"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["SLES for SAP"]["1-2vcpu"]["price"])
-        fetched_price = libcloud.pricing.get_gce_image_price(
-            image_name, size_name, cores
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce", image_name, size_name, cores
         )
         self.assertTrue(fetched_price == correct_price)
 
