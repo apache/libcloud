@@ -62,4 +62,4 @@ RUN if [ ! -f "/libcloud/README.rst" ]; then echo "libcloud/README.rst file not 
 
 WORKDIR /libcloud
 
-CMD ["tox", "-e", "lint,black-check,bandit,,py3.6,py3.7,py3.8,py3.9,py3.10,pypypy3"]
+CMD ["tox", "-e", "lint,black-check,bandit,,py3.6,py3.7,py3.8,py3.9,py3.10,pypypy-3.8"]
