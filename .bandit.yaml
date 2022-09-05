@@ -5,3 +5,6 @@ exclude_dirs:
   - dist
   - venv
   - "tests/*"
+
+skips:
+  - B411
