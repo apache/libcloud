@@ -1,0 +1,6 @@
+# this is not a real pyproject.toml; only enough to run the selftests in CI.
+
+[project]
+dependencies = [
+  "pyyaml==5.1"
+]
