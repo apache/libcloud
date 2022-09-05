@@ -110,7 +110,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Run unit tests tox target
         run: |
@@ -157,7 +157,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Run Checks
         run: |
@@ -199,7 +199,69 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
+
+      - name: Run Checks
+        run: |
+          script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
+
+  build_test_docker_image:
+    name: Build and Verify Docker Image
+    runs-on: ubuntu-latest
+
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Build Testing Docker Image
+        run: |
+          docker build -f contrib/Dockerfile -t libcloud_runtest_img .
+
+      - name: Verify Image Works
+        run: |
+          # TODO: Only run it on daily basis since this check is slow
+          docker run libcloud_runtest_img
+
+  security_checks:
+    name: Run Security Checks
+    runs-on: ubuntu-latest
+
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Cache Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.25.1"
 
       - name: Install Library Into Virtualenv
         run: |
@@ -215,7 +277,7 @@ jobs:
       - name: Run Checks
         run: |
           rm -rf venv/ || true
-          script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
+          script -e -c "tox -e bandit"
 
   micro-benchmarks:
     name: Micro Benchmarks
@@ -253,7 +315,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Run Micro Benchmarks
         run: |
@@ -300,7 +362,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.24.4"
+          pip install "tox==3.25.1"
 
       - name: Build Docs
         run: |
