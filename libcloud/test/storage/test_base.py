@@ -315,9 +315,7 @@ class BaseStorageTests(unittest.TestCase):
             else:
                 raise RateLimitReachedError()
 
-        self.driver1.connection.connection.session.send = Mock(
-            side_effect=succeed_on_second
-        )
+        self.driver1.connection.connection.session.send = Mock(side_effect=succeed_on_second)
         uploaded_object = self.driver1._upload_object(
             object_name="some name",
             content_type="something",

@@ -143,9 +143,7 @@ class OnAppDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request(
-            "/dns_zones/%s/records/%s.json" % (zone_id, record_id)
-        )
+        response = self.connection.request("/dns_zones/%s/records/%s.json" % (zone_id, record_id))
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 

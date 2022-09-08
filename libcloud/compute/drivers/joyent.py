@@ -33,7 +33,6 @@ except Exception:
     import json
 
 
-
 API_HOST_SUFFIX = ".api.joyentcloud.com"
 API_VERSION = "~6.5"
 
@@ -189,9 +188,7 @@ class JoyentNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         data = json.dumps({"action": "reboot"})
-        result = self.connection.request(
-            "/my/machines/%s" % (node.id), data=data, method="POST"
-        )
+        result = self.connection.request("/my/machines/%s" % (node.id), data=data, method="POST")
         return result.status == httplib.ACCEPTED
 
     def destroy_node(self, node):
@@ -213,9 +210,7 @@ class JoyentNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         data = json.dumps({"action": "start"})
-        result = self.connection.request(
-            "/my/machines/%s" % (node.id), data=data, method="POST"
-        )
+        result = self.connection.request("/my/machines/%s" % (node.id), data=data, method="POST")
         return result.status == httplib.ACCEPTED
 
     def stop_node(self, node):
@@ -228,9 +223,7 @@ class JoyentNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         data = json.dumps({"action": "stop"})
-        result = self.connection.request(
-            "/my/machines/%s" % (node.id), data=data, method="POST"
-        )
+        result = self.connection.request("/my/machines/%s" % (node.id), data=data, method="POST")
         return result.status == httplib.ACCEPTED
 
     def ex_start_node(self, node):

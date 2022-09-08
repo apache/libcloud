@@ -19,11 +19,22 @@ import json
 from typing import Any, Dict, List, Optional
 
 from libcloud.dns.base import Zone, Record, DNSDriver
-from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
-                                RecordDoesNotExistError, RecordAlreadyExistsError)
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
 from libcloud.utils.py3 import urlencode
-from libcloud.common.vultr import (DEFAULT_API_VERSION, VultrResponse, VultrConnection,
-                                   VultrResponseV2, VultrConnectionV2)
+from libcloud.common.vultr import (
+    DEFAULT_API_VERSION,
+    VultrResponse,
+    VultrConnection,
+    VultrResponseV2,
+    VultrConnectionV2,
+)
 
 __all__ = [
     "ZoneRequiredException",
@@ -213,9 +224,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
             raise ZoneAlreadyExistsError(value="", driver=self, zone_id=domain)
 
         self.connection.request(params=params, action=action, data=data, method="POST")
-        zone = Zone(
-            id=domain, domain=domain, type=type, ttl=ttl, driver=self, extra=extra
-        )
+        zone = Zone(id=domain, domain=domain, type=type, ttl=ttl, driver=self, extra=extra)
 
         return zone
 
@@ -251,9 +260,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         # if exists raise RecordAlreadyExistsError
         for record in old_records_list:
             if record.name == name and record.data == data:
-                raise RecordAlreadyExistsError(
-                    value="", driver=self, record_id=record.id
-                )
+                raise RecordAlreadyExistsError(value="", driver=self, record_id=record.id)
 
         MX = self.RECORD_TYPE_MAP.get("MX")
         SRV = self.RECORD_TYPE_MAP.get("SRV")
@@ -275,9 +282,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         params = {"api_key": self.key}
         action = "/v1/dns/create_record"
 
-        self.connection.request(
-            action=action, params=params, data=encoded_data, method="POST"
-        )
+        self.connection.request(action=action, params=params, data=encoded_data, method="POST")
         updated_zone_records = zone.list_records()
 
         for record in updated_zone_records:
@@ -304,9 +309,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         if not self.ex_zone_exists(zone.domain, zones):
             raise ZoneDoesNotExistError(value="", driver=self, zone_id=zone.domain)
 
-        response = self.connection.request(
-            params=params, action=action, data=data, method="POST"
-        )
+        response = self.connection.request(params=params, action=action, data=data, method="POST")
 
         return response.status == 200
 
@@ -327,9 +330,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         if not self.ex_record_exists(record.id, zone_records):
             raise RecordDoesNotExistError(value="", driver=self, record_id=record.id)
 
-        response = self.connection.request(
-            action=action, params=params, data=data, method="POST"
-        )
+        response = self.connection.request(action=action, params=params, data=data, method="POST")
 
         return response.status == 200
 
@@ -502,9 +503,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         if "dns_sec" in extra:
             data["dns_sec"] = "enabled" if extra["dns_sec"] is True else "disabled"
 
-        resp = self.connection.request(
-            "/v2/domains", data=json.dumps(data), method="POST"
-        )
+        resp = self.connection.request("/v2/domains", data=json.dumps(data), method="POST")
         return self._to_zone(resp.object["domain"])
 
     def delete_zone(self, zone: Zone) -> bool:
@@ -528,9 +527,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        data = self._paginated_request(
-            "/v2/domains/%s/records" % zone.domain, "records"
-        )
+        data = self._paginated_request("/v2/domains/%s/records" % zone.domain, "records")
         return [self._to_record(item, zone) for item in data]
 
     def get_record(self, zone_id: str, record_id: str) -> Record:
@@ -544,9 +541,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :rtype: :class:`Record`
         """
-        resp = self.connection.request(
-            "/v2/domains/%s/records/%s" % (zone_id, record_id)
-        )
+        resp = self.connection.request("/v2/domains/%s/records/%s" % (zone_id, record_id))
 
         # Avoid making an extra API call, as zone_id is enough for
         # standard fields
@@ -679,9 +674,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         extra = {
             "date_created": data["date_created"],
         }
-        return Zone(
-            id=domain, domain=domain, driver=self, type=type_, ttl=None, extra=extra
-        )
+        return Zone(id=domain, domain=domain, driver=self, type=type_, ttl=None, extra=extra)
 
     def _to_record(self, data: Dict[str, Any], zone: Zone) -> Record:
         id_ = data["id"]

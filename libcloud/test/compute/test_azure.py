@@ -259,16 +259,12 @@ class AzureNodeDriverTests(LibcloudTestCase):
             )
 
     def test_ex_create_cloud_service(self):
-        result = self.driver.ex_create_cloud_service(
-            name="testdc123", location="North Europe"
-        )
+        result = self.driver.ex_create_cloud_service(name="testdc123", location="North Europe")
         self.assertTrue(result)
 
     def test_ex_create_cloud_service_service_exists(self):
         with self.assertRaises(LibcloudError):
-            self.driver.ex_create_cloud_service(
-                name="testdc1234", location="North Europe"
-            )
+            self.driver.ex_create_cloud_service(name="testdc1234", location="North Europe")
 
     def test_ex_destroy_cloud_service(self):
         result = self.driver.ex_destroy_cloud_service(name="testdc123")
@@ -279,9 +275,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
             self.driver.ex_destroy_cloud_service(name="testdc1234")
 
     def test_ex_create_storage_service(self):
-        result = self.driver.ex_create_storage_service(
-            name="testdss123", location="East US"
-        )
+        result = self.driver.ex_create_storage_service(name="testdss123", location="East US")
         self.assertTrue(result)
 
     def test_ex_create_storage_service_service_exists(self):
@@ -484,33 +478,21 @@ class AzureMockHttp(MockHttp):
 
         return (httplib.NOT_FOUND, body, headers, httplib.responses[httplib.NOT_FOUND])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_images(
-        self, method, url, body, headers
-    ):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_images(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_3761b98b_673d_526c_8d55_fee918758e6e_services_images.xml"
-            )
+            body = self.fixtures.load("_3761b98b_673d_526c_8d55_fee918758e6e_services_images.xml")
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages(
-        self, method, url, body, headers
-    ):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages.xml"
-            )
+            body = self.fixtures.load("_3761b98b_673d_526c_8d55_fee918758e6e_services_vmimages.xml")
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _3761b98b_673d_526c_8d55_fee918758e6e_locations(
-        self, method, url, body, headers
-    ):
+    def _3761b98b_673d_526c_8d55_fee918758e6e_locations(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_3761b98b_673d_526c_8d55_fee918758e6e_locations.xml"
-            )
+            body = self.fixtures.load("_3761b98b_673d_526c_8d55_fee918758e6e_locations.xml")
 
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 

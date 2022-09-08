@@ -18,15 +18,11 @@ def health_monitors(driver, network_domain):
 
 
 # Compute driver to create/edit virtual servers
-cls = libcloud.get_driver(
-    libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.NTTCIS
-)
+cls = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.NTTCIS)
 compute_driver = cls("my_username", "my_pass", region="eu")
 
 # Load balancer driver to create and/or edit load balanceers
-cls = libcloud.get_driver(
-    libcloud.DriverType.LOADBALANCER, libcloud.DriverType.LOADBALANCER.NTTCIS
-)
+cls = libcloud.get_driver(libcloud.DriverType.LOADBALANCER, libcloud.DriverType.LOADBALANCER.NTTCIS)
 
 net_domain_name = "sdk_test_1"
 net_domains = compute_driver.ex_list_network_domains(location="EU6")
@@ -39,7 +35,5 @@ for result in results:
     print(result)
 
 # Add desired health monitor
-result = update_health_monitors(
-    lbdriver, net_domains[0], "9f79487a-1b6d-11e5-8d4f-180373fb68df"
-)
+result = update_health_monitors(lbdriver, net_domains[0], "9f79487a-1b6d-11e5-8d4f-180373fb68df")
 assert result is True

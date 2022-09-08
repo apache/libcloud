@@ -66,9 +66,7 @@ class MaxihostNodeDriver(NodeDriver):
         Start a node.
         """
         params = {"type": "power_on"}
-        res = self.connection.request(
-            "/devices/%s/actions" % node.id, params=params, method="PUT"
-        )
+        res = self.connection.request("/devices/%s/actions" % node.id, params=params, method="PUT")
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -77,9 +75,7 @@ class MaxihostNodeDriver(NodeDriver):
         Stop a node.
         """
         params = {"type": "power_off"}
-        res = self.connection.request(
-            "/devices/%s/actions" % node.id, params=params, method="PUT"
-        )
+        res = self.connection.request("/devices/%s/actions" % node.id, params=params, method="PUT")
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -96,9 +92,7 @@ class MaxihostNodeDriver(NodeDriver):
         Reboot a node.
         """
         params = {"type": "power_cycle"}
-        res = self.connection.request(
-            "/devices/%s/actions" % node.id, params=params, method="PUT"
-        )
+        res = self.connection.request("/devices/%s/actions" % node.id, params=params, method="PUT")
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -231,9 +225,7 @@ class MaxihostNodeDriver(NodeDriver):
         :type       public_key: ``str``
         """
         attr = {"name": name, "public_key": public_key}
-        res = self.connection.request(
-            "/account/keys", method="POST", data=json.dumps(attr)
-        )
+        res = self.connection.request("/account/keys", method="POST", data=json.dumps(attr))
 
         data = res.object["ssh_key"]
 

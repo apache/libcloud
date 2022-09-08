@@ -7,6 +7,4 @@ SECRET_KEY = "your secret key"
 cls = get_driver(Provider.ELB)
 driver = cls(key=ACCESS_ID, secret=SECRET_KEY)
 
-driver.ex_set_balancer_policies_listener(
-    name="MyLB", port=80, policies=["MyDurationStickyPolicy"]
-)
+driver.ex_set_balancer_policies_listener(name="MyLB", port=80, policies=["MyDurationStickyPolicy"])

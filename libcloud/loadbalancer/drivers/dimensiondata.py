@@ -18,13 +18,20 @@ from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.utils.misc import reverse_dict
 from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
 from libcloud.loadbalancer.types import State, Provider
-from libcloud.common.dimensiondata import (TYPES_URN, API_ENDPOINTS, DEFAULT_REGION,
-                                           DimensionDataPool, DimensionDataVIPNode,
-                                           DimensionDataConnection, DimensionDataPoolMember,
-                                           DimensionDataDefaultiRule, DimensionDataVirtualListener,
-                                           DimensionDataPersistenceProfile,
-                                           DimensionDataDefaultHealthMonitor,
-                                           DimensionDataVirtualListenerCompatibility)
+from libcloud.common.dimensiondata import (
+    TYPES_URN,
+    API_ENDPOINTS,
+    DEFAULT_REGION,
+    DimensionDataPool,
+    DimensionDataVIPNode,
+    DimensionDataConnection,
+    DimensionDataPoolMember,
+    DimensionDataDefaultiRule,
+    DimensionDataVirtualListener,
+    DimensionDataPersistenceProfile,
+    DimensionDataDefaultHealthMonitor,
+    DimensionDataVirtualListenerCompatibility,
+)
 
 
 class DimensionDataLBDriver(Driver):
@@ -294,9 +301,7 @@ class DimensionDataLBDriver(Driver):
         :return: ``True`` if member detach was successful, otherwise ``False``.
         :rtype: ``bool``
         """
-        create_pool_m = ET.Element(
-            "removePoolMember", {"xmlns": TYPES_URN, "id": member.id}
-        )
+        create_pool_m = ET.Element("removePoolMember", {"xmlns": TYPES_URN, "id": member.id})
 
         result = self.connection.request_with_orgId_api_2(
             "networkDomainVip/removePoolMember",
@@ -433,9 +438,7 @@ class DimensionDataLBDriver(Driver):
         ET.SubElement(create_node_elm, "ipv4Address").text = ip
         ET.SubElement(create_node_elm, "status").text = "ENABLED"
         ET.SubElement(create_node_elm, "connectionLimit").text = str(connection_limit)
-        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(
-            connection_rate_limit
-        )
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(connection_rate_limit)
 
         response = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/createNode",
@@ -450,9 +453,7 @@ class DimensionDataLBDriver(Driver):
                 node_id = info.get("value")
             if info.get("name") == "name":
                 node_name = info.get("value")
-        return DimensionDataVIPNode(
-            id=node_id, name=node_name, status=State.RUNNING, ip=ip
-        )
+        return DimensionDataVIPNode(id=node_id, name=node_name, status=State.RUNNING, ip=ip)
 
     def ex_update_node(self, node):
         """
@@ -465,12 +466,8 @@ class DimensionDataLBDriver(Driver):
         :rtype: ``DimensionDataNode``
         """
         create_node_elm = ET.Element("editNode", {"xmlns": TYPES_URN})
-        ET.SubElement(create_node_elm, "connectionLimit").text = str(
-            node.connection_limit
-        )
-        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(
-            node.connection_rate_limit
-        )
+        ET.SubElement(create_node_elm, "connectionLimit").text = str(node.connection_limit)
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(node.connection_rate_limit)
 
         self.connection.request_with_orgId_api_2(
             action="networkDomainVip/createNode",
@@ -493,9 +490,7 @@ class DimensionDataLBDriver(Driver):
         :rtype: ``DimensionDataNode``
         """
         create_node_elm = ET.Element("editNode", {"xmlns": TYPES_URN})
-        ET.SubElement(create_node_elm, "status").text = (
-            "ENABLED" if enabled is True else "DISABLED"
-        )
+        ET.SubElement(create_node_elm, "status").text = "ENABLED" if enabled is True else "DISABLED"
 
         self.connection.request_with_orgId_api_2(
             action="networkDomainVip/editNode",
@@ -658,25 +653,17 @@ class DimensionDataLBDriver(Driver):
         ET.SubElement(create_node_elm, "type").text = listener_type
         ET.SubElement(create_node_elm, "protocol").text = protocol
         if listener_ip_address is not None:
-            ET.SubElement(create_node_elm, "listenerIpAddress").text = str(
-                listener_ip_address
-            )
+            ET.SubElement(create_node_elm, "listenerIpAddress").text = str(listener_ip_address)
         if port is not None:
             ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = "true"
         ET.SubElement(create_node_elm, "connectionLimit").text = str(connection_limit)
-        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(
-            connection_rate_limit
-        )
-        ET.SubElement(
-            create_node_elm, "sourcePortPreservation"
-        ).text = source_port_preservation
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(connection_rate_limit)
+        ET.SubElement(create_node_elm, "sourcePortPreservation").text = source_port_preservation
         if pool is not None:
             ET.SubElement(create_node_elm, "poolId").text = pool.id
         if persistence_profile is not None:
-            ET.SubElement(
-                create_node_elm, "persistenceProfileId"
-            ).text = persistence_profile.id
+            ET.SubElement(create_node_elm, "persistenceProfileId").text = persistence_profile.id
         if fallback_persistence_profile is not None:
             ET.SubElement(
                 create_node_elm, "fallbackPersistenceProfileId"
@@ -739,9 +726,7 @@ class DimensionDataLBDriver(Driver):
         :return: Returns an instance of ``DimensionDataPool``
         :rtype: ``DimensionDataPool``
         """
-        pool = self.connection.request_with_orgId_api_2(
-            "networkDomainVip/pool/%s" % pool_id
-        ).object
+        pool = self.connection.request_with_orgId_api_2("networkDomainVip/pool/%s" % pool_id).object
         return self._to_pool(pool)
 
     def ex_update_pool(self, pool):
@@ -757,12 +742,8 @@ class DimensionDataLBDriver(Driver):
         """
         create_node_elm = ET.Element("editPool", {"xmlns": TYPES_URN})
 
-        ET.SubElement(create_node_elm, "loadBalanceMethod").text = str(
-            pool.load_balance_method
-        )
-        ET.SubElement(
-            create_node_elm, "serviceDownAction"
-        ).text = pool.service_down_action
+        ET.SubElement(create_node_elm, "loadBalanceMethod").text = str(pool.load_balance_method)
+        ET.SubElement(create_node_elm, "serviceDownAction").text = pool.service_down_action
         ET.SubElement(create_node_elm, "slowRampTime").text = str(pool.slow_ramp_time)
 
         response = self.connection.request_with_orgId_api_2(
@@ -851,9 +832,7 @@ class DimensionDataLBDriver(Driver):
         :rtype: ``bool``
         """
         # remove the pool member
-        destroy_request = ET.Element(
-            "removePoolMember", {"xmlns": TYPES_URN, "id": member.id}
-        )
+        destroy_request = ET.Element("removePoolMember", {"xmlns": TYPES_URN, "id": member.id})
 
         result = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/removePoolMember",
@@ -921,9 +900,7 @@ class DimensionDataLBDriver(Driver):
         response_code = findtext(result, "responseCode", TYPES_URN)
         return response_code in ["IN_PROGRESS", "OK"]
 
-    def ex_wait_for_state(
-        self, state, func, poll_interval=2, timeout=60, *args, **kwargs
-    ):
+    def ex_wait_for_state(self, state, func, poll_interval=2, timeout=60, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -948,9 +925,7 @@ class DimensionDataLBDriver(Driver):
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        return self.connection.wait_for_state(
-            state, func, poll_interval, timeout, *args, **kwargs
-        )
+        return self.connection.wait_for_state(state, func, poll_interval, timeout, *args, **kwargs)
 
     def ex_get_default_health_monitors(self, network_domain_id):
         """
@@ -1060,12 +1035,8 @@ class DimensionDataLBDriver(Driver):
         return DimensionDataDefaultHealthMonitor(
             id=element.get("id"),
             name=findtext(element, "name", TYPES_URN),
-            node_compatible=bool(
-                findtext(element, "nodeCompatible", TYPES_URN) == "true"
-            ),
-            pool_compatible=bool(
-                findtext(element, "poolCompatible", TYPES_URN) == "true"
-            ),
+            node_compatible=bool(findtext(element, "nodeCompatible", TYPES_URN) == "true"),
+            pool_compatible=bool(findtext(element, "poolCompatible", TYPES_URN) == "true"),
         )
 
     def _to_nodes(self, object):

@@ -245,9 +245,7 @@ class ElasticContainerDriver(ContainerDriver):
             headers=self._get_headers("RegisterTaskDefinition"),
         ).object
         if start:
-            return self.ex_start_task(response["taskDefinition"]["taskDefinitionArn"])[
-                0
-            ]
+            return self.ex_start_task(response["taskDefinition"]["taskDefinitionArn"])[0]
         else:
             return Container(
                 id=None,
@@ -255,9 +253,7 @@ class ElasticContainerDriver(ContainerDriver):
                 image=image,
                 state=ContainerState.RUNNING,
                 ip_addresses=[],
-                extra={
-                    "taskDefinitionArn": response["taskDefinition"]["taskDefinitionArn"]
-                },
+                extra={"taskDefinitionArn": response["taskDefinition"]["taskDefinitionArn"]},
                 driver=self.connection.driver,
             )
 

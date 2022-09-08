@@ -25,10 +25,9 @@ from integration.storage.base import Integration, random_string
 
 try:
     from azure import identity
-    from azure.mgmt import resource
-    from azure.mgmt import storage
-    from azure.mgmt.resource.resources import models as resource_models
+    from azure.mgmt import storage, resource
     from azure.mgmt.storage import models as storage_models
+    from azure.mgmt.resource.resources import models as resource_models
 except ImportError as e:
     print("Failed to import from azure module: %s" % (str(e)))
     identity = resource = storage = resource_models = storage_models = None

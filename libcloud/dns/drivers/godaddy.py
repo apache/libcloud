@@ -176,9 +176,7 @@ class GoDaddyDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        result = self.connection.request(
-            "/v1/domains/%s/records" % (zone.domain)
-        ).object
+        result = self.connection.request("/v1/domains/%s/records" % (zone.domain)).object
         records = self._to_records(items=result, zone=zone)
         return records
 
@@ -250,8 +248,7 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         new_record = self._format_record(name, type, data, extra)
         self.connection.request(
-            "/v1/domains/%s/records/%s/%s"
-            % (record.zone.domain, record.type, record.name),
+            "/v1/domains/%s/records/%s/%s" % (record.zone.domain, record.type, record.name),
             method="PUT",
             data=json.dumps([new_record]),
         )

@@ -20,14 +20,20 @@ import sys
 import unittest
 from unittest import mock
 
-from libcloud.test import MockHttp, make_response, generate_random_data  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
+from libcloud.test import make_response, generate_random_data
 from libcloud.utils.py3 import b, httplib, parse_qs, urlparse
 from libcloud.common.types import InvalidCredsError
 from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
-from libcloud.storage.types import (ContainerError, ObjectDoesNotExistError,
-                                    ObjectHashMismatchError, ContainerIsNotEmptyError,
-                                    InvalidContainerNameError, ContainerDoesNotExistError)
+from libcloud.storage.types import (
+    ContainerError,
+    ObjectDoesNotExistError,
+    ObjectHashMismatchError,
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+)
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.storage.drivers.oss import CHUNK_SIZE, OSSConnection, OSSStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
@@ -305,9 +311,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.mock_response_klass.type = "list_container_objects_prefix"
         container = Container(name="test_container", extra={}, driver=self.driver)
         self.prefix = "test_prefix"
-        objects = self.driver.list_container_objects(
-            container=container, prefix=self.prefix
-        )
+        objects = self.driver.list_container_objects(container=container, prefix=self.prefix)
         self.assertEqual(len(objects), 2)
 
     def test_get_container_doesnt_exist(self):
@@ -334,9 +338,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_get_object_success(self):
         self.mock_response_klass.type = "get_object"
-        obj = self.driver.get_object(
-            container_name="xz02tphky6fjfiuc0", object_name="test"
-        )
+        obj = self.driver.get_object(container_name="xz02tphky6fjfiuc0", object_name="test")
 
         self.assertEqual(obj.name, "test")
         self.assertEqual(obj.container.name, "xz02tphky6fjfiuc0")
@@ -373,9 +375,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.mock_response_klass.type = "create_container_location"
         name = "new_container"
         self.ex_location = "oss-cn-beijing"
-        container = self.driver.create_container(
-            container_name=name, ex_location=self.ex_location
-        )
+        container = self.driver.create_container(container_name=name, ex_location=self.ex_location)
         self.assertEqual(container.name, name)
         self.assertTrue(container.extra["location"], self.ex_location)
 
@@ -696,9 +696,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
         container = Container(name="foo_bar_container", extra={}, driver=self.driver)
 
-        for upload in self.driver.ex_iterate_multipart_uploads(
-            container, max_uploads=2
-        ):
+        for upload in self.driver.ex_iterate_multipart_uploads(container, max_uploads=2):
             self.assertTrue(upload.key is not None)
             self.assertTrue(upload.id is not None)
             self.assertTrue(upload.initiated is not None)

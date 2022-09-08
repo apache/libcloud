@@ -15,9 +15,7 @@ ports = [
     }
 ]
 
-processes = [
-    {"process": "httpdeamon", "alert_if": "NOT_RUNNING", "email_notification": False}
-]
+processes = [{"process": "httpdeamon", "alert_if": "NOT_RUNNING", "email_notification": False}]
 thresholds = {
     "cpu": {
         "warning": {"value": 90, "alert": False},

@@ -53,28 +53,26 @@ if sys.version_info >= (3, 0):
     PY3 = True
 
 if PY3:
-    import http.client as httplib
-    from io import StringIO
+    import base64
     import urllib
     import urllib as urllib2
-    import base64
+    import http.client as httplib
 
     # pylint: disable=no-name-in-module
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
-
+    from io import StringIO
+    from os.path import relpath
     from urllib.parse import quote as urlquote
     from urllib.parse import unquote as urlunquote
     from urllib.parse import urlencode as urlencode
-    from os.path import relpath
 
     if sys.version_info >= (3, 5, 0):
         from importlib import reload
     else:
         from imp import reload
 
-    from builtins import bytes
-    from builtins import next
+    from builtins import next, bytes
 
     parse_qs = urlparse.parse_qs
     parse_qsl = urlparse.parse_qsl
@@ -159,17 +157,17 @@ if PY3:
         return getattr(self, "assertRegex")(*args, **kwargs)
 
 else:
-    import httplib  # NOQA
-    from StringIO import StringIO  # NOQA
-    import urllib  # NOQA
-    import urllib2  # NOQA
-    import urlparse  # NOQA
-    import xmlrpclib  # NOQA
     import base64  # NOQA
+    import urllib  # NOQA
     from urllib import quote as _urlquote  # NOQA
     from urllib import unquote as urlunquote  # NOQA
     from urllib import urlencode as urlencode  # NOQA
 
+    import httplib  # NOQA
+    import urllib2  # NOQA
+    import urlparse  # NOQA
+    import xmlrpclib  # NOQA
+    from StringIO import StringIO  # NOQA
     from __builtin__ import reload  # NOQA
 
     parse_qs = urlparse.parse_qs

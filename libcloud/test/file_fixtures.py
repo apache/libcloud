@@ -56,16 +56,12 @@ class FileFixtures(object):
 
 class ComputeFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(ComputeFileFixtures, self).__init__(
-            fixtures_type="compute", sub_dir=sub_dir
-        )
+        super(ComputeFileFixtures, self).__init__(fixtures_type="compute", sub_dir=sub_dir)
 
 
 class StorageFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(StorageFileFixtures, self).__init__(
-            fixtures_type="storage", sub_dir=sub_dir
-        )
+        super(StorageFileFixtures, self).__init__(fixtures_type="storage", sub_dir=sub_dir)
 
 
 class LoadBalancerFileFixtures(FileFixtures):
@@ -87,20 +83,14 @@ class DRSFileFixtures(FileFixtures):
 
 class OpenStackFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(OpenStackFixtures, self).__init__(
-            fixtures_type="openstack", sub_dir=sub_dir
-        )
+        super(OpenStackFixtures, self).__init__(fixtures_type="openstack", sub_dir=sub_dir)
 
 
 class ContainerFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(ContainerFileFixtures, self).__init__(
-            fixtures_type="container", sub_dir=sub_dir
-        )
+        super(ContainerFileFixtures, self).__init__(fixtures_type="container", sub_dir=sub_dir)
 
 
 class BackupFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(BackupFileFixtures, self).__init__(
-            fixtures_type="backup", sub_dir=sub_dir
-        )
+        super(BackupFileFixtures, self).__init__(fixtures_type="backup", sub_dir=sub_dir)

@@ -181,9 +181,11 @@ class OpenStackIdentityVersion(object):
         self.url = url
 
     def __repr__(self):
-        return (
-            "<OpenStackIdentityVersion version=%s, status=%s, "
-            "updated=%s, url=%s>" % (self.version, self.status, self.updated, self.url)
+        return "<OpenStackIdentityVersion version=%s, status=%s, " "updated=%s, url=%s>" % (
+            self.version,
+            self.status,
+            self.updated,
+            self.url,
         )
 
 
@@ -210,9 +212,11 @@ class OpenStackIdentityProject(object):
         self.domain_id = domain_id
 
     def __repr__(self):
-        return (
-            "<OpenStackIdentityProject id=%s, domain_id=%s, name=%s, "
-            "enabled=%s>" % (self.id, self.domain_id, self.name, self.enabled)
+        return "<OpenStackIdentityProject id=%s, domain_id=%s, name=%s, " "enabled=%s>" % (
+            self.id,
+            self.domain_id,
+            self.name,
+            self.enabled,
         )
 
 
@@ -224,9 +228,11 @@ class OpenStackIdentityRole(object):
         self.enabled = enabled
 
     def __repr__(self):
-        return (
-            "<OpenStackIdentityRole id=%s, name=%s, description=%s, "
-            "enabled=%s>" % (self.id, self.name, self.description, self.enabled)
+        return "<OpenStackIdentityRole id=%s, name=%s, description=%s, " "enabled=%s>" % (
+            self.id,
+            self.name,
+            self.description,
+            self.enabled,
         )
 
 
@@ -240,10 +246,12 @@ class OpenStackIdentityUser(object):
         self.enabled = enabled
 
     def __repr__(self):
-        return (
-            "<OpenStackIdentityUser id=%s, domain_id=%s, name=%s, "
-            "email=%s, enabled=%s>"
-            % (self.id, self.domain_id, self.name, self.email, self.enabled)
+        return "<OpenStackIdentityUser id=%s, domain_id=%s, name=%s, " "email=%s, enabled=%s>" % (
+            self.id,
+            self.domain_id,
+            self.name,
+            self.email,
+            self.enabled,
         )
 
 
@@ -266,21 +274,13 @@ class OpenStackServiceCatalog(object):
         # Check this way because there are a couple of different 2.0_*
         # auth types.
         if "3.x" in self._auth_version:
-            entries = self._parse_service_catalog_auth_v3(
-                service_catalog=service_catalog
-            )
+            entries = self._parse_service_catalog_auth_v3(service_catalog=service_catalog)
         elif "2.0" in self._auth_version:
-            entries = self._parse_service_catalog_auth_v2(
-                service_catalog=service_catalog
-            )
+            entries = self._parse_service_catalog_auth_v2(service_catalog=service_catalog)
         elif ("1.1" in self._auth_version) or ("1.0" in self._auth_version):
-            entries = self._parse_service_catalog_auth_v1(
-                service_catalog=service_catalog
-            )
+            entries = self._parse_service_catalog_auth_v1(service_catalog=service_catalog)
         else:
-            raise LibcloudError(
-                'auth version "%s" not supported' % (self._auth_version)
-            )
+            raise LibcloudError('auth version "%s" not supported' % (self._auth_version))
 
         # Force consistent ordering by sorting the entries
         entries = sorted(entries, key=lambda x: x.service_type + (x.service_name or ""))
@@ -479,9 +479,7 @@ class OpenStackServiceCatalog(object):
                     )
                     entry_endpoints.append(entry_endpoint)
 
-            entry = OpenStackServiceCatalogEntry(
-                service_type=service, endpoints=entry_endpoints
-            )
+            entry = OpenStackServiceCatalogEntry(service_type=service, endpoints=entry_endpoints)
             entries.append(entry)
 
         return entries
@@ -590,10 +588,10 @@ class OpenStackServiceCatalogEntry(object):
         return not self.__eq__(other=other)
 
     def __repr__(self):
-        return (
-            "<OpenStackServiceCatalogEntry service_type=%s, "
-            "service_name=%s, endpoints=%s"
-            % (self.service_type, self.service_name, repr(self.endpoints))
+        return "<OpenStackServiceCatalogEntry service_type=%s, " "service_name=%s, endpoints=%s" % (
+            self.service_type,
+            self.service_name,
+            repr(self.endpoints),
         )
 
 
@@ -662,9 +660,7 @@ class OpenStackAuthResponse(Response):
         elif "Content-Type" in self.headers:
             key = "Content-Type"
         else:
-            raise LibcloudError(
-                "Missing content-type header", driver=OpenStackIdentityConnection
-            )
+            raise LibcloudError("Missing content-type header", driver=OpenStackIdentityConnection)
 
         content_type = self.headers[key]
         if content_type.find(";") != -1:
@@ -675,9 +671,7 @@ class OpenStackAuthResponse(Response):
                 data = json.loads(self.body)
             except Exception:
                 driver = OpenStackIdentityConnection
-                raise MalformedResponseError(
-                    "Failed to parse JSON", body=self.body, driver=driver
-                )
+                raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=driver)
         elif content_type == "text/plain":
             data = self.body
         else:
@@ -990,9 +984,7 @@ class OpenStackIdentity_1_0_Connection(OpenStackIdentityConnection):
                 resp.body,
                 resp.headers,
             )
-            raise MalformedResponseError(
-                "Malformed response", body=body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             headers = resp.headers
             # emulate the auth 1.1 URL list
@@ -1000,19 +992,13 @@ class OpenStackIdentity_1_0_Connection(OpenStackIdentityConnection):
             self.urls["cloudServers"] = [
                 {"publicURL": headers.get("x-server-management-url", None)}
             ]
-            self.urls["cloudFilesCDN"] = [
-                {"publicURL": headers.get("x-cdn-management-url", None)}
-            ]
-            self.urls["cloudFiles"] = [
-                {"publicURL": headers.get("x-storage-url", None)}
-            ]
+            self.urls["cloudFilesCDN"] = [{"publicURL": headers.get("x-cdn-management-url", None)}]
+            self.urls["cloudFiles"] = [{"publicURL": headers.get("x-storage-url", None)}]
             self.auth_token = headers.get("x-auth-token", None)
             self.auth_user_info = None
 
             if not self.auth_token:
-                raise MalformedResponseError(
-                    "Missing X-Auth-Token in" " response headers"
-                )
+                raise MalformedResponseError("Missing X-Auth-Token in" " response headers")
 
         return self
 
@@ -1030,9 +1016,7 @@ class OpenStackIdentity_1_1_Connection(OpenStackIdentityConnection):
         if not self._is_authentication_needed(force=force):
             return self
 
-        reqbody = json.dumps(
-            {"credentials": {"username": self.user_id, "key": self.key}}
-        )
+        reqbody = json.dumps({"credentials": {"username": self.user_id, "key": self.key}})
         resp = self.request("/v1.1/auth", data=reqbody, headers={}, method="POST")
 
         if resp.status == httplib.UNAUTHORIZED:
@@ -1040,9 +1024,7 @@ class OpenStackIdentity_1_1_Connection(OpenStackIdentityConnection):
             raise InvalidCredsError()
         elif resp.status != httplib.OK:
             body = "code: %s body:%s" % (resp.status, resp.body)
-            raise MalformedResponseError(
-                "Malformed response", body=body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             try:
                 body = json.loads(resp.body)
@@ -1108,11 +1090,7 @@ class OpenStackIdentity_2_0_Connection(OpenStackIdentityConnection):
         # Password based authentication is the only 'core' authentication
         # method in Keystone at this time.
         # 'keystone' - http://s.apache.org/e8h
-        data = {
-            "auth": {
-                "passwordCredentials": {"username": self.user_id, "password": self.key}
-            }
-        }
+        data = {"auth": {"passwordCredentials": {"username": self.user_id, "password": self.key}}}
         if self.tenant_name:
             data["auth"]["tenantName"] = self.tenant_name
         reqbody = json.dumps(data)
@@ -1130,9 +1108,7 @@ class OpenStackIdentity_2_0_Connection(OpenStackIdentityConnection):
             raise InvalidCredsError()
         elif resp.status not in [httplib.OK, httplib.NON_AUTHORITATIVE_INFORMATION]:
             body = "code: %s body: %s" % (resp.status, resp.body)
-            raise MalformedResponseError(
-                "Malformed response", body=body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             body = resp.object
 
@@ -1227,18 +1203,13 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         )
 
         if self.token_scope not in self.VALID_TOKEN_SCOPES:
-            raise ValueError(
-                'Invalid value for "token_scope" argument: %s' % (self.token_scope)
-            )
+            raise ValueError('Invalid value for "token_scope" argument: %s' % (self.token_scope))
 
         if self.token_scope == OpenStackIdentityTokenScope.PROJECT and (
             not self.tenant_name or not self.domain_name
         ):
             raise ValueError("Must provide tenant_name and domain_name " "argument")
-        elif (
-            self.token_scope == OpenStackIdentityTokenScope.DOMAIN
-            and not self.domain_name
-        ):
+        elif self.token_scope == OpenStackIdentityTokenScope.DOMAIN and not self.domain_name:
             raise ValueError("Must provide domain_name argument")
 
     def authenticate(self, force=False):
@@ -1311,9 +1282,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
         :rtype: :class:`.OpenStackIdentityDomain`
         """
-        response = self.authenticated_request(
-            "/v3/domains/%s" % (domain_id), method="GET"
-        )
+        response = self.authenticated_request("/v3/domains/%s" % (domain_id), method="GET")
         result = self._to_domain(data=response.object["domain"])
         return result
 
@@ -1507,9 +1476,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         """
         data = {"enabled": True}
         data = json.dumps({"user": data})
-        response = self.authenticated_request(
-            "/v3/users/%s" % (user.id), data=data, method="PATCH"
-        )
+        response = self.authenticated_request("/v3/users/%s" % (user.id), data=data, method="PATCH")
 
         user = self._to_user(data=response.object["user"])
         return user
@@ -1528,9 +1495,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         """
         data = {"enabled": False}
         data = json.dumps({"user": data})
-        response = self.authenticated_request(
-            "/v3/users/%s" % (user.id), data=data, method="PATCH"
-        )
+        response = self.authenticated_request("/v3/users/%s" % (user.id), data=data, method="PATCH")
 
         user = self._to_user(data=response.object["user"])
         return user
@@ -1565,9 +1530,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
             pass
         else:
-            raise ValueError(
-                "Token needs to be scoped either to project or " "a domain"
-            )
+            raise ValueError("Token needs to be scoped either to project or " "a domain")
 
         return data
 
@@ -1589,9 +1552,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         # Local auth context variables set in _fetch_auth_token
         return context
 
-    def _parse_token_response(
-        self, response, cache_it=False, raise_ambiguous_version_error=True
-    ):
+    def _parse_token_response(self, response, cache_it=False, raise_ambiguous_version_error=True):
         """
         Parse a response from /v3/auth/tokens.
 
@@ -1651,9 +1612,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
             )
         else:
             body = "code: %s body:%s" % (response.status, response.body)
-            raise MalformedResponseError(
-                "Malformed response", body=body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
 
     def _fetch_auth_token(self):
         """
@@ -1673,9 +1632,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         return result
 
     def _to_domain(self, data):
-        domain = OpenStackIdentityDomain(
-            id=data["id"], name=data["name"], enabled=data["enabled"]
-        )
+        domain = OpenStackIdentityDomain(id=data["id"], name=data["name"], enabled=data["enabled"])
         return domain
 
     def _to_users(self, data):
@@ -1768,9 +1725,7 @@ class OpenStackIdentity_3_0_Connection_AppCred(OpenStackIdentity_3_0_Connection)
         return data
 
 
-class OpenStackIdentity_3_0_Connection_OIDC_access_token(
-    OpenStackIdentity_3_0_Connection
-):
+class OpenStackIdentity_3_0_Connection_OIDC_access_token(OpenStackIdentity_3_0_Connection):
     """
     Connection class for Keystone API v3.x. using OpenID Connect tokens
 
@@ -1800,9 +1755,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
 
         subject_token = self._get_unscoped_token_from_oidc_token()
 
-        data = {
-            "auth": {"identity": {"methods": ["token"], "token": {"id": subject_token}}}
-        }
+        data = {"auth": {"identity": {"methods": ["token"], "token": {"id": subject_token}}}}
 
         if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
             # Scope token to project (tenant)
@@ -1814,9 +1767,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
             pass
         else:
-            raise ValueError(
-                "Token needs to be scoped either to project or " "a domain"
-            )
+            raise ValueError("Token needs to be scoped either to project or " "a domain")
 
         data = json.dumps(data)
         response = self.request(
@@ -1825,9 +1776,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        self._parse_token_response(
-            response, cache_it=True, raise_ambiguous_version_error=False
-        )
+        self._parse_token_response(response, cache_it=True, raise_ambiguous_version_error=False)
         return self
 
     def _get_unscoped_token_from_oidc_token(self):
@@ -1854,9 +1803,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
             if "x-subject-token" in response.headers:
                 return response.headers["x-subject-token"]
             else:
-                raise MalformedResponseError(
-                    "No x-subject-token returned", driver=self.driver
-                )
+                raise MalformedResponseError("No x-subject-token returned", driver=self.driver)
         else:
             raise MalformedResponseError(
                 "Malformed response", driver=self.driver, body=response.body
@@ -1908,9 +1855,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
             )
 
 
-class OpenStackIdentity_2_0_Connection_VOMS(
-    OpenStackIdentityConnection, CertificateConnection
-):
+class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection, CertificateConnection):
     """
     Connection class for Keystone API v2.0. with VOMS proxy support
     In this case the key parameter will be the path of the VOMS proxy file.
@@ -2041,9 +1986,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(
             raise InvalidCredsError()
         elif resp.status not in [httplib.OK, httplib.NON_AUTHORITATIVE_INFORMATION]:
             body = "code: %s body: %s" % (resp.status, resp.body)
-            raise MalformedResponseError(
-                "Malformed response", body=body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             body = resp.object
 

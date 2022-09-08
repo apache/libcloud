@@ -121,9 +121,7 @@ class HostVirtualTests(unittest.TestCase):
             self.fail("Exception was not thrown")
 
     def test_create_zone(self):
-        zone = self.driver.create_zone(
-            domain="t.com", type="master", ttl=None, extra=None
-        )
+        zone = self.driver.create_zone(domain="t.com", type="master", ttl=None, extra=None)
         self.assertEqual(zone.id, "47234")
         self.assertEqual(zone.domain, "t.com")
 
@@ -138,9 +136,7 @@ class HostVirtualTests(unittest.TestCase):
 
     def test_create_record_no_name(self):
         zone = self.driver.list_zones()[0]
-        record = self.driver.create_record(
-            name="", zone=zone, type=RecordType.A, data="127.0.0.1"
-        )
+        record = self.driver.create_record(name="", zone=zone, type=RecordType.A, data="127.0.0.1")
 
         self.assertEqual(record.id, "300377")
         self.assertEqual(record.name, "")

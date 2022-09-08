@@ -17,8 +17,12 @@ import json
 
 from libcloud.test import MockHttp, LibcloudTestCase, unittest
 from libcloud.dns.base import Zone
-from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
-                                RecordDoesNotExistError)
+from libcloud.dns.types import (
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
 from libcloud.utils.py3 import httplib
 from libcloud.common.types import ProviderError
 from libcloud.test.secrets import DNS_PARAMS_AURORADNS
@@ -285,18 +289,14 @@ class AuroraDNSDriverMockHttp(MockHttp):
         body = self.fixtures.load("zone_example_com.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _zones_ffb62570_8414_4578_a346_526b44e320b7_records(
-        self, method, url, body, headers
-    ):
+    def _zones_ffb62570_8414_4578_a346_526b44e320b7_records(self, method, url, body, headers):
         if method == "POST":
             body = self.fixtures.load("zone_example_com_record_localhost.json")
         else:
             body = self.fixtures.load("zone_example_com_records.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _zones_ffb62570_8414_4578_a346_526b44e320b7_health_checks(
-        self, method, url, body, headers
-    ):
+    def _zones_ffb62570_8414_4578_a346_526b44e320b7_health_checks(self, method, url, body, headers):
         if method == "POST":
             body = self.fixtures.load("zone_example_com_health_check.json")
         else:

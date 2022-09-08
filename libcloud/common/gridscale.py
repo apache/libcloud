@@ -87,9 +87,7 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
 
     def _poll_request_initial(self, **kwargs):
         if self.async_request_counter == 0:
-            self.poll_response_initial = super(GridscaleConnection, self).request(
-                **kwargs
-            )
+            self.poll_response_initial = super(GridscaleConnection, self).request(**kwargs)
             r = self.poll_response_initial
             self.async_request_counter += 1
         else:

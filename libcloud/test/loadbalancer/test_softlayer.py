@@ -101,9 +101,7 @@ class SoftlayerLBTests(unittest.TestCase):
         lb_package = [p for p in packages if p.capacity == 50][0]
 
         self.assertTrue(
-            self.driver.ex_place_balancer_order(
-                lb_package, NodeLocation("dal05", None, None, None)
-            )
+            self.driver.ex_place_balancer_order(lb_package, NodeLocation("dal05", None, None, None))
         )
 
 
@@ -119,24 +117,16 @@ class SoftLayerMockHttp(MockHttp):
         meth_name = "%s_%s" % (url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
-    def _xmlrpc_v3_SoftLayer_Account_getAdcLoadBalancers(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Account_getAdcLoadBalancers(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Account_getAdcLoadBalancers.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Billing_Item_cancelService(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Billing_Item_cancelService(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Billing_Item_cancelService.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "v3__SoftLayer_Location_Datacenter_getDatacenters.xml"
-        )
+    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(self, method, url, body, headers):
+        body = self.fixtures.load("v3__SoftLayer_Location_Datacenter_getDatacenters.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_deleteObject(
@@ -178,9 +168,7 @@ class SoftLayerMockHttp(MockHttp):
     def _xmlrpc_v3_SoftLayer_Network_Subnet_IpAddress_getByIpAddress(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "v3__SoftLayer_Network_Subnet_IpAddress_getByIpAddress.xml"
-        )
+        body = self.fixtures.load("v3__SoftLayer_Network_Subnet_IpAddress_getByIpAddress.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Product_Order_placeOrder(self, method, url, body, headers):

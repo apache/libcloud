@@ -123,9 +123,7 @@ class GoogleDNSMockHttp(MockHttp):
             body = self.fixtures.load("zone_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _dns_v1_projects_project_name_managedZones_FILTER_ZONES(
-        self, method, url, body, headers
-    ):
+    def _dns_v1_projects_project_name_managedZones_FILTER_ZONES(self, method, url, body, headers):
         body = self.fixtures.load("zone_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -141,9 +139,7 @@ class GoogleDNSMockHttp(MockHttp):
         body = self.fixtures.load("records_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _dns_v1_projects_project_name_managedZones_example_com(
-        self, method, url, body, headers
-    ):
+    def _dns_v1_projects_project_name_managedZones_example_com(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("managed_zones_1.json")
         elif method == "DELETE":

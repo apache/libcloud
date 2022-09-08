@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.storage.drivers.s3 import (S3_CDN_URL_EXPIRY_HOURS, S3StorageDriver,
-                                         BaseS3StorageDriver, S3SignatureV4Connection)
+from libcloud.storage.drivers.s3 import (
+    S3_CDN_URL_EXPIRY_HOURS,
+    S3StorageDriver,
+    BaseS3StorageDriver,
+    S3SignatureV4Connection,
+)
 
 __all__ = ["ScalewayStorageDriver"]
 

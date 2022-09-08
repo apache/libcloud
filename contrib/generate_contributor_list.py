@@ -65,9 +65,7 @@ def parse_changes_file(file_path, versions=None):
         for line in fp:
             line = line.strip()
 
-            match = re.search(
-                r"Changes with Apache Libcloud " r"(\d+\.\d+\.\d+(-\w+)?).*?$", line
-            )
+            match = re.search(r"Changes with Apache Libcloud " r"(\d+\.\d+\.\d+(-\w+)?).*?$", line)
 
             if match:
                 active_version = match.groups()[0]
@@ -91,8 +89,7 @@ def parse_changes_file(file_path, versions=None):
                     active_tickets = [
                         ticket
                         for ticket in active_tickets
-                        if ticket.startswith("LIBCLOUD-")
-                        or ticket.startswith("GITHUB-")
+                        if ticket.startswith("LIBCLOUD-") or ticket.startswith("GITHUB-")
                     ]
 
                 match = re.search(r"^\[(.+?)\]$", line)
@@ -156,9 +153,7 @@ def convert_to_markdown(contributors_map, include_tickets=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Assemble provider logos " " in a single image"
-    )
+    parser = argparse.ArgumentParser(description="Assemble provider logos " " in a single image")
     parser.add_argument(
         "--changes-path", action="store", required=True, help="Path to the changes file"
     )
@@ -177,9 +172,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    contributors_map = parse_changes_file(
-        file_path=args.changes_path, versions=args.versions
-    )
+    contributors_map = parse_changes_file(file_path=args.changes_path, versions=args.versions)
     markdown = convert_to_markdown(
         contributors_map=contributors_map, include_tickets=args.include_tickets
     )

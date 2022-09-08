@@ -23,8 +23,12 @@ from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import Node, NodeSize, NodeImage, NodeState, NodeDriver, NodeLocation
 from libcloud.compute.types import Provider
-from libcloud.common.upcloud import (PlanPrice, UpcloudNodeDestroyer, UpcloudNodeOperations,
-                                     UpcloudCreateNodeRequestBody)
+from libcloud.common.upcloud import (
+    PlanPrice,
+    UpcloudNodeDestroyer,
+    UpcloudNodeOperations,
+    UpcloudCreateNodeRequestBody,
+)
 
 
 class UpcloudResponse(JsonResponse):
@@ -186,9 +190,7 @@ class UpcloudDriver(NodeDriver):
             ex_hostname=ex_hostname,
             ex_username=ex_username,
         )
-        response = self.connection.request(
-            "1.2/server", method="POST", data=body.to_json()
-        )
+        response = self.connection.request("1.2/server", method="POST", data=body.to_json())
         server = response.object["server"]
         # Upcloud server's are in maintenace state when goind
         # from state to other, it is safe to assume STARTING state
@@ -254,9 +256,7 @@ class UpcloudDriver(NodeDriver):
     def _to_node(self, server, state=None):
         ip_addresses = server["ip_addresses"]["ip_address"]
         public_ips = [ip["address"] for ip in ip_addresses if ip["access"] == "public"]
-        private_ips = [
-            ip["address"] for ip in ip_addresses if ip["access"] == "private"
-        ]
+        private_ips = [ip["address"] for ip in ip_addresses if ip["access"] == "private"]
 
         extra = {"vnc_password": server["vnc_password"]}
         if "password" in server:
@@ -309,9 +309,7 @@ class UpcloudDriver(NodeDriver):
 
     def _construct_node_image(self, image):
         extra = self._copy_dict(("access", "license", "size", "state", "type"), image)
-        return NodeImage(
-            id=image["uuid"], name=image["title"], driver=self, extra=extra
-        )
+        return NodeImage(id=image["uuid"], name=image["title"], driver=self, extra=extra)
 
     def _copy_dict(self, keys, d):
         extra = {}

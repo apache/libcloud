@@ -32,10 +32,6 @@ except Exception:
     import json
 
 
-
-
-
-
 VALID_RESPONSE_CODES = [
     httplib.OK,
     httplib.ACCEPTED,
@@ -268,8 +264,7 @@ class DockerContainerDriver(ContainerDriver):
             # libcloud will handle them through LibcloudHTTPSConnection
             if not (key_file and cert_file):
                 raise Exception(
-                    "Needs both private key file and "
-                    "certificate file for tls authentication"
+                    "Needs both private key file and " "certificate file for tls authentication"
                 )
 
         self.connection.secure = secure
@@ -378,9 +373,7 @@ class DockerContainerDriver(ContainerDriver):
         else:
             ex = ""
         try:
-            result = self.connection.request(
-                "/v%s/containers/json%s" % (self.version, ex)
-            ).object
+            result = self.connection.request("/v%s/containers/json%s" % (self.version, ex)).object
         except Exception as exc:
             errno = getattr(exc, "errno", None)
             if errno == 111:
@@ -520,9 +513,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request(
-            "/v%s/containers/%s/json" % (self.version, id)
-        ).object
+        result = self.connection.request("/v%s/containers/%s/json" % (self.version, id)).object
 
         return self._to_container(result)
 
@@ -699,9 +690,7 @@ class DockerContainerDriver(ContainerDriver):
         """
 
         term = term.replace(" ", "+")
-        result = self.connection.request(
-            "/v%s/images/search?term=%s" % (self.version, term)
-        ).object
+        result = self.connection.request("/v%s/images/search?term=%s" % (self.version, term)).object
         images = []
         for image in result:
             name = image.get("name")
@@ -750,9 +739,7 @@ class DockerContainerDriver(ContainerDriver):
                 name = data.get("Id")
         state = data.get("State")
         if isinstance(state, dict):
-            status = data.get(
-                "Status", state.get("Status") if state is not None else None
-            )
+            status = data.get("Status", state.get("Status") if state is not None else None)
         else:
             status = data.get("Status")
         if "Exited" in status:

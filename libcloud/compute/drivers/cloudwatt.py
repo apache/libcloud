@@ -20,6 +20,7 @@ try:
     import simplejson as json
 except ImportError:
     import json
+
 from libcloud.utils.py3 import httplib
 from libcloud.compute.types import Provider, InvalidCredsError, MalformedResponseError
 from libcloud.utils.iso8601 import parse_date
@@ -72,9 +73,7 @@ class CloudwattAuthConnection(OpenStackIdentityConnection):
             raise InvalidCredsError()
         elif resp.status != httplib.OK:
             body = "code: %s body:%s" % (resp.status, resp.body)
-            raise MalformedResponseError(
-                "Malformed response", body=body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             try:
                 body = json.loads(resp.body)

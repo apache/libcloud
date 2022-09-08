@@ -154,9 +154,7 @@ class ECPNodeDriver(NodeDriver):
 
         # IPs
         iplist = [
-            interface["ip"]
-            for interface in vm["interfaces"]
-            if interface["ip"] != "127.0.0.1"
+            interface["ip"] for interface in vm["interfaces"] if interface["ip"] != "127.0.0.1"
         ]
 
         public_ips = []
@@ -202,9 +200,7 @@ class ECPNodeDriver(NodeDriver):
         # Wait for it to turn off and then continue (to turn it on again)
         while node.state == NodeState.REBOOTING:
             # Check if it's off.
-            response = self.connection.request(
-                "/rest/hosting/vm/%s" % node.id
-            ).parse_body()
+            response = self.connection.request("/rest/hosting/vm/%s" % node.id).parse_body()
             if response["vm"]["state"] == "off":
                 node.state = NodeState.TERMINATED
             else:
@@ -239,9 +235,7 @@ class ECPNodeDriver(NodeDriver):
         # Wait for the VM to turn off before continuing
         while node.state == NodeState.PENDING:
             # Check if it's off.
-            response = self.connection.request(
-                "/rest/hosting/vm/%s" % node.id
-            ).parse_body()
+            response = self.connection.request("/rest/hosting/vm/%s" % node.id).parse_body()
             if response["vm"]["state"] == "off":
                 node.state = NodeState.TERMINATED
             else:

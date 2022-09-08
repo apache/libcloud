@@ -15,8 +15,12 @@
 
 from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION, SignedAWSConnection
 from libcloud.common.types import LibcloudError
-from libcloud.storage.drivers.s3 import (API_VERSION, S3Connection, BaseS3Connection,
-                                         BaseS3StorageDriver)
+from libcloud.storage.drivers.s3 import (
+    API_VERSION,
+    S3Connection,
+    BaseS3Connection,
+    BaseS3StorageDriver,
+)
 
 __all__ = ["S3RGWStorageDriver", "S3RGWOutscaleStorageDriver"]
 
@@ -126,9 +130,7 @@ class S3RGWStorageDriver(BaseS3StorageDriver):
 
         self.ex_location_name = region
         self.region_name = region
-        self.signature_version = str(
-            kwargs.pop("signature_version", DEFAULT_SIGNATURE_VERSION)
-        )
+        self.signature_version = str(kwargs.pop("signature_version", DEFAULT_SIGNATURE_VERSION))
 
         if self.signature_version not in ["2", "4"]:
             raise ValueError("Invalid signature_version: %s" % (self.signature_version))

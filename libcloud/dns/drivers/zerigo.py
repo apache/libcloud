@@ -68,13 +68,9 @@ class ZerigoDNSResponse(XmlResponse):
         elif status == 404:
             context = self.connection.context
             if context["resource"] == "zone":
-                raise ZoneDoesNotExistError(
-                    value="", driver=self, zone_id=context["id"]
-                )
+                raise ZoneDoesNotExistError(value="", driver=self, zone_id=context["id"])
             elif context["resource"] == "record":
-                raise RecordDoesNotExistError(
-                    value="", driver=self, record_id=context["id"]
-                )
+                raise RecordDoesNotExistError(value="", driver=self, record_id=context["id"])
         elif status != 503:
             try:
                 body = ET.XML(self.body)
@@ -187,9 +183,7 @@ class ZerigoDNSDriver(DNSDriver):
 
         path = API_ROOT + "zones/%s.xml" % (zone.id)
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl, extra=extra)
-        response = self.connection.request(
-            action=path, data=ET.tostring(zone_elem), method="PUT"
-        )
+        response = self.connection.request(action=path, data=ET.tostring(zone_elem), method="PUT")
         assert response.status == httplib.OK
 
         merged = merge_valid_keys(
@@ -223,9 +217,7 @@ class ZerigoDNSDriver(DNSDriver):
     def update_record(self, record, name=None, type=None, data=None, extra=None):
         path = API_ROOT + "hosts/%s.xml" % (record.id)
         record_elem = self._to_record_elem(name=name, type=type, data=data, extra=extra)
-        response = self.connection.request(
-            action=path, data=ET.tostring(record_elem), method="PUT"
-        )
+        response = self.connection.request(action=path, data=ET.tostring(record_elem), method="PUT")
         assert response.status == httplib.OK
 
         merged = merge_valid_keys(
@@ -353,9 +345,7 @@ class ZerigoDNSDriver(DNSDriver):
 
             if "priority" in extra:
                 # Only MX and SRV records support priority
-                priority_elem = ET.SubElement(
-                    record_elem, "priority", {"type": "integer"}
-                )
+                priority_elem = ET.SubElement(record_elem, "priority", {"type": "integer"})
 
                 priority_elem.text = str(extra["priority"])
 
@@ -399,9 +389,7 @@ class ZerigoDNSDriver(DNSDriver):
             "slave-nameservers": slave_nameservers,
             "tags": tags,
         }
-        zone = Zone(
-            id=str(id), domain=domain, type=type, ttl=int(ttl), driver=self, extra=extra
-        )
+        zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl), driver=self, extra=extra)
         return zone
 
     def _to_records(self, elem, zone):

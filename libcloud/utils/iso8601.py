@@ -41,9 +41,7 @@ ISO8601_REGEX = re.compile(
     r"((?P<separator>.)(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2})(:(?P<second>[0-9]{2})(\.(?P<fraction>[0-9]+))?)?"  # NOQA
     r"(?P<timezone>Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?"
 )
-TIMEZONE_REGEX = re.compile(
-    "(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-9]{2})"
-)  # NOQA
+TIMEZONE_REGEX = re.compile("(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-9]{2})")  # NOQA
 
 
 class ParseError(Exception):
@@ -149,6 +147,4 @@ def parse_date_allow_empty(datestring, default_timezone=UTC):
 
     In case empty value is found, None is returned.
     """
-    return parse_date(
-        datestring=datestring, default_timezone=default_timezone, allow_empty=True
-    )
+    return parse_date(datestring=datestring, default_timezone=default_timezone, allow_empty=True)

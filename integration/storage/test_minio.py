@@ -16,8 +16,9 @@
 import sys
 import unittest
 
-from libcloud.storage import types
 from integration.storage.base import Integration
+
+from libcloud.storage import types
 
 
 class MinioTest(Integration.ContainerTestBase):

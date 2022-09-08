@@ -141,9 +141,7 @@ class CloudscaleNodeDriver(NodeDriver):
             image=image.id,
             flavor=size.id,
         )
-        result = self.connection.request(
-            "/v1/servers", data=json.dumps(attr), method="POST"
-        )
+        result = self.connection.request("/v1/servers", data=json.dumps(attr), method="POST")
         return self._to_node(result.object)
 
     def reboot_node(self, node):

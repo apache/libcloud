@@ -273,8 +273,7 @@ class LinodeDisk(BaseObject):
 
     def __repr__(self):
         return (
-            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s,"
-            " filesystem=%s, driver=%s ...>"
+            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s," " filesystem=%s, driver=%s ...>"
         ) % (
             self.id,
             self.name,

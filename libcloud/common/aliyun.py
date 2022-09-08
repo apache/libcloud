@@ -66,9 +66,7 @@ class AliyunXmlResponse(XmlResponse):
             raise MalformedResponseError(
                 "Failed to parse XML", body=self.body, driver=self.connection.driver
             )
-        self.request_id = findtext(
-            element=body, xpath="RequestId", namespace=self.namespace
-        )
+        self.request_id = findtext(element=body, xpath="RequestId", namespace=self.namespace)
         self.host_id = findtext(element=body, xpath="HostId", namespace=self.namespace)
         return body
 
@@ -224,9 +222,7 @@ class SignedAliyunConnection(AliyunConnection):
         )
 
     def add_default_params(self, params):
-        params = self.signer.get_request_params(
-            params=params, method=self.method, path=self.action
-        )
+        params = self.signer.get_request_params(params=params, method=self.method, path=self.action)
         return params
 
 

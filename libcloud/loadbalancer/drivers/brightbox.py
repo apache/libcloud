@@ -75,9 +75,7 @@ class BrightboxLBDriver(Driver):
         return response.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
-        data = self.connection.request(
-            "/%s/load_balancers/%s" % (API_VERSION, balancer_id)
-        ).object
+        data = self.connection.request("/%s/load_balancers/%s" % (API_VERSION, balancer_id)).object
         return self._to_balancer(data)
 
     def balancer_attach_compute_node(self, balancer, node):

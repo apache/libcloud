@@ -169,9 +169,7 @@ class ServiceUnavailableError(ProviderError):
         # type: (str, Optional[BaseDriver]) -> None
         # NOTE: We don't use http.client constants here since that adds ~20ms
         # import time overhead
-        super(ServiceUnavailableError, self).__init__(
-            value, http_code=503, driver=driver
-        )
+        super(ServiceUnavailableError, self).__init__(value, http_code=503, driver=driver)
 
 
 class LazyList(object):

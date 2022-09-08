@@ -215,9 +215,7 @@ class RetryForeverOnRateLimitError(Retry):
                         # Reset retries if we're told to wait due to rate
                         # limiting
                         current_delay = self.retry_delay
-                        end = datetime.now() + timedelta(
-                            seconds=exc.retry_after + self.timeout
-                        )
+                        end = datetime.now() + timedelta(seconds=exc.retry_after + self.timeout)
                     elif datetime.now() >= end:
                         raise
                     elif self.should_retry(exc):

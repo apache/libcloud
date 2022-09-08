@@ -28,8 +28,6 @@ except ImportError:
     import json  # type: ignore  # noqa: F401
 
 
-
-
 class NimbusResponse(JsonResponse):
     valid_response_codes = [
         httplib.OK,

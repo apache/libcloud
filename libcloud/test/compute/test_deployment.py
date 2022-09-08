@@ -28,9 +28,14 @@ from libcloud.compute.ssh import BaseSSHClient, SSHCommandTimeoutError, have_par
 from libcloud.compute.base import Node, NodeAuthPassword
 from libcloud.test.secrets import RACKSPACE_PARAMS
 from libcloud.compute.types import NodeState, LibcloudError, DeploymentError
-from libcloud.compute.deployment import (Deployment, FileDeployment, ScriptDeployment,
-                                         SSHKeyDeployment, MultiStepDeployment,
-                                         ScriptFileDeployment)
+from libcloud.compute.deployment import (
+    Deployment,
+    FileDeployment,
+    ScriptDeployment,
+    SSHKeyDeployment,
+    MultiStepDeployment,
+    ScriptFileDeployment,
+)
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
@@ -126,17 +131,13 @@ class DeploymentTests(unittest.TestCase):
         fd = FileDeployment(__file__, target)
         self.assertEqual(target, fd.target)
         self.assertEqual(__file__, fd.source)
-        self.assertEqual(
-            self.node, fd.run(node=self.node, client=MockClient(hostname="localhost"))
-        )
+        self.assertEqual(self.node, fd.run(node=self.node, client=MockClient(hostname="localhost")))
 
     def test_script_deployment(self):
         sd1 = ScriptDeployment(script="foobar", delete=True)
         sd2 = ScriptDeployment(script="foobar", delete=False)
         sd3 = ScriptDeployment(script="foobar", delete=False, name="foobarname")
-        sd4 = ScriptDeployment(
-            script="foobar", delete=False, name="foobarname", timeout=10
-        )
+        sd4 = ScriptDeployment(script="foobar", delete=False, name="foobarname", timeout=10)
 
         self.assertTrue(sd1.name.find("deployment") != "1")
         self.assertEqual(sd3.name, "foobarname")
@@ -335,9 +336,7 @@ class DeploymentTests(unittest.TestCase):
         RackspaceMockHttp.type = "TIMEOUT"
 
         try:
-            self.driver.wait_until_running(
-                nodes=[self.node], wait_period=0.1, timeout=0.2
-            )
+            self.driver.wait_until_running(nodes=[self.node], wait_period=0.1, timeout=0.2)
         except LibcloudError as e:
             self.assertTrue(e.value.find("Timed out") != -1)
         else:
@@ -347,9 +346,7 @@ class DeploymentTests(unittest.TestCase):
         RackspaceMockHttp.type = "MISSING"
 
         try:
-            self.driver.wait_until_running(
-                nodes=[self.node], wait_period=0.1, timeout=0.2
-            )
+            self.driver.wait_until_running(nodes=[self.node], wait_period=0.1, timeout=0.2)
         except LibcloudError as e:
             self.assertTrue(e.value.find("Timed out after 0.2 second") != -1)
         else:
@@ -359,9 +356,7 @@ class DeploymentTests(unittest.TestCase):
         RackspaceMockHttp.type = "SAME_UUID"
 
         try:
-            self.driver.wait_until_running(
-                nodes=[self.node], wait_period=0.1, timeout=0.2
-            )
+            self.driver.wait_until_running(nodes=[self.node], wait_period=0.1, timeout=0.2)
         except LibcloudError as e:
             self.assertTrue(e.value.find("Unable to match specified uuids") != -1)
         else:
@@ -382,9 +377,7 @@ class DeploymentTests(unittest.TestCase):
         mock_ssh_client = Mock()
         mock_ssh_client.return_value = None
 
-        ssh_client = self.driver._ssh_client_connect(
-            ssh_client=mock_ssh_client, timeout=0.5
-        )
+        ssh_client = self.driver._ssh_client_connect(ssh_client=mock_ssh_client, timeout=0.5)
         self.assertEqual(mock_ssh_client, ssh_client)
 
     def test_ssh_client_connect_timeout(self):
@@ -405,8 +398,7 @@ class DeploymentTests(unittest.TestCase):
     def test_ssh_client_connect_immediately_throws_on_fatal_execption(self):
         # Verify that fatal exceptions are immediately propagated and ensure
         # we don't try to retry on them
-        from paramiko.ssh_exception import SSHException
-        from paramiko.ssh_exception import PasswordRequiredException
+        from paramiko.ssh_exception import SSHException, PasswordRequiredException
 
         mock_ssh_client = Mock()
         mock_ssh_client.connect = Mock()
@@ -519,9 +511,7 @@ class DeploymentTests(unittest.TestCase):
     @patch("libcloud.compute.base.atexit")
     @patch("libcloud.compute.base.SSHClient")
     @patch("libcloud.compute.ssh")
-    def test_deploy_node_at_exit_func_functionality(
-        self, mock_ssh_module, _, mock_at_exit
-    ):
+    def test_deploy_node_at_exit_func_functionality(self, mock_ssh_module, _, mock_at_exit):
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
         mock_ssh_module.have_paramiko = True
@@ -713,9 +703,7 @@ class DeploymentTests(unittest.TestCase):
 
     @patch("libcloud.compute.base.SSHClient")
     @patch("libcloud.compute.ssh")
-    def test_deploy_node_exception_ssh_client_connect(
-        self, mock_ssh_module, ssh_client
-    ):
+    def test_deploy_node_exception_ssh_client_connect(self, mock_ssh_module, ssh_client):
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
 
@@ -815,9 +803,7 @@ class RackspaceMockHttp(MockHttp):
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_MULTIPLE_NODES(self, method, url, body, headers):
-        body = self.fixtures.load(
-            "v1_slug_servers_detail_deployment_multiple_nodes.xml"
-        )
+        body = self.fixtures.load("v1_slug_servers_detail_deployment_multiple_nodes.xml")
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_IPV6(self, method, url, body, headers):

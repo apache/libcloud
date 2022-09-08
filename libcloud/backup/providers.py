@@ -33,6 +33,4 @@ def get_driver(provider):
 
 
 def set_driver(provider, module, klass):
-    return _set_provider_driver(
-        drivers=DRIVERS, provider=provider, module=module, klass=klass
-    )
+    return _set_provider_driver(drivers=DRIVERS, provider=provider, module=module, klass=klass)

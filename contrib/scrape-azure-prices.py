@@ -23,9 +23,7 @@ import time
 
 import requests
 
-PRICES_URL = (
-    "https://azure.microsoft.com/api/v3/pricing/" "virtual-machines/calculator/"
-)
+PRICES_URL = "https://azure.microsoft.com/api/v3/pricing/" "virtual-machines/calculator/"
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRICING_FILE_PATH = os.path.join(BASE_PATH, "../libcloud/data/pricing.json")
 PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)

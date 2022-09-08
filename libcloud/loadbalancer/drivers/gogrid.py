@@ -28,7 +28,6 @@ except ImportError:
     import json
 
 
-
 class GoGridLBResponse(GoGridResponse):
     def success(self):
         if self.status == httplib.INTERNAL_SERVER_ERROR:
@@ -80,9 +79,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         return ["http"]
 
     def list_balancers(self):
-        return self._to_balancers(
-            self.connection.request("/api/grid/loadbalancer/list").object
-        )
+        return self._to_balancers(self.connection.request("/api/grid/loadbalancer/list").object)
 
     def ex_create_balancer_nowait(
         self, name, members, protocol="http", port=80, algorithm=DEFAULT_ALGORITHM
@@ -100,17 +97,11 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         }
         params.update(self._members_to_params(members))
 
-        resp = self.connection.request(
-            "/api/grid/loadbalancer/add", method="GET", params=params
-        )
+        resp = self.connection.request("/api/grid/loadbalancer/add", method="GET", params=params)
         return self._to_balancers(resp.object)[0]
 
-    def create_balancer(
-        self, name, members, protocol="http", port=80, algorithm=DEFAULT_ALGORITHM
-    ):
-        balancer = self.ex_create_balancer_nowait(
-            name, members, protocol, port, algorithm
-        )
+    def create_balancer(self, name, members, protocol="http", port=80, algorithm=DEFAULT_ALGORITHM):
+        balancer = self.ex_create_balancer_nowait(name, members, protocol, port, algorithm)
 
         timeout = 60 * 20
         waittime = 0
@@ -140,9 +131,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
             )
         except Exception as e:
             if "Update request for LoadBalancer" in str(e):
-                raise LibcloudLBImmutableError(
-                    "Cannot delete immutable object", GoGridLBDriver
-                )
+                raise LibcloudLBImmutableError("Cannot delete immutable object", GoGridLBDriver)
             else:
                 raise
 
@@ -189,9 +178,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         return resp.status == 200
 
     def balancer_list_members(self, balancer):
-        resp = self.connection.request(
-            "/api/grid/loadbalancer/get", params={"id": balancer.id}
-        )
+        resp = self.connection.request("/api/grid/loadbalancer/get", params={"id": balancer.id})
         return self._to_members(resp.object["list"][0]["realiplist"], balancer)
 
     def _update_balancer(self, params):
@@ -240,7 +227,5 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         return [self._to_member(el, balancer) for el in object]
 
     def _to_member(self, el, balancer=None):
-        member = Member(
-            id=el["ip"]["id"], ip=el["ip"]["ip"], port=el["port"], balancer=balancer
-        )
+        member = Member(id=el["ip"]["id"], ip=el["ip"]["ip"], port=el["port"], balancer=balancer)
         return member

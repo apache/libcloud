@@ -21,13 +21,21 @@ try:
     import simplejson as json
 except ImportError:
     import json
+
 import time
 
 from libcloud.utils.py3 import _real_unicode as u
 from libcloud.utils.xml import findall, findattr, findtext
 from libcloud.common.types import LibcloudError
-from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
-                                   StorageVolume, VolumeSnapshot)
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
+)
 from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
 from libcloud.compute.types import NodeState, StorageVolumeState, VolumeSnapshotState
 
@@ -167,9 +175,7 @@ class ECSSecurityGroup(object):
     Security group used to control nodes internet and intranet accessibility.
     """
 
-    def __init__(
-        self, id, name, description=None, driver=None, vpc_id=None, creation_time=None
-    ):
+    def __init__(self, id, name, description=None, driver=None, vpc_id=None, creation_time=None):
         self.id = id
         self.name = name
         self.description = description
@@ -371,9 +377,7 @@ class ECSDriver(NodeDriver):
             if isinstance(ex_filters, dict):
                 params.update(ex_filters)
             else:
-                raise AttributeError(
-                    "ex_filters should be a dict of " "node attributes."
-                )
+                raise AttributeError("ex_filters should be a dict of " "node attributes.")
 
         nodes = self._request_multiple_pages(self.path, params, self._to_nodes)
         return nodes
@@ -382,9 +386,7 @@ class ECSDriver(NodeDriver):
         params = {"Action": "DescribeInstanceTypes"}
 
         resp_body = self.connection.request(self.path, params).object
-        size_elements = findall(
-            resp_body, "InstanceTypes/InstanceType", namespace=self.namespace
-        )
+        size_elements = findall(resp_body, "InstanceTypes/InstanceType", namespace=self.namespace)
         sizes = [self._to_size(each) for each in size_elements]
         return sizes
 
@@ -392,9 +394,7 @@ class ECSDriver(NodeDriver):
         params = {"Action": "DescribeRegions"}
 
         resp_body = self.connection.request(self.path, params).object
-        location_elements = findall(
-            resp_body, "Regions/Region", namespace=self.namespace
-        )
+        location_elements = findall(resp_body, "Regions/Region", namespace=self.namespace)
         locations = [self._to_location(each) for each in location_elements]
         return locations
 
@@ -537,8 +537,7 @@ class ECSDriver(NodeDriver):
         if ex_private_ip_address:
             if not ex_vswitch_id:
                 raise AttributeError(
-                    "must provide ex_private_ip_address  "
-                    "and ex_vswitch_id at the same time"
+                    "must provide ex_private_ip_address  " "and ex_vswitch_id at the same time"
                 )
             else:
                 params["PrivateIpAddress"] = ex_private_ip_address
@@ -675,9 +674,7 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         return resp.success()
 
-    def ex_modify_security_group_by_id(
-        self, group_id=None, name=None, description=None
-    ):
+    def ex_modify_security_group_by_id(self, group_id=None, name=None, description=None):
         """
         Modify a new security group.
         :keyword group_id: id of the security group
@@ -750,9 +747,7 @@ class ECSDriver(NodeDriver):
         params["SecurityGroupId"] = group_id
 
         resp_object = self.connection.request(self.path, params).object
-        sga_elements = findall(
-            resp_object, "Permissions/Permission", namespace=self.namespace
-        )
+        sga_elements = findall(resp_object, "Permissions/Permission", namespace=self.namespace)
         return [self._to_security_group_attribute(el) for el in sga_elements]
 
     def ex_join_security_group(self, node, group_id=None):
@@ -871,9 +866,7 @@ class ECSDriver(NodeDriver):
 
         if ex_filters:
             if not isinstance(ex_filters, dict):
-                raise AttributeError(
-                    "ex_filters should be a dict of " "volume attributes."
-                )
+                raise AttributeError("ex_filters should be a dict of " "volume attributes.")
             else:
                 for key in ex_filters.keys():
                     params[key] = ex_filters[key]
@@ -913,9 +906,7 @@ class ECSDriver(NodeDriver):
                 params[key] = ex_filters[key]
 
         def _parse_response(resp_body):
-            snapshot_elements = findall(
-                resp_body, "Snapshots/Snapshot", namespace=self.namespace
-            )
+            snapshot_elements = findall(resp_body, "Snapshots/Snapshot", namespace=self.namespace)
             snapshots = [self._to_snapshot(each) for each in snapshot_elements]
             return snapshots
 
@@ -978,9 +969,7 @@ class ECSDriver(NodeDriver):
             )
         return volumes[0]
 
-    def create_volume_snapshot(
-        self, volume, name=None, ex_description=None, ex_client_token=None
-    ):
+    def create_volume_snapshot(self, volume, name=None, ex_description=None, ex_client_token=None):
         """
         Creates a snapshot of the storage volume.
 
@@ -1002,12 +991,8 @@ class ECSDriver(NodeDriver):
             params["ClientToken"] = ex_client_token
 
         snapshot_elements = self.connection.request(self.path, params).object
-        snapshot_id = findtext(
-            snapshot_elements, "SnapshotId", namespace=self.namespace
-        )
-        snapshots = self.list_volume_snapshots(
-            volume=None, ex_snapshot_ids=[snapshot_id]
-        )
+        snapshot_id = findtext(snapshot_elements, "SnapshotId", namespace=self.namespace)
+        snapshots = self.list_volume_snapshots(volume=None, ex_snapshot_ids=[snapshot_id])
         if len(snapshots) != 1:
             raise LibcloudError(
                 "could not find new created snapshot with " "id %s." % snapshot_id,
@@ -1068,9 +1053,7 @@ class ECSDriver(NodeDriver):
         params = {"Action": "DeleteDisk", "DiskId": volume.id}
         volumes = self.list_volumes(ex_volume_ids=[volume.id])
         if len(volumes) != 1:
-            raise LibcloudError(
-                "could not find the volume with id %s." % volume.id, driver=self
-            )
+            raise LibcloudError("could not find the volume with id %s." % volume.id, driver=self)
         if volumes[0].state != StorageVolumeState.AVAILABLE:
             raise LibcloudError(
                 "only volume in AVAILABLE state could be " "destroyed.", driver=self
@@ -1125,9 +1108,7 @@ class ECSDriver(NodeDriver):
                 params[key] = ex_filters[key]
 
         def _parse_response(resp_body):
-            image_elements = findall(
-                resp_body, "Images/Image", namespace=self.namespace
-            )
+            image_elements = findall(resp_body, "Images/Image", namespace=self.namespace)
             images = [self._to_image(each) for each in image_elements]
             return images
 
@@ -1193,9 +1174,7 @@ class ECSDriver(NodeDriver):
         location = NodeLocation(id=region, name=None, country=None, driver=self)
         images = self.list_images(location, ex_image_ids=[image_id])
         if len(images) != 1:
-            raise LibcloudError(
-                "could not find the image with id %s" % image_id, driver=self
-            )
+            raise LibcloudError("could not find the image with id %s" % image_id, driver=self)
         return images[0]
 
     def copy_image(
@@ -1274,12 +1253,8 @@ class ECSDriver(NodeDriver):
         :rtype: ``Node``
         """
         _id = findtext(element=instance, xpath="InstanceId", namespace=self.namespace)
-        name = findtext(
-            element=instance, xpath="InstanceName", namespace=self.namespace
-        )
-        instance_status = findtext(
-            element=instance, xpath="Status", namespace=self.namespace
-        )
+        name = findtext(element=instance, xpath="InstanceName", namespace=self.namespace)
+        instance_status = findtext(element=instance, xpath="Status", namespace=self.namespace)
         state = self.NODE_STATE_MAPPING.get(instance_status, NodeState.UNKNOWN)
 
         def _get_ips(ip_address_els):
@@ -1329,9 +1304,7 @@ class ECSDriver(NodeDriver):
         extra = {}
         for attribute, values in mapping.items():
             transform_func = values["transform_func"]
-            value = findattr(
-                element=element, xpath=values["xpath"], namespace=self.namespace
-            )
+            value = findattr(element=element, xpath=values["xpath"], namespace=self.namespace)
             if value:
                 try:
                     extra[attribute] = transform_func(value)
@@ -1418,25 +1391,19 @@ class ECSDriver(NodeDriver):
         vpcs = findall(instance, xpath="VpcAttributes", namespace=self.namespace)
         if len(vpcs) <= 0:
             return None
-        return self._get_extra_dict(
-            vpcs[0], RESOURCE_EXTRA_ATTRIBUTES_MAP["vpc_attributes"]
-        )
+        return self._get_extra_dict(vpcs[0], RESOURCE_EXTRA_ATTRIBUTES_MAP["vpc_attributes"])
 
     def _get_eip_address(self, instance):
         eips = findall(instance, xpath="EipAddress", namespace=self.namespace)
         if len(eips) <= 0:
             return None
-        return self._get_extra_dict(
-            eips[0], RESOURCE_EXTRA_ATTRIBUTES_MAP["eip_address_associate"]
-        )
+        return self._get_extra_dict(eips[0], RESOURCE_EXTRA_ATTRIBUTES_MAP["eip_address_associate"])
 
     def _get_operation_locks(self, instance):
         locks = findall(instance, xpath="OperationLocks", namespace=self.namespace)
         if len(locks) <= 0:
             return None
-        return self._get_extra_dict(
-            locks[0], RESOURCE_EXTRA_ATTRIBUTES_MAP["operation_locks"]
-        )
+        return self._get_extra_dict(locks[0], RESOURCE_EXTRA_ATTRIBUTES_MAP["operation_locks"])
 
     def _wait_until_state(self, nodes, state, wait_period=3, timeout=600):
         """
@@ -1501,17 +1468,13 @@ class ECSDriver(NodeDriver):
         status_str = findtext(element, "Status", namespace=self.namespace)
         state = self.SNAPSHOT_STATE_MAPPING.get(status_str, VolumeSnapshotState.UNKNOWN)
         extra = self._get_extra_dict(element, RESOURCE_EXTRA_ATTRIBUTES_MAP["snapshot"])
-        return VolumeSnapshot(
-            id=_id, driver=self, extra=extra, created=created, state=state
-        )
+        return VolumeSnapshot(id=_id, driver=self, extra=extra, created=created, state=state)
 
     def _to_size(self, element):
         _id = findtext(element, "InstanceTypeId", namespace=self.namespace)
         ram = float(findtext(element, "MemorySize", namespace=self.namespace))
         extra = {}
-        extra["cpu_core_count"] = int(
-            findtext(element, "CpuCoreCount", namespace=self.namespace)
-        )
+        extra["cpu_core_count"] = int(findtext(element, "CpuCoreCount", namespace=self.namespace))
         extra["instance_type_family"] = findtext(
             element, "InstanceTypeFamily", namespace=self.namespace
         )

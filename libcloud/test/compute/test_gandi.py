@@ -42,19 +42,11 @@ class GandiTests(unittest.TestCase):
         self.assertTrue(len(nodes[0].public_ips) > 1)
 
     def test_list_locations(self):
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
         self.assertEqual(loc.country, "France")
 
     def test_list_images(self):
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
         images = self.driver.list_images(loc)
         self.assertTrue(len(images) > 2)
 
@@ -82,11 +74,7 @@ class GandiTests(unittest.TestCase):
         passwd = "".join(random.choice(string.ascii_letters) for i in range(10))
 
         # Get france datacenter
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
 
         # Get a debian image
         images = self.driver.list_images(loc)
@@ -106,11 +94,7 @@ class GandiTests(unittest.TestCase):
         self.assertEqual(node.name, self.node_name)
 
     def test_create_volume(self):
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
         volume = self.driver.create_volume(size=1024, name="libcloud", location=loc)
         self.assertEqual(volume.name, "libcloud")
         self.assertEqual(volume.size, 1024)
@@ -207,11 +191,7 @@ class GandiRatingTests(unittest.TestCase):
         passwd = "".join(random.choice(string.ascii_letters) for i in range(10))
 
         # Get france datacenter
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
 
         # Get a debian image
         images = self.driver.list_images(loc)

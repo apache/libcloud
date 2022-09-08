@@ -17,8 +17,12 @@ import sys
 import unittest
 
 from libcloud.test.secrets import STORAGE_S3_PARAMS
-from libcloud.storage.drivers.rgw import (S3RGWStorageDriver, S3RGWConnectionAWS2,
-                                          S3RGWConnectionAWS4, S3RGWOutscaleStorageDriver)
+from libcloud.storage.drivers.rgw import (
+    S3RGWStorageDriver,
+    S3RGWConnectionAWS2,
+    S3RGWConnectionAWS4,
+    S3RGWOutscaleStorageDriver,
+)
 
 
 class S3RGWTests(unittest.TestCase):
@@ -28,9 +32,7 @@ class S3RGWTests(unittest.TestCase):
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(
-            *self.driver_args, signature_version="2", host=self.default_host
-        )
+        return self.driver_type(*self.driver_args, signature_version="2", host=self.default_host)
 
     def setUp(self):
         self.driver = self.create_driver()

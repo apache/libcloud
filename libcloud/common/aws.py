@@ -73,9 +73,7 @@ class AWSBaseResponse(XmlResponse):
         :return: ``tuple`` with two elements: (code, message)
         :rtype: ``tuple``
         """
-        code = findtext_ignore_namespace(
-            element=element, xpath="Code", namespace=self.namespace
-        )
+        code = findtext_ignore_namespace(element=element, xpath="Code", namespace=self.namespace)
         message = findtext_ignore_namespace(
             element=element, xpath="Message", namespace=self.namespace
         )
@@ -283,9 +281,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
         return params, headers
 
-    def _get_authorization_v4_header(
-        self, params, headers, dt, method="GET", path="/", data=None
-    ):
+    def _get_authorization_v4_header(self, params, headers, dt, method="GET", path="/", data=None):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
         signature = self._get_signature(
@@ -448,9 +444,7 @@ class SignedAWSConnection(AWSTokenConnection):
         )
 
     def add_default_params(self, params):
-        params = self.signer.get_request_params(
-            params=params, method=self.method, path=self.action
-        )
+        params = self.signer.get_request_params(params=params, method=self.method, path=self.action)
 
         # Verify that params only contain simple types and no nested
         # dictionaries.

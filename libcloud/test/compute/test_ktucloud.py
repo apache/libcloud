@@ -28,8 +28,6 @@ except ImportError:
     import json
 
 
-
-
 class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         KTUCloudNodeDriver.connectionCls.conn_class = KTUCloudStackMockHttp

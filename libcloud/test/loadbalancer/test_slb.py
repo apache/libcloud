@@ -24,10 +24,13 @@ from libcloud.compute.types import NodeState
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
-from libcloud.loadbalancer.drivers.slb import (SLBDriver, SLBLoadBalancerTcpListener,
-                                               SLBLoadBalancerUdpListener,
-                                               SLBLoadBalancerHttpListener,
-                                               SLBLoadBalancerHttpsListener)
+from libcloud.loadbalancer.drivers.slb import (
+    SLBDriver,
+    SLBLoadBalancerTcpListener,
+    SLBLoadBalancerUdpListener,
+    SLBLoadBalancerHttpListener,
+    SLBLoadBalancerHttpsListener,
+)
 
 
 class SLBDriverTestCases(unittest.TestCase):
@@ -81,8 +84,7 @@ class SLBDriverTestCases(unittest.TestCase):
                 (
                     "extra %(key)s not equal, "
                     'expected: "%(expected)s", '
-                    'actual: "%(actual)s"'
-                    % {"key": key, "expected": value, "actual": actual[key]}
+                    'actual: "%(actual)s"' % {"key": key, "expected": value, "actual": actual[key]}
                 ),
             )
 
@@ -319,9 +321,7 @@ class SLBDriverTestCases(unittest.TestCase):
     def test_ex_set_certificate_name(self):
         self.cert_id = "cert1"
         self.cert_name = "cert-name"
-        self.assertTrue(
-            self.driver.ex_set_certificate_name(self.cert_id, self.cert_name)
-        )
+        self.assertTrue(self.driver.ex_set_certificate_name(self.cert_id, self.cert_name))
 
 
 class SLBMockHttp(MockHttp, unittest.TestCase):
@@ -411,9 +411,7 @@ class SLBMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("add_backend_servers.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _create_listener_CreateLoadBalancerHTTPListener(
-        self, method, url, body, headers
-    ):
+    def _create_listener_CreateLoadBalancerHTTPListener(self, method, url, body, headers):
         params = {
             "LoadBalancerId": self.test.balancer.id,
             "RegionId": self.test.region,
@@ -449,9 +447,7 @@ class SLBMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("create_load_balancer_http_listener.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _create_listener_override_port_DescribeLoadBalancers(
-        self, method, url, body, headers
-    ):
+    def _create_listener_override_port_DescribeLoadBalancers(self, method, url, body, headers):
         body = self.fixtures.load("describe_load_balancers.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -479,9 +475,7 @@ class SLBMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("describe_server_certificates.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _list_certificates_ids_DescribeServerCertificates(
-        self, method, url, body, headers
-    ):
+    def _list_certificates_ids_DescribeServerCertificates(self, method, url, body, headers):
         params = {
             "RegionId": self.test.region,
             "ServerCertificateId": ",".join(self.test.cert_ids),

@@ -32,9 +32,6 @@ except ImportError:
     import json  # NOQA
 
 
-
-
-
 # class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
 class DigitalOcean_v2_Tests(LibcloudTestCase):
     def setUp(self):
@@ -124,9 +121,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(
-            nodes[0].created_at, datetime(2020, 10, 15, 13, 58, 22, tzinfo=UTC)
-        )
+        self.assertEqual(nodes[0].created_at, datetime(2020, 10, 15, 13, 58, 22, tzinfo=UTC))
 
     def test_create_node_invalid_size(self):
         image = NodeImage(id="invalid", name=None, driver=self.driver)
@@ -233,9 +228,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0].extra["id"], 7717)
         self.assertEqual(keys[0].name, "test1")
-        self.assertEqual(
-            keys[0].public_key, "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAQQDGk5 example"
-        )
+        self.assertEqual(keys[0].public_key, "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAQQDGk5 example")
 
     def test_create_key_pair(self):
         DigitalOceanMockHttp.type = "CREATE"
@@ -243,9 +236,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
             name="test1", public_key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQsxRiUKn example"
         )
         self.assertEqual(key.name, "test1")
-        self.assertEqual(
-            key.fingerprint, "f5:d1:78:ed:28:72:5f:e1:ac:94:fd:1f:e0:a3:48:6d"
-        )
+        self.assertEqual(key.fingerprint, "f5:d1:78:ed:28:72:5f:e1:ac:94:fd:1f:e0:a3:48:6d")
 
     def test_delete_key_pair(self):
         key = self.driver.list_key_pairs()[0]
@@ -536,9 +527,7 @@ class DigitalOceanMockHttp(MockHttp):
         body = self.fixtures.load("detach_volume.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_DESTROY(
-        self, method, url, body, headers
-    ):
+    def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_DESTROY(self, method, url, body, headers):
         return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v2_volumes_62766883_2c28_11e6_b8e6_000f53306ae1_snapshots_CREATE(
@@ -553,9 +542,7 @@ class DigitalOceanMockHttp(MockHttp):
         body = self.fixtures.load("list_volume_snapshots.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v2_snapshots_c0def940_9324_11e6_9a56_000f533176b1_DELETE(
-        self, method, url, body, headers
-    ):
+    def _v2_snapshots_c0def940_9324_11e6_9a56_000f533176b1_DELETE(self, method, url, body, headers):
         return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v2_floating_ips(self, method, url, body, headers):

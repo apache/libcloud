@@ -184,9 +184,7 @@ class SoftLayerDNSMockHttp(MockHttp):
         body = self.fixtures.load("v3_SoftLayer_Dns_Domain_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_getByDomainName(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_getByDomainName(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Dns_Domain_getByDomainName.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -206,15 +204,11 @@ class SoftLayerDNSMockHttp(MockHttp):
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_getResourceRecords(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_getResourceRecords(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Dns_Domain_getResourceRecords.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_getObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_getObject(self, method, url, body, headers):
         fixture = {
             None: "v3_SoftLayer_Dns_Domain_ResourceRecord_getObject.xml",
             "RECORD_DOES_NOT_EXIST": "not_found.xml",
@@ -236,17 +230,11 @@ class SoftLayerDNSMockHttp(MockHttp):
     def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_createObject(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "v3_SoftLayer_Dns_Domain_ResourceRecord_createObject.xml"
-        )
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_ResourceRecord_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_editObject(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "v3_SoftLayer_Dns_Domain_ResourceRecord_editObject.xml"
-        )
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_editObject(self, method, url, body, headers):
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_ResourceRecord_editObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

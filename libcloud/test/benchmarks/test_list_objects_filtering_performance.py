@@ -23,6 +23,7 @@ import tempfile
 from unittest import mock
 
 import pytest
+
 from libcloud.storage.drivers.local import LocalStorageDriver
 
 
@@ -112,9 +113,7 @@ def test_list_objects_with_filtering(benchmark, object_count, sort_objects):
         if sort_objects:
             result = benchmark(run_benchmark)
         else:
-            with mock.patch(
-                "libcloud.storage.drivers.local.sorted", lambda values, key: values
-            ):
+            with mock.patch("libcloud.storage.drivers.local.sorted", lambda values, key: values):
                 result = benchmark(run_benchmark)
         assert len(result) == object_count
     finally:

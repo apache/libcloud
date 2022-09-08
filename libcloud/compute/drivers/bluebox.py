@@ -28,8 +28,15 @@ import base64
 
 from libcloud.utils.py3 import b, urlencode
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
-                                   NodeAuthSSHKey, NodeAuthPassword)
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    NodeAuthSSHKey,
+    NodeAuthPassword,
+)
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.providers import Provider
 
@@ -103,8 +110,7 @@ class BlueboxNodeSize(NodeSize):
 
     def __repr__(self):
         return (
-            "<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, "
-            "price=%s, driver=%s ...>"
+            "<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, " "price=%s, driver=%s ...>"
         ) % (
             self.id,
             self.name,
@@ -228,7 +234,5 @@ class BlueboxNodeDriver(NodeDriver):
         return n
 
     def _to_image(self, image):
-        image = NodeImage(
-            id=image["id"], name=image["description"], driver=self.connection.driver
-        )
+        image = NodeImage(id=image["id"], name=image["description"], driver=self.connection.driver)
         return image

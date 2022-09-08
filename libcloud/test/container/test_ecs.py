@@ -36,9 +36,7 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
     def test_list_clusters(self):
         clusters = self.driver.list_clusters()
         self.assertEqual(len(clusters), 1)
-        self.assertEqual(
-            clusters[0].id, "arn:aws:ecs:us-east-1:012345678910:cluster/default"
-        )
+        self.assertEqual(clusters[0].id, "arn:aws:ecs:us-east-1:012345678910:cluster/default")
         self.assertEqual(clusters[0].name, "default")
 
     def test_create_cluster(self):

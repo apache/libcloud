@@ -24,6 +24,7 @@ import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 import requests
+
 import libcloud.security
 from libcloud.http import LibcloudConnection
 from libcloud.test import unittest, no_network
@@ -163,9 +164,7 @@ class HttpLayerTestCase(unittest.TestCase):
 
         hooks = {"response": response_hook}
 
-        connection = LibcloudConnection(
-            host=self.listen_host, port=self.listen_port, timeout=5
-        )
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port, timeout=5)
         connection.request(method="GET", url="/test", hooks=hooks)
 
     @unittest.skipIf(no_network(), "Network is disabled")
@@ -176,9 +175,7 @@ class HttpLayerTestCase(unittest.TestCase):
 
         hooks = {"response": response_hook}
 
-        connection = LibcloudConnection(
-            host=self.listen_host, port=self.listen_port, timeout=0.5
-        )
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port, timeout=0.5)
         self.assertRaisesRegex(
             requests.exceptions.ReadTimeout,
             "Read timed out",

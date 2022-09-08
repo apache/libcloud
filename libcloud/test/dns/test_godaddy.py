@@ -153,9 +153,7 @@ class GoDaddyMockHttp(MockHttp):
         body = self.fixtures.load("v1_domains_tlds.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_domains_aperture_platform_com_records_A_www(
-        self, method, url, body, headers
-    ):
+    def _v1_domains_aperture_platform_com_records_A_www(self, method, url, body, headers):
         body = self.fixtures.load("v1_domains_aperture_platform_com_records_A_www.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

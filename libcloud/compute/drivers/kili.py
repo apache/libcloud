@@ -44,9 +44,7 @@ class KiliCloudConnection(OpenStack_1_1_Connection):
         if "2.0_password" in self._auth_version:
             ep = self.service_catalog.get_endpoint(**self.get_endpoint_args)
         else:
-            raise LibcloudError(
-                'Auth version "%s" not supported' % (self._auth_version)
-            )
+            raise LibcloudError('Auth version "%s" not supported' % (self._auth_version))
 
         public_url = ep.url
 
@@ -62,9 +60,7 @@ class KiliCloudNodeDriver(OpenStack_1_1_NodeDriver):
     connectionCls = KiliCloudConnection
     type = Provider.HPCLOUD
 
-    def __init__(
-        self, key, secret, tenant_name, secure=True, host=None, port=None, **kwargs
-    ):
+    def __init__(self, key, secret, tenant_name, secure=True, host=None, port=None, **kwargs):
         """
         Note: tenant_name argument is required for Kili cloud.
         """

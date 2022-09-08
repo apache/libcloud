@@ -23,8 +23,12 @@ import warnings
 from typing import Optional
 
 from libcloud.utils.py3 import b, httplib
-from libcloud.common.base import (JsonResponse, ConnectionKey, ConnectionUserAndKey,
-                                  KeyCertificateConnection)
+from libcloud.common.base import (
+    JsonResponse,
+    ConnectionKey,
+    ConnectionUserAndKey,
+    KeyCertificateConnection,
+)
 from libcloud.common.types import InvalidCredsError
 
 __all__ = [

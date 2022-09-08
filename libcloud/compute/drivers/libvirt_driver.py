@@ -349,17 +349,13 @@ class LibvirtNodeDriver(NodeDriver):
         arp_table = {}
         try:
             cmd = ["arp", "-an"]
-            child = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
+            child = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, _ = child.communicate()
             arp_table = self._parse_ip_table_arp(arp_output=stdout)
         except OSError as e:
             if e.errno == 2:
                 cmd = ["ip", "neigh"]
-                child = subprocess.Popen(
-                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
+                child = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, _ = child.communicate()
                 arp_table = self._parse_ip_table_neigh(ip_output=stdout)
 

@@ -44,18 +44,13 @@ class WorldWideDNSException(ProviderError):
 
 class SuspendedAccount(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
-        value = (
-            "Login ID you supplied is SUSPENDED, you need to renew" + " your account"
-        )
+        value = "Login ID you supplied is SUSPENDED, you need to renew" + " your account"
         super(SuspendedAccount, self).__init__(value, http_code, 401, driver)
 
 
 class LoginOrPasswordNotMatch(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
-        value = (
-            "Login ID and/or Password you supplied is not on file or"
-            + " does not match"
-        )
+        value = "Login ID and/or Password you supplied is not on file or" + " does not match"
         super(LoginOrPasswordNotMatch, self).__init__(value, http_code, 403, driver)
 
 

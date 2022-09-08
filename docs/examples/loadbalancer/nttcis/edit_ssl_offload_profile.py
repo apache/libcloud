@@ -7,9 +7,9 @@ def edit_ssl_offload_profile(lbdriver):
     # Identify the wich profile by name to be edited
     profile_name = "ssl_offload"
     datacenter_id = "EU6"
-    profile = lbdriver.ex_list_ssl_offload_profiles(
-        name=profile_name, datacenter_id=datacenter_id
-    )[0]
+    profile = lbdriver.ex_list_ssl_offload_profiles(name=profile_name, datacenter_id=datacenter_id)[
+        0
+    ]
     # All elements must be passed to the edit method that
     #  would be required in creating a profile as well as what currently exists
     # such as the current ciphers, unless ciphers were to be changed.

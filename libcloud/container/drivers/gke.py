@@ -160,9 +160,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     credential_file: ``str``
         """
         if not project:
-            raise ValueError(
-                "Project name must be specified using " '"project" keyword.'
-            )
+            raise ValueError("Project name must be specified using " '"project" keyword.')
         if host is None:
             host = GKEContainerDriver.website
         self.auth_type = auth_type
@@ -172,8 +170,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         if datacenter is not None:
             self.zone = datacenter
         self.credential_file = (
-            credential_file
-            or GoogleOAuth2Credential.default_credential_file + "." + self.project
+            credential_file or GoogleOAuth2Credential.default_credential_file + "." + self.project
         )
 
         super(GKEContainerDriver, self).__init__(

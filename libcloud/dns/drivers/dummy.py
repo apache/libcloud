@@ -14,8 +14,13 @@
 # limitations under the License.
 
 from libcloud.dns.base import Zone, Record, DNSDriver
-from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
-                                RecordDoesNotExistError, RecordAlreadyExistsError)
+from libcloud.dns.types import (
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
 
 
 class DummyDNSDriver(DNSDriver):
@@ -162,9 +167,7 @@ class DummyDNSDriver(DNSDriver):
         if id in self._zones[zone.id]["records"]:
             raise RecordAlreadyExistsError(record_id=id, value=None, driver=self)
 
-        record = Record(
-            id=id, name=name, type=type, data=data, extra=extra, zone=zone, driver=self
-        )
+        record = Record(id=id, name=name, type=type, data=data, extra=extra, zone=zone, driver=self)
         self._zones[zone.id]["records"][id] = record
         return record
 

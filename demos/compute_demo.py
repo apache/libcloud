@@ -32,16 +32,13 @@ import os.path
 from pprint import pprint
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(
-    os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
-)
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 # isort:skip pragma is needed to make sure those imports are not moved above
 # sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
 from libcloud.common.types import InvalidCredsError  # isort:skip
 from libcloud.compute.types import Provider  # isort:skip
 from libcloud.compute.providers import get_driver  # isort:skip
-
 
 
 def get_demo_driver(provider_name="RACKSPACE", *args, **kwargs):

@@ -33,9 +33,7 @@ class LinodeTests(unittest.TestCase):
         self.assertIsInstance(self.driver, LinodeDNSDriverV4)
 
     def test_unknown_api_version(self):
-        self.assertRaises(
-            NotImplementedError, LinodeDNSDriver, "foo", api_version="2.0"
-        )
+        self.assertRaises(NotImplementedError, LinodeDNSDriver, "foo", api_version="2.0")
 
     def test_list_zones(self):
         zones = self.driver.list_zones()

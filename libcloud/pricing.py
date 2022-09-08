@@ -49,9 +49,7 @@ __all__ = [
 # Default URL to the pricing file in a git repo
 DEFAULT_FILE_URL_GIT = "https://git.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json"  # NOQA
 
-DEFAULT_FILE_URL_S3_BUCKET = (
-    "https://libcloud-pricing-data.s3.amazonaws.com/pricing.json"  # NOQA
-)
+DEFAULT_FILE_URL_S3_BUCKET = "https://libcloud-pricing-data.s3.amazonaws.com/pricing.json"  # NOQA
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, "data/pricing.json")
@@ -69,9 +67,7 @@ CACHE_ALL_PRICING_DATA = False
 
 def get_pricing_file_path(file_path=None):
     # type: (Optional[str]) -> str
-    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and os.path.isfile(
-        CUSTOM_PRICING_FILE_PATH
-    ):
+    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and os.path.isfile(CUSTOM_PRICING_FILE_PATH):
         # Custom pricing file is available, use it
         return CUSTOM_PRICING_FILE_PATH
 
@@ -139,9 +135,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=Fals
 
             PRICING_DATA[driver_type] = pricing
     else:
-        set_pricing(
-            driver_type=driver_type, driver_name=driver_name, pricing=driver_pricing
-        )
+        set_pricing(driver_type=driver_type, driver_name=driver_name, pricing=driver_pricing)
 
     return driver_pricing
 
@@ -203,9 +197,7 @@ def get_image_price(driver_name, image_name, size_name=None, cores=1):
 
     # for now only images of GCE have pricing data
     if driver_name == "gce_images":
-        return _get_gce_image_price(
-            image_name=image_name, size_name=size_name, cores=cores
-        )
+        return _get_gce_image_price(image_name=image_name, size_name=size_name, cores=cores)
 
     return 0
 
@@ -328,9 +320,7 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
         del PRICING_DATA[driver_type][driver_name]
 
 
-def download_pricing_file(
-    file_url=DEFAULT_FILE_URL_S3_BUCKET, file_path=CUSTOM_PRICING_FILE_PATH
-):
+def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET, file_path=CUSTOM_PRICING_FILE_PATH):
     # type: (str, str) -> None
     """
     Download pricing file from the file_url and save it to file_path.

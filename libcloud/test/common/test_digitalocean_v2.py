@@ -35,9 +35,7 @@ class DigitalOceanTests(LibcloudTestCase):
 
     def test_ex_account_info(self):
         account_info = self.driver.ex_account_info()
-        self.assertEqual(
-            account_info["uuid"], "a1234567890b1234567890c1234567890d12345"
-        )
+        self.assertEqual(account_info["uuid"], "a1234567890b1234567890c1234567890d12345")
         self.assertTrue(account_info["email_verified"])
         self.assertEqual(account_info["email"], "user@domain.tld")
         self.assertEqual(account_info["droplet_limit"], 10)

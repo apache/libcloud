@@ -71,9 +71,7 @@ class Zone(object):
 
     def create_record(self, name, type, data, extra=None):
         # type: (str, RecordType, str, Optional[dict]) -> Record
-        return self.driver.create_record(
-            name=name, zone=self, type=type, data=data, extra=extra
-        )
+        return self.driver.create_record(name=name, zone=self, type=type, data=data, extra=extra)
 
     def update(
         self,
@@ -83,9 +81,7 @@ class Zone(object):
         extra=None,  # type: Optional[dict]
     ):
         # type: (...) -> Zone
-        return self.driver.update_zone(
-            zone=self, domain=domain, type=type, ttl=ttl, extra=extra
-        )
+        return self.driver.update_zone(zone=self, domain=domain, type=type, ttl=ttl, extra=extra)
 
     def delete(self):
         # type: () -> bool
@@ -166,9 +162,7 @@ class Record(object):
         extra=None,  # type: Optional[dict]
     ):
         # type: (...) -> Record
-        return self.driver.update_record(
-            record=self, name=name, type=type, data=data, extra=extra
-        )
+        return self.driver.update_record(record=self, name=name, type=type, data=data, extra=extra)
 
     def delete(self):
         # type: () -> bool
@@ -196,10 +190,13 @@ class Record(object):
     def __repr__(self):
         # type: () -> str
         zone = self.zone.domain if self.zone.domain else self.zone.id
-        return (
-            "<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, "
-            "ttl=%s ...>"
-            % (zone, self.name, self.type, self.data, self.driver.name, self.ttl)
+        return "<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, " "ttl=%s ...>" % (
+            zone,
+            self.name,
+            self.type,
+            self.data,
+            self.driver.name,
+            self.ttl,
         )
 
 

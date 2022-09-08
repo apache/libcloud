@@ -12,9 +12,7 @@ connection = driver(
     secure=False,
 )
 
-image = ContainerImage(
-    "hastebin", "hastebin", "rlister/hastebin", "latest", driver=None
-)
+image = ContainerImage("hastebin", "hastebin", "rlister/hastebin", "latest", driver=None)
 
 new_container = connection.deploy_container(
     name="awesomecontainer", image=image, networkMode="managed"

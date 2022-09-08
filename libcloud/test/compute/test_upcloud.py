@@ -44,9 +44,7 @@ class UpcloudPersistResponse(UpcloudResponse):
                 "upcloud",
             )
         )
-        filename = (
-            "api" + self.request.path_url.replace("/", "_").replace(".", "_") + ".json"
-        )
+        filename = "api" + self.request.path_url.replace("/", "_").replace(".", "_") + ".json"
         filename = os.path.join(path, filename)
         if not os.path.exists(filename):
             with open(filename, "w+") as f:
@@ -88,9 +86,7 @@ class UpcloudDriverTests(LibcloudTestCase):
         self.assert_object(expected_node_location, objects=locations)
 
     def test_list_sizes(self):
-        location = NodeLocation(
-            id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver
-        )
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver)
         sizes = self.driver.list_sizes(location)
         self.assertTrue(len(sizes) >= 1)
         expected_node_size = NodeSize(
@@ -129,9 +125,7 @@ class UpcloudDriverTests(LibcloudTestCase):
             extra={"type": "template"},
             driver=self.driver,
         )
-        location = NodeLocation(
-            id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver
-        )
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver)
         size = NodeSize(
             id="1xCPU-1GB",
             name="1xCPU-1GB",
@@ -171,9 +165,7 @@ class UpcloudDriverTests(LibcloudTestCase):
             extra={"type": "template"},
             driver=self.driver,
         )
-        location = NodeLocation(
-            id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver
-        )
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver)
         size = NodeSize(
             id="1xCPU-1GB",
             name="1xCPU-1GB",
@@ -299,12 +291,7 @@ class UpcloudMockHttp(MockHttp):
         if method == "POST":
             dbody = json.loads(body)
             storages = dbody["server"]["storage_devices"]["storage_device"]
-            if any(
-                [
-                    "type" in storage and storage["type"] == "cdrom"
-                    for storage in storages
-                ]
-            ):
+            if any(["type" in storage and storage["type"] == "cdrom" for storage in storages]):
                 body = self.fixtures.load("api_1_2_server_from_cdrom.json")
             else:
                 body = self.fixtures.load("api_1_2_server_from_template.json")
@@ -312,28 +299,18 @@ class UpcloudMockHttp(MockHttp):
             body = self.fixtures.load("api_1_2_server.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json"
-        )
+    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc(self, method, url, body, headers):
+        body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_restart(
-        self, method, url, body, headers
-    ):
+    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_restart(self, method, url, body, headers):
         body = self.fixtures.load(
             "api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc_restart.json"
         )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00893c98_5d5a_4363_b177_88df518a2b60(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_1_2_server_00893c98-5d5a-4363-b177-88df518a2b60.json"
-        )
+    def _1_2_server_00893c98_5d5a_4363_b177_88df518a2b60(self, method, url, body, headers):
+        body = self.fixtures.load("api_1_2_server_00893c98-5d5a-4363-b177-88df518a2b60.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

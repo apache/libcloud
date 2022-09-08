@@ -88,8 +88,7 @@ class VCLNodeDriver(NodeDriver):
         """
         if not host:
             raise Exception(
-                "When instantiating VCL driver directly "
-                + "you also need to provide host"
+                "When instantiating VCL driver directly " + "you also need to provide host"
             )
 
         super(VCLNodeDriver, self).__init__(

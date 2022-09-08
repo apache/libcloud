@@ -22,11 +22,12 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import requests_mock
+from requests.exceptions import ConnectTimeout
+
 import libcloud.common.base
 from libcloud.http import LibcloudConnection, SignedHTTPSAdapter, LibcloudBaseConnection
 from libcloud.test import unittest, no_internet
 from libcloud.utils.py3 import assertRaisesRegex
-from requests.exceptions import ConnectTimeout
 from libcloud.common.base import Response, Connection, CertificateConnection
 from libcloud.utils.retry import RETRY_EXCEPTIONS, Retry, RetryForeverOnRateLimitError
 from libcloud.common.exceptions import RateLimitReachedError
@@ -479,9 +480,7 @@ class ConnectionClassTestCase(unittest.TestCase):
 
         mock_connect.__name__ = "mock_connect"
         mock_connect.side_effect = mock_connect_side_effect
-        retry_request = RetryForeverOnRateLimitError(
-            timeout=1, retry_delay=0.1, backoff=1
-        )
+        retry_request = RetryForeverOnRateLimitError(timeout=1, retry_delay=0.1, backoff=1)
         retry_request(con.request)(action="/")
 
         # We have waited longer the timeout but continue to retry
@@ -554,9 +553,7 @@ class ConnectionClassTestCase(unittest.TestCase):
         result = retry_request(con.request)(action="/")
         self.assertEqual(result, "success")
 
-        self.assertEqual(
-            mock_connect.call_count, len(RETRY_EXCEPTIONS), "Retry logic failed"
-        )
+        self.assertEqual(mock_connect.call_count, len(RETRY_EXCEPTIONS), "Retry logic failed")
 
     def test_request_parses_errors(self):
         class ThrowingResponse(Response):
@@ -614,9 +611,7 @@ class ConnectionClassTestCase(unittest.TestCase):
 
 class CertificateConnectionClassTestCase(unittest.TestCase):
     def setUp(self):
-        self.connection = CertificateConnection(
-            cert_file="test.pem", url="https://test.com/test"
-        )
+        self.connection = CertificateConnection(cert_file="test.pem", url="https://test.com/test")
         self.connection.connect()
 
     def test_adapter_internals(self):

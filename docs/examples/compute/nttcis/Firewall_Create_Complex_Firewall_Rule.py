@@ -44,9 +44,7 @@ description = "A test port list"
 
 # rerquires an instance of NttCisPort object
 ports = [NttCisPort(begin="8000", end="8080")]
-result = driver.ex_create_portlist(
-    my_network_domain.id, port_list_name, description, ports
-)
+result = driver.ex_create_portlist(my_network_domain.id, port_list_name, description, ports)
 
 try:
     assert result is True

@@ -30,8 +30,6 @@ except ImportError:
     import json
 
 
-
-
 class GridspotTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         GridspotNodeDriver.connectionCls.conn_class = GridspotMockHttp
@@ -60,9 +58,7 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(running_node.extra["start_state_time"], 1342108905)
         self.assertEqual(running_node.extra["vm_num_logical_cores"], 8)
         self.assertEqual(running_node.extra["vm_num_physical_cores"], 4)
-        self.assertEqual(
-            running_node.extra["winning_bid_id"], "bid_X5xhotGYiGUk7_RmIqVafA"
-        )
+        self.assertEqual(running_node.extra["winning_bid_id"], "bid_X5xhotGYiGUk7_RmIqVafA")
         self.assertFalse("ended_state_time" in running_node.extra)
         self.assertEqual(running_node.extra["running_state_time"], 1342108989)
 
@@ -74,9 +70,7 @@ class GridspotTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(starting_node.extra["start_state_time"], 1342108906)
         self.assertEqual(starting_node.extra["vm_num_logical_cores"], 7)
         self.assertEqual(starting_node.extra["vm_num_physical_cores"], 5)
-        self.assertEqual(
-            starting_node.extra["winning_bid_id"], "bid_X5xhotGYiGUk7_RmIqVafA1"
-        )
+        self.assertEqual(starting_node.extra["winning_bid_id"], "bid_X5xhotGYiGUk7_RmIqVafA1")
         self.assertFalse("ended_state_time" in starting_node.extra)
         self.assertEqual(starting_node.extra["running_state_time"], 1342108990)
 

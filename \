@@ -44,11 +44,12 @@
 import sys
 import time
 import os.path
-import argparse
 import datetime
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+sys.path.append(
+    os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+)
 
 # isort:skip pragma is needed to make sure those imports are not moved above
 # sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
@@ -61,6 +62,15 @@ from libcloud.dns.providers import get_driver as get_driver_dns  # isort:skip
 from libcloud.compute.providers import get_driver  # isort:skip
 from libcloud.loadbalancer.types import Provider as Provider_lb  # isort:skip
 from libcloud.loadbalancer.providers import get_driver as get_driver_lb  # isort:skip
+
+try:
+    import argparse
+except Exception:
+    print(
+        'This script uses the python "argparse" module. Please use Python '
+        "2.7 or greater."
+    )
+    raise
 
 try:
     import secrets
@@ -168,7 +178,9 @@ def create_mig(gce, mig_base_name, zone, template, postfix, num_instances=2):
         base_instance_name=mig_name,
         description="Demo for %s" % postfix,
     )
-    display('    Managed Instance Group [%s] "%s" created' % (postfix.upper(), mig.name))
+    display(
+        '    Managed Instance Group [%s] "%s" created' % (postfix.upper(), mig.name)
+    )
     display(
         "    ... MIG instances created: %s"
         % ",".join([x["name"] for x in mig.list_managed_instances()])
@@ -341,7 +353,9 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
                 class_name = resrc.__class__.__name__
                 display("   Deleted %s (%s)" % (resrc.name, class_name))
             except ResourceNotFoundError:
-                display("   Not found: %s (%s)" % (resrc.name, resrc.__class__.__name__))
+                display(
+                    "   Not found: %s (%s)" % (resrc.name, resrc.__class__.__name__)
+                )
             except Exception:
                 class_name = resrc.__class__.__name__
                 display("   Failed to Delete %s (%s)" % (resrc.name, class_name))
@@ -640,7 +654,9 @@ def main_compute():
     display("Creating a Firewall:")
     name = "%s-firewall" % DEMO_BASE_NAME
     allowed = [{"IPProtocol": "tcp", "ports": ["3141"]}]
-    firewall_1 = gce.ex_create_firewall(name, allowed, network=network_1, source_tags=["libcloud"])
+    firewall_1 = gce.ex_create_firewall(
+        name, allowed, network=network_1, source_tags=["libcloud"]
+    )
     display("  Firewall %s created" % firewall_1.name)
 
     # == Create a Static Address ==
@@ -672,7 +688,9 @@ def main_compute():
     if CLEANUP:
         display("Cleaning up %s resources created" % DEMO_BASE_NAME)
         clean_up(gce, DEMO_BASE_NAME, None, subnetworks)
-        clean_up(gce, DEMO_BASE_NAME, nodes, addresses + firewalls + snapshots + networks)
+        clean_up(
+            gce, DEMO_BASE_NAME, nodes, addresses + firewalls + snapshots + networks
+        )
         volumes = gce.list_volumes()
         clean_up(gce, DEMO_BASE_NAME, None, volumes)
     end_time = datetime.datetime.now()
@@ -713,7 +731,9 @@ def main_load_balancer():
 
     # == Create 3 nodes to balance between ==
     startup_script = (
-        "apt-get -y update && " "apt-get -y install apache2 && " "hostname > /var/www/index.html"
+        "apt-get -y update && "
+        "apt-get -y install apache2 && "
+        "hostname > /var/www/index.html"
     )
     tag = "%s-www" % DEMO_BASE_NAME
     base_name = "%s-www" % DEMO_BASE_NAME
@@ -842,7 +862,10 @@ def main_load_balancer():
 # ==== BACKEND SERVICE LOAD BALANCER CODE STARTS HERE ====
 def main_backend_service():
     start_time = datetime.datetime.now()
-    display("Backend Service w/Global Forwarding Rule demo/test start time: %s" % str(start_time))
+    display(
+        "Backend Service w/Global Forwarding Rule demo/test start time: %s"
+        % str(start_time)
+    )
     gce = get_gce_driver()
     # Get project info and print name
     project = gce.ex_get_project()
@@ -1012,7 +1035,9 @@ def main_dns():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Google Cloud Platform Demo / Live Test Script")
+    parser = argparse.ArgumentParser(
+        description="Google Cloud Platform Demo / Live Test Script"
+    )
     parser.add_argument(
         "--compute",
         help="perform compute demo / live tests",

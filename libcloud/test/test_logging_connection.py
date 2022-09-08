@@ -19,8 +19,9 @@ import zlib
 from io import StringIO
 from unittest import mock
 
-import libcloud
 import requests_mock
+
+import libcloud
 from libcloud.http import LibcloudConnection
 from libcloud.test import unittest
 from libcloud.common.base import Connection
@@ -130,9 +131,7 @@ class TestLoggingConnection(unittest.TestCase):
         self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
 
         # body type is bytes
-        r = self._get_mock_response(
-            "application/json", bytes('{"foo": "bar!"}', "utf-8")
-        )
+        r = self._get_mock_response("application/json", bytes('{"foo": "bar!"}', "utf-8"))
         result = conn._log_response(r).replace("\r", "")
         self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
 

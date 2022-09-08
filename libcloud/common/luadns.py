@@ -33,9 +33,7 @@ class LuadnsResponse(JsonResponse):
         super(LuadnsResponse, self).__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise LuadnsException(
-                code=self.status, message=self.errors.pop()["message"]
-            )
+            raise LuadnsException(code=self.status, message=self.errors.pop()["message"])
 
     def parse_body_and_errors(self):
         js = super(LuadnsResponse, self).parse_body()

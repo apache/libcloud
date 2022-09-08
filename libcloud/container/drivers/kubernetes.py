@@ -24,8 +24,11 @@ from libcloud.compute.types import NodeState
 from libcloud.container.base import Container, ContainerImage, ContainerDriver, ContainerCluster
 from libcloud.container.types import ContainerState
 from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.kubernetes import (KubernetesException, KubernetesDriverMixin,
-                                        KubernetesBasicAuthConnection)
+from libcloud.common.kubernetes import (
+    KubernetesException,
+    KubernetesDriverMixin,
+    KubernetesBasicAuthConnection,
+)
 from libcloud.container.providers import Provider
 
 __all__ = [
@@ -424,9 +427,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``bool``
         """
-        self.connection.request(
-            ROOT_URL + f"v1/nodes/{node_name}", method="DELETE"
-        ).object
+        self.connection.request(ROOT_URL + f"v1/nodes/{node_name}", method="DELETE").object
         return True
 
     def ex_get_version(self) -> str:
@@ -441,18 +442,14 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``list`` of ``dict``
         """
-        return self.connection.request("/apis/metrics.k8s.io/v1beta1/nodes").object[
-            "items"
-        ]
+        return self.connection.request("/apis/metrics.k8s.io/v1beta1/nodes").object["items"]
 
     def ex_list_pods_metrics(self) -> List[Dict[str, Any]]:
         """Get pods metrics from Kubernetes Metrics Server
 
         :rtype: ``list`` of ``dict``
         """
-        return self.connection.request("/apis/metrics.k8s.io/v1beta1/pods").object[
-            "items"
-        ]
+        return self.connection.request("/apis/metrics.k8s.io/v1beta1/pods").object["items"]
 
     def ex_list_services(self) -> List[Dict[str, Any]]:
         """Get cluster services
@@ -575,9 +572,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         # response contains the status of the containers in a separate field
         for container in data["spec"]["containers"]:
             if container_statuses:
-                spec = list(
-                    filter(lambda i: i["name"] == container["name"], container_statuses)
-                )[0]
+                spec = list(filter(lambda i: i["name"] == container["name"], container_statuses))[0]
             else:
                 spec = container_statuses
             container_obj = self._to_container(container, spec, data)
@@ -617,9 +612,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         if state:
             started_at = list(state.values())[0].get("startedAt")
             if started_at:
-                created_at = datetime.datetime.strptime(
-                    started_at, "%Y-%m-%dT%H:%M:%SZ"
-                )
+                created_at = datetime.datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%SZ")
         extra = {
             "pod": pod_data["metadata"]["name"],
             "namespace": pod_data["metadata"]["namespace"],
@@ -638,9 +631,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                 driver=self.connection.driver,
             ),
             ip_addresses=None,
-            state=(
-                ContainerState.RUNNING if container_status else ContainerState.UNKNOWN
-            ),
+            state=(ContainerState.RUNNING if container_status else ContainerState.UNKNOWN),
             driver=self.connection.driver,
             created_at=created_at,
             extra=extra,

@@ -34,8 +34,7 @@ def deprecated_warning(module):
         warnings.warn(
             "This path has been deprecated and the module"
             ' is now available at "libcloud.compute.%s".'
-            " This path will be fully removed in libcloud %s."
-            % (module, OLD_API_REMOVE_VERSION),
+            " This path will be fully removed in libcloud %s." % (module, OLD_API_REMOVE_VERSION),
             category=DeprecationWarning,
         )
 

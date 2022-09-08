@@ -148,9 +148,7 @@ class BuddyNSMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _api_v2_zone_test_com_DELETE_ZONE_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_v2_zone_test_com_DELETE_ZONE_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("zone_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]

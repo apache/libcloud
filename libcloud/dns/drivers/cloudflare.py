@@ -19,8 +19,14 @@ import json
 import itertools
 
 from libcloud.dns.base import Zone, Record, DNSDriver
-from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
-                                RecordDoesNotExistError, RecordAlreadyExistsError)
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
 from libcloud.utils.misc import reverse_dict, merge_valid_keys
 from libcloud.common.base import JsonResponse, ConnectionKey, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError, InvalidCredsError
@@ -412,9 +418,7 @@ class CloudFlareDNSDriver(DNSDriver):
             response = self.connection.request(url, params=params)
             return response, response.object["result"]
 
-        return self._paginate(
-            _ex_get_user_account_memberships, self.MEMBERSHIPS_PAGE_SIZE
-        )
+        return self._paginate(_ex_get_user_account_memberships, self.MEMBERSHIPS_PAGE_SIZE)
 
     def ex_get_zone_stats(self, zone, interval=30):
         raise NotImplementedError("not yet implemented in v4 driver")

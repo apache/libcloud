@@ -80,9 +80,7 @@ class GoGridTests(unittest.TestCase):
             )
         except LibcloudError as e:
             self.assertTrue(
-                str(e).find(
-                    "tried to add a member with an IP address not assigned to your account"
-                )
+                str(e).find("tried to add a member with an IP address not assigned to your account")
                 != -1
             )
         else:

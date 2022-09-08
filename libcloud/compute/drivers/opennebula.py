@@ -28,8 +28,15 @@ from base64 import b64encode
 from libcloud.utils.py3 import ET, b, next, httplib
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeState, NodeDriver, NodeLocation,
-                                   StorageVolume)
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeState,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+)
 from libcloud.compute.providers import Provider
 
 __all__ = [
@@ -187,9 +194,7 @@ class OpenNebulaNodeSize(NodeSize):
     NodeSize class for the OpenNebula.org driver.
     """
 
-    def __init__(
-        self, id, name, ram, disk, bandwidth, price, driver, cpu=None, vcpu=None
-    ):
+    def __init__(self, id, name, ram, disk, bandwidth, price, driver, cpu=None, vcpu=None):
         super(OpenNebulaNodeSize, self).__init__(
             id=id,
             name=name,
@@ -277,8 +282,7 @@ class OpenNebulaNetwork(object):
 
     def __repr__(self):
         return (
-            "<OpenNebulaNetwork: uuid=%s, name=%s, address=%s, size=%s, "
-            "provider=%s ...>"
+            "<OpenNebulaNetwork: uuid=%s, name=%s, address=%s, size=%s, " "provider=%s ...>"
         ) % (self.uuid, self.name, self.address, self.size, self.driver.name)
 
 
@@ -362,9 +366,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                         {"network": "%s" % (str(network.id)), "ip": network.address},
                     )
                 else:
-                    ET.SubElement(
-                        networkGroup, "NIC", {"network": "%s" % (str(network.id))}
-                    )
+                    ET.SubElement(networkGroup, "NIC", {"network": "%s" % (str(network.id))})
 
         xml = ET.tostring(compute)
         node = self.connection.request("/compute", method="POST", data=xml).object
@@ -530,9 +532,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         networks = []
         for element in object.findall("NETWORK"):
             network_id = element.attrib["href"].partition("/network/")[2]
-            network_element = self.connection.request(
-                ("/network/%s" % (network_id))
-            ).object
+            network_element = self.connection.request(("/network/%s" % (network_id))).object
             networks.append(self._to_network(network_element))
 
         return networks
@@ -720,9 +720,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
             for network in networks:
                 nic = ET.SubElement(compute, "NIC")
-                ET.SubElement(
-                    nic, "NETWORK", {"href": "/network/%s" % (str(network.id))}
-                )
+                ET.SubElement(nic, "NETWORK", {"href": "/network/%s" % (str(network.id))})
                 if network.address:
                     ip_line = ET.SubElement(nic, "IP")
                     ip_line.text = network.address
@@ -1176,9 +1174,7 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
         vol_size.text = str(size)
 
         xml = ET.tostring(storage)
-        volume = self.connection.request(
-            "/storage", {"occixml": xml}, method="POST"
-        ).object
+        volume = self.connection.request("/storage", {"occixml": xml}, method="POST").object
 
         return self._to_volume(volume)
 
@@ -1258,9 +1254,7 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
             storage_id = storage.attrib["href"].partition("/storage/")[2]
 
             volumes.append(
-                self._to_volume(
-                    self.connection.request("/storage/%s" % storage_id).object
-                )
+                self._to_volume(self.connection.request("/storage/%s" % storage_id).object)
             )
 
         return volumes

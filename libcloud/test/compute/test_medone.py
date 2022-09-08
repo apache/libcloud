@@ -16,8 +16,10 @@
 import unittest
 
 from libcloud.compute.drivers.medone import MedOneNodeDriver
-from libcloud.test.compute.test_dimensiondata_v2_3 import (DimensionDataMockHttp,
-                                                           DimensionData_v2_3_Tests)
+from libcloud.test.compute.test_dimensiondata_v2_3 import (
+    DimensionDataMockHttp,
+    DimensionData_v2_3_Tests,
+)
 
 
 class MedOneTests(DimensionData_v2_3_Tests, unittest.TestCase):

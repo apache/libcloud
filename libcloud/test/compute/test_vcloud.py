@@ -30,10 +30,20 @@ from libcloud.test.secrets import VCLOUD_PARAMS
 from libcloud.compute.types import NodeState
 from libcloud.utils.iso8601 import UTC
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.drivers.vcloud import (Vdc, Lease, Subject, ControlAccess, TerremarkDriver,
-                                             VCloudNodeDriver, VCloud_1_5_NodeDriver,
-                                             VCloud_5_1_NodeDriver, VCloud_5_5_NodeDriver,
-                                             Instantiate_1_5_VAppXML, fixxpath, get_url_path)
+from libcloud.compute.drivers.vcloud import (
+    Vdc,
+    Lease,
+    Subject,
+    ControlAccess,
+    TerremarkDriver,
+    VCloudNodeDriver,
+    VCloud_1_5_NodeDriver,
+    VCloud_5_1_NodeDriver,
+    VCloud_5_5_NodeDriver,
+    Instantiate_1_5_VAppXML,
+    fixxpath,
+    get_url_path,
+)
 
 BUILTINS = "__builtin__" if PY2 else "builtins"
 
@@ -50,8 +60,7 @@ def print_parameterized_failure(names_values):
     :rtype: ``None``
     """
     formatted_names_values = (
-        "    {name}={value}".format(name=name, value=value)
-        for name, value in names_values
+        "    {name}={value}".format(name=name, value=value) for name, value in names_values
     )
     traceback.print_exc()
     print(
@@ -261,9 +270,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         # invalid inputs
         self.assertRaises(ValueError, self.driver._validate_vm_names, ["invalid.host"])
         self.assertRaises(ValueError, self.driver._validate_vm_names, ["inv-alid.host"])
-        self.assertRaises(
-            ValueError, self.driver._validate_vm_names, ["hostnametoooolong"]
-        )
+        self.assertRaises(ValueError, self.driver._validate_vm_names, ["hostnametoooolong"])
         self.assertRaises(ValueError, self.driver._validate_vm_names, ["host$name"])
 
     def test_change_vm_names(self):
@@ -290,9 +297,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
                 )
             )
         )
-        self.assertFalse(
-            self.driver._is_node(NodeImage("testId", "testNode", driver=self.driver))
-        )
+        self.assertFalse(self.driver._is_node(NodeImage("testId", "testNode", driver=self.driver)))
 
     def test_ex_deploy(self):
         node = self.driver.ex_deploy_node(
@@ -357,9 +362,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertIsNone(node)
 
     def test_ex_add_vm_disk__with_invalid_values(self):
-        self.assertRaises(
-            ValueError, self.driver.ex_add_vm_disk, "dummy", "invalid value"
-        )
+        self.assertRaises(ValueError, self.driver.ex_add_vm_disk, "dummy", "invalid value")
         self.assertRaises(ValueError, self.driver.ex_add_vm_disk, "dummy", "-1")
 
     def test_ex_add_vm_disk(self):
@@ -398,9 +401,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(vdcs[0].memory.units, "MB")
 
     def test_ex_list_nodes(self):
-        self.assertEqual(
-            len(self.driver.ex_list_nodes()), len(self.driver.list_nodes())
-        )
+        self.assertEqual(len(self.driver.ex_list_nodes()), len(self.driver.list_nodes()))
 
     def test_ex_list_nodes__masked_exception(self):
         """
@@ -439,9 +440,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             self.driver,
         )
         control_access = self.driver.ex_get_control_access(node)
-        self.assertEqual(
-            control_access.everyone_access_level, ControlAccess.AccessLevel.READ_ONLY
-        )
+        self.assertEqual(control_access.everyone_access_level, ControlAccess.AccessLevel.READ_ONLY)
         self.assertEqual(len(control_access.subjects), 1)
         self.assertEqual(control_access.subjects[0].type, "group")
         self.assertEqual(control_access.subjects[0].name, "MyGroup")
@@ -638,13 +637,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
     def test_change_vm_script_text_and_file_logic(self, _):
         assertion_error = False
 
-        for (
-            vm_script_file,
-            vm_script_text,
-            open_succeeds,
-            open_call_count,
-            returned_early,
-        ) in (
+        for (vm_script_file, vm_script_text, open_succeeds, open_call_count, returned_early,) in (
             (None, None, True, 0, True),
             (None, None, False, 0, True),
             (None, "script text", True, 0, False),
@@ -656,9 +649,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         ):
             try:
                 if open_succeeds:
-                    open_mock = patch(
-                        BUILTINS + ".open", mock_open(read_data="script text")
-                    )
+                    open_mock = patch(BUILTINS + ".open", mock_open(read_data="script text"))
                 else:
                     open_mock = patch(BUILTINS + ".open", side_effect=Exception())
                 with open_mock as mocked_open:
@@ -716,14 +707,10 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_to_lease(self):
         res = self.driver.connection.request(
-            get_url_path(
-                "https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d"
-            ),
+            get_url_path("https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d"),
             headers={"Content-Type": "application/vnd.vmware.vcloud.vApp+xml"},
         )
-        lease_settings_section = res.object.find(
-            fixxpath(res.object, "LeaseSettingsSection")
-        )
+        lease_settings_section = res.object.find(fixxpath(res.object, "LeaseSettingsSection"))
         lease = Lease.to_lease(lease_element=lease_settings_section)
 
         self.assertEqual(lease.deployment_lease, 86400)
@@ -1032,9 +1019,7 @@ class TerremarkMockHttp(MockHttp):
         body = self.fixtures.load("api_v0_8_catalogItem_5.xml")
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _api_v0_8_vdc_224_action_instantiateVAppTemplate(
-        self, method, url, body, headers
-    ):
+    def _api_v0_8_vdc_224_action_instantiateVAppTemplate(self, method, url, body, headers):
         body = self.fixtures.load("api_v0_8_vdc_224_action_instantiateVAppTemplate.xml")
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
@@ -1116,12 +1101,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("api_org_96726c78_4ae3_402f_b08b_7a78c6903d2a.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4.xml"
-        )
+    def _api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4(self, method, url, body, headers):
+        body = self.fixtures.load("api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0(self, method, url, body, headers):
@@ -1147,10 +1128,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_powerOn(
         self, method, url, body, headers
     ):
-        return (
-            self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
-                method, url, body, headers
-            )
+        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
+            method, url, body, headers
         )
 
     # Clone
@@ -1168,41 +1147,25 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml")
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
-    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a(
-        self, method, url, body, headers
-    ):
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a(self, method, url, body, headers):
         status = httplib.OK
         if method == "GET":
-            body = self.fixtures.load(
-                "api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a.xml"
-            )
+            body = self.fixtures.load("api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a.xml")
             status = httplib.OK
         elif method == "DELETE":
-            body = self.fixtures.load(
-                "api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml"
-            )
+            body = self.fixtures.load("api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml")
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
-    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b.xml"
-        )
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b(self, method, url, body, headers):
+        body = self.fixtures.load("api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c.xml"
-        )
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c(self, method, url, body, headers):
+        body = self.fixtures.load("api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045(
-        self, method, url, body, headers
-    ):
+    def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045(self, method, url, body, headers):
         body = self.fixtures.load(
             "put_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml"
         )
@@ -1226,32 +1189,20 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_reset(
         self, method, url, body, headers
     ):
-        return (
-            self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
-                method, url, body, headers
-            )
+        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
+            method, url, body, headers
         )
 
-    def _api_task_b034df55_fe81_4798_bc81_1f0fd0ead450(
-        self, method, url, body, headers
-    ):
+    def _api_task_b034df55_fe81_4798_bc81_1f0fd0ead450(self, method, url, body, headers):
         body = self.fixtures.load("api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4.xml"
-        )
+    def _api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4(self, method, url, body, headers):
+        body = self.fixtures.load("api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_catalogItem_3132e037_759b_4627_9056_ca66466fa607(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_catalogItem_3132e037_759b_4627_9056_ca66466fa607.xml"
-        )
+    def _api_catalogItem_3132e037_759b_4627_9056_ca66466fa607(self, method, url, body, headers):
+        body = self.fixtures.load("api_catalogItem_3132e037_759b_4627_9056_ca66466fa607.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_deployTest(self, method, url, body, headers):
@@ -1298,73 +1249,51 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_vApp_undeployPowerOffTest(self, method, url, body, headers):
         return self._api_vApp_undeployTest(method, url, body, headers)
 
-    def _api_vApp_undeployPowerOffTest_action_undeploy(
-        self, method, url, body, headers
-    ):
+    def _api_vApp_undeployPowerOffTest_action_undeploy(self, method, url, body, headers):
         self.assertIn(b("powerOff"), b(body))
         return self._api_vApp_undeployTest_action_undeploy(method, url, body, headers)
 
     def _api_vApp_vapp_access_to_resource_forbidden(self, method, url, body, headers):
         raise Exception(
-            ET.fromstring(
-                self.fixtures.load("api_vApp_vapp_access_to_resource_forbidden.xml")
-            )
+            ET.fromstring(self.fixtures.load("api_vApp_vapp_access_to_resource_forbidden.xml"))
         )
 
     def _api_vApp_vm_test(self, method, url, body, headers):
         body = self.fixtures.load("api_vApp_vm_test.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_vApp_vm_test_virtualHardwareSection_disks(
-        self, method, url, body, headers
-    ):
+    def _api_vApp_vm_test_virtualHardwareSection_disks(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "get_api_vApp_vm_test_virtualHardwareSection_disks.xml"
-            )
+            body = self.fixtures.load("get_api_vApp_vm_test_virtualHardwareSection_disks.xml")
             status = httplib.OK
         else:
-            body = self.fixtures.load(
-                "put_api_vApp_vm_test_virtualHardwareSection_disks.xml"
-            )
+            body = self.fixtures.load("put_api_vApp_vm_test_virtualHardwareSection_disks.xml")
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
     def _api_vApp_vm_test_virtualHardwareSection_cpu(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "get_api_vApp_vm_test_virtualHardwareSection_cpu.xml"
-            )
+            body = self.fixtures.load("get_api_vApp_vm_test_virtualHardwareSection_cpu.xml")
             status = httplib.OK
         else:
-            body = self.fixtures.load(
-                "put_api_vApp_vm_test_virtualHardwareSection_cpu.xml"
-            )
+            body = self.fixtures.load("put_api_vApp_vm_test_virtualHardwareSection_cpu.xml")
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
-    def _api_vApp_vm_test_virtualHardwareSection_memory(
-        self, method, url, body, headers
-    ):
+    def _api_vApp_vm_test_virtualHardwareSection_memory(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "get_api_vApp_vm_test_virtualHardwareSection_memory.xml"
-            )
+            body = self.fixtures.load("get_api_vApp_vm_test_virtualHardwareSection_memory.xml")
             status = httplib.OK
         else:
-            body = self.fixtures.load(
-                "put_api_vApp_vm_test_virtualHardwareSection_memory.xml"
-            )
+            body = self.fixtures.load("put_api_vApp_vm_test_virtualHardwareSection_memory.xml")
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_powerOff(
         self, method, url, body, headers
     ):
-        return (
-            self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
-                method, url, body, headers
-            )
+        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
+            method, url, body, headers
         )
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
@@ -1425,20 +1354,12 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         )
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml"
-        )
+    def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(self, method, url, body, headers):
+        body = self.fixtures.load("api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d.xml"
-        )
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d(self, method, url, body, headers):
+        body = self.fixtures.load("api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
 
@@ -1454,9 +1375,7 @@ class VCloud_5_5_MockHttp(VCloud_1_5_MockHttp):
         )
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_task_fab4b26f_4f2e_4d49_ad01_ae9324bbfe48(
-        self, method, url, body, headers
-    ):
+    def _api_task_fab4b26f_4f2e_4d49_ad01_ae9324bbfe48(self, method, url, body, headers):
         body = self.fixtures.load("api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
@@ -1469,9 +1388,7 @@ class VCloud_5_5_MockHttp(VCloud_1_5_MockHttp):
         )
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_task_2518935e_b315_4d8e_9e99_9275f751877c(
-        self, method, url, body, headers
-    ):
+    def _api_task_2518935e_b315_4d8e_9e99_9275f751877c(self, method, url, body, headers):
         body = self.fixtures.load("api_task_2518935e_b315_4d8e_9e99_9275f751877c.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
@@ -1484,9 +1401,7 @@ class VCloud_5_5_MockHttp(VCloud_1_5_MockHttp):
         )
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
-    def _api_task_fe75d3af_f5a3_44a5_b016_ae0bdadfc32b(
-        self, method, url, body, headers
-    ):
+    def _api_task_fe75d3af_f5a3_44a5_b016_ae0bdadfc32b(self, method, url, body, headers):
         body = self.fixtures.load("api_task_fe75d3af_f5a3_44a5_b016_ae0bdadfc32b.xml")
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 

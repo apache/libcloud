@@ -238,9 +238,7 @@ class DummyNodeDriver(NodeDriver):
         """
 
         return [
-            NodeSize(
-                id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self
-            ),
+            NodeSize(id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self),
             NodeSize(
                 id=2,
                 name="Medium",

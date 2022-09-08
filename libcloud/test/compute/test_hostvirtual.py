@@ -116,9 +116,7 @@ class HostVirtualTest(unittest.TestCase):
         auth = NodeAuthPassword("vr!@#hosted#@!")
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        node = self.driver.create_node(
-            name="test.com", image=image, size=size, auth=auth
-        )
+        node = self.driver.create_node(name="test.com", image=image, size=size, auth=auth)
         self.assertEqual("62291", node.id)
         self.assertEqual("server1.vr-cluster.org", node.name)
 

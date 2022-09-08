@@ -33,9 +33,7 @@ from libcloud.common.exceptions import BaseHTTPError
 
 class PointDNSException(ProviderError):
     def __init__(self, value, http_code, driver=None):
-        super(PointDNSException, self).__init__(
-            value=value, http_code=http_code, driver=driver
-        )
+        super(PointDNSException, self).__init__(value=value, http_code=http_code, driver=driver)
         self.args = (http_code, value)
 
 
@@ -216,9 +214,7 @@ class PointDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         try:
-            response = self.connection.request(
-                "/zones/%s/records/%s" % (zone_id, record_id)
-            )
+            response = self.connection.request("/zones/%s/records/%s" % (zone_id, record_id))
         except MalformedResponseError as e:
             if e.body == "Not found":
                 raise RecordDoesNotExistError(
@@ -323,9 +319,7 @@ class PointDNSDriver(DNSDriver):
             r_json.update(extra)
         r_data = json.dumps({"zone": r_json})
         try:
-            response = self.connection.request(
-                "/zones/%s" % zone.id, method="PUT", data=r_data
-            )
+            response = self.connection.request("/zones/%s" % zone.id, method="PUT", data=r_data)
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
                 raise ZoneDoesNotExistError(
@@ -410,9 +404,7 @@ class PointDNSDriver(DNSDriver):
         zone_id = record.zone.id
         record_id = record.id
         try:
-            self.connection.request(
-                "/zones/%s/records/%s" % (zone_id, record_id), method="DELETE"
-            )
+            self.connection.request("/zones/%s/records/%s" % (zone_id, record_id), method="DELETE")
         except MalformedResponseError as e:
             if e.body == "Not found":
                 raise RecordDoesNotExistError(
@@ -443,9 +435,7 @@ class PointDNSDriver(DNSDriver):
         mail_redirects = self._to_mail_redirects(response.object, zone)
         return mail_redirects
 
-    def ex_create_redirect(
-        self, redirect_to, name, type, zone, iframe=None, query=None
-    ):
+    def ex_create_redirect(self, redirect_to, name, type, zone, iframe=None, query=None):
         """
         :param redirect_to: The data field. (redirect_to)
         :type redirect_to: ``str``
@@ -520,9 +510,7 @@ class PointDNSDriver(DNSDriver):
         :rtype: ``list`` of :class:`Redirect`
         """
         try:
-            response = self.connection.request(
-                "/zones/%s/redirects/%s" % (zone_id, redirect_id)
-            )
+            response = self.connection.request("/zones/%s/redirects/%s" % (zone_id, redirect_id))
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
                 raise PointDNSException(
@@ -545,9 +533,7 @@ class PointDNSDriver(DNSDriver):
         :rtype: ``list`` of :class:`MailRedirect`
         """
         try:
-            response = self.connection.request(
-                "/zones/%s/mail_redirects/%s" % (zone_id, mail_r_id)
-            )
+            response = self.connection.request("/zones/%s/mail_redirects/%s" % (zone_id, mail_r_id))
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
                 raise PointDNSException(
@@ -767,9 +753,7 @@ class PointDNSDriver(DNSDriver):
         type = record.get("redirect_type")
         iframe = record.get("iframe_title")
         query = record.get("redirect_query_string")
-        return Redirect(
-            id, name, redirect_to, type, self, zone, iframe=iframe, query=query
-        )
+        return Redirect(id, name, redirect_to, type, self, zone, iframe=iframe, query=query)
 
     def _to_mail_redirects(self, data, zone):
         mail_redirects = []

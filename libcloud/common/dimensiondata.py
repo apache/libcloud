@@ -297,8 +297,7 @@ def dd_object_to_id(obj, obj_type, id_value="id"):
         return obj
     else:
         raise TypeError(
-            "Invalid type %s looking for basestring or %s"
-            % (type(obj).__name__, obj_type.__name__)
+            "Invalid type %s looking for basestring or %s" % (type(obj).__name__, obj_type.__name__)
         )
 
 
@@ -335,9 +334,7 @@ class DimensionDataResponse(XmlResponse):
                 message = findtext(body, message[0], message[1])
                 if message is not None:
                     break
-            raise DimensionDataAPIException(
-                code=code, msg=message, driver=self.connection.driver
-            )
+            raise DimensionDataAPIException(code=code, msg=message, driver=self.connection.driver)
         if self.status is not httplib.OK:
             raise DimensionDataAPIException(
                 code=self.status, msg=body, driver=self.connection.driver
@@ -450,9 +447,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
             action=action, params=params, data=data, method=method, headers=headers
         )
 
-    def request_api_2(
-        self, path, action, params=None, data="", headers=None, method="GET"
-    ):
+    def request_api_2(self, path, action, params=None, data="", headers=None, method="GET"):
         action = "%s/%s/%s/%s" % (
             self.api_path_version_2,
             self.active_api_version,
@@ -477,18 +472,14 @@ class DimensionDataConnection(ConnectionUserAndKey):
             raw=True,
         )
 
-    def request_with_orgId_api_1(
-        self, action, params=None, data="", headers=None, method="GET"
-    ):
+    def request_with_orgId_api_1(self, action, params=None, data="", headers=None, method="GET"):
         action = "%s/%s" % (self.get_resource_path_api_1(), action)
 
         return super(DimensionDataConnection, self).request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
-    def request_with_orgId_api_2(
-        self, action, params=None, data="", headers=None, method="GET"
-    ):
+    def request_with_orgId_api_2(self, action, params=None, data="", headers=None, method="GET"):
         action = "%s/%s" % (self.get_resource_path_api_2(), action)
 
         return super(DimensionDataConnection, self).request(
@@ -527,9 +518,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
             params = {}
         params["pageSize"] = page_size
 
-        resp = self.request_with_orgId_api_2(
-            action, params, data, headers, method
-        ).object
+        resp = self.request_with_orgId_api_2(action, params, data, headers, method).object
         yield resp
         if len(resp) <= 0:
             return
@@ -540,9 +529,7 @@ class DimensionDataConnection(ConnectionUserAndKey):
 
         while int(pcount) >= int(psize):
             params["pageNumber"] = int(pnumber) + 1
-            resp = self.request_with_orgId_api_2(
-                action, params, data, headers, method
-            ).object
+            resp = self.request_with_orgId_api_2(action, params, data, headers, method).object
             pcount = resp.get("pageCount")  # pylint: disable=no-member
             psize = resp.get("pageSize")  # pylint: disable=no-member
             pnumber = resp.get("pageNumber")  # pylint: disable=no-member
@@ -778,8 +765,7 @@ class DimensionDataPublicIpBlock(object):
 
     def __repr__(self):
         return (
-            "<DimensionDataNetworkDomain: id=%s, base_ip=%s, "
-            "size=%s, location=%s, status=%s>"
+            "<DimensionDataNetworkDomain: id=%s, base_ip=%s, " "size=%s, location=%s, status=%s>"
         ) % (self.id, self.base_ip, self.size, self.location, self.status)
 
 
@@ -877,9 +863,7 @@ class DimensionDataServerVMWareTools(object):
 
     def __repr__(self):
         return (
-            "<DimensionDataServerVMWareTools "
-            "status=%s, version_status=%s, "
-            "api_version=%s>"
+            "<DimensionDataServerVMWareTools " "status=%s, version_status=%s, " "api_version=%s>"
         ) % (self.status, self.version_status, self.api_version)
 
 
@@ -1095,8 +1079,7 @@ class DimensionDataVlan(object):
 
     def __repr__(self):
         return (
-            "<DimensionDataVlan: id=%s, name=%s, "
-            "description=%s, location=%s, status=%s>"
+            "<DimensionDataVlan: id=%s, name=%s, " "description=%s, location=%s, status=%s>"
         ) % (self.id, self.name, self.description, self.location, self.status)
 
 
@@ -1197,8 +1180,7 @@ class DimensionDataPoolMember(object):
 
     def __repr__(self):
         return (
-            "<DimensionDataPoolMember: id=%s, name=%s, "
-            "ip=%s, status=%s, port=%s, node_id=%s>"
+            "<DimensionDataPoolMember: id=%s, name=%s, " "ip=%s, status=%s, port=%s, node_id=%s>"
         ) % (self.id, self.name, self.ip, self.status, self.port, self.node_id)
 
 
@@ -1276,9 +1258,12 @@ class DimensionDataVirtualListener(object):
         self.ip = ip
 
     def __repr__(self):
-        return (
-            "<DimensionDataVirtualListener: id=%s, name=%s, " "status=%s, ip=%s>"
-        ) % (self.id, self.name, self.status, self.ip)
+        return ("<DimensionDataVirtualListener: id=%s, name=%s, " "status=%s, ip=%s>") % (
+            self.id,
+            self.name,
+            self.status,
+            self.ip,
+        )
 
 
 class DimensionDataDefaultHealthMonitor(object):
@@ -1390,9 +1375,10 @@ class DimensionDataVirtualListenerCompatibility(object):
         self.protocol = protocol
 
     def __repr__(self):
-        return (
-            "<DimensionDataVirtualListenerCompatibility: " "type=%s, protocol=%s>"
-        ) % (self.type, self.protocol)
+        return ("<DimensionDataVirtualListenerCompatibility: " "type=%s, protocol=%s>") % (
+            self.type,
+            self.protocol,
+        )
 
 
 class DimensionDataBackupDetails(object):
@@ -1953,8 +1939,8 @@ class DimensionDataNic(object):
         self.network_adapter_name = network_adapter_name
 
     def __repr__(self):
-        return (
-            "<DimensionDataNic: private_ip_v4=%s, vlan=%s,"
-            "network_adapter_name=%s>"
-            % (self.private_ip_v4, self.vlan, self.network_adapter_name)
+        return "<DimensionDataNic: private_ip_v4=%s, vlan=%s," "network_adapter_name=%s>" % (
+            self.private_ip_v4,
+            self.vlan,
+            self.network_adapter_name,
         )

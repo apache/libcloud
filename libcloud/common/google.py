@@ -88,13 +88,12 @@ except ImportError:
     import json  # type: ignore
 
 
-
 try:
+    from cryptography import exceptions
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.hashes import SHA256
     from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
-    from cryptography import exceptions
 except ImportError:
     # The cryptography library is unavailable
     SHA256 = None  # type: ignore
@@ -382,14 +381,11 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
             response = self.request("/o/oauth2/token", method="POST", data=data)
         except AttributeError:
             raise GoogleAuthError(
-                "Invalid authorization response, please "
-                "check your credentials and time drift."
+                "Invalid authorization response, please " "check your credentials and time drift."
             )
         token_info = response.object
         if "expires_in" in token_info:
-            expire_time = _utcnow() + datetime.timedelta(
-                seconds=token_info["expires_in"]
-            )
+            expire_time = _utcnow() + datetime.timedelta(seconds=token_info["expires_in"])
             token_info["expire_time"] = _utc_timestamp(expire_time)
         return token_info
 
@@ -525,9 +521,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                     with open(key_path, "r") as f:
                         key_content = f.read()
                 except IOError:
-                    raise GoogleAuthError(
-                        "Missing (or unreadable) key " "file: '%s'" % key
-                    )
+                    raise GoogleAuthError("Missing (or unreadable) key " "file: '%s'" % key)
             else:
                 # assume it's a PEM str or serialized JSON str
                 key_content = key
@@ -550,9 +544,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
 
         try:
             # check if the key is actually a PEM encoded private key
-            serialization.load_pem_private_key(
-                b(key), password=None, backend=default_backend()
-            )
+            serialization.load_pem_private_key(b(key), password=None, backend=default_backend())
         except ValueError as e:
             raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
         except TypeError as e:
@@ -560,9 +552,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         except exceptions.UnsupportedAlgorithm as e:
             raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
 
-        super(GoogleServiceAcctAuthConnection, self).__init__(
-            user_id, key, *args, **kwargs
-        )
+        super(GoogleServiceAcctAuthConnection, self).__init__(user_id, key, *args, **kwargs)
 
     def get_new_token(self):
         """
@@ -619,18 +609,12 @@ class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
         path = "/instance/service-accounts/default/token"
         http_code, http_reason, token_info = _get_gce_metadata(path)
         if http_code == httplib.NOT_FOUND:
-            raise ValueError(
-                "Service Accounts are not enabled for this " "GCE instance."
-            )
+            raise ValueError("Service Accounts are not enabled for this " "GCE instance.")
         if http_code != httplib.OK:
-            raise ValueError(
-                "Internal GCE Authorization failed: " "'%s'" % str(http_reason)
-            )
+            raise ValueError("Internal GCE Authorization failed: " "'%s'" % str(http_reason))
         token_info = json.loads(token_info)
         if "expires_in" in token_info:
-            expire_time = _utcnow() + datetime.timedelta(
-                seconds=token_info["expires_in"]
-            )
+            expire_time = _utcnow() + datetime.timedelta(seconds=token_info["expires_in"])
             token_info["expire_time"] = _utc_timestamp(expire_time)
         return token_info
 
@@ -706,16 +690,12 @@ class GoogleAuthType(object):
 class GoogleOAuth2Credential(object):
     default_credential_file = "~/.google_libcloud_auth"
 
-    def __init__(
-        self, user_id, key, auth_type=None, credential_file=None, scopes=None, **kwargs
-    ):
+    def __init__(self, user_id, key, auth_type=None, credential_file=None, scopes=None, **kwargs):
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if self.auth_type not in GoogleAuthType.ALL_TYPES:
             raise GoogleAuthError("Invalid auth type: %s" % self.auth_type)
         if not GoogleAuthType.is_oauth2(self.auth_type):
-            raise GoogleAuthError(
-                ("Auth type %s cannot be used with OAuth2" % self.auth_type)
-            )
+            raise GoogleAuthError(("Auth type %s cannot be used with OAuth2" % self.auth_type))
         self.user_id = user_id
         self.key = key
 
@@ -781,9 +761,7 @@ class GoogleOAuth2Credential(object):
         except (IOError, ValueError) as e:
             # Note: File related errors (IOError) and errors related to json
             # parsing of the data (ValueError) are not fatal.
-            LOG.info(
-                'Failed to read cached auth token from file "%s": %s', filename, str(e)
-            )
+            LOG.info('Failed to read cached auth token from file "%s": %s', filename, str(e))
 
         return token
 

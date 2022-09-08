@@ -27,9 +27,6 @@ except ImportError:
     import json  # NOQA
 
 
-
-
-
 class CloudscaleTests(LibcloudTestCase):
     def setUp(self):
         CloudscaleNodeDriver.connectionCls.conn_class = CloudscaleMockHttp
@@ -68,9 +65,7 @@ class CloudscaleTests(LibcloudTestCase):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].id, "47cec963-fcd2-482f-bdb6-24461b2d47b1")
-        self.assertEqual(
-            nodes[0].public_ips, ["185.98.122.176", "2a06:c01:1:1902::7ab0:176"]
-        )
+        self.assertEqual(nodes[0].public_ips, ["185.98.122.176", "2a06:c01:1:1902::7ab0:176"])
 
     def test_reboot_node_success(self):
         node = self.driver.list_nodes()[0]
@@ -109,15 +104,11 @@ class CloudscaleMockHttp(MockHttp):
             response = httplib.responses[httplib.CREATED]
             return (httplib.CREATED, body, {}, response)
 
-    def _v1_servers_47cec963_fcd2_482f_bdb6_24461b2d47b1(
-        self, method, url, body, headers
-    ):
+    def _v1_servers_47cec963_fcd2_482f_bdb6_24461b2d47b1(self, method, url, body, headers):
         assert method == "DELETE"
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
-    def _v1_servers_47cec963_fcd2_482f_bdb6_24461b2d47b1_reboot(
-        self, method, url, body, headers
-    ):
+    def _v1_servers_47cec963_fcd2_482f_bdb6_24461b2d47b1_reboot(self, method, url, body, headers):
         return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
 

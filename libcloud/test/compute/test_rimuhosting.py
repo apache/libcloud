@@ -51,9 +51,7 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEqual(len(images), 6)
         image = images[0]
-        self.assertEqual(
-            image.name, "Debian 5.0 (aka Lenny, RimuHosting" " recommended distro)"
-        )
+        self.assertEqual(image.name, "Debian 5.0 (aka Lenny, RimuHosting" " recommended distro)")
         self.assertEqual(image.id, "lenny")
 
     def test_reboot_node(self):
@@ -100,9 +98,7 @@ class RimuHostingMockHttp(MockHttp):
     def _r_orders_order_88833465_api_ivan_net_nz_vps_running_state(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "r_orders_order_88833465_api_ivan_net_nz_vps_running_state.json"
-        )
+        body = self.fixtures.load("r_orders_order_88833465_api_ivan_net_nz_vps_running_state.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

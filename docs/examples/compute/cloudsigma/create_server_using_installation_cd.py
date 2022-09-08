@@ -8,9 +8,7 @@ name = "test node"
 size = driver.list_sizes()[0]
 
 drives = driver.ex_list_library_drives()
-image = [
-    drive for drive in drives if drive.name == "FreeBSD 8.2" and drive.media == "cdrom"
-][0]
+image = [drive for drive in drives if drive.name == "FreeBSD 8.2" and drive.media == "cdrom"][0]
 
 # 1. Create a node
 node = driver.create_node(name=name, size=size, image=image)

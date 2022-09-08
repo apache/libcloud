@@ -78,14 +78,10 @@ class VoxelTest(unittest.TestCase):
     def test_create_node_invalid_disk_size(self):
         image = NodeImage(id=1, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
         size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
-        location = NodeLocation(
-            id=1, name="Europe", country="England", driver=self.driver
-        )
+        location = NodeLocation(id=1, name="Europe", country="England", driver=self.driver)
 
         try:
-            self.driver.create_node(
-                name="foo", image=image, size=size, location=location
-            )
+            self.driver.create_node(name="foo", image=image, size=size, location=location)
         except ValueError:
             pass
         else:
@@ -95,13 +91,9 @@ class VoxelTest(unittest.TestCase):
         VoxelMockHttp.type = "CREATE_NODE"
         image = NodeImage(id=1, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
         size = NodeSize(1, "256 slice", 1024, 500, None, None, driver=self.driver)
-        location = NodeLocation(
-            id=1, name="Europe", country="England", driver=self.driver
-        )
+        location = NodeLocation(id=1, name="Europe", country="England", driver=self.driver)
 
-        node = self.driver.create_node(
-            name="foo", image=image, size=size, location=location
-        )
+        node = self.driver.create_node(name="foo", image=image, size=size, location=location)
         self.assertEqual(node.id, "1234")
 
         node = self.driver.create_node(

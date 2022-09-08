@@ -286,10 +286,7 @@ class GCELBDriver(Driver):
 
         :rtype: ``list`` of :class:`Member`
         """
-        return [
-            self._node_to_member(n, balancer)
-            for n in balancer.extra["targetpool"].nodes
-        ]
+        return [self._node_to_member(n, balancer) for n in balancer.extra["targetpool"].nodes]
 
     def ex_create_healthcheck(self, *args, **kwargs):
         return self.gce.ex_create_healthcheck(*args, **kwargs)

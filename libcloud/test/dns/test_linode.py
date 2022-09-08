@@ -68,9 +68,7 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(srvrecord.name, "_minecraft._udp")
         self.assertEqual(srvrecord.type, RecordType.SRV)
         self.assertEqual(srvrecord.data, "mc.linode.com")
-        self.assertHasKeys(
-            srvrecord.extra, ["protocol", "ttl_sec", "port", "priority", "weight"]
-        )
+        self.assertHasKeys(srvrecord.extra, ["protocol", "ttl_sec", "port", "priority", "weight"])
 
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
@@ -133,9 +131,7 @@ class LinodeTests(unittest.TestCase):
             self.fail("Exception was not thrown")
 
     def test_create_zone_success(self):
-        zone = self.driver.create_zone(
-            domain="foo.bar.com", type="master", ttl=None, extra=None
-        )
+        zone = self.driver.create_zone(domain="foo.bar.com", type="master", ttl=None, extra=None)
         self.assertEqual(zone.id, "5094")
         self.assertEqual(zone.domain, "foo.bar.com")
 
@@ -143,9 +139,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = "VALIDATION_ERROR"
 
         try:
-            self.driver.create_zone(
-                domain="foo.bar.com", type="master", ttl=None, extra=None
-            )
+            self.driver.create_zone(domain="foo.bar.com", type="master", ttl=None, extra=None)
         except LinodeException:
             pass
         else:
@@ -269,9 +263,7 @@ class LinodeMockHttp(MockHttp):
         body = self.fixtures.load("get_zone_does_not_exist.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_resource_list(
-        self, method, url, body, headers
-    ):
+    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_resource_list(self, method, url, body, headers):
         body = self.fixtures.load("get_record_does_not_exist.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -279,9 +271,7 @@ class LinodeMockHttp(MockHttp):
         body = self.fixtures.load("get_zone.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_resource_list(
-        self, method, url, body, headers
-    ):
+    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_resource_list(self, method, url, body, headers):
         body = self.fixtures.load("get_record_does_not_exist.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

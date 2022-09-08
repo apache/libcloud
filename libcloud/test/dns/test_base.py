@@ -66,15 +66,11 @@ class BaseTestCase(unittest.TestCase):
         self.tmp_path = self.tmp_file[1]
 
     def test_export_zone_to_bind_format_slave_should_throw(self):
-        zone = Zone(
-            id=1, domain="example.com", type="slave", ttl=900, driver=self.driver
-        )
+        zone = Zone(id=1, domain="example.com", type="slave", ttl=900, driver=self.driver)
         self.assertRaises(ValueError, zone.export_to_bind_format)
 
     def test_export_zone_to_bind_format_success(self):
-        zone = Zone(
-            id=1, domain="example.com", type="master", ttl=900, driver=self.driver
-        )
+        zone = Zone(id=1, domain="example.com", type="master", ttl=900, driver=self.driver)
 
         mock_records = []
 
@@ -120,29 +116,21 @@ class BaseTestCase(unittest.TestCase):
             assertRegex(self, lines[1], r"\$ORIGIN example\.com\.")
             assertRegex(self, lines[2], r"\$TTL 900")
 
-            assertRegex(
-                self, lines[4], r"www.example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1"
-            )
+            assertRegex(self, lines[4], r"www.example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1")
             assertRegex(
                 self,
                 lines[5],
                 r"www.example.com\.\s+900\s+IN\s+AAAA\s+2a01:4f8:121:3121::2",
             )
-            assertRegex(
-                self, lines[6], r"www.example.com\.\s+123\s+IN\s+A\s+127\.0\.0\.1"
-            )
+            assertRegex(self, lines[6], r"www.example.com\.\s+123\s+IN\s+A\s+127\.0\.0\.1")
             assertRegex(self, lines[7], r"example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1")
-            assertRegex(
-                self, lines[8], r'test1.example.com\.\s+900\s+IN\s+TXT\s+"test foo bar"'
-            )
+            assertRegex(self, lines[8], r'test1.example.com\.\s+900\s+IN\s+TXT\s+"test foo bar"')
             assertRegex(
                 self,
                 lines[9],
                 r'test2.example.com\.\s+900\s+IN\s+TXT\s+"test \\"foo\\" \\"bar\\""',
             )
-            assertRegex(
-                self, lines[10], r"example.com\.\s+900\s+IN\s+MX\s+10\s+mx.example.com"
-            )
+            assertRegex(self, lines[10], r"example.com\.\s+900\s+IN\s+MX\s+10\s+mx.example.com")
             assertRegex(
                 self,
                 lines[11],

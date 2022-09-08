@@ -27,13 +27,17 @@ import multiprocessing
 from libcloud.utils.files import exhaust_iterator
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Object, Container
-from libcloud.storage.types import (ContainerIsNotEmptyError, InvalidContainerNameError,
-                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
+from libcloud.storage.types import (
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+    ContainerAlreadyExistsError,
+)
 
 try:
-    from libcloud.storage.drivers.local import LocalStorageDriver
-    from libcloud.storage.drivers.local import LockLocalStorage
     import fasteners  # noqa
+
+    from libcloud.storage.drivers.local import LockLocalStorage, LocalStorageDriver
 except ImportError:
     print("fasteners library is not available, skipping local_storage tests...")
     LocalStorageDriver = None
@@ -90,10 +94,7 @@ class LocalTests(unittest.TestCase):
             os.unlink(tmppath)
         except Exception as e:
             msg = str(e)
-            if (
-                "being used by another process" in msg
-                and platform.system().lower() == "windows"
-            ):
+            if "being used by another process" in msg and platform.system().lower() == "windows":
                 return
             raise e
 

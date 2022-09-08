@@ -19,8 +19,13 @@ except ImportError:
     import json
 
 from libcloud.dns.base import Zone, Record, DNSDriver
-from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
-                                RecordDoesNotExistError)
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
 from libcloud.common.luadns import LuadnsResponse, LuadnsException, LuadnsConnection
 
 __all__ = ["LuadnsDNSDriver"]
@@ -174,9 +179,7 @@ class LuadnsDNSDriver(DNSDriver):
             response = self.connection.request(action=action)
         except LuadnsException as e:
             if e.message == "Record not found.":
-                raise RecordDoesNotExistError(
-                    record_id=record_id, driver=self, value=""
-                )
+                raise RecordDoesNotExistError(record_id=record_id, driver=self, value="")
             else:
                 raise e
 
@@ -198,9 +201,7 @@ class LuadnsDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method="DELETE")
         except LuadnsException as e:
             if e.message == "Record not found.":
-                raise RecordDoesNotExistError(
-                    record_id=record.id, driver=self, value=""
-                )
+                raise RecordDoesNotExistError(record_id=record.id, driver=self, value="")
             else:
                 raise e
 

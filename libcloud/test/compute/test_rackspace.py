@@ -21,8 +21,11 @@ from libcloud.test.secrets import RACKSPACE_PARAMS, RACKSPACE_NOVA_PARAMS
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver, RackspaceFirstGenNodeDriver
-from libcloud.test.compute.test_openstack import (OpenStack_1_0_Tests, OpenStack_1_1_Tests,
-                                                  OpenStack_1_1_MockHttp)
+from libcloud.test.compute.test_openstack import (
+    OpenStack_1_0_Tests,
+    OpenStack_1_1_Tests,
+    OpenStack_1_1_MockHttp,
+)
 
 DEPRECATED_RACKSPACE_PROVIDERS = [
     Provider.RACKSPACE_UK,

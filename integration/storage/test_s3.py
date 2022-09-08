@@ -16,8 +16,9 @@ import os
 import sys
 import unittest
 
-from libcloud.storage import types
 from integration.storage.base import Integration
+
+from libcloud.storage import types
 
 try:
     import boto3

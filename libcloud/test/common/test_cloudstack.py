@@ -27,9 +27,6 @@ except ImportError:
     import json
 
 
-
-
-
 async_delay = 0
 
 
@@ -46,9 +43,7 @@ class CloudStackMockDriver(object):
 class CloudStackCommonTest(unittest.TestCase):
     def setUp(self):
         CloudStackConnection.conn_class = CloudStackMockHttp
-        self.connection = CloudStackConnection(
-            "apikey", "secret", host=CloudStackMockDriver.host
-        )
+        self.connection = CloudStackConnection("apikey", "secret", host=CloudStackMockDriver.host)
         self.connection.poll_interval = 0.0
         self.driver = self.connection.driver = CloudStackMockDriver()
 

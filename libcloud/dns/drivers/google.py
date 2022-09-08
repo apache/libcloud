@@ -74,16 +74,12 @@ class GoogleDNSDriver(DNSDriver):
         RecordType.CAA: "CAA",
     }
 
-    def __init__(
-        self, user_id, key, project=None, auth_type=None, scopes=None, **kwargs
-    ):
+    def __init__(self, user_id, key, project=None, auth_type=None, scopes=None, **kwargs):
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
         if not self.project:
-            raise ValueError(
-                "Project name must be specified using " '"project" keyword.'
-            )
+            raise ValueError("Project name must be specified using " '"project" keyword.')
         super(GoogleDNSDriver, self).__init__(user_id, key, **kwargs)
 
     def iterate_zones(self):
@@ -119,9 +115,7 @@ class GoogleDNSDriver(DNSDriver):
         try:
             response = self.connection.request(request, method="GET").object
         except ResourceNotFoundError:
-            raise ZoneDoesNotExistError(
-                value="", driver=self.connection.driver, zone_id=zone_id
-            )
+            raise ZoneDoesNotExistError(value="", driver=self.connection.driver, zone_id=zone_id)
 
         return self._to_zone(response)
 
@@ -147,21 +141,15 @@ class GoogleDNSDriver(DNSDriver):
         request = "/managedZones/%s/rrsets" % (zone_id)
 
         try:
-            response = self.connection.request(
-                request, method="GET", params=params
-            ).object
+            response = self.connection.request(request, method="GET", params=params).object
         except ResourceNotFoundError:
-            raise ZoneDoesNotExistError(
-                value="", driver=self.connection.driver, zone_id=zone_id
-            )
+            raise ZoneDoesNotExistError(value="", driver=self.connection.driver, zone_id=zone_id)
 
         if len(response["rrsets"]) > 0:
             zone = self.get_zone(zone_id)
             return self._to_record(response["rrsets"][0], zone)
 
-        raise RecordDoesNotExistError(
-            value="", driver=self.connection.driver, record_id=record_id
-        )
+        raise RecordDoesNotExistError(value="", driver=self.connection.driver, record_id=record_id)
 
     def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
@@ -226,11 +214,7 @@ class GoogleDNSDriver(DNSDriver):
         ttl = data.get("ttl", 0)
         rrdatas = data.get("rrdatas", [])
 
-        data = {
-            "additions": [
-                {"name": name, "type": type, "ttl": int(ttl), "rrdatas": rrdatas}
-            ]
-        }
+        data = {"additions": [{"name": name, "type": type, "ttl": int(ttl), "rrdatas": rrdatas}]}
         request = "/managedZones/%s/changes" % (zone.id)
         response = self.connection.request(request, method="POST", data=data).object
         return self._to_record(response["additions"][0], zone)

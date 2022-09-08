@@ -29,9 +29,7 @@ class SplitStringToAlphaNumTest(unittest.TestCase):
         self.assertEqual(utils.splitStringWithNumbers("12-abc"), [12, "-abc"])
 
     def testMiddle(self):
-        self.assertEqual(
-            utils.splitStringWithNumbers("abc-345-def"), ["abc-", 345, "-def"]
-        )
+        self.assertEqual(utils.splitStringWithNumbers("abc-345-def"), ["abc-", 345, "-def"])
 
     def testFinal(self):
         self.assertEqual(utils.splitStringWithNumbers("xyz-42"), ["xyz-", 42])

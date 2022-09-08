@@ -137,9 +137,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
 
         ip_args.update({"zoneid": location, "networkid": network_id, "vpc_id": vpc_id})
 
-        result = self._async_request(
-            command="associateIpAddress", params=ip_args, method="GET"
-        )
+        result = self._async_request(command="associateIpAddress", params=ip_args, method="GET")
         public_ip = result["ipaddress"]
 
         args.update(
@@ -152,18 +150,14 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
             }
         )
 
-        result = self._sync_request(
-            command="createLoadBalancerRule", params=args, method="GET"
-        )
+        result = self._sync_request(command="createLoadBalancerRule", params=args, method="GET")
 
         listbalancers = self._sync_request(
             command="listLoadBalancerRules", params=args, method="GET"
         )
 
         listbalancers = [
-            rule
-            for rule in listbalancers["loadbalancerrule"]
-            if rule["id"] == result["id"]
+            rule for rule in listbalancers["loadbalancerrule"] if rule["id"] == result["id"]
         ]
         if len(listbalancers) != 1:
             return None
@@ -225,6 +219,4 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         return balancer
 
     def _to_member(self, obj, port, balancer):
-        return Member(
-            id=obj["id"], ip=obj["nic"][0]["ipaddress"], port=port, balancer=balancer
-        )
+        return Member(id=obj["id"], ip=obj["nic"][0]["ipaddress"], port=port, balancer=balancer)

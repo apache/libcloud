@@ -92,9 +92,7 @@ EXCEPTIONS_FIELDS = {
     "LW::Exception::RecordNotFound": {"fields": ["field", "input"]},
     "LW::Exception::RemoteService::Authorization": {"fields": ["url"]},
     "LW::Exception::Resource": {"fields": ["resource"]},
-    "LW::Exception::Resource::Insufficient": {
-        "fields": ["available", "requested", "resource"]
-    },
+    "LW::Exception::Resource::Insufficient": {"fields": ["available", "requested", "resource"]},
     "LW::Exception::Resource::Unavailable": {"fields": ["resource"]},
     "LW::Exception::Serialize": {"fields": ["data", "encoding"]},
     "LW::Exception::Workflow::Conflict": {"fields": ["conflict", "workflow"]},
@@ -107,9 +105,7 @@ class LiquidWebResponse(JsonResponse):
 
     def __init__(self, response, connection):
         self.errors = []
-        super(LiquidWebResponse, self).__init__(
-            response=response, connection=connection
-        )
+        super(LiquidWebResponse, self).__init__(response=response, connection=connection)
         self.objects, self.errors = self.parse_body_and_errors()
         if self.errors:
             error = self.errors.pop()

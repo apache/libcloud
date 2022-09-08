@@ -29,9 +29,6 @@ except ImportError:
     import json
 
 
-
-
-
 class CloudStackLBTests(unittest.TestCase):
     def setUp(self):
         CloudStackLBDriver.connectionCls.conn_class = CloudStackMockHttp

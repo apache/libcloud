@@ -139,9 +139,7 @@ class JoyentHttp(MockHttp):
             body = self.fixtures.load("my_machines_create.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _my_machines_2fb67f5f_53f2_40ab_9d99_b9ff68cfb2ab(
-        self, method, url, body, headers
-    ):
+    def _my_machines_2fb67f5f_53f2_40ab_9d99_b9ff68cfb2ab(self, method, url, body, headers):
         body = self.fixtures.load("my_machines_create.json")
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 

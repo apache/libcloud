@@ -15,8 +15,12 @@
 
 __all__ = ["GCEBackupDriver"]
 
-from libcloud.backup.base import (BackupDriver, BackupTarget, BackupTargetJob,
-                                  BackupTargetRecoveryPoint)
+from libcloud.backup.base import (
+    BackupDriver,
+    BackupTarget,
+    BackupTargetJob,
+    BackupTargetRecoveryPoint,
+)
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
 from libcloud.common.google import GoogleResponse, GoogleBaseConnection
 from libcloud.utils.iso8601 import parse_date
@@ -154,16 +158,12 @@ class GCEBackupDriver(BackupDriver):
         :type     credential_file: ``str``
         """
         if not project:
-            raise ValueError(
-                "Project name must be specified using " '"project" keyword.'
-            )
+            raise ValueError("Project name must be specified using " '"project" keyword.')
 
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
-        self.credential_file = (
-            credential_file or "~/.gce_libcloud_auth" + "." + self.project
-        )
+        self.credential_file = credential_file or "~/.gce_libcloud_auth" + "." + self.project
 
         super(GCEBackupDriver, self).__init__(user_id, key, **kwargs)
 
@@ -235,9 +235,7 @@ class GCEBackupDriver(BackupDriver):
         else:
             raise RuntimeError("Node does not have any block devices")
 
-    def create_target_from_container(
-        self, container, type=BackupTargetType.OBJECT, extra=None
-    ):
+    def create_target_from_container(self, container, type=BackupTargetType.OBJECT, extra=None):
         """
         Creates a new backup target from an existing storage container
 
@@ -252,9 +250,7 @@ class GCEBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            "create_target_from_container not implemented for this driver"
-        )
+        raise NotImplementedError("create_target_from_container not implemented for this driver")
 
     def update_target(self, target, name, address, extra):
         """
@@ -322,9 +318,7 @@ class GCEBackupDriver(BackupDriver):
         """
         raise NotImplementedError("recover_target not implemented for this driver")
 
-    def recover_target_out_of_place(
-        self, target, recovery_point, recovery_target, path=None
-    ):
+    def recover_target_out_of_place(self, target, recovery_point, recovery_target, path=None):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -342,9 +336,7 @@ class GCEBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            "recover_target_out_of_place not implemented for this driver"
-        )
+        raise NotImplementedError("recover_target_out_of_place not implemented for this driver")
 
     def get_target_job(self, target, id):
         """

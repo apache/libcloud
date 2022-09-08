@@ -24,6 +24,7 @@ from unittest import mock
 from unittest.mock import Mock, PropertyMock
 
 import pytest
+
 from libcloud.test import StorageMockHttp
 from libcloud.utils.py3 import StringIO, httplib
 from libcloud.common.types import InvalidCredsError
@@ -208,18 +209,14 @@ class GoogleStorageConnectionTest(GoogleTestCase):
         project = "foo-project"
 
         # Modify headers when there is no project.
-        conn = CONN_CLS(
-            "foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3
-        )
+        conn = CONN_CLS("foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3)
         conn.get_project = mock.Mock(return_value=None)
         headers = dict(starting_headers)
         headers["Date"] = TODAY
         self.assertEqual(conn.add_default_headers(dict(starting_headers)), headers)
 
         # Modify headers when there is a project.
-        conn = CONN_CLS(
-            "foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3
-        )
+        conn = CONN_CLS("foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3)
         conn.get_project = mock.Mock(return_value=project)
         headers = dict(starting_headers)
         headers["Date"] = TODAY
@@ -248,9 +245,7 @@ class GoogleStorageConnectionTest(GoogleTestCase):
             "other": "lower this!",
         }
 
-        conn = CONN_CLS(
-            "foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3
-        )
+        conn = CONN_CLS("foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3)
         conn.method = "GET"
         conn.action = "/path"
         result = conn._get_s3_auth_signature(starting_params, starting_headers)
@@ -275,9 +270,7 @@ class GoogleStorageConnectionTest(GoogleTestCase):
         starting_params = {"starting": "params"}
         starting_headers = {"starting": "headers"}
 
-        conn = CONN_CLS(
-            "foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCE
-        )
+        conn = CONN_CLS("foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCE)
         conn._get_s3_auth_signature = mock.Mock()
         conn.oauth2_credential = mock.Mock()
         conn.oauth2_credential.access_token = "Access_Token!"
@@ -299,9 +292,7 @@ class GoogleStorageConnectionTest(GoogleTestCase):
             fake_hmac_method.headers_passed = copy.deepcopy(headers)
             return "fake signature!"
 
-        conn = CONN_CLS(
-            "foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3
-        )
+        conn = CONN_CLS("foo_user", "bar_key", secure=True, auth_type=GoogleAuthType.GCS_S3)
         conn._get_s3_auth_signature = fake_hmac_method
         conn.action = "GET"
         conn.method = "/foo"
@@ -345,9 +336,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
 
     def test_get_object_object_size_not_in_content_length_header(self):
         self.mock_response_klass.type = "get_object"
-        obj = self.driver.get_object(
-            container_name="test2", object_name="test_cont_length"
-        )
+        obj = self.driver.get_object(container_name="test2", object_name="test_cont_length")
         self.assertEqual(obj.size, 9587)
 
     def test_delete_permissions(self):
@@ -372,9 +361,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         self.driver.json_connection.request = mock_request
 
         # Test deleting permissions on an object with no entity.
-        self.assertRaises(
-            ValueError, self.driver.ex_delete_permissions, "bucket", "object"
-        )
+        self.assertRaises(ValueError, self.driver.ex_delete_permissions, "bucket", "object")
 
         # Test deleting permissions on an bucket with no entity.
         self.assertRaises(ValueError, self.driver.ex_delete_permissions, "bucket")
@@ -413,9 +400,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         self.driver.json_connection.request = mock_request
 
         # Test setting object permissions.
-        self.driver.ex_set_permissions(
-            "bucket", "object", entity="user-foo", role="OWNER"
-        )
+        self.driver.ex_set_permissions("bucket", "object", entity="user-foo", role="OWNER")
         url = "/storage/v1/b/bucket/o/object/acl"
         mock_request.assert_called_once_with(
             url, method="POST", data=json.dumps({"role": "OWNER", "entity": "user-foo"})
@@ -457,9 +442,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         self.driver.json_connection.request = mock_request
 
         # Test forgetting a role.
-        self.assertRaises(
-            ValueError, self.driver.ex_set_permissions, "bucket", "object"
-        )
+        self.assertRaises(ValueError, self.driver.ex_set_permissions, "bucket", "object")
         self.assertRaises(ValueError, self.driver.ex_set_permissions, "bucket")
         mock_request.assert_not_called()
 
@@ -494,9 +477,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         )
 
         # Test for setting bucket permissions with no entity.
-        self.assertRaises(
-            ValueError, self.driver.ex_set_permissions, "bucket", role="OWNER"
-        )
+        self.assertRaises(ValueError, self.driver.ex_set_permissions, "bucket", role="OWNER")
 
         mock_request.assert_not_called()
 

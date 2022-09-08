@@ -34,8 +34,6 @@ except ImportError:
     have_paramiko = False
 
 
-
-
 class TestUtils(unittest.TestCase):
     def tearDown(self):
         if "LIBCLOUD_DEBUG" in os.environ:
@@ -67,9 +65,7 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(paramiko_log_level, logging.DEBUG)
 
     def test_factory(self):
-        driver = libcloud.get_driver(
-            libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2
-        )
+        driver = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2)
         self.assertEqual(driver.__name__, "EC2NodeDriver")
 
     def test_raises_error(self):

@@ -96,9 +96,7 @@ class BaseGandiDriver(object):
     name = "Gandi"
 
     # Specific methods for gandi
-    def _wait_operation(
-        self, id, timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL
-    ):
+    def _wait_operation(self, id, timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL):
         """Wait for an operation to succeed"""
 
         for i in range(0, timeout, check_interval):
@@ -181,9 +179,7 @@ class NetworkInterface(BaseObject):
 
     uuid_prefix = "if:"
 
-    def __init__(
-        self, id, state, mac_address, driver, ips=None, node_id=None, extra=None
-    ):
+    def __init__(self, id, state, mac_address, driver, ips=None, node_id=None, extra=None):
         super(NetworkInterface, self).__init__(id, state, driver)
         self.mac = mac_address
         self.ips = ips or {}

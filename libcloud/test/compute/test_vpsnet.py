@@ -110,9 +110,7 @@ class VPSNetMockHttp(MockHttp):
     def _virtual_machines_2222_api10json_delete(self, method, url, body, headers):
         return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
-    def _virtual_machines_1384_reboot_api10json_reboot(
-        self, method, url, body, headers
-    ):
+    def _virtual_machines_1384_reboot_api10json_reboot(self, method, url, body, headers):
         body = """{
               "virtual_machine":
                 {

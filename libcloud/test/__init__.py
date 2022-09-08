@@ -19,6 +19,7 @@ import unittest
 
 import requests
 import requests_mock
+
 from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import PY2, httplib, parse_qs, urlparse, urlquote, parse_qsl
 from libcloud.common.base import Response
@@ -27,8 +28,6 @@ if PY2:
     from StringIO import StringIO
 else:
     from io import StringIO
-
-
 
 
 XML_HEADERS = {"content-type": "application/xml"}
@@ -130,9 +129,7 @@ class MockHttp(LibcloudConnection):
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
         headers = self._normalize_headers(headers=headers)
-        r_status, r_body, r_headers, r_reason = self._get_request(
-            method, url, body, headers
-        )
+        r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
         if r_body is None:
             r_body = ""
         # this is to catch any special chars e.g. ~ in the request. URL
@@ -161,13 +158,9 @@ class MockHttp(LibcloudConnection):
                     "Failed to mock out URL {0} - {1}".format(url, nma.request.url)
                 )
 
-    def prepared_request(
-        self, method, url, body=None, headers=None, raw=False, stream=False
-    ):
+    def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):
         headers = self._normalize_headers(headers=headers)
-        r_status, r_body, r_headers, r_reason = self._get_request(
-            method, url, body, headers
-        )
+        r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
 
         with requests_mock.mock() as m:
             m.register_uri(
@@ -210,10 +203,7 @@ class MockHttp(LibcloudConnection):
     def _get_method_name(self, type, use_param, qs, path):
         path = path.split("?")[0]
         meth_name = (
-            path.replace("/", "_")
-            .replace(".", "_")
-            .replace("-", "_")
-            .replace("~", "%7E")
+            path.replace("/", "_").replace(".", "_").replace("-", "_").replace("~", "%7E")
         )  # Python 3.7 no longer quotes ~
 
         if type:

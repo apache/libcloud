@@ -156,9 +156,7 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         container = self.driver.list_containers()[0]
         container_id = container.extra["id"]
         url = self.driver.ex_get_upload_url(container_id=container_id)
-        self.assertEqual(
-            url, "https://podxxx.backblaze.com/b2api/v1/b2_upload_file/abcd/defg"
-        )
+        self.assertEqual(url, "https://podxxx.backblaze.com/b2api/v1/b2_upload_file/abcd/defg")
 
 
 class BackblazeB2MockHttp(MockHttp):

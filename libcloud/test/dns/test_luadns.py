@@ -18,8 +18,12 @@ import unittest
 
 from libcloud.test import MockHttp
 from libcloud.dns.base import Zone, Record
-from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
-                                RecordDoesNotExistError)
+from libcloud.dns.types import (
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_LUADNS
 from libcloud.dns.drivers.luadns import LuadnsDNSDriver
@@ -268,9 +272,7 @@ class LuadnsMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_31_records_31_GET_RECORD_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_zones_31_records_31_GET_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("record_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]

@@ -22,8 +22,9 @@ import os
 import warnings
 
 import requests
-import libcloud.security
 from requests.adapters import HTTPAdapter
+
+import libcloud.security
 from libcloud.utils.py3 import PY3, urlparse
 
 try:
@@ -32,7 +33,6 @@ try:
     from urllib3.poolmanager import PoolManager
 except ImportError:
     from requests.packages.urllib3.poolmanager import PoolManager  # type: ignore
-
 
 
 __all__ = ["LibcloudBaseConnection", "LibcloudConnection"]
@@ -131,8 +131,7 @@ class LibcloudBaseConnection(object):
 
         if not parsed.hostname or not parsed.port:
             raise ValueError(
-                "proxy_url must be in the following format: "
-                "<scheme>://<proxy host>:<proxy port>"
+                "proxy_url must be in the following format: " "<scheme>://<proxy host>:<proxy port>"
             )
 
         proxy_scheme = parsed.scheme
@@ -201,9 +200,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         # Support for HTTP(s) proxy
         # NOTE: We always only use a single proxy (either HTTP or HTTPS)
         https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME, None)
-        http_proxy_url_env = os.environ.get(
-            HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env
-        )
+        http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env)
 
         # Connection argument has precedence over environment variables
         proxy_url = kwargs.pop("proxy_url", http_proxy_url_env)
@@ -228,9 +225,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         """
         return self.ca_cert if self.ca_cert is not None else self.verify
 
-    def request(
-        self, method, url, body=None, headers=None, raw=False, stream=False, hooks=None
-    ):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False, hooks=None):
         url = urlparse.urljoin(self.host, url)
         headers = self._normalize_headers(headers=headers)
 
@@ -246,14 +241,10 @@ class LibcloudConnection(LibcloudBaseConnection):
             hooks=hooks,
         )
 
-    def prepared_request(
-        self, method, url, body=None, headers=None, raw=False, stream=False
-    ):
+    def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):
         headers = self._normalize_headers(headers=headers)
 
-        req = requests.Request(
-            method, "".join([self.host, url]), data=body, headers=headers
-        )
+        req = requests.Request(method, "".join([self.host, url]), data=body, headers=headers)
 
         prepped = self.session.prepare_request(req)
 

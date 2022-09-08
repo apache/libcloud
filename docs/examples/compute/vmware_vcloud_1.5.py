@@ -34,9 +34,7 @@ driver.destroy_node(node)
 node = driver.create_node(name="test node 2", image=image, ex_deploy=False)
 
 # Create node with custom CPU & Memory values
-node = driver.create_node(
-    name="test node 3", image=image, ex_vm_cpu=3, ex_vm_memory=1024
-)
+node = driver.create_node(name="test node 3", image=image, ex_vm_cpu=3, ex_vm_memory=1024)
 
 # Create node with customised networking parameters (eg. for OVF
 # imported images)

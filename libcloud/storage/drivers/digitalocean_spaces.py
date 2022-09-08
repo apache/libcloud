@@ -123,9 +123,7 @@ class DigitalOceanSpacesStorageDriver(BaseS3StorageDriver):
         self.name = "DigitalOcean Spaces (%s)" % (region)
 
         self.region_name = region
-        self.signature_version = str(
-            kwargs.pop("signature_version", DEFAULT_SIGNATURE_VERSION)
-        )
+        self.signature_version = str(kwargs.pop("signature_version", DEFAULT_SIGNATURE_VERSION))
 
         if self.signature_version == "2":
             self.connectionCls = DOSpacesConnectionAWS2

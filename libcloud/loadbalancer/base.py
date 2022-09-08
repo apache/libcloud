@@ -272,9 +272,7 @@ class Driver(BaseDriver):
         :rtype: :class:`Member`
         """
 
-        raise NotImplementedError(
-            "balancer_attach_member not implemented for this driver"
-        )
+        raise NotImplementedError("balancer_attach_member not implemented for this driver")
 
     def balancer_detach_member(self, balancer, member):
         """
@@ -290,9 +288,7 @@ class Driver(BaseDriver):
         :rtype: ``bool``
         """
 
-        raise NotImplementedError(
-            "balancer_detach_member not implemented for this driver"
-        )
+        raise NotImplementedError("balancer_detach_member not implemented for this driver")
 
     def balancer_list_members(self, balancer):
         """
@@ -304,9 +300,7 @@ class Driver(BaseDriver):
         :rtype: ``list`` of :class:`Member`
         """
 
-        raise NotImplementedError(
-            "balancer_list_members not implemented for this driver"
-        )
+        raise NotImplementedError("balancer_list_members not implemented for this driver")
 
     def list_supported_algorithms(self):
         """
@@ -342,6 +336,4 @@ class Driver(BaseDriver):
         try:
             return self._ALGORITHM_TO_VALUE_MAP[algorithm]
         except KeyError:
-            raise LibcloudError(
-                value="Invalid algorithm: %s" % (algorithm), driver=self
-            )
+            raise LibcloudError(value="Invalid algorithm: %s" % (algorithm), driver=self)

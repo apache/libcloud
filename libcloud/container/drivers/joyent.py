@@ -71,8 +71,7 @@ class JoyentContainerDriver(DockerContainerDriver):
             # libcloud will handle them through LibcloudHTTPSConnection
             if not (key_file and cert_file):
                 raise Exception(
-                    "Needs both private key file and "
-                    "certificate file for tls authentication"
+                    "Needs both private key file and " "certificate file for tls authentication"
                 )
             self.connection.key_file = key_file
             self.connection.cert_file = cert_file

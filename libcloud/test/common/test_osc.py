@@ -69,9 +69,7 @@ class OSCRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
             service_name=self.driver.service_name,
             region=self.driver.region,
         )
-        self.assertIn(
-            "SignedHeaders=content-type;host;x-osc-date", headers["Authorization"]
-        )
+        self.assertIn("SignedHeaders=content-type;host;x-osc-date", headers["Authorization"])
 
     def test_get_signed_headers_contains_all_headers_lowercased(self):
         path = "my_region/my_service/outscale.com"

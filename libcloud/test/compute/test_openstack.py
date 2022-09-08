@@ -24,6 +24,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests_mock
+
 from libcloud.test import XML_HEADERS, MockHttp
 from libcloud.pricing import set_pricing, clear_pricing_data
 from libcloud.utils.py3 import u, httplib, method_type
@@ -32,33 +33,42 @@ from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedRes
 from libcloud.compute.base import Node, NodeSize, NodeImage
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.secrets import OPENSTACK_PARAMS
-from libcloud.compute.types import (Provider, StorageVolumeState, VolumeSnapshotState,
-                                    NodeImageMemberState, KeyPairDoesNotExistError)
+from libcloud.compute.types import (
+    Provider,
+    StorageVolumeState,
+    VolumeSnapshotState,
+    NodeImageMemberState,
+    KeyPairDoesNotExistError,
+)
 from libcloud.utils.iso8601 import UTC
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.providers import get_driver
 from libcloud.test.file_fixtures import OpenStackFixtures, ComputeFileFixtures
-from libcloud.common.openstack_identity import (AUTH_VERSIONS_WITH_EXPIRES,
-                                                OpenStackAuthenticationCache)
-from libcloud.compute.drivers.openstack import (OpenStackKeyPair, OpenStackNetwork,
-                                                OpenStackException, OpenStack_2_NodeDriver,
-                                                OpenStackSecurityGroup, OpenStack_2_ServerGroup,
-                                                OpenStack_1_0_Connection, OpenStack_1_0_NodeDriver,
-                                                OpenStack_1_1_NodeDriver,
-                                                OpenStack_2_FloatingIpPool,
-                                                OpenStackSecurityGroupRule,
-                                                OpenStack_1_1_FloatingIpPool,
-                                                OpenStack_2_PortInterfaceState,
-                                                OpenStack_1_1_FloatingIpAddress)
+from libcloud.common.openstack_identity import (
+    AUTH_VERSIONS_WITH_EXPIRES,
+    OpenStackAuthenticationCache,
+)
+from libcloud.compute.drivers.openstack import (
+    OpenStackKeyPair,
+    OpenStackNetwork,
+    OpenStackException,
+    OpenStack_2_NodeDriver,
+    OpenStackSecurityGroup,
+    OpenStack_2_ServerGroup,
+    OpenStack_1_0_Connection,
+    OpenStack_1_0_NodeDriver,
+    OpenStack_1_1_NodeDriver,
+    OpenStack_2_FloatingIpPool,
+    OpenStackSecurityGroupRule,
+    OpenStack_1_1_FloatingIpPool,
+    OpenStack_2_PortInterfaceState,
+    OpenStack_1_1_FloatingIpAddress,
+)
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-
-
-
 
 
 BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
@@ -184,9 +194,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
 
     def test_auth_token_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
-        self.assertEqual(
-            self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc"
-        )
+        self.assertEqual(self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
 
     def test_auth_token_expires_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
@@ -238,9 +246,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         kwargs["ex_auth_cache"] = OpenStackMockAuthCache()
         driver = self.driver_type(*self.driver_args, **kwargs)
         driver.list_nodes()
-        self.assertEqual(
-            kwargs["ex_auth_cache"], driver.connection.get_auth_class().auth_cache
-        )
+        self.assertEqual(kwargs["ex_auth_cache"], driver.connection.get_auth_class().auth_cache)
 
     def test_unauthorized_clears_cached_auth_context(self):
         auth_cache = OpenStackMockAuthCache()
@@ -570,9 +576,7 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
             httplib.responses[httplib.INTERNAL_SERVER_ERROR],
         )
 
-    def _v1_0_slug_images_detail_NO_MESSAGE_IN_ERROR_BODY(
-        self, method, url, body, headers
-    ):
+    def _v1_0_slug_images_detail_NO_MESSAGE_IN_ERROR_BODY(self, method, url, body, headers):
         body = self.fixtures.load("300_multiple_choices.json")
         return (
             httplib.MULTIPLE_CHOICES,
@@ -721,9 +725,7 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
     def _v1_0_slug_shared_ip_groups(self, method, url, body, headers):
 
         fixture = (
-            "v1_slug_shared_ip_group.xml"
-            if method == "POST"
-            else "v1_slug_shared_ip_groups.xml"
+            "v1_slug_shared_ip_group.xml" if method == "POST" else "v1_slug_shared_ip_groups.xml"
         )
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
@@ -732,9 +734,7 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("v1_slug_shared_ip_groups_detail.xml")
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
-    def _v1_0_slug_servers_3445_ips_public_67_23_21_133(
-        self, method, url, body, headers
-    ):
+    def _v1_0_slug_servers_3445_ips_public_67_23_21_133(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_444222_action(self, method, url, body, headers):
@@ -844,9 +844,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         Trash current auth token so driver will be forced to re-authenticate
         on next request.
         """
-        self.driver.connection._ex_force_base_url = (
-            "http://ex_force_base_url.com:666/forced_url"
-        )
+        self.driver.connection._ex_force_base_url = "http://ex_force_base_url.com:666/forced_url"
         self.driver.connection.auth_token = None
         self.driver.connection.auth_token_expires = None
         self.driver.connection._osa.auth_token = None
@@ -856,9 +854,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self._force_reauthentication()
         self.driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEqual(
-            self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc"
-        )
+        self.assertEqual(self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
 
     def test_auth_token_expires_is_set(self):
         self._force_reauthentication()
@@ -870,9 +866,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can
         # re-authenticate
-        self.driver.connection._ex_force_base_url = (
-            "http://ex_force_base_url.com:666/forced_url"
-        )
+        self.driver.connection._ex_force_base_url = "http://ex_force_base_url.com:666/forced_url"
         self.driver.connection.auth_token = None
         self.driver.connection._populate_hosts_and_request_paths()
 
@@ -905,9 +899,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
 
         # assert that we use the base url and not the auth url
-        self.assertEqual(
-            self.driver.connection.host, "some_other_ex_force_base_url.com"
-        )
+        self.assertEqual(self.driver.connection.host, "some_other_ex_force_base_url.com")
         self.assertEqual(self.driver.connection.port, 1222)
         self.assertEqual(self.driver.connection.request_path, "/some-service")
 
@@ -946,9 +938,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         driver = self.driver_type(*self.driver_args, **kwargs)
         driver.connection.get_auth_class()
         driver.list_nodes()
-        self.assertEqual(
-            kwargs["ex_auth_cache"], driver.connection.get_auth_class().auth_cache
-        )
+        self.assertEqual(kwargs["ex_auth_cache"], driver.connection.get_auth_class().auth_cache)
 
     def test_unauthorized_clears_cached_auth_context(self):
         auth_cache = OpenStackMockAuthCache()
@@ -1004,9 +994,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue("fec0:4801:7808:52:16:3eff:fe60:187d" in node.private_ips)
 
         # test creation date
-        self.assertEqual(
-            node.created_at, datetime.datetime(2011, 10, 11, 0, 51, 39, tzinfo=UTC)
-        )
+        self.assertEqual(node.created_at, datetime.datetime(2011, 10, 11, 0, 51, 39, tzinfo=UTC))
 
         self.assertEqual(node.extra.get("flavorId"), "2")
         self.assertEqual(node.extra.get("imageId"), "7")
@@ -1097,9 +1085,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(isinstance(size.vcpus, int))
             self.assertTrue(isinstance(size.disk, int))
             self.assertTrue(isinstance(size.swap, int))
-            self.assertTrue(
-                isinstance(size.ephemeral_disk, int) or size.ephemeral_disk is None
-            )
+            self.assertTrue(isinstance(size.ephemeral_disk, int) or size.ephemeral_disk is None)
             self.assertTrue(isinstance(size.extra, dict))
             if size.id == "1":
                 self.assertEqual(size.ephemeral_disk, 40)
@@ -1120,9 +1106,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         pricing = dict((str(i), i * 5.0) for i in range(1, 9))
 
-        set_pricing(
-            driver_type="compute", driver_name=self.driver.api_name, pricing=pricing
-        )
+        set_pricing(driver_type="compute", driver_name=self.driver.api_name, pricing=pricing)
 
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 8, "Wrong sizes count")
@@ -1143,9 +1127,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.extra["created"], "2011-08-06T18:13:11Z")
         self.assertEqual(image.extra["status"], "ACTIVE")
         self.assertEqual(image.extra["metadata"]["os_type"], "windows")
-        self.assertEqual(
-            image.extra["serverId"], "52415800-8b69-11e0-9b19-734f335aa7b3"
-        )
+        self.assertEqual(image.extra["serverId"], "52415800-8b69-11e0-9b19-734f335aa7b3")
         self.assertEqual(image.extra["minDisk"], 0)
         self.assertEqual(image.extra["minRam"], 0)
 
@@ -1235,9 +1217,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         image = NodeImage(id=11, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
         size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
         files = {"/file1": "content1", "/file2": "content2"}
-        node = self.driver.create_node(
-            name="racktest", image=image, size=size, ex_files=files
-        )
+        node = self.driver.create_node(name="racktest", image=image, size=size, ex_files=files)
         self.assertEqual(node.id, "26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe")
         self.assertEqual(node.name, "racktest")
         OpenStack_2_0_MockHttp.type = "EX_FILES_NONE"
@@ -1260,9 +1240,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         with patch.object(self.driver.connection, "request") as mock_request:
             self.driver.create_volume(1, "test", location="mylocation")
             name, args, kwargs = mock_request.mock_calls[0]
-            self.assertEqual(
-                kwargs["data"]["volume"]["availability_zone"], "mylocation"
-            )
+            self.assertEqual(kwargs["data"]["volume"]["availability_zone"], "mylocation")
 
     def test_create_volume_does_not_pass_location_to_request_if_none(self):
         with patch.object(self.driver.connection, "request") as mock_request:
@@ -1527,9 +1505,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(security_group.id, 4)
         self.assertEqual(security_group.tenant_id, "68")
         self.assertEqual(security_group.name, "ftp")
-        self.assertEqual(
-            security_group.description, "FTP Client-Server - Open 20-21 ports"
-        )
+        self.assertEqual(security_group.description, "FTP Client-Server - Open 20-21 ports")
         self.assertEqual(security_group.rules[0].id, 1)
         self.assertEqual(security_group.rules[0].parent_group_id, 4)
         self.assertEqual(security_group.rules[0].ip_protocol, "tcp")
@@ -1545,9 +1521,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(security_group.id, 4)
         self.assertEqual(security_group.tenant_id, "68")
         self.assertEqual(security_group.name, "ftp")
-        self.assertEqual(
-            security_group.description, "FTP Client-Server - Open 20-21 ports"
-        )
+        self.assertEqual(security_group.description, "FTP Client-Server - Open 20-21 ports")
         self.assertEqual(security_group.rules[0].id, 1)
         self.assertEqual(security_group.rules[0].parent_group_id, 4)
         self.assertEqual(security_group.rules[0].ip_protocol, "tcp")
@@ -1606,9 +1580,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(keypairs), 2, "Wrong keypairs count")
         keypair = keypairs[1]
         self.assertEqual(keypair.name, "key2")
-        self.assertEqual(
-            keypair.fingerprint, "5d:66:33:ae:99:0f:fb:cb:86:f2:bc:ae:53:99:b6:ed"
-        )
+        self.assertEqual(keypair.fingerprint, "5d:66:33:ae:99:0f:fb:cb:86:f2:bc:ae:53:99:b6:ed")
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertIsNone(keypair.private_key)
 
@@ -1618,54 +1590,40 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(key_pair.name, "test-key-pair")
 
     def test_get_key_pair_doesnt_exist(self):
-        self.assertRaises(
-            KeyPairDoesNotExistError, self.driver.get_key_pair, name="doesnt-exist"
-        )
+        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair, name="doesnt-exist")
 
     def test_create_key_pair(self):
         name = "key0"
         keypair = self.driver.create_key_pair(name=name)
         self.assertEqual(keypair.name, name)
 
-        self.assertEqual(
-            keypair.fingerprint, "80:f8:03:a7:8e:c1:c3:b1:7e:c5:8c:50:04:5e:1c:5b"
-        )
+        self.assertEqual(keypair.fingerprint, "80:f8:03:a7:8e:c1:c3:b1:7e:c5:8c:50:04:5e:1c:5b")
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertTrue(len(keypair.private_key) > 10)
 
     def test_import_key_pair_from_file(self):
         name = "key3"
-        path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub"
-        )
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub")
 
         with open(path, "r") as fp:
             pub_key = fp.read()
 
         keypair = self.driver.import_key_pair_from_file(name=name, key_file_path=path)
         self.assertEqual(keypair.name, name)
-        self.assertEqual(
-            keypair.fingerprint, "97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a"
-        )
+        self.assertEqual(keypair.fingerprint, "97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a")
         self.assertEqual(keypair.public_key, pub_key)
         self.assertIsNone(keypair.private_key)
 
     def test_import_key_pair_from_string(self):
         name = "key3"
-        path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub"
-        )
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub")
 
         with open(path, "r") as fp:
             pub_key = fp.read()
 
-        keypair = self.driver.import_key_pair_from_string(
-            name=name, key_material=pub_key
-        )
+        keypair = self.driver.import_key_pair_from_string(name=name, key_material=pub_key)
         self.assertEqual(keypair.name, name)
-        self.assertEqual(
-            keypair.fingerprint, "97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a"
-        )
+        self.assertEqual(keypair.fingerprint, "97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a")
         self.assertEqual(keypair.public_key, pub_key)
         self.assertIsNone(keypair.private_key)
 
@@ -1902,9 +1860,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         snapshots = self.driver.ex_list_snapshots()
         self.assertEqual(len(snapshots), 3)
-        self.assertEqual(
-            snapshots[0].created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC)
-        )
+        self.assertEqual(snapshots[0].created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC))
         self.assertEqual(snapshots[0].extra["created"], "2012-02-29T03:50:07Z")
         self.assertEqual(snapshots[0].extra["name"], "snap-001")
         self.assertEqual(snapshots[0].name, "snap-001")
@@ -1918,9 +1874,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.conn_class.type = "RACKSPACE"
 
         snapshot = self.driver.ex_get_snapshot("3fbbcccf-d058-4502-8844-6feeffdf4cb5")
-        self.assertEqual(
-            snapshot.created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC)
-        )
+        self.assertEqual(snapshot.created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC))
         self.assertEqual(snapshot.extra["created"], "2012-02-29T03:50:07Z")
         self.assertEqual(snapshot.extra["name"], "snap-001")
         self.assertEqual(snapshot.name, "snap-001")
@@ -2002,23 +1956,17 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.driver.image_connection._populate_hosts_and_request_paths()
 
         self.driver_klass.network_connectionCls.conn_class = OpenStack_2_0_MockHttp
-        self.driver_klass.network_connectionCls.auth_url = (
-            "https://auth.api.example.com"
-        )
+        self.driver_klass.network_connectionCls.auth_url = "https://auth.api.example.com"
         # normally authentication happens lazily, but we force it here
         self.driver.network_connection._populate_hosts_and_request_paths()
 
         self.driver_klass.volumev2_connectionCls.conn_class = OpenStack_2_0_MockHttp
-        self.driver_klass.volumev2_connectionCls.auth_url = (
-            "https://auth.api.example.com"
-        )
+        self.driver_klass.volumev2_connectionCls.auth_url = "https://auth.api.example.com"
         # normally authentication happens lazily, but we force it here
         self.driver.volumev2_connection._populate_hosts_and_request_paths()
 
         self.driver_klass.volumev3_connectionCls.conn_class = OpenStack_2_0_MockHttp
-        self.driver_klass.volumev3_connectionCls.auth_url = (
-            "https://auth.api.example.com"
-        )
+        self.driver_klass.volumev3_connectionCls.auth_url = "https://auth.api.example.com"
         # normally authentication happens lazily, but we force it here
         self.driver.volumev3_connection._populate_hosts_and_request_paths()
 
@@ -2166,9 +2114,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
         self.assertEqual(len(networks), 2)
         self.assertEqual(network.name, "net1")
-        self.assertEqual(
-            network.extra["subnets"], ["54d6f61d-db07-451c-9ab3-b9609b6b6f0b"]
-        )
+        self.assertEqual(network.extra["subnets"], ["54d6f61d-db07-451c-9ab3-b9609b6b6f0b"])
 
     def test_ex_get_network(self):
         network = self.driver.ex_get_network("cc2dad14-827a-feea-416b-f13e50511a0a")
@@ -2225,9 +2171,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(port.id, "126da55e-cfcb-41c8-ae39-a26cb8a7e723")
         self.assertEqual(port.state, OpenStack_2_PortInterfaceState.BUILD)
         self.assertEqual(port.created, "2018-07-04T14:38:18Z")
-        self.assertEqual(
-            port.extra["network_id"], "123c8a8c-6427-4e8f-a805-2035365f4d43"
-        )
+        self.assertEqual(port.extra["network_id"], "123c8a8c-6427-4e8f-a805-2035365f4d43")
         self.assertEqual(port.extra["project_id"], "abcdec85bee34bb0a44ab8255eb36abc")
         self.assertEqual(port.extra["tenant_id"], "abcdec85bee34bb0a44ab8255eb36abc")
         self.assertEqual(port.extra["name"], "")
@@ -2249,9 +2193,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(port.id, "126da55e-cfcb-41c8-ae39-a26cb8a7e723")
         self.assertEqual(port.state, OpenStack_2_PortInterfaceState.BUILD)
         self.assertEqual(port.created, "2018-07-04T14:38:18Z")
-        self.assertEqual(
-            port.extra["network_id"], "123c8a8c-6427-4e8f-a805-2035365f4d43"
-        )
+        self.assertEqual(port.extra["network_id"], "123c8a8c-6427-4e8f-a805-2035365f4d43")
         self.assertEqual(port.extra["project_id"], "abcdec85bee34bb0a44ab8255eb36abc")
         self.assertEqual(port.extra["tenant_id"], "abcdec85bee34bb0a44ab8255eb36abc")
         self.assertEqual(port.extra["admin_state_up"], True)
@@ -2264,9 +2206,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(port.id, "126da55e-cfcb-41c8-ae39-a26cb8a7e723")
         self.assertEqual(port.state, OpenStack_2_PortInterfaceState.BUILD)
         self.assertEqual(port.created, "2018-07-04T14:38:18Z")
-        self.assertEqual(
-            port.extra["network_id"], "123c8a8c-6427-4e8f-a805-2035365f4d43"
-        )
+        self.assertEqual(port.extra["network_id"], "123c8a8c-6427-4e8f-a805-2035365f4d43")
         self.assertEqual(port.extra["project_id"], "abcdec85bee34bb0a44ab8255eb36abc")
         self.assertEqual(port.extra["tenant_id"], "abcdec85bee34bb0a44ab8255eb36abc")
         self.assertEqual(port.extra["name"], "Some port name")
@@ -2287,9 +2227,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_update_port_allowed_address_pairs(self):
         allowed_address_pairs = [{"ip_address": "1.2.3.4"}, {"ip_address": "2.3.4.5"}]
         port = self.driver.ex_get_port("126da55e-cfcb-41c8-ae39-a26cb8a7e723")
-        ret = self.driver.ex_update_port(
-            port, allowed_address_pairs=allowed_address_pairs
-        )
+        ret = self.driver.ex_update_port(port, allowed_address_pairs=allowed_address_pairs)
         self.assertEqual(ret.extra["allowed_address_pairs"], allowed_address_pairs)
 
     def test_detach_port_interface(self):
@@ -2376,43 +2314,31 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         )
 
     def test_create_volume_passes_location_to_request_only_if_not_none(self):
-        with patch.object(
-            self.driver._get_volume_connection(), "request"
-        ) as mock_request:
+        with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
             self.driver.create_volume(1, "test", location="mylocation")
             name, args, kwargs = mock_request.mock_calls[0]
-            self.assertEqual(
-                kwargs["data"]["volume"]["availability_zone"], "mylocation"
-            )
+            self.assertEqual(kwargs["data"]["volume"]["availability_zone"], "mylocation")
 
     def test_create_volume_does_not_pass_location_to_request_if_none(self):
-        with patch.object(
-            self.driver._get_volume_connection(), "request"
-        ) as mock_request:
+        with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
             self.driver.create_volume(1, "test")
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("availability_zone" in kwargs["data"]["volume"])
 
     def test_create_volume_passes_volume_type_to_request_only_if_not_none(self):
-        with patch.object(
-            self.driver._get_volume_connection(), "request"
-        ) as mock_request:
+        with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
             self.driver.create_volume(1, "test", ex_volume_type="myvolumetype")
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertEqual(kwargs["data"]["volume"]["volume_type"], "myvolumetype")
 
     def test_create_volume_does_not_pass_volume_type_to_request_if_none(self):
-        with patch.object(
-            self.driver._get_volume_connection(), "request"
-        ) as mock_request:
+        with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
             self.driver.create_volume(1, "test")
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("volume_type" in kwargs["data"]["volume"])
 
     def test_create_volume_passes_image_ref_to_request_only_if_not_none(self):
-        with patch.object(
-            self.driver._get_volume_connection(), "request"
-        ) as mock_request:
+        with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
             self.driver.create_volume(
                 1, "test", ex_image_ref="353c4bd2-b28f-4857-9b7b-808db4397d03"
             )
@@ -2423,9 +2349,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             )
 
     def test_create_volume_does_not_pass_image_ref_to_request_if_none(self):
-        with patch.object(
-            self.driver._get_volume_connection(), "request"
-        ) as mock_request:
+        with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
             self.driver.create_volume(1, "test")
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("imageRef" in kwargs["data"]["volume"])
@@ -2433,9 +2357,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_create_snapshot_does_not_post_optional_parameters_if_none(self):
         volume = self.driver.list_volumes()[0]
         with patch.object(self.driver, "_to_snapshot"):
-            with patch.object(
-                self.driver._get_volume_connection(), "request"
-            ) as mock_request:
+            with patch.object(self.driver._get_volume_connection(), "request") as mock_request:
                 self.driver.create_volume_snapshot(
                     volume, name=None, ex_description=None, ex_force=True
                 )
@@ -2521,9 +2443,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(server_groups[1].name, "server_group_name")
 
     def test_ex_get_server_group(self):
-        server_group = self.driver.ex_get_server_group(
-            "616fb98f-46ca-475e-917e-2563e5a8cd19"
-        )
+        server_group = self.driver.ex_get_server_group("616fb98f-46ca-475e-917e-2563e5a8cd19")
         self.assertEqual(server_group.name, "server_group_name")
         self.assertEqual(server_group.policy, "anti-affinity")
 
@@ -2535,9 +2455,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertTrue(res)
 
     def test_ex_add_server_group(self):
-        server_group = self.driver.ex_add_server_group(
-            "server_group_name", "anti-affinity"
-        )
+        server_group = self.driver.ex_add_server_group("server_group_name", "anti-affinity")
         self.assertEqual(server_group.name, "server_group_name")
         self.assertEqual(server_group.policy, "anti-affinity")
 
@@ -2624,9 +2542,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             httplib.responses[httplib.OK],
         )
 
-    def _v1_1_slug_servers_detail_ERROR_STATE_NO_IMAGE_ID(
-        self, method, url, body, headers
-    ):
+    def _v1_1_slug_servers_detail_ERROR_STATE_NO_IMAGE_ID(self, method, url, body, headers):
         body = self.fixtures.load("_servers_detail_ERROR_STATE.json")
         return (
             httplib.OK,
@@ -2674,13 +2590,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             httplib.responses[httplib.OK],
         )
 
-    def _v1_1_slug_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe(
-        self, method, url, body, headers
-    ):
+    def _v1_1_slug_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json"
-            )
+            body = self.fixtures.load("_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json")
         else:
             raise NotImplementedError()
 
@@ -2727,8 +2639,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
         self.assertTrue(
             '"OS-DCF:diskConfig": "MANUAL"' in body,
-            msg="Manual disk configuration option was not specified in rebuild body: "
-            + body,
+            msg="Manual disk configuration option was not specified in rebuild body: " + body,
         )
 
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
@@ -2863,13 +2774,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-    def _v2_1337_v2_images_f24a3c1b_d52a_4116_91da_25b3eee8f55e(
-        self, method, url, body, headers
-    ):
+    def _v2_1337_v2_images_f24a3c1b_d52a_4116_91da_25b3eee8f55e(self, method, url, body, headers):
         if method == "GET" or method == "PATCH":
-            body = self.fixtures.load(
-                "_images_f24a3c1b-d52a-4116-91da-25b3eee8f55e.json"
-            )
+            body = self.fixtures.load("_images_f24a3c1b-d52a-4116-91da-25b3eee8f55e.json")
             return (
                 httplib.OK,
                 body,
@@ -2883,9 +2790,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         if method == "GET":
-            body = self.fixtures.load(
-                "_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members.json"
-            )
+            body = self.fixtures.load("_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members.json")
             return (
                 httplib.OK,
                 body,
@@ -2899,9 +2804,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         if method == "POST":
-            body = self.fixtures.load(
-                "_images_9af1a54e_a1b2_4df8_b747_4bec97abc799_members.json"
-            )
+            body = self.fixtures.load("_images_9af1a54e_a1b2_4df8_b747_4bec97abc799_members.json")
             return (
                 httplib.OK,
                 body,
@@ -2915,9 +2818,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         if method == "PUT":
-            body = self.fixtures.load(
-                "_images_8af1a54e_a1b2_4df8_b747_4bec97abc799_members.json"
-            )
+            body = self.fixtures.load("_images_8af1a54e_a1b2_4df8_b747_4bec97abc799_members.json")
             return (
                 httplib.OK,
                 body,
@@ -2972,21 +2873,15 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-    def _v1_1_slug_images_26365521_8c62_11f9_2c33_283d153ecc3a(
-        self, method, url, body, headers
-    ):
+    def _v1_1_slug_images_26365521_8c62_11f9_2c33_283d153ecc3a(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
 
-    def _v1_1_slug_images_4949f9ee_2421_4c81_8b49_13119446008b(
-        self, method, url, body, headers
-    ):
+    def _v1_1_slug_images_4949f9ee_2421_4c81_8b49_13119446008b(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_images_4949f9ee_2421_4c81_8b49_13119446008b.json"
-            )
+            body = self.fixtures.load("_images_4949f9ee_2421_4c81_8b49_13119446008b.json")
             return (
                 httplib.OK,
                 body,
@@ -2996,13 +2891,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-    def _v2_1337_v2_images_4949f9ee_2421_4c81_8b49_13119446008b(
-        self, method, url, body, headers
-    ):
+    def _v2_1337_v2_images_4949f9ee_2421_4c81_8b49_13119446008b(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_images_f24a3c1b-d52a-4116-91da-25b3eee8f55d.json"
-            )
+            body = self.fixtures.load("_images_f24a3c1b-d52a-4116-91da-25b3eee8f55d.json")
             return (
                 httplib.OK,
                 body,
@@ -3032,9 +2923,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-    def _v2_1337_v2_0_ports_126da55e_cfcb_41c8_ae39_a26cb8a7e723(
-        self, method, url, body, headers
-    ):
+    def _v2_1337_v2_0_ports_126da55e_cfcb_41c8_ae39_a26cb8a7e723(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         elif method == "GET":
@@ -3064,9 +2953,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-    def _v2_1337_servers_12065_os_volume_attachments_DEVICE_AUTO(
-        self, method, url, body, headers
-    ):
+    def _v2_1337_servers_12065_os_volume_attachments_DEVICE_AUTO(self, method, url, body, headers):
         # test_attach_volume_device_auto
         if method == "POST":
             if "rackspace" not in self.__class__.__name__.lower():
@@ -3097,9 +2984,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         if method == "GET":
-            body = self.fixtures.load(
-                "_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json"
-            )
+            body = self.fixtures.load("_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json")
         else:
             raise NotImplementedError()
 
@@ -3243,9 +3128,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         if method == "GET":
-            body = self.fixtures.load(
-                "_os_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d.json"
-            )
+            body = self.fixtures.load("_os_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d.json")
         elif method == "DELETE":
             body = ""
         else:
@@ -3258,9 +3141,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             httplib.responses[httplib.OK],
         )
 
-    def _v1_1_slug_servers_12065_os_volume_attachments(
-        self, method, url, body, headers
-    ):
+    def _v1_1_slug_servers_12065_os_volume_attachments(self, method, url, body, headers):
         if method == "POST":
             if "rackspace" not in self.__class__.__name__.lower():
                 body = json.loads(body)
@@ -3610,9 +3491,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
-    def _v3_1337_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(
-        self, method, url, body, headers
-    ):
+    def _v3_1337_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_v2_0__volume.json")
             return (
@@ -3630,13 +3509,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
-    def _v3_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(
-        self, method, url, body, headers
-    ):
+    def _v3_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load(
-                "_v2_0__volume_abc6a3a1_c4ce_40f6_9b9f_07a61508938d.json"
-            )
+            body = self.fixtures.load("_v2_0__volume_abc6a3a1_c4ce_40f6_9b9f_07a61508938d.json")
             return (
                 httplib.OK,
                 body,
@@ -3676,9 +3551,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
-    def _v3_1337_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(
-        self, method, url, body, headers
-    ):
+    def _v3_1337_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_v2_0__snapshot.json")
             return (
@@ -3990,11 +3863,7 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
         # Lazy import to avoid cyclic depedency issue
         from libcloud.test.common.test_openstack_identity import (
             OpenStackIdentity_2_0_MockHttp,
-        )
-        from libcloud.test.common.test_openstack_identity import (
             OpenStackIdentity_3_0_MockHttp,
-        )
-        from libcloud.test.common.test_openstack_identity import (
             OpenStackIdentity_3_0_AppCred_MockHttp,
         )
 
@@ -4013,14 +3882,10 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
         )
 
     def _v1_1_auth(self, method, url, body, headers):
-        return self.mock_http._v1_1_auth(
-            method=method, url=url, body=body, headers=headers
-        )
+        return self.mock_http._v1_1_auth(method=method, url=url, body=body, headers=headers)
 
     def _v2_0_tokens(self, method, url, body, headers):
-        return self.mock_http_2_0._v2_0_tokens(
-            method=method, url=url, body=body, headers=headers
-        )
+        return self.mock_http_2_0._v2_0_tokens(method=method, url=url, body=body, headers=headers)
 
     def _v2_1337_servers_detail(self, method, url, body, headers):
         return self.mock_http_2_0._v2_1337_servers_detail(
@@ -4032,9 +3897,7 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
             method=method, url=url, body=body, headers=headers
         )
 
-    def _v2_9c4693dce56b493b9b83197d900f7fba_servers_detail(
-        self, method, url, body, headers
-    ):
+    def _v2_9c4693dce56b493b9b83197d900f7fba_servers_detail(self, method, url, body, headers):
         return self.mock_http_1_1._v1_1_slug_servers_detail(
             method=method, url=url, body=body, headers=headers
         )
@@ -4117,9 +3980,7 @@ class OpenStack_AuthVersions_Tests(unittest.TestCase):
             return "https://servers.api.rackspacecloud.com/v1.0/slug"
 
         OpenStack_1_1_NodeDriver.connectionCls.get_endpoint = get_endpoint
-        OpenStack_1_1_NodeDriver.connectionCls.conn_class = (
-            OpenStack_AllAuthVersions_MockHttp
-        )
+        OpenStack_1_1_NodeDriver.connectionCls.conn_class = OpenStack_AllAuthVersions_MockHttp
 
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None

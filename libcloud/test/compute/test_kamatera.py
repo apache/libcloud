@@ -241,10 +241,7 @@ class KamateraMockHttp(MockHttp):
             self._service_queue_call_count = 0
         self._service_queue_call_count += 1
         body = self.fixtures.load(
-            {
-                "/service/queue?id=12345": "queue_12345-%s.json"
-                % self._service_queue_call_count
-            }[url]
+            {"/service/queue?id=12345": "queue_12345-%s.json" % self._service_queue_call_count}[url]
         )
         status = httplib.OK
         return status, body, {}, httplib.responses[status]
@@ -260,9 +257,7 @@ class KamateraMockHttp(MockHttp):
         return status, body, {}, httplib.responses[status]
 
     def _service_server_reboot(self, method, url, body, headers):
-        body = self.fixtures.load(
-            {"/service/server/reboot": "server_operation.json"}[url]
-        )
+        body = self.fixtures.load({"/service/server/reboot": "server_operation.json"}[url])
         status = httplib.OK
         return status, body, {}, httplib.responses[status]
 

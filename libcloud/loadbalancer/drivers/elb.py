@@ -176,9 +176,7 @@ class ElasticLBDriver(Driver):
         data = self.connection.request(ROOT, params=params).object
         return self._to_policy_types(data)
 
-    def ex_create_balancer_policy(
-        self, name, policy_name, policy_type, policy_attributes=None
-    ):
+    def ex_create_balancer_policy(self, name, policy_name, policy_type, policy_attributes=None):
         """
         Create a new load balancer policy
 
@@ -337,10 +335,7 @@ class ElasticLBDriver(Driver):
 
     def _to_balancers(self, data):
         xpath = "DescribeLoadBalancersResult/LoadBalancerDescriptions/member"
-        return [
-            self._to_balancer(el)
-            for el in findall(element=data, xpath=xpath, namespace=NS)
-        ]
+        return [self._to_balancer(el) for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_balancer(self, el):
         name = findtext(element=el, xpath="LoadBalancerName", namespace=NS)

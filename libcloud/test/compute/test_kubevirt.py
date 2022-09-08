@@ -159,18 +159,10 @@ class KubeVirtMockHttp(MockHttp):
         data_stop = {"spec": {"running": False}}
         data_start = {"spec": {"running": True}}
 
-        if (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_start
-        ):
+        if method == "PATCH" and headers["Content-Type"] == header and body == data_start:
             body = self.fixtures.load("start_testvm.json")
 
-        elif (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_stop
-        ):
+        elif method == "PATCH" and headers["Content-Type"] == header and body == data_stop:
             body = self.fixtures.load("stop_testvm.json")
 
         else:
@@ -185,18 +177,10 @@ class KubeVirtMockHttp(MockHttp):
         data_stop = {"spec": {"running": False}}
         data_start = {"spec": {"running": True}}
 
-        if (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_start
-        ):
+        if method == "PATCH" and headers["Content-Type"] == header and body == data_start:
             body = self.fixtures.load("start_vm_cirros.json")
 
-        elif (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_stop
-        ):
+        elif method == "PATCH" and headers["Content-Type"] == header and body == data_stop:
             body = self.fixtures.load("stop_vm_cirros.json")
 
         else:

@@ -38,9 +38,7 @@ class TestCaseMixin:
         self.assertTrue(size.bandwidth is None or isinstance(size.bandwidth, int))
         # Check that price values are ints, floats, or None.
         self.assertTrue(
-            size.price is None
-            or isinstance(size.price, float)
-            or isinstance(size.price, int)
+            size.price is None or isinstance(size.price, float) or isinstance(size.price, int)
         )
 
     def test_list_images_response(self):

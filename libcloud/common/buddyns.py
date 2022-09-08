@@ -31,9 +31,7 @@ class BuddyNSResponse(JsonResponse):
         super(BuddyNSResponse, self).__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise BuddyNSException(
-                code=self.status, message=self.errors.pop()["detail"]
-            )
+            raise BuddyNSException(code=self.status, message=self.errors.pop()["detail"])
 
     def parse_body_and_errors(self):
         js = super(BuddyNSResponse, self).parse_body()

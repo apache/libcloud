@@ -30,10 +30,6 @@ except Exception:
     import json  # type: ignore
 
 
-
-
-
-
 class LoggingConnection(LibcloudConnection):
     """
     Debug class to log all HTTP(s) requests as they could be made

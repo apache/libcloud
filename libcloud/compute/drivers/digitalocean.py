@@ -20,8 +20,16 @@ import warnings
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
-                                   StorageVolume, VolumeSnapshot)
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
+)
 from libcloud.compute.types import Provider, NodeState
 from libcloud.utils.iso8601 import parse_date
 from libcloud.common.digitalocean import DigitalOcean_v1_Error, DigitalOcean_v2_BaseDriver
@@ -130,9 +138,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         data = self._paginated_request("/v2/sizes", "sizes")
         sizes = list(map(self._to_size, data))
         if location:
-            sizes = [
-                size for size in sizes if location.id in size.extra.get("regions", [])
-            ]
+            sizes = [size for size in sizes if location.id in size.extra.get("regions", [])]
         return sizes
 
     def list_volumes(self):
@@ -200,9 +206,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
             if key in self.EX_CREATE_ATTRIBUTES:
                 attr[key] = ex_create_attr[key]
 
-        res = self.connection.request(
-            "/v2/droplets", data=json.dumps(attr), method="POST"
-        )
+        res = self.connection.request("/v2/droplets", data=json.dumps(attr), method="POST")
 
         data = res.object["droplet"]
         # TODO: Handle this in the response class
@@ -362,9 +366,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         :type       public_key: ``str``
         """
         attr = {"name": name, "public_key": public_key}
-        res = self.connection.request(
-            "/v2/account/keys", method="POST", data=json.dumps(attr)
-        )
+        res = self.connection.request("/v2/account/keys", method="POST", data=json.dumps(attr))
 
         data = res.object["ssh_key"]
 
@@ -391,9 +393,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         :rtype: :class:`.KeyPair`
         """
         qkey = [k for k in self.list_key_pairs() if k.name == name][0]
-        data = self.connection.request("/v2/account/keys/%s" % qkey.extra["id"]).object[
-            "ssh_key"
-        ]
+        data = self.connection.request("/v2/account/keys/%s" % qkey.extra["id"]).object["ssh_key"]
         return self._to_key_pair(data=data)
 
     def create_volume(self, size, name, location=None, snapshot=None):
@@ -420,9 +420,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         """
         attr = {"name": name, "size_gigabytes": size, "region": location.id}
 
-        res = self.connection.request(
-            "/v2/volumes", data=json.dumps(attr), method="POST"
-        )
+        res = self.connection.request("/v2/volumes", data=json.dumps(attr), method="POST")
         data = res.object["volume"]
         status = res.object.get("status", "OK")
         if status == "ERROR":
@@ -466,9 +464,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
             "region": volume.extra["region_slug"],
         }
 
-        res = self.connection.request(
-            "/v2/volumes/actions", data=json.dumps(attr), method="POST"
-        )
+        res = self.connection.request("/v2/volumes/actions", data=json.dumps(attr), method="POST")
 
         return res.status == httplib.ACCEPTED
 
@@ -526,9 +522,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         :return: List of volume snapshots.
         :rtype: ``list`` of :class: `StorageVolume`
         """
-        data = self._paginated_request(
-            "/v2/volumes/%s/snapshots" % (volume.id), "snapshots"
-        )
+        data = self._paginated_request("/v2/volumes/%s/snapshots" % (volume.id), "snapshots")
         return list(map(self._to_volume_snapshot, data))
 
     def delete_volume_snapshot(self, snapshot):
@@ -540,9 +534,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
         :rtype: ``bool``
         """
-        res = self.connection.request(
-            "v2/snapshots/%s" % (snapshot.id), method="DELETE"
-        )
+        res = self.connection.request("v2/snapshots/%s" % (snapshot.id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def ex_get_node_details(self, node_id):
@@ -571,9 +563,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         :rtype: :class:`DigitalOcean_v2_FloatingIpAddress`
         """
         attr = {"region": location.id}
-        resp = self.connection.request(
-            "/v2/floating_ips", data=json.dumps(attr), method="POST"
-        )
+        resp = self.connection.request("/v2/floating_ips", data=json.dumps(attr), method="POST")
         return self._to_floating_ip(resp.object["floating_ip"])
 
     def ex_delete_floating_ip(self, ip):
@@ -585,9 +575,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
         :rtype: ``bool``
         """
-        resp = self.connection.request(
-            "/v2/floating_ips/{}".format(ip.id), method="DELETE"
-        )
+        resp = self.connection.request("/v2/floating_ips/{}".format(ip.id), method="DELETE")
         return resp.status == httplib.NO_CONTENT
 
     def ex_list_floating_ips(self):
@@ -596,9 +584,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
         :rtype: ``list`` of :class:`DigitalOcean_v2_FloatingIpAddress`
         """
-        return self._to_floating_ips(
-            self._paginated_request("/v2/floating_ips", "floating_ips")
-        )
+        return self._to_floating_ips(self._paginated_request("/v2/floating_ips", "floating_ips"))
 
     def ex_get_floating_ip(self, ip):
         """
@@ -837,7 +823,8 @@ class DigitalOcean_v2_FloatingIpAddress(object):
         return self.driver.ex_delete_floating_ip(self)
 
     def __repr__(self):
-        return (
-            "<DigitalOcean_v2_FloatingIpAddress: id=%s, ip_addr=%s,"
-            " driver=%s>" % (self.id, self.ip_address, self.driver)
+        return "<DigitalOcean_v2_FloatingIpAddress: id=%s, ip_addr=%s," " driver=%s>" % (
+            self.id,
+            self.ip_address,
+            self.driver,
         )

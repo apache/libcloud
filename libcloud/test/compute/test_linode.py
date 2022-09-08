@@ -148,11 +148,15 @@ class LinodeMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_create(self, method, url, body, headers):
-        body = '{"ERRORARRAY":[],"ACTION":"linode.disk.create","DATA":{"JobID":1298,"DiskID":55647}}'
+        body = (
+            '{"ERRORARRAY":[],"ACTION":"linode.disk.create","DATA":{"JobID":1298,"DiskID":55647}}'
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_delete(self, method, url, body, headers):
-        body = '{"ERRORARRAY":[],"ACTION":"linode.disk.delete","DATA":{"JobID":1298,"DiskID":55648}}'
+        body = (
+            '{"ERRORARRAY":[],"ACTION":"linode.disk.delete","DATA":{"JobID":1298,"DiskID":55648}}'
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_createfromdistribution(self, method, url, body, headers):

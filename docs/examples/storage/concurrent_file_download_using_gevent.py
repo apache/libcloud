@@ -2,6 +2,7 @@ import os.path
 
 from gevent import monkey  # pylint: disable=import-error
 from gevent.pool import Pool  # pylint: disable=import-error
+
 from libcloud.storage.types import Provider
 from libcloud.storage.providers import get_driver
 

@@ -2,9 +2,7 @@ from pprint import pprint
 
 import libcloud
 
-cls = libcloud.get_driver(
-    libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.CLOUDSCALE
-)
+cls = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.CLOUDSCALE)
 
 TOKEN = "3pjzjh3h3rfynqa4iemvtvc33pyfzss2"
 driver = cls(TOKEN)

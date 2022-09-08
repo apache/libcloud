@@ -59,8 +59,7 @@ class BrightboxConnection(ConnectionUserAndKey):
         body = json.dumps({"client_id": self.user_id, "grant_type": "none"})
 
         authorization = (
-            "Basic "
-            + str(base64_encode_string(b("%s:%s" % (self.user_id, self.key)))).rstrip()
+            "Basic " + str(base64_encode_string(b("%s:%s" % (self.user_id, self.key)))).rstrip()
         )
 
         self.connect()
@@ -74,16 +73,12 @@ class BrightboxConnection(ConnectionUserAndKey):
         }
 
         # pylint: disable=assignment-from-no-return
-        response = self.connection.request(
-            method="POST", url="/token", body=body, headers=headers
-        )
+        response = self.connection.request(method="POST", url="/token", body=body, headers=headers)
 
         if response.status == httplib.OK:
             return json.loads(response.read())["access_token"]
         else:
-            responseCls = BrightboxResponse(
-                response=response.getresponse(), connection=self
-            )
+            responseCls = BrightboxResponse(response=response.getresponse(), connection=self)
             message = responseCls.parse_error()
             raise InvalidCredsError(message)
 

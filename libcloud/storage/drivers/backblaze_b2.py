@@ -35,7 +35,6 @@ except ImportError:
     import json  # type: ignore
 
 
-
 __all__ = [
     "BackblazeB2StorageDriver",
     "BackblazeB2Connection",
@@ -297,9 +296,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         # TODO: Support pagination
         params = {"bucketId": container.extra["id"]}
-        resp = self.connection.request(
-            action="b2_list_file_names", method="GET", params=params
-        )
+        resp = self.connection.request(action="b2_list_file_names", method="GET", params=params)
         objects = self._to_objects(data=resp.object, container=container)
         return self._filter_listed_container_objects(objects, prefix)
 
@@ -309,9 +306,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         if container:
             return container
         else:
-            raise ContainerDoesNotExistError(
-                value=None, driver=self, container_name=container_name
-            )
+            raise ContainerDoesNotExistError(value=None, driver=self, container_name=container_name)
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
@@ -322,9 +317,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         if obj is not None:
             return obj
         else:
-            raise ObjectDoesNotExistError(
-                value=None, driver=self, object_name=object_name
-            )
+            raise ObjectDoesNotExistError(value=None, driver=self, object_name=object_name)
 
     def create_container(self, container_name, ex_type="allPrivate"):
         data = {}
@@ -418,9 +411,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         return obj
 
-    def upload_object_via_stream(
-        self, iterator, container, object_name, extra=None, headers=None
-    ):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None, headers=None):
         """
         Upload an object.
 
@@ -446,17 +437,13 @@ class BackblazeB2StorageDriver(StorageDriver):
         data = {}
         data["fileName"] = obj.name
         data["fileId"] = obj.extra["fileId"]
-        resp = self.connection.request(
-            action="b2_delete_file_version", data=data, method="POST"
-        )
+        resp = self.connection.request(action="b2_delete_file_version", data=data, method="POST")
         return resp.status == httplib.OK
 
     def ex_get_object(self, object_id):
         params = {}
         params["fileId"] = object_id
-        resp = self.connection.request(
-            action="b2_get_file_info", method="GET", params=params
-        )
+        resp = self.connection.request(action="b2_get_file_info", method="GET", params=params)
         obj = self._to_object(item=resp.object, container=None)
         return obj
 
@@ -487,9 +474,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         if ex_max_file_count:
             params["maxFileCount"] = ex_max_file_count
 
-        resp = self.connection.request(
-            action="b2_list_file_versions", params=params, method="GET"
-        )
+        resp = self.connection.request(action="b2_list_file_versions", params=params, method="GET")
         objects = self._to_objects(data=resp.object, container=None)
         return objects
 
@@ -503,9 +488,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         # TODO: This is static (AFAIK) so it could be cached
         params = {}
         params["bucketId"] = container_id
-        response = self.connection.request(
-            action="b2_get_upload_url", method="GET", params=params
-        )
+        response = self.connection.request(action="b2_get_upload_url", method="GET", params=params)
         return response.object
 
     def ex_get_upload_url(self, container_id):

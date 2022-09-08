@@ -27,6 +27,7 @@ import tempfile
 import unittest
 
 import requests
+
 import libcloud.http
 from libcloud.storage import types, providers
 from libcloud.common.types import LibcloudError

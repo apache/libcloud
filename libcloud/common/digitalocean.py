@@ -184,9 +184,7 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         :type       event_id: ``str``
         """
         params = {}
-        return self.connection.request(
-            "/v2/actions/%s" % event_id, params=params
-        ).object["action"]
+        return self.connection.request("/v2/actions/%s" % event_id, params=params).object["action"]
 
     def _paginated_request(self, url, obj):
         """

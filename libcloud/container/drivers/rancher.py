@@ -27,9 +27,6 @@ except Exception:
     import json
 
 
-
-
-
 VALID_RESPONSE_CODES = [
     httplib.OK,
     httplib.ACCEPTED,
@@ -237,9 +234,7 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: ``dict``
         """
-        result = self.connection.request(
-            "%s/environments/%s" % (self.baseuri, env_id)
-        ).object
+        result = self.connection.request("%s/environments/%s" % (self.baseuri, env_id)).object
 
         return result
 
@@ -258,9 +253,7 @@ class RancherContainerDriver(ContainerDriver):
         for f, v in search_params.items():
             search_list.append(f + "=" + v)
         search_items = "&".join(search_list)
-        result = self.connection.request(
-            "%s/environments?%s" % (self.baseuri, search_items)
-        ).object
+        result = self.connection.request("%s/environments?%s" % (self.baseuri, search_items)).object
 
         return result["data"]
 
@@ -425,9 +418,7 @@ class RancherContainerDriver(ContainerDriver):
             "vip": vip,
         }
 
-        data = json.dumps(
-            dict((k, v) for (k, v) in service_payload.items() if v is not None)
-        )
+        data = json.dumps(dict((k, v) for (k, v) in service_payload.items() if v is not None))
         result = self.connection.request(
             "%s/services" % self.baseuri, data=data, method="POST"
         ).object
@@ -443,9 +434,7 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: ``dict``
         """
-        result = self.connection.request(
-            "%s/services/%s" % (self.baseuri, service_id)
-        ).object
+        result = self.connection.request("%s/services/%s" % (self.baseuri, service_id)).object
 
         return result
 
@@ -464,9 +453,7 @@ class RancherContainerDriver(ContainerDriver):
         for f, v in search_params.items():
             search_list.append(f + "=" + v)
         search_items = "&".join(search_list)
-        result = self.connection.request(
-            "%s/services?%s" % (self.baseuri, search_items)
-        ).object
+        result = self.connection.request("%s/services?%s" % (self.baseuri, search_items)).object
 
         return result["data"]
 
@@ -595,9 +582,7 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request(
-            "%s/containers/%s" % (self.baseuri, con_id)
-        ).object
+        result = self.connection.request("%s/containers/%s" % (self.baseuri, con_id)).object
 
         return self._to_container(result)
 
@@ -649,9 +634,7 @@ class RancherContainerDriver(ContainerDriver):
         for f, v in search_params.items():
             search_list.append(f + "=" + v)
         search_items = "&".join(search_list)
-        result = self.connection.request(
-            "%s/containers?%s" % (self.baseuri, search_items)
-        ).object
+        result = self.connection.request("%s/containers?%s" % (self.baseuri, search_items)).object
 
         return result["data"]
 

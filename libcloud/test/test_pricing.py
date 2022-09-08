@@ -52,9 +52,7 @@ class PricingTestCase(unittest.TestCase):
         except IOError:
             pass
         else:
-            self.fail(
-                "Invalid pricing file path provided, but an exception was not" " thrown"
-            )
+            self.fail("Invalid pricing file path provided, but an exception was not" " thrown")
 
     def test_get_pricing_invalid_driver_type(self):
         try:
@@ -66,9 +64,7 @@ class PricingTestCase(unittest.TestCase):
         except AttributeError:
             pass
         else:
-            self.fail(
-                "Invalid driver_type provided, but an exception was not" " thrown"
-            )
+            self.fail("Invalid driver_type provided, but an exception was not" " thrown")
 
     def test_get_pricing_not_in_cache(self):
         try:
@@ -105,20 +101,14 @@ class PricingTestCase(unittest.TestCase):
 
         self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
 
-        libcloud.pricing.invalidate_module_pricing_cache(
-            driver_type="compute", driver_name="foo"
-        )
+        libcloud.pricing.invalidate_module_pricing_cache(driver_type="compute", driver_name="foo")
         self.assertFalse("foo" in libcloud.pricing.PRICING_DATA["compute"])
-        libcloud.pricing.invalidate_module_pricing_cache(
-            driver_type="compute", driver_name="foo1"
-        )
+        libcloud.pricing.invalidate_module_pricing_cache(driver_type="compute", driver_name="foo1")
 
     def test_set_pricing(self):
         self.assertFalse("foo" in libcloud.pricing.PRICING_DATA["compute"])
 
-        libcloud.pricing.set_pricing(
-            driver_type="compute", driver_name="foo", pricing={"foo": 1}
-        )
+        libcloud.pricing.set_pricing(driver_type="compute", driver_name="foo", pricing={"foo": 1})
         self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
 
     def test_get_pricing_data_caching(self):
@@ -193,9 +183,7 @@ class PricingTestCase(unittest.TestCase):
         image_name = "debian-10-buster-v20220519"
         cores = 4
         size_name = "c2d-standard-4"
-        price = libcloud.pricing.get_image_price(
-            "gce_images", image_name, size_name, cores
-        )
+        price = libcloud.pricing.get_image_price("gce_images", image_name, size_name, cores)
         self.assertTrue(price == 0)
 
     def test_get_gce_image_price_RHEL_image(self):
@@ -204,9 +192,7 @@ class PricingTestCase(unittest.TestCase):
         size_name = "n2d-highcpu-2"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["RHEL"]["4vcpu or less"]["price"])
-        fetched_price = libcloud.pricing.get_image_price(
-            "gce_images", image_name, size_name, cores
-        )
+        fetched_price = libcloud.pricing.get_image_price("gce_images", image_name, size_name, cores)
         self.assertTrue(fetched_price == correct_price)
 
     def test_get_gce_image_price_Windows_image(self):
@@ -215,9 +201,7 @@ class PricingTestCase(unittest.TestCase):
         size_name = "n2d-highcpu-2"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["Windows Server"]["any"]["price"]) * 2
-        fetched_price = libcloud.pricing.get_image_price(
-            "gce_images", image_name, size_name, cores
-        )
+        fetched_price = libcloud.pricing.get_image_price("gce_images", image_name, size_name, cores)
         self.assertTrue(fetched_price == correct_price)
 
     def test_get_gce_image_price_SLES_SAP_image(self):
@@ -226,9 +210,7 @@ class PricingTestCase(unittest.TestCase):
         size_name = "n2d-highcpu-2"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["SLES for SAP"]["1-2vcpu"]["price"])
-        fetched_price = libcloud.pricing.get_image_price(
-            "gce_images", image_name, size_name, cores
-        )
+        fetched_price = libcloud.pricing.get_image_price("gce_images", image_name, size_name, cores)
         self.assertTrue(fetched_price == correct_price)
 
     def test_get_gce_image_price_SQL_image(self):
@@ -236,9 +218,7 @@ class PricingTestCase(unittest.TestCase):
         size_name = "g1 small"
         prices = libcloud.pricing.get_pricing("compute", "gce_images")
         correct_price = float(prices["SQL Server"]["standard"]["price"])
-        fetched_price = libcloud.pricing.get_image_price(
-            "gce_images", image_name, size_name
-        )
+        fetched_price = libcloud.pricing.get_image_price("gce_images", image_name, size_name)
         self.assertTrue(fetched_price == correct_price)
 
 

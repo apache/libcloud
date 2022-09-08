@@ -48,11 +48,7 @@ def _filter_names(names):
     # This is needed when building a distro from a working
     # copy (likely a checkout) rather than a pristine export:
     for pattern in EXCLUDE_PATTERNS:
-        names = [
-            n
-            for n in names
-            if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")
-        ]
+        names = [n for n in names if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")]
     return names
 
 

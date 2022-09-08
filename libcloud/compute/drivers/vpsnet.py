@@ -30,7 +30,6 @@ except ImportError:
     import json
 
 
-
 API_HOST = "api.vps.net"
 API_VERSION = "api10json"
 
@@ -173,9 +172,7 @@ class VPSNetNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         res = self.connection.request("/nodes.%s" % (API_VERSION,))
-        available_nodes = len(
-            [size for size in res.object if size["slice"]["virtual_machine_id"]]
-        )
+        available_nodes = len([size for size in res.object if size["slice"]["virtual_machine_id"]])
         sizes = [self._to_size(i) for i in range(1, available_nodes + 1)]
         return sizes
 

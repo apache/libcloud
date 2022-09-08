@@ -229,9 +229,7 @@ class NephoscaleNodeDriver(NodeDriver):
 
     def destroy_node(self, node):
         """destroy a node"""
-        result = self.connection.request(
-            "/server/cloud/%s/" % node.id, method="DELETE"
-        ).object
+        result = self.connection.request("/server/cloud/%s/" % node.id, method="DELETE").object
         return result.get("response") in VALID_RESPONSE_CODES
 
     def ex_start_node(self, node):
@@ -295,9 +293,7 @@ get all keys call with no arguments"
                 key_group = 1
             data = {"name": name, "public_key": public_key, "key_group": key_group}
             params = urlencode(data)
-            result = self.connection.request(
-                "/key/sshrsa/", data=params, method="POST"
-            ).object
+            result = self.connection.request("/key/sshrsa/", data=params, method="POST").object
         else:
             if not key_group:
                 key_group = 4
@@ -305,21 +301,15 @@ get all keys call with no arguments"
                 password = self.random_password()
                 data = {"name": name, "password": password, "key_group": key_group}
             params = urlencode(data)
-            result = self.connection.request(
-                "/key/password/", data=params, method="POST"
-            ).object
+            result = self.connection.request("/key/password/", data=params, method="POST").object
         return result.get("data", {}).get("id", "")
 
     def ex_delete_keypair(self, key_id, ssh=False):
         """Delete an ssh key or password given it's id"""
         if ssh:
-            result = self.connection.request(
-                "/key/sshrsa/%s/" % key_id, method="DELETE"
-            ).object
+            result = self.connection.request("/key/sshrsa/%s/" % key_id, method="DELETE").object
         else:
-            result = self.connection.request(
-                "/key/password/%s/" % key_id, method="DELETE"
-            ).object
+            result = self.connection.request("/key/password/%s/" % key_id, method="DELETE").object
         return result.get("response") in VALID_RESPONSE_CODES
 
     def create_node(

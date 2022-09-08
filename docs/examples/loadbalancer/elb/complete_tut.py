@@ -35,9 +35,7 @@ def main():
     )
 
     # delete load balancer policy
-    print(
-        driver.ex_delete_balancer_policy(name="MyLB", policy_name="EnableProxyProtocol")
-    )
+    print(driver.ex_delete_balancer_policy(name="MyLB", policy_name="EnableProxyProtocol"))
 
     # set load balancer policies for backend server
     print(
@@ -48,11 +46,7 @@ def main():
 
     # create the listeners for the balancers
     uid = "arn:aws:iam::123456789012:server-certificate/servercert"
-    print(
-        driver.ex_create_balancer_listeners(
-            name="MyLB", listeners=[[1024, 65533, "HTTPS", uid]]
-        )
-    )
+    print(driver.ex_create_balancer_listeners(name="MyLB", listeners=[[1024, 65533, "HTTPS", uid]]))
 
     # set the listeners policies for the balancers
     print(

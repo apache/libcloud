@@ -96,17 +96,13 @@ class BlueboxMockHttp(MockHttp):
         body = self.fixtures.load("api_block_templates_json.json")
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json(
-        self, method, url, body, headers
-    ):
+    def _api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json(self, method, url, body, headers):
         if method == "DELETE":
             body = self.fixtures.load(
                 "api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json_delete.json"
             )
         else:
-            body = self.fixtures.load(
-                "api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json.json"
-            )
+            body = self.fixtures.load("api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json.json")
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_reboot_json(

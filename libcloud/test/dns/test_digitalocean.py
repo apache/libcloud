@@ -80,9 +80,7 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         record = self.driver.get_record("testdomain", "1234564")
 
         DigitalOceanDNSMockHttp.type = "UPDATE"
-        record = self.driver.update_record(
-            record, data="234.56.78.90", extra={"ttl": 60}
-        )
+        record = self.driver.update_record(record, data="234.56.78.90", extra={"ttl": 60})
         self.assertEqual(record.id, "1234564")
         self.assertEqual(record.data, "234.56.78.90")
         self.assertEqual(record.ttl, 60)

@@ -66,9 +66,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         )
 
     def test_v4_signature_contains_user_id(self):
-        sig = self.signer._get_authorization_v4_header(
-            params={}, headers={}, dt=self.now
-        )
+        sig = self.signer._get_authorization_v4_header(params={}, headers={}, dt=self.now)
         self.assertIn("Credential=my_key/", sig)
 
     def test_v4_signature_contains_credential_scope(self):
@@ -76,9 +74,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
             "libcloud.common.aws.AWSRequestSignerAlgorithmV4._get_credential_scope"
         ) as mock_get_creds:
             mock_get_creds.return_value = "my_credential_scope"
-            sig = self.signer._get_authorization_v4_header(
-                params={}, headers={}, dt=self.now
-            )
+            sig = self.signer._get_authorization_v4_header(params={}, headers={}, dt=self.now)
 
         self.assertIn("Credential=my_key/my_credential_scope, ", sig)
 
@@ -87,9 +83,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
             "libcloud.common.aws.AWSRequestSignerAlgorithmV4._get_signed_headers"
         ) as mock_get_headers:
             mock_get_headers.return_value = "my_signed_headers"
-            sig = self.signer._get_authorization_v4_header(
-                {}, {}, self.now, method="GET", path="/"
-            )
+            sig = self.signer._get_authorization_v4_header({}, {}, self.now, method="GET", path="/")
         self.assertIn("SignedHeaders=my_signed_headers, ", sig)
 
     def test_v4_signature_contains_signature(self):
@@ -124,9 +118,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
 
     def test_get_string_to_sign(self):
         with mock.patch("hashlib.sha256") as mock_sha256:
-            mock_sha256.return_value.hexdigest.return_value = (
-                "chksum_of_canonical_request"
-            )
+            mock_sha256.return_value.hexdigest.return_value = "chksum_of_canonical_request"
             to_sign = self.signer._get_string_to_sign(
                 {}, {}, self.now, method="GET", path="/", data=None
             )
@@ -146,9 +138,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         with mock.patch("libcloud.common.aws._sign", new=_sign):
             key = self.signer._get_key_to_sign_with(self.now)
 
-        self.assertEqual(
-            key, "AWS4my_secret|20150304|my_region|my_service|aws4_request"
-        )
+        self.assertEqual(key, "AWS4my_secret|20150304|my_region|my_service|aws4_request")
 
     def test_get_signed_headers_contains_all_headers_lowercased(self):
         headers = {
@@ -171,9 +161,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         }
         signed_headers = self.signer._get_signed_headers(headers)
 
-        self.assertEqual(
-            signed_headers, "1st-header;content-type;host;x-special-header"
-        )
+        self.assertEqual(signed_headers, "1st-header;content-type;host;x-special-header")
 
     def test_get_credential_scope(self):
         scope = self.signer._get_credential_scope(self.now)
@@ -248,9 +236,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
 
     def test_get_request_params_allows_integers_as_value(self):
         self.assertEqual(
-            self.signer._get_request_params(
-                {"Action": "DescribeInstances", "Port": 22}
-            ),
+            self.signer._get_request_params({"Action": "DescribeInstances", "Port": 22}),
             "Action=DescribeInstances&Port=22",
         )
 

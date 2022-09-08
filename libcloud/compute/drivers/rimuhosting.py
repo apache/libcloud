@@ -96,9 +96,7 @@ class RimuHostingConnection(ConnectionKey):
         if not params:
             params = {}
         # Override this method to prepend the api_context
-        return ConnectionKey.request(
-            self, self.api_context + action, params, data, headers, method
-        )
+        return ConnectionKey.request(self, self.api_context + action, params, data, headers, method)
 
 
 class RimuHostingNodeDriver(NodeDriver):
@@ -112,9 +110,7 @@ class RimuHostingNodeDriver(NodeDriver):
     connectionCls = RimuHostingConnection
     features = {"create_node": ["password"]}
 
-    def __init__(
-        self, key, host=API_HOST, port=443, api_context=API_CONTEXT, secure=True
-    ):
+    def __init__(self, key, host=API_HOST, port=443, api_context=API_CONTEXT, secure=True):
         """
         :param    key: API key (required)
         :type     key: ``str``
@@ -154,16 +150,13 @@ class RimuHostingNodeDriver(NodeDriver):
             name=order["domain_name"],
             state=NodeState.RUNNING,
             public_ips=(
-                [order["allocated_ips"]["primary_ip"]]
-                + order["allocated_ips"]["secondary_ips"]
+                [order["allocated_ips"]["primary_ip"]] + order["allocated_ips"]["secondary_ips"]
             ),
             private_ips=[],
             driver=self.connection.driver,
             extra={
                 "order_oid": order["order_oid"],
-                "monthly_recurring_fee": order.get("billing_info").get(
-                    "monthly_recurring_fee"
-                ),
+                "monthly_recurring_fee": order.get("billing_info").get("monthly_recurring_fee"),
             },
         )
         return n
@@ -195,9 +188,7 @@ class RimuHostingNodeDriver(NodeDriver):
         else:
             location = ";dc_location=%s" % (location.id)
 
-        res = self.connection.request(
-            "/pricing-plans;server-type=VPS%s" % (location)
-        ).object
+        res = self.connection.request("/pricing-plans;server-type=VPS%s" % (location)).object
         return list(map(lambda x: self._to_size(x), res["pricing_plan_infos"]))
 
     def list_nodes(self):
@@ -334,9 +325,7 @@ class RimuHostingNodeDriver(NodeDriver):
             "/orders/new-vps", method="POST", data=json.dumps({"new-vps": data})
         ).object
         node = self._to_node(res["about_order"])
-        node.extra["password"] = res["new_order_request"]["instantiation_options"][
-            "password"
-        ]
+        node.extra["password"] = res["new_order_request"]["instantiation_options"]["password"]
         return node
 
     def list_locations(self):

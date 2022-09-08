@@ -22,24 +22,28 @@ from libcloud.utils.py3 import httplib, assertRaisesRegex
 from libcloud.test.secrets import OPENSTACK_PARAMS
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.common.openstack_identity import (AUTH_TOKEN_EXPIRES_GRACE_SECONDS,
-                                                OpenStackIdentityUser, OpenStackServiceCatalog,
-                                                OpenStackIdentity_2_0_Connection,
-                                                OpenStackIdentity_3_0_Connection,
-                                                OpenStackIdentity_2_0_Connection_VOMS,
-                                                OpenStackIdentity_3_0_Connection_AppCred,
-                                                OpenStackIdentity_3_0_Connection_OIDC_access_token,
-                                                get_class_for_auth_version)
+from libcloud.common.openstack_identity import (
+    AUTH_TOKEN_EXPIRES_GRACE_SECONDS,
+    OpenStackIdentityUser,
+    OpenStackServiceCatalog,
+    OpenStackIdentity_2_0_Connection,
+    OpenStackIdentity_3_0_Connection,
+    OpenStackIdentity_2_0_Connection_VOMS,
+    OpenStackIdentity_3_0_Connection_AppCred,
+    OpenStackIdentity_3_0_Connection_OIDC_access_token,
+    get_class_for_auth_version,
+)
 from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
-from libcloud.test.compute.test_openstack import (OpenStackMockHttp, OpenStack_2_0_MockHttp,
-                                                  OpenStackMockAuthCache)
+from libcloud.test.compute.test_openstack import (
+    OpenStackMockHttp,
+    OpenStack_2_0_MockHttp,
+    OpenStackMockAuthCache,
+)
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-
 
 
 TOMORROW = datetime.datetime.today() + datetime.timedelta(1)
@@ -115,9 +119,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
                 except Exception:
                     pass
 
-                expected_path = (
-                    actions[auth_version].format(url_path=url_path).replace("//", "/")
-                )
+                expected_path = actions[auth_version].format(url_path=url_path).replace("//", "/")
 
                 self.assertEqual(
                     osa.action,
@@ -622,9 +624,7 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         role = self.auth_instance.list_roles()[0]
         user = self.auth_instance.list_users()[0]
 
-        result = self.auth_instance.grant_domain_role_to_user(
-            domain=domain, role=role, user=user
-        )
+        result = self.auth_instance.grant_domain_role_to_user(domain=domain, role=role, user=user)
         self.assertTrue(result)
 
     def test_revoke_domain_role_from_user(self):
@@ -742,9 +742,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(unittest.TestCase)
         auth.authenticate()
 
 
-class OpenStackIdentity_3_0_Connection_OIDC_access_token_project_idTests(
-    unittest.TestCase
-):
+class OpenStackIdentity_3_0_Connection_OIDC_access_token_project_idTests(unittest.TestCase):
     def setUp(self):
         mock_cls = OpenStackIdentity_3_0_MockHttp
         mock_cls.type = None
@@ -814,9 +812,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["auth"]["serviceCatalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="1.0"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="1.0")
         entries = catalog.get_entries()
         self.assertEqual(len(entries), 3)
 
@@ -825,9 +821,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         self.assertIsNone(entry.service_name)
         self.assertEqual(len(entry.endpoints), 2)
         self.assertEqual(entry.endpoints[0].region, "ORD")
-        self.assertEqual(
-            entry.endpoints[0].url, "https://cdn2.clouddrive.com/v1/MossoCloudFS"
-        )
+        self.assertEqual(entry.endpoints[0].url, "https://cdn2.clouddrive.com/v1/MossoCloudFS")
         self.assertEqual(entry.endpoints[0].endpoint_type, "external")
         self.assertEqual(entry.endpoints[1].region, "LON")
         self.assertEqual(entry.endpoints[1].endpoint_type, "external")
@@ -837,9 +831,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["access"]["serviceCatalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="2.0"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="2.0")
         entries = catalog.get_entries()
         self.assertEqual(len(entries), 10)
 
@@ -848,9 +840,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         self.assertEqual(entry.service_name, "cloudServers")
         self.assertEqual(len(entry.endpoints), 1)
         self.assertIsNone(entry.endpoints[0].region)
-        self.assertEqual(
-            entry.endpoints[0].url, "https://servers.api.rackspacecloud.com/v1.0/1337"
-        )
+        self.assertEqual(entry.endpoints[0].url, "https://servers.api.rackspacecloud.com/v1.0/1337")
         self.assertEqual(entry.endpoints[0].endpoint_type, "external")
 
     def test_parsing_auth_v3(self):
@@ -858,9 +848,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["token"]["catalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="3.x"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="3.x")
         entries = catalog.get_entries()
         self.assertEqual(len(entries), 6)
         entry = [e for e in entries if e.service_type == "volume"][0]
@@ -879,9 +867,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["access"]["serviceCatalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="2.0"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="2.0")
 
         public_urls = catalog.get_public_urls(service_type="object-store")
         expected_urls = [
@@ -895,9 +881,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["access"]["serviceCatalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="2.0"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="2.0")
 
         regions = catalog.get_regions(service_type="object-store")
         self.assertEqual(regions, ["LON", "ORD"])
@@ -910,9 +894,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["access"]["serviceCatalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="2.0"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="2.0")
         service_types = catalog.get_service_types()
         self.assertEqual(
             service_types,
@@ -935,9 +917,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         data = json.loads(data)
         service_catalog = data["access"]["serviceCatalog"]
 
-        catalog = OpenStackServiceCatalog(
-            service_catalog=service_catalog, auth_version="2.0"
-        )
+        catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="2.0")
 
         service_names = catalog.get_service_names()
         self.assertEqual(
@@ -1072,10 +1052,8 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             data = json.loads(body)
             if "password" in data["auth"]["identity"]:
                 if (
-                    data["auth"]["identity"]["password"]["user"]["domain"]["name"]
-                    != "test_domain"
-                    or data["auth"]["scope"]["project"]["domain"]["id"]
-                    != "test_tenant_domain_id"
+                    data["auth"]["identity"]["password"]["user"]["domain"]["name"] != "test_domain"
+                    or data["auth"]["scope"]["project"]["domain"]["id"] != "test_tenant_domain_id"
                 ):
                     status = httplib.UNAUTHORIZED
 
@@ -1310,10 +1288,7 @@ class OpenStackIdentity_3_0_AppCred_MockHttp(OpenStackIdentity_3_0_MockHttp):
                 status = httplib.UNAUTHORIZED
             else:
                 appcred = data["auth"]["identity"]["application_credential"]
-                if (
-                    appcred["id"] != "appcred_id"
-                    or appcred["secret"] != "appcred_secret"
-                ):
+                if appcred["id"] != "appcred_id" or appcred["secret"] != "appcred_secret":
                     status = httplib.UNAUTHORIZED
 
             body = ComputeFileFixtures("openstack").load("_v3__auth.json")
@@ -1323,9 +1298,7 @@ class OpenStackIdentity_3_0_AppCred_MockHttp(OpenStackIdentity_3_0_MockHttp):
         raise NotImplementedError()
 
 
-class OpenStackIdentity_3_0_federation_projects_MockHttp(
-    OpenStackIdentity_3_0_MockHttp
-):
+class OpenStackIdentity_3_0_federation_projects_MockHttp(OpenStackIdentity_3_0_MockHttp):
     fixtures = ComputeFileFixtures("openstack_identity/v3")
     json_content_headers = {"content-type": "application/json; charset=UTF-8"}
 

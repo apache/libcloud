@@ -57,12 +57,8 @@ INSTANCE_SIZES = [
 
 def download_json():
     if os.path.isfile(FILEPATH):
-        mtime_str = time.strftime(
-            "%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH))
-        )
-        print(
-            "Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str)
-        )
+        mtime_str = time.strftime("%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH)))
+        print("Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str))
         return open(FILEPATH, "r"), True
 
     def remove_partial_cached_file():
@@ -97,9 +93,7 @@ def get_json():
     if not os.path.isfile(FILEPATH):
         return download_json()[0], False
 
-    mtime_str = time.strftime(
-        "%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH))
-    )
+    mtime_str = time.strftime("%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH)))
     print("Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str))
     return FILEPATH, True
 
@@ -241,10 +235,7 @@ def scrape_ec2_pricing():
             os_dict[size] = {}
 
         # if price already exists pick the BoxUsage usage type which means on demand
-        if (
-            os_dict.get(size, {}).get(location)
-            and "BoxUsage" not in skus[sku]["usage_type"]
-        ):
+        if os_dict.get(size, {}).get(location) and "BoxUsage" not in skus[sku]["usage_type"]:
             continue
 
         # if price is not a number then label it as not available

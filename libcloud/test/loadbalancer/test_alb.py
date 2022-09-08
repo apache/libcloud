@@ -47,9 +47,7 @@ class ApplicationLBTests(unittest.TestCase):
         token = "temporary_credentials_token"
         driver = ApplicationLBDriver(*LB_ALB_PARAMS, **{"token": token})
         self.assertTrue(hasattr(driver, "token"), "Driver has no attribute token")
-        self.assertEqual(
-            token, driver.token, "Driver token does not match with provided token"
-        )
+        self.assertEqual(token, driver.token, "Driver token does not match with provided token")
 
     def test_driver_with_token_signature_version(self):
         token = "temporary_credentials_token"
@@ -128,12 +126,8 @@ class ApplicationLBTests(unittest.TestCase):
             healthy_threshold=5,
             unhealthy_threshold=2,
         )
-        self.assertTrue(
-            hasattr(target_group, "id"), 'Target group is missing "id" field'
-        )
-        self.assertTrue(
-            hasattr(target_group, "members"), 'Target group is missing "members" field'
-        )
+        self.assertTrue(hasattr(target_group, "id"), 'Target group is missing "id" field')
+        self.assertTrue(hasattr(target_group, "members"), 'Target group is missing "members" field')
         self.assertEqual(target_group.name, "Test-ALB-tg")
         self.assertEqual(target_group.port, 443)
         self.assertEqual(target_group.protocol, "HTTPS")
@@ -174,9 +168,7 @@ class ApplicationLBTests(unittest.TestCase):
 
         self.assertTrue(hasattr(listener, "id"), 'Listener is missing "id" field')
         self.assertTrue(hasattr(listener, "rules"), 'Listener is missing "rules" field')
-        self.assertTrue(
-            hasattr(listener, "balancer"), 'Listener is missing "balancer" field'
-        )
+        self.assertTrue(hasattr(listener, "balancer"), 'Listener is missing "balancer" field')
         self.assertEqual(listener.balancer.id, balancer.id)
         self.assertEqual(listener.rules[0].target_group.id, target_group.id)
         self.assertEqual(listener.port, 443)
@@ -199,9 +191,7 @@ class ApplicationLBTests(unittest.TestCase):
         )
 
         self.assertTrue(hasattr(rule, "id"), 'Rule is missing "id" field')
-        self.assertTrue(
-            hasattr(rule, "conditions"), 'Rule is missing "conditions" field'
-        )
+        self.assertTrue(hasattr(rule, "conditions"), 'Rule is missing "conditions" field')
         self.assertEqual(rule.is_default, False)
         self.assertEqual(rule.priority, "10")
         self.assertEqual(rule.target_group.id, self.target_group_id)
@@ -212,9 +202,7 @@ class ApplicationLBTests(unittest.TestCase):
 
     def test_ex_get_balancer_tags(self):
         balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
-        self.assertTrue(
-            ("tags" in balancer.extra), "No tags dict found in balancer.extra"
-        )
+        self.assertTrue(("tags" in balancer.extra), "No tags dict found in balancer.extra")
         tags = self.driver._ex_get_balancer_tags(balancer)
         self.assertEqual(tags["project"], "lima")
 
@@ -315,27 +303,17 @@ class ApplicationLBTests(unittest.TestCase):
         listeners = self.driver._ex_get_balancer_listeners(balancer)
         self.assertEqual(len(listeners), 1)
         self.assertTrue(hasattr(listeners[0], "id"), 'Listener is missing "id" field')
-        self.assertTrue(
-            hasattr(listeners[0], "port"), 'Listener is missing "port" field'
-        )
-        self.assertTrue(
-            hasattr(listeners[0], "protocol"), 'Listener is missing "protocol" field'
-        )
-        self.assertTrue(
-            hasattr(listeners[0], "rules"), 'Listener is missing "rules" field'
-        )
+        self.assertTrue(hasattr(listeners[0], "port"), 'Listener is missing "port" field')
+        self.assertTrue(hasattr(listeners[0], "protocol"), 'Listener is missing "protocol" field')
+        self.assertTrue(hasattr(listeners[0], "rules"), 'Listener is missing "rules" field')
 
     def test_ex_get_rules_for_listener(self):
         listener = self.driver.ex_get_listener(self.listener_id)
         listener_rules = self.driver._ex_get_rules_for_listener(listener)
         self.assertEqual(len(listener_rules), 1)
         self.assertTrue(hasattr(listener_rules[0], "id"), 'Rule is missing "id" field')
-        self.assertTrue(
-            hasattr(listener_rules[0], "is_default"), 'Rule is missing "port" field'
-        )
-        self.assertTrue(
-            hasattr(listener_rules[0], "priority"), 'Rule is missing "priority" field'
-        )
+        self.assertTrue(hasattr(listener_rules[0], "is_default"), 'Rule is missing "port" field')
+        self.assertTrue(hasattr(listener_rules[0], "priority"), 'Rule is missing "priority" field')
         self.assertTrue(
             hasattr(listener_rules[0], "target_group"),
             'Rule is missing "target_group" field',

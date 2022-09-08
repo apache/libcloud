@@ -41,9 +41,7 @@ class CloudStackResponse(JsonResponse):
         if not value:
             value = "WARNING: error message text sent by provider was empty."
 
-        error = ProviderError(
-            value=value, http_code=self.status, driver=self.connection.driver
-        )
+        error = ProviderError(value=value, http_code=self.status, driver=self.connection.driver)
         raise error
 
 
@@ -184,9 +182,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
             and "revokesecuritygroupingressresponse" not in result.object
         ):
             command = command
-        elif (
-            command == "restorevirtualmachine" and "restorevmresponse" in result.object
-        ):
+        elif command == "restorevirtualmachine" and "restorevmresponse" in result.object:
             command = "restorevmresponse"
         else:
             command = command + "response"

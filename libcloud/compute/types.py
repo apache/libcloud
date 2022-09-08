@@ -16,8 +16,13 @@
 Base types used by other parts of libcloud
 """
 
-from libcloud.common.types import (Type, LibcloudError, InvalidCredsError, InvalidCredsException,
-                                   MalformedResponseError)
+from libcloud.common.types import (
+    Type,
+    LibcloudError,
+    InvalidCredsError,
+    InvalidCredsException,
+    MalformedResponseError,
+)
 
 __all__ = [
     "Provider",

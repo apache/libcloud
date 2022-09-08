@@ -17,8 +17,13 @@ import sys
 import unittest
 from unittest import TestCase
 
-from libcloud.compute.types import (Type, Provider, NodeState, StorageVolumeState,
-                                    VolumeSnapshotState)
+from libcloud.compute.types import (
+    Type,
+    Provider,
+    NodeState,
+    StorageVolumeState,
+    VolumeSnapshotState,
+)
 
 
 class TestType(Type):
@@ -64,26 +69,18 @@ class TestNodeState(TestCase):
 
 class TestStorageVolumeState(TestCase):
     def test_storagevolumestate_tostring(self):
-        self.assertEqual(
-            StorageVolumeState.tostring(StorageVolumeState.AVAILABLE), "AVAILABLE"
-        )
+        self.assertEqual(StorageVolumeState.tostring(StorageVolumeState.AVAILABLE), "AVAILABLE")
 
     def test_storagevolumestate_fromstring(self):
-        self.assertEqual(
-            StorageVolumeState.fromstring("available"), StorageVolumeState.AVAILABLE
-        )
+        self.assertEqual(StorageVolumeState.fromstring("available"), StorageVolumeState.AVAILABLE)
 
 
 class TestVolumeSnapshotState(TestCase):
     def test_volumesnapshotstate_tostring(self):
-        self.assertEqual(
-            VolumeSnapshotState.tostring(VolumeSnapshotState.AVAILABLE), "AVAILABLE"
-        )
+        self.assertEqual(VolumeSnapshotState.tostring(VolumeSnapshotState.AVAILABLE), "AVAILABLE")
 
     def test_volumesnapshotstate_fromstring(self):
-        self.assertEqual(
-            VolumeSnapshotState.fromstring("available"), VolumeSnapshotState.AVAILABLE
-        )
+        self.assertEqual(VolumeSnapshotState.fromstring("available"), VolumeSnapshotState.AVAILABLE)
 
 
 if __name__ == "__main__":

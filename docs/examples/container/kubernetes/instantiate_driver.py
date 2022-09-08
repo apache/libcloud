@@ -17,9 +17,7 @@ conn = cls(
 conn = cls(key="my_token", host="126.32.21.4", ex_token_bearer_auth=True)
 
 # 3. Basic auth
-conn = cls(
-    key="my_username", secret="THIS_IS)+_MY_SECRET_KEY+I6TVkv68o4H", host="126.32.21.4"
-)
+conn = cls(key="my_username", secret="THIS_IS)+_MY_SECRET_KEY+I6TVkv68o4H", host="126.32.21.4")
 
 for container in conn.list_containers():
     print(container.name)

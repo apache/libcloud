@@ -306,9 +306,7 @@ class Route53DNSDriver(DNSDriver):
         if deletions:
             self._post_changeset(zone, deletions)
 
-    def _update_single_value_record(
-        self, record, name=None, type=None, data=None, extra=None
-    ):
+    def _update_single_value_record(self, record, name=None, type=None, data=None, extra=None):
         batch = [
             ("DELETE", record.name, record.type, record.data, record.extra),
             ("CREATE", name, type, data, extra),
@@ -316,9 +314,7 @@ class Route53DNSDriver(DNSDriver):
 
         return self._post_changeset(record.zone, batch)
 
-    def _update_multi_value_record(
-        self, record, name=None, type=None, data=None, extra=None
-    ):
+    def _update_multi_value_record(self, record, name=None, type=None, data=None, extra=None):
         other_records = record.extra.get("_other_records", [])
 
         attrs = {"xmlns": NAMESPACE}
@@ -417,18 +413,14 @@ class Route53DNSDriver(DNSDriver):
 
     def _to_zones(self, data):
         zones = []
-        for element in data.findall(
-            fixxpath(xpath="HostedZones/HostedZone", namespace=NAMESPACE)
-        ):
+        for element in data.findall(fixxpath(xpath="HostedZones/HostedZone", namespace=NAMESPACE)):
             zones.append(self._to_zone(element))
 
         return zones
 
     def _to_zone(self, elem):
         name = findtext(element=elem, xpath="Name", namespace=NAMESPACE)
-        id = findtext(element=elem, xpath="Id", namespace=NAMESPACE).replace(
-            "/hostedzone/", ""
-        )
+        id = findtext(element=elem, xpath="Id", namespace=NAMESPACE).replace("/hostedzone/", "")
         comment = findtext(element=elem, xpath="Config/Comment", namespace=NAMESPACE)
         resource_record_count = int(
             findtext(element=elem, xpath="ResourceRecordSetCount", namespace=NAMESPACE)

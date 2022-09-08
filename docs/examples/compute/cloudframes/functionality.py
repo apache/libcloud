@@ -14,9 +14,7 @@ image = driver.list_images()[0]
 size = driver.list_sizes()[0]
 
 # use these to create a node
-node = driver.create_node(
-    image=image, name="TEST_%s" % uuid.uuid4(), size=size, location=location
-)
+node = driver.create_node(image=image, name="TEST_%s" % uuid.uuid4(), size=size, location=location)
 
 # snapshot a node, rollback to the snapshot and destroy the snaphost
 snapshot = driver.ex_snapshot_node(node)

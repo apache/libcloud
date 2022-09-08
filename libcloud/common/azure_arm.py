@@ -165,9 +165,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
                 "'activeDirectoryResourceId', "
                 "'storageEndpointSuffix'" % ("', '".join(publicEnvironments.keys()))
             )
-        self.host = urlparse.urlparse(
-            cloud_environment["resourceManagerEndpointUrl"]
-        ).hostname
+        self.host = urlparse.urlparse(cloud_environment["resourceManagerEndpointUrl"]).hostname
         self.login_host = urlparse.urlparse(
             cloud_environment["activeDirectoryEndpointUrl"]
         ).hostname
@@ -210,9 +208,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         self.get_token_from_credentials()
         return super(AzureResourceManagementConnection, self).connect(**kwargs)
 
-    def request(
-        self, action, params=None, data=None, headers=None, method="GET", raw=False
-    ):
+    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
 
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).

@@ -30,10 +30,6 @@ except ImportError:
     import json  # NOQA
 
 
-
-
-
-
 # class VultrTests(unittest.TestCase, TestCaseMixin):
 class VultrTests(LibcloudTestCase):
     def setUp(self):
@@ -145,9 +141,7 @@ class VultrTests(LibcloudTestCase):
         test_size = self.driver.list_sizes()[0]
         test_image = self.driver.list_images()[0]
         test_location = self.driver.list_locations()[0]
-        created_node = self.driver.create_node(
-            "test-node", test_size, test_image, test_location
-        )
+        created_node = self.driver.create_node("test-node", test_size, test_image, test_location)
         self.assertEqual(created_node.id, "41326859")
 
     def test_destroy_node_success(self):
