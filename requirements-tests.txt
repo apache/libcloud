@@ -14,4 +14,4 @@ cryptography==38.0.1
 pyopenssl==22.0.0
 more-itertools==8.14.0
 bandit==1.7.4; python_version >= '3.7'
-isort[pyproject]==4.3.21; python_version >= '3.8'
+isort[pyproject]==5.10.1; python_version >= '3.8'
