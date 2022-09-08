@@ -93,6 +93,17 @@ Other
   Developers can run the isort check locally using
   ``tox -e <isort|isort-check>`` command.
 
+  (GITHUB-1761)
+  [Tomaz Muraus - @Kami]
+
+- Fix black config (``pyproject.toml``) and ensure max line length is correctly
+  set to 100 characters everywhere.
+
+  Also re-format code with this fixed / updated config option.
+
+  (GITHUB-1761)
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.6.0
 --------------------------------
 
