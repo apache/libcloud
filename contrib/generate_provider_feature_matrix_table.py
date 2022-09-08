@@ -22,10 +22,9 @@ import inspect
 from os.path import join as pjoin
 from collections import OrderedDict
 
-from libcloud.container.providers import get_driver as get_container_driver  # isort:skip
-
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+BASE_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(BASE_DIR)
 
 # isort:skip pragma is needed to make sure those imports are not moved above
 # sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
@@ -52,6 +51,7 @@ from libcloud.loadbalancer.types import Provider as LBProvider  # isort:skip
 from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS  # isort:skip
 from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS  # isort:skip
 from libcloud.loadbalancer.providers import get_driver as get_lb_driver  # isort:skip
+from libcloud.container.providers import get_driver as get_container_driver  # isort:skip
 
 HEADER = (
     ".. NOTE: This file has been generated automatically using "
@@ -504,7 +504,7 @@ def generate_supported_providers_table(api, provider_matrix):
             continue
 
         params = {"api": api, "provider": provider.lower()}
-        driver_docs_path = pjoin(this_dir, "../docs/%(api)s/drivers/%(provider)s.rst" % params)
+        driver_docs_path = pjoin(BASE_DIR, "docs/%(api)s/drivers/%(provider)s.rst" % params)
 
         if os.path.exists(driver_docs_path):
             docs_link = ":doc:`Click </%(api)s/drivers/%(provider)s>`" % params
