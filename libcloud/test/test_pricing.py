@@ -189,6 +189,58 @@ class PricingTestCase(unittest.TestCase):
         self.assertTrue("bar" in libcloud.pricing.PRICING_DATA["compute"])
         self.assertTrue("baz" in libcloud.pricing.PRICING_DATA["compute"])
 
+    def test_get_gce_image_price_non_premium_image(self):
+        image_name = "debian-10-buster-v20220519"
+        cores = 4
+        size_name = "c2d-standard-4"
+        price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name, cores
+        )
+        self.assertTrue(price == 0)
+
+    def test_get_gce_image_price_RHEL_image(self):
+        cores = 2
+        image_name = "rhel-7-v20220519"
+        size_name = "n2d-highcpu-2"
+        prices = libcloud.pricing.get_pricing("compute", "gce_images")
+        correct_price = float(prices["RHEL"]["4vcpu or less"]["price"])
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name, cores
+        )
+        self.assertTrue(fetched_price == correct_price)
+
+    def test_get_gce_image_price_Windows_image(self):
+        cores = 2
+        image_name = "windows-server-2012-r2-dc-core-v20220513"
+        size_name = "n2d-highcpu-2"
+        prices = libcloud.pricing.get_pricing("compute", "gce_images")
+        correct_price = float(prices["Windows Server"]["any"]["price"]) * 2
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name, cores
+        )
+        self.assertTrue(fetched_price == correct_price)
+
+    def test_get_gce_image_price_SLES_SAP_image(self):
+        cores = 2
+        image_name = "sles-15-sap-v20220126"
+        size_name = "n2d-highcpu-2"
+        prices = libcloud.pricing.get_pricing("compute", "gce_images")
+        correct_price = float(prices["SLES for SAP"]["1-2vcpu"]["price"])
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name, cores
+        )
+        self.assertTrue(fetched_price == correct_price)
+
+    def test_get_gce_image_price_SQL_image(self):
+        image_name = "sql-2012-standard-windows-2012-r2-dc-v20220513"
+        size_name = "g1 small"
+        prices = libcloud.pricing.get_pricing("compute", "gce_images")
+        correct_price = float(prices["SQL Server"]["standard"]["price"])
+        fetched_price = libcloud.pricing.get_image_price(
+            "gce_images", image_name, size_name
+        )
+        self.assertTrue(fetched_price == correct_price)
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
