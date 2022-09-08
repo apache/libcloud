@@ -21,9 +21,9 @@ try:
 except ImportError:
     import json
 
+from libcloud.dns.base import Zone, DNSDriver
 from libcloud.dns.types import Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.base import DNSDriver, Zone
-from libcloud.common.buddyns import BuddyNSConnection, BuddyNSResponse, BuddyNSException
+from libcloud.common.buddyns import BuddyNSResponse, BuddyNSException, BuddyNSConnection
 
 __all__ = ["BuddyNSDNSDriver"]
 

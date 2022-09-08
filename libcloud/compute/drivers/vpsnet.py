@@ -17,19 +17,19 @@ VPS.net driver
 """
 import base64
 
+from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import b
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 API_HOST = "api.vps.net"
 API_VERSION = "api10json"

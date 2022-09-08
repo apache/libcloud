@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.google import GoogleOAuth2Credential
+from libcloud.common.google import GoogleResponse, GoogleBaseConnection, GoogleOAuth2Credential
 from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
-from libcloud.common.google import GoogleResponse
-from libcloud.common.google import GoogleBaseConnection
 
 API_VERSION = "v1"
 

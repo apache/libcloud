@@ -16,18 +16,17 @@
 import time
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.misc import reverse_dict
+from libcloud.common.types import LibcloudError
+from libcloud.common.gogrid import GoGridResponse, BaseGoGridDriver, GoGridConnection
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State, LibcloudLBImmutableError
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.misc import reverse_dict
-from libcloud.common.types import LibcloudError
-from libcloud.common.gogrid import GoGridConnection, GoGridResponse, BaseGoGridDriver
-from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
-from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import State, LibcloudLBImmutableError
 
 
 class GoGridLBResponse(GoGridResponse):

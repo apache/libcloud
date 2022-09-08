@@ -19,48 +19,31 @@ Provides base classes for working with drivers
 
 from __future__ import with_statement
 
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Type
-from typing import Optional
-from typing import Any
-from typing import Union
-from typing import Callable
-from typing import TYPE_CHECKING
-
-import time
-import hashlib
 import os
 import re
-import socket
+import time
+import atexit
 import random
+import socket
+import hashlib
 import binascii
 import datetime
 import traceback
-import atexit
-
-from libcloud.utils.py3 import b
+from typing import TYPE_CHECKING, Any, Dict, List, Type, Tuple, Union, Callable, Optional
 
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
-from libcloud.compute.types import NodeState, StorageVolumeState, DeploymentError
+from libcloud.utils.py3 import b
+from libcloud.common.base import BaseDriver, Connection, ConnectionKey
+from libcloud.compute.ssh import SSHClient, BaseSSHClient, SSHCommandTimeoutError, have_paramiko
+from libcloud.common.types import LibcloudError
+from libcloud.compute.types import (Provider, NodeState, DeploymentError, StorageVolumeState,
+                                    NodeImageMemberState)
+from libcloud.utils.networking import is_private_subnet, is_valid_ip_address
 
 if TYPE_CHECKING:
     from libcloud.compute.deployment import Deployment
-from libcloud.compute.types import Provider
-from libcloud.compute.types import NodeImageMemberState
-from libcloud.compute.ssh import SSHClient
-from libcloud.compute.ssh import BaseSSHClient
-from libcloud.common.base import Connection
-from libcloud.common.base import ConnectionKey
-from libcloud.common.base import BaseDriver
-from libcloud.common.types import LibcloudError
-from libcloud.compute.ssh import have_paramiko
-from libcloud.compute.ssh import SSHCommandTimeoutError
 
-from libcloud.utils.networking import is_private_subnet
-from libcloud.utils.networking import is_valid_ip_address
 
 if have_paramiko:
     from paramiko.ssh_exception import SSHException

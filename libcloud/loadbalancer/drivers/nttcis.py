@@ -14,30 +14,15 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import ET
-from libcloud.common.nttcis import NttCisConnection
-from libcloud.common.nttcis import NttCisPool
-from libcloud.common.nttcis import NttCisPoolMember
-from libcloud.common.nttcis import NttCisVirtualListener
-from libcloud.common.nttcis import NttCisVIPNode
-from libcloud.common.nttcis import NttCisDefaultHealthMonitor
-from libcloud.common.nttcis import NttCisPersistenceProfile
-from libcloud.common.nttcis import NttCisVirtualListenerCompatibility
-from libcloud.common.nttcis import NttCisDefaultiRule
-from libcloud.common.nttcis import API_ENDPOINTS
-from libcloud.common.nttcis import DEFAULT_REGION
-from libcloud.common.nttcis import TYPES_URN
-from libcloud.common.nttcis import process_xml, get_params
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.utils.misc import reverse_dict
-from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import (
-    Algorithm,
-    Driver,
-    LoadBalancer,
-    DEFAULT_ALGORITHM,
-)
-from libcloud.loadbalancer.base import Member
-from libcloud.loadbalancer.types import Provider
+from libcloud.common.nttcis import (TYPES_URN, API_ENDPOINTS, DEFAULT_REGION, NttCisPool,
+                                    NttCisVIPNode, NttCisConnection, NttCisPoolMember,
+                                    NttCisDefaultiRule, NttCisVirtualListener,
+                                    NttCisPersistenceProfile, NttCisDefaultHealthMonitor,
+                                    NttCisVirtualListenerCompatibility, get_params, process_xml)
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State, Provider
 
 
 class NttCisLBDriver(Driver):

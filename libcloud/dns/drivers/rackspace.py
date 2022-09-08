@@ -14,19 +14,16 @@
 # limitations under the License.
 import copy
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-from libcloud.common.openstack import OpenStackDriverMixin
+from libcloud.utils.misc import get_new_obj, merge_valid_keys
 from libcloud.common.base import PollingConnection
-from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.types import LibcloudError
-from libcloud.utils.misc import merge_valid_keys, get_new_obj
+from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.rackspace import AUTH_URL
-from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
-from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
-
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.compute.drivers.openstack import OpenStack_1_1_Response, OpenStack_1_1_Connection
 
 __all__ = ["RackspaceDNSResponse", "RackspaceDNSConnection"]
 

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import base64
+
 from libcloud.utils.py3 import b
 
 API_AUTH = ('apache', 'libcloud')

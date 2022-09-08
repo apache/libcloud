@@ -15,18 +15,15 @@
 from __future__ import with_statement
 
 import sys
-import tempfile
 import datetime
-
+import tempfile
 from unittest.mock import Mock
 
 from libcloud import __version__
 from libcloud.test import unittest
-from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import RecordType
-
 from libcloud.utils.py3 import assertRegex
-
 
 MOCK_RECORDS_VALUES = [
     {"id": 1, "name": "www", "type": RecordType.A, "data": "127.0.0.1"},

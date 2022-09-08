@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils.py3 import xmlrpclib
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import xmlrpclib
 
 
 class BaseGandiMockHttp(MockHttp):

@@ -19,8 +19,7 @@ from __future__ import with_statement
 import os
 import codecs
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import u
+from libcloud.utils.py3 import PY3, u
 
 FIXTURES_ROOT = {
     "common": "common/fixtures",

@@ -16,17 +16,12 @@
 __all__ = ["EBSBackupDriver"]
 
 
-from libcloud.utils.xml import findtext, findall
-from libcloud.utils.iso8601 import parse_date
-from libcloud.backup.base import (
-    BackupDriver,
-    BackupTargetRecoveryPoint,
-    BackupTargetJob,
-    BackupTarget,
-)
-from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
+from libcloud.utils.xml import findall, findtext
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
-
+from libcloud.backup.base import (BackupDriver, BackupTarget, BackupTargetJob,
+                                  BackupTargetRecoveryPoint)
+from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
+from libcloud.utils.iso8601 import parse_date
 
 VERSION = "2015-10-01"
 HOST = "ec2.amazonaws.com"

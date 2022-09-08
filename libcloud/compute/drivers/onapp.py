@@ -16,12 +16,10 @@
 import json
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.networking import is_private_subnet
-
 from libcloud.common.onapp import OnAppConnection
-from libcloud.compute.base import Node, NodeDriver, NodeImage, KeyPair
+from libcloud.compute.base import Node, KeyPair, NodeImage, NodeDriver
+from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.providers import Provider
-
 
 __all__ = ["OnAppNodeDriver"]
 

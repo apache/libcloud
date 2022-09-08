@@ -16,14 +16,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.loadbalancer.base import Member, Algorithm
-from libcloud.loadbalancer.drivers.elb import ElasticLBDriver
-from libcloud.loadbalancer.types import State
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import LB_ELB_PARAMS
+from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.elb import ElasticLBDriver
 
 
 class ElasticLBTests(unittest.TestCase):

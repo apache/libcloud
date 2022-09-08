@@ -15,14 +15,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.hostvirtual import HostVirtualNodeDriver
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import NodeAuthPassword
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import NodeAuthPassword
 from libcloud.test.secrets import HOSTVIRTUAL_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.hostvirtual import HostVirtualNodeDriver
 
 
 class HostVirtualTest(unittest.TestCase):

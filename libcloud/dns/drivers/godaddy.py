@@ -19,11 +19,11 @@ try:
 except Exception:
     import json
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import LibcloudError
-from libcloud.utils.py3 import httplib
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import Provider, RecordType, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import LibcloudError
 
 API_HOST = "api.godaddy.com"
 VALID_RECORD_EXTRA_PARAMS = ["prio", "ttl"]

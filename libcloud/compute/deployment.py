@@ -19,19 +19,14 @@ Provides generic deployment steps for machines post boot.
 
 from __future__ import with_statement
 
-from typing import Union
-from typing import Optional
-from typing import List
-from typing import IO
-from typing import cast
-
 import os
 import re
 import binascii
+from typing import IO, List, Union, Optional, cast
 
-from libcloud.utils.py3 import basestring, PY3
-from libcloud.compute.base import Node
+from libcloud.utils.py3 import PY3, basestring
 from libcloud.compute.ssh import BaseSSHClient
+from libcloud.compute.base import Node
 
 
 class Deployment(object):

@@ -16,17 +16,15 @@
 """
 Voxel VoxCloud driver
 """
-import datetime
 import hashlib
+import datetime
 
 from libcloud.utils.py3 import b
-
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.providers import Provider
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
 from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.compute.providers import Provider
 
 VOXEL_API_HOST = "api.voxel.net"
 

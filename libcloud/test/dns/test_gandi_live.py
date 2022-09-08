@@ -13,28 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import sys
+import json
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.common.gandi_live import (
-    GandiLiveBaseError,
-    JsonParseError,
-    InvalidRequestError,
-)
-from libcloud.dns.types import (
-    RecordType,
-    RecordError,
-    ZoneDoesNotExistError,
-    RecordDoesNotExistError,
-    ZoneAlreadyExistsError,
-    RecordAlreadyExistsError,
-)
-from libcloud.dns.drivers.gandi_live import GandiLiveDNSDriver
 from libcloud.dns.base import Zone, Record
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import (RecordType, RecordError, ZoneDoesNotExistError,
+                                ZoneAlreadyExistsError, RecordDoesNotExistError,
+                                RecordAlreadyExistsError)
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_GANDI_LIVE
+from libcloud.common.gandi_live import JsonParseError, GandiLiveBaseError, InvalidRequestError
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.gandi_live import GandiLiveDNSDriver
 from libcloud.test.common.test_gandi_live import BaseGandiLiveMockHttp
 
 

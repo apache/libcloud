@@ -14,25 +14,20 @@
 # limitations under the License.
 """ProfitBricks Compute driver
 """
-import base64
-
-import json
 import copy
+import json
 import time
-
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlencode
-from libcloud.compute.providers import Provider
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.base import UuidMixin
-from libcloud.compute.types import NodeState
-from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.exceptions import BaseHTTPError
-
+import base64
 from collections import defaultdict
+
+from libcloud.utils.py3 import b, urlencode
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, MalformedResponseError
+from libcloud.compute.base import (Node, NodeSize, NodeImage, UuidMixin, NodeDriver, NodeLocation,
+                                   StorageVolume, NodeAuthSSHKey, VolumeSnapshot, NodeAuthPassword)
+from libcloud.compute.types import NodeState
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.compute.providers import Provider
 
 __all__ = [
     "API_VERSION",

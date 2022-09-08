@@ -18,15 +18,10 @@ try:
 except ImportError:
     import json
 
-from libcloud.container.base import (
-    ContainerDriver,
-    Container,
-    ContainerCluster,
-    ContainerImage,
-)
+from libcloud.common.aws import AWSJsonResponse, SignedAWSConnection
+from libcloud.container.base import Container, ContainerImage, ContainerDriver, ContainerCluster
 from libcloud.container.types import ContainerState
 from libcloud.container.utils.docker import RegistryClient
-from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
 
 __all__ = ["ElasticContainerDriver"]
 

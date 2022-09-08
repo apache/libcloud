@@ -15,37 +15,32 @@
 
 import sys
 import datetime
+from unittest.mock import Mock
+
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, assertRaisesRegex
+from libcloud.test.secrets import OPENSTACK_PARAMS
+from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.common.openstack_identity import (AUTH_TOKEN_EXPIRES_GRACE_SECONDS,
+                                                OpenStackIdentityUser, OpenStackServiceCatalog,
+                                                OpenStackIdentity_2_0_Connection,
+                                                OpenStackIdentity_3_0_Connection,
+                                                OpenStackIdentity_2_0_Connection_VOMS,
+                                                OpenStackIdentity_3_0_Connection_AppCred,
+                                                OpenStackIdentity_3_0_Connection_OIDC_access_token,
+                                                get_class_for_auth_version)
+from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
+from libcloud.test.compute.test_openstack import (OpenStackMockHttp, OpenStack_2_0_MockHttp,
+                                                  OpenStackMockAuthCache)
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from unittest.mock import Mock
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
-from libcloud.common.openstack import OpenStackBaseConnection
-from libcloud.common.openstack_identity import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
-from libcloud.common.openstack_identity import get_class_for_auth_version
-from libcloud.common.openstack_identity import OpenStackServiceCatalog
-from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection
-from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection
-from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection_AppCred
-from libcloud.common.openstack_identity import (
-    OpenStackIdentity_3_0_Connection_OIDC_access_token,
-)
-from libcloud.common.openstack_identity import OpenStackIdentityUser
-from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
-from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection_VOMS
 
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.secrets import OPENSTACK_PARAMS
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.compute.test_openstack import OpenStackMockAuthCache
-from libcloud.test.compute.test_openstack import OpenStackMockHttp
-from libcloud.test.compute.test_openstack import OpenStack_2_0_MockHttp
 
 TOMORROW = datetime.datetime.today() + datetime.timedelta(1)
 YESTERDAY = datetime.datetime.today() - datetime.timedelta(1)

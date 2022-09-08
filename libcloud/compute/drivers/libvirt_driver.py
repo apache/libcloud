@@ -14,22 +14,19 @@
 # limitations under the License.
 from __future__ import with_statement
 
-import re
 import os
+import re
 import time
 import platform
-import subprocess
 import mimetypes
-
+import subprocess
 from os.path import join as pjoin
 from collections import defaultdict
 
-from libcloud.utils.py3 import ET
-from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeState
+from libcloud.utils.py3 import ET, ensure_string
+from libcloud.compute.base import Node, NodeState, NodeDriver
 from libcloud.compute.types import Provider
 from libcloud.utils.networking import is_public_subnet
-from libcloud.utils.py3 import ensure_string
 
 try:
     import libvirt

@@ -22,21 +22,18 @@ import re
 import time
 import base64
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
+from libcloud.compute.types import NodeState
+from libcloud.compute.deployment import ScriptDeployment, SSHKeyDeployment, MultiStepDeployment
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage
-from libcloud.compute.deployment import ScriptDeployment, SSHKeyDeployment
-from libcloud.compute.deployment import MultiStepDeployment
 
 
 NODE_STATE_MAP = {

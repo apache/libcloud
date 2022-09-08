@@ -14,21 +14,17 @@
 
 import sys
 import unittest
-
 from unittest.mock import MagicMock
 
-from libcloud.dns.base import Record, Zone
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_DURABLEDNS
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError)
 from libcloud.utils.py3 import httplib
-from libcloud.dns.drivers.durabledns import DurableDNSDriver
-from libcloud.dns.drivers.durabledns import ZONE_EXTRA_PARAMS_DEFAULT_VALUES
-from libcloud.dns.drivers.durabledns import DEFAULT_TTL
-from libcloud.dns.drivers.durabledns import RECORD_EXTRA_PARAMS_DEFAULT_VALUES
+from libcloud.test.secrets import DNS_PARAMS_DURABLEDNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.durabledns import (DEFAULT_TTL, ZONE_EXTRA_PARAMS_DEFAULT_VALUES,
+                                             RECORD_EXTRA_PARAMS_DEFAULT_VALUES, DurableDNSDriver)
 
 
 class DurableDNSTests(LibcloudTestCase):

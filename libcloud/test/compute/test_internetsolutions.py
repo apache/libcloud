@@ -16,10 +16,8 @@
 import unittest
 
 from libcloud.compute.drivers.internetsolutions import InternetSolutionsNodeDriver
-from libcloud.test.compute.test_dimensiondata_v2_3 import (
-    DimensionDataMockHttp,
-    DimensionData_v2_3_Tests,
-)
+from libcloud.test.compute.test_dimensiondata_v2_3 import (DimensionDataMockHttp,
+                                                           DimensionData_v2_3_Tests)
 
 
 class InternetSolutionsNodeDriverTests(DimensionData_v2_3_Tests, unittest.TestCase):

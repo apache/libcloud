@@ -16,14 +16,16 @@
 """
 Enomaly ECP driver
 """
-import time
 import os
+import time
 import socket
 import binascii
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import base64_encode_string
+from libcloud.utils.py3 import b, httplib, base64_encode_string
+from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState, InvalidCredsError
+from libcloud.utils.networking import is_private_subnet
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -32,11 +34,6 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.base import Response, ConnectionUserAndKey
-from libcloud.compute.base import NodeDriver, NodeSize, NodeLocation
-from libcloud.compute.base import NodeImage, Node
-from libcloud.compute.types import Provider, NodeState, InvalidCredsError
-from libcloud.utils.networking import is_private_subnet
 
 # Defaults
 API_HOST = ""

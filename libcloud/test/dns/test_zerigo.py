@@ -15,16 +15,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.zerigo import ZerigoDNSDriver, ZerigoError
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.test.secrets import DNS_PARAMS_ZERIGO
+from libcloud.dns.drivers.zerigo import ZerigoError, ZerigoDNSDriver
+from libcloud.test.file_fixtures import DNSFileFixtures
 
 
 class ZerigoTests(unittest.TestCase):

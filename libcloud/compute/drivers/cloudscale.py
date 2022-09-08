@@ -19,12 +19,10 @@ A driver for cloudscale.ch.
 import json
 
 from libcloud.utils.py3 import httplib
-
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.types import Provider, NodeState
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node, NodeImage, NodeSize
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
+from libcloud.compute.types import Provider, NodeState
 
 
 class CloudscaleResponse(JsonResponse):

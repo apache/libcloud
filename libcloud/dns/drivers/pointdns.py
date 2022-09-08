@@ -23,15 +23,12 @@ try:
 except ImportError:
     import json
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-from libcloud.common.types import ProviderError
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.types import ProviderError, MalformedResponseError
 from libcloud.common.pointdns import PointDNSConnection
 from libcloud.common.exceptions import BaseHTTPError
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
 
 
 class PointDNSException(ProviderError):

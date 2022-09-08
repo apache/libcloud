@@ -13,31 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import re
 import os
-
+import re
+import base64
 import collections
+
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey, KeyCertificateConnection
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import StorageVolume
+from libcloud.container.base import Container, ContainerImage, ContainerDriver
+from libcloud.container.types import ContainerState
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.container.providers import Provider
 
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
 
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.base import KeyCertificateConnection
-from libcloud.common.types import InvalidCredsError
 
-from libcloud.container.base import Container, ContainerDriver, ContainerImage
-from libcloud.common.exceptions import BaseHTTPError
 
-from libcloud.compute.base import StorageVolume
 
-from libcloud.container.providers import Provider
-from libcloud.container.types import ContainerState
 
 # Acceptable success strings comping from LXD API
 LXD_API_SUCCESS_STATUS = ["Success"]

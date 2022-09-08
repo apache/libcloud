@@ -17,23 +17,15 @@ Outscale SDK
 """
 
 import json
-import requests
+from typing import List
 from datetime import datetime
 
-from typing import List
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.types import Provider
+import requests
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.compute.base import (
-    Node,
-    NodeImage,
-    KeyPair,
-    StorageVolume,
-    VolumeSnapshot,
-    NodeLocation,
-)
-from libcloud.compute.types import NodeState
+from libcloud.compute.base import (Node, KeyPair, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
+from libcloud.compute.types import Provider, NodeState
 
 
 class OutscaleNodeDriver(NodeDriver):

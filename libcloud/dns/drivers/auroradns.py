@@ -16,25 +16,18 @@
 AuroraDNS DNS Driver
 """
 
-import base64
-import json
 import hmac
+import json
+import base64
 import datetime
-
 from hashlib import sha256
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-
-from libcloud.common.types import InvalidCredsError, ProviderError
-from libcloud.common.types import LibcloudError
-
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import ZoneAlreadyExistsError, RecordDoesNotExistError
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError)
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, ProviderError, InvalidCredsError
 
 API_HOST = "api.auroradns.eu"
 

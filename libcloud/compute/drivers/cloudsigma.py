@@ -19,35 +19,28 @@ Drivers for CloudSigma API v1.0 and v2.0.
 """
 
 import re
-import time
 import copy
+import time
 import base64
 import hashlib
+
+from libcloud.utils.py3 import b, httplib
+from libcloud.utils.misc import dict2str, str2list, str2dicts, get_secure_random_string
+from libcloud.common.base import Response, JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import ProviderError, InvalidCredsError
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, is_private_subnet
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.common.cloudsigma import (SPECS_TO_SIZE, DEFAULT_REGION, INSTANCE_TYPES,
+                                        MAX_VIRTIO_UNITS, API_ENDPOINTS_1_0, API_ENDPOINTS_2_0,
+                                        DEFAULT_API_VERSION, MAX_VIRTIO_CONTROLLERS)
 
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
 
-from libcloud.utils.misc import str2dicts, str2list, dict2str
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse, Response
-from libcloud.common.types import InvalidCredsError, ProviderError
-from libcloud.common.cloudsigma import INSTANCE_TYPES
-from libcloud.common.cloudsigma import SPECS_TO_SIZE
-from libcloud.common.cloudsigma import API_ENDPOINTS_1_0
-from libcloud.common.cloudsigma import API_ENDPOINTS_2_0
-from libcloud.common.cloudsigma import DEFAULT_API_VERSION, DEFAULT_REGION
-from libcloud.common.cloudsigma import MAX_VIRTIO_CONTROLLERS, MAX_VIRTIO_UNITS
-from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage
-from libcloud.compute.base import is_private_subnet
-from libcloud.compute.base import KeyPair
-from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.misc import get_secure_random_string
 
 __all__ = [
     "CloudSigmaNodeDriver",

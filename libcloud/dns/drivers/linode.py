@@ -17,26 +17,19 @@ __all__ = ["LinodeDNSDriver"]
 
 from datetime import datetime
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
+from libcloud.utils.misc import get_new_obj, merge_valid_keys
+from libcloud.common.linode import (API_ROOT, DEFAULT_API_VERSION, LinodeResponse, LinodeException,
+                                    LinodeConnection, LinodeResponseV4, LinodeExceptionV4,
+                                    LinodeConnectionV4)
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.common.linode import (
-    API_ROOT,
-    DEFAULT_API_VERSION,
-    LinodeException,
-    LinodeConnection,
-    LinodeResponse,
-    LinodeExceptionV4,
-    LinodeConnectionV4,
-    LinodeResponseV4,
-)
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
 
 
 VALID_ZONE_EXTRA_PARAMS = [

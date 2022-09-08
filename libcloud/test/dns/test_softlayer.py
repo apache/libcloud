@@ -14,17 +14,13 @@
 # limitations under the License.
 
 import sys
-from libcloud.test import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.drivers.softlayer import SoftLayerDNSDriver
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.test import MockHttp, unittest
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib, xmlrpclib
 from libcloud.test.secrets import SOFTLAYER_PARAMS
-from libcloud.utils.py3 import xmlrpclib
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.softlayer import SoftLayerDNSDriver
 
 
 class SoftLayerTests(unittest.TestCase):

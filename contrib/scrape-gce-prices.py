@@ -35,11 +35,11 @@ or if it is the first time using it and no skus are saved:
     python scrape-gce-prices.py --all APIKEY
 """
 
+import os
 import copy
 import json
-import argparse
-import os
 import time
+import argparse
 
 from requests import request
 

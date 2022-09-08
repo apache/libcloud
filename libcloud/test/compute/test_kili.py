@@ -15,7 +15,7 @@
 
 import unittest
 
-from libcloud.compute.drivers.kili import KiliCloudNodeDriver, ENDPOINT_ARGS
+from libcloud.compute.drivers.kili import ENDPOINT_ARGS, KiliCloudNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests
 
 

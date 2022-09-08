@@ -17,12 +17,9 @@
 __all__ = ["SoftLayerDNSDriver"]
 
 
-from libcloud.common.softlayer import SoftLayerConnection
-from libcloud.common.softlayer import SoftLayerObjectDoesntExist
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.common.softlayer import SoftLayerConnection, SoftLayerObjectDoesntExist
 
 VALID_RECORD_EXTRA_PARAMS = ["priority", "ttl"]
 

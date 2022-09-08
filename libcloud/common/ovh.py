@@ -13,21 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+import hashlib
 from typing import List
 
-import hashlib
-import time
+from libcloud.http import LibcloudConnection
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError
+from libcloud.utils.connection import get_response_object
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.connection import get_response_object
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.http import LibcloudConnection
 
 __all__ = ["OvhResponse", "OvhConnection"]
 

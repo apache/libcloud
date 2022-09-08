@@ -21,14 +21,10 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.liquidweb import LiquidWebResponse, LiquidWebConnection
-from libcloud.common.liquidweb import APIException
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import RecordAlreadyExistsError
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
+from libcloud.common.liquidweb import APIException, LiquidWebResponse, LiquidWebConnection
 
 __all__ = ["LiquidWebDNSDriver"]
 

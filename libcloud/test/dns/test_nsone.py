@@ -17,19 +17,14 @@ import sys
 import unittest
 
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_NSONE
-from libcloud.dns.drivers.nsone import NsOneDNSDriver
+from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
 from libcloud.utils.py3 import httplib
 from libcloud.common.nsone import NsOneException
-from libcloud.dns.types import (
-    ZoneDoesNotExistError,
-    ZoneAlreadyExistsError,
-    RecordDoesNotExistError,
-    RecordType,
-    RecordAlreadyExistsError,
-)
-from libcloud.dns.base import Zone, Record
+from libcloud.test.secrets import DNS_PARAMS_NSONE
+from libcloud.dns.drivers.nsone import NsOneDNSDriver
+from libcloud.test.file_fixtures import DNSFileFixtures
 
 
 class NsOneTests(unittest.TestCase):

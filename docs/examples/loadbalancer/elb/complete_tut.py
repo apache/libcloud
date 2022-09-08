@@ -2,7 +2,6 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.types import Provider
 from libcloud.loadbalancer.providers import get_driver
 
-
 ACCESS_ID = "your access id"
 SECRET_KEY = "your secret key"
 

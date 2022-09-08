@@ -1,6 +1,6 @@
+from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.compute.base import NodeSize, NodeImage
 
 ACCESS_ID = "your access id"
 SECRET_KEY = "your secret key"

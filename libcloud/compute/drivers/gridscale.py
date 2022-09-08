@@ -15,21 +15,11 @@
 
 import time
 
-from libcloud.common.gridscale import GridscaleBaseDriver
-from libcloud.common.gridscale import GridscaleConnection
-from libcloud.compute.base import (
-    NodeImage,
-    NodeLocation,
-    VolumeSnapshot,
-    Node,
-    StorageVolume,
-    KeyPair,
-    NodeState,
-    StorageVolumeState,
-    NodeDriver,
-)
-from libcloud.compute.providers import Provider
+from libcloud.compute.base import (Node, KeyPair, NodeImage, NodeState, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot, StorageVolumeState)
 from libcloud.utils.iso8601 import parse_date
+from libcloud.common.gridscale import GridscaleBaseDriver, GridscaleConnection
+from libcloud.compute.providers import Provider
 
 
 class GridscaleIp(object):

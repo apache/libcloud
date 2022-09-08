@@ -21,10 +21,11 @@ Loads Google Cloud Platform prices and updates the `pricing.json` data file.
 # pylint: skip-file
 
 import os
-import json
 import sys
+import json
 import time
 import urllib2
+
 import utils
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))

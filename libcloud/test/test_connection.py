@@ -15,27 +15,21 @@
 # limitations under the License.
 
 import os
-import socket
 import ssl
 import sys
+import socket
 from unittest import mock
+from unittest.mock import Mock, patch
 
 import requests_mock
-from unittest.mock import Mock, patch
-from requests.exceptions import ConnectTimeout
-
 import libcloud.common.base
-from libcloud.common.base import Connection, CertificateConnection
-from libcloud.common.base import Response
-from libcloud.common.exceptions import RateLimitReachedError
-from libcloud.http import LibcloudBaseConnection
-from libcloud.http import LibcloudConnection
-from libcloud.http import SignedHTTPSAdapter
+from libcloud.http import LibcloudConnection, SignedHTTPSAdapter, LibcloudBaseConnection
 from libcloud.test import unittest, no_internet
 from libcloud.utils.py3 import assertRaisesRegex
-from libcloud.utils.retry import RETRY_EXCEPTIONS
-from libcloud.utils.retry import Retry
-from libcloud.utils.retry import RetryForeverOnRateLimitError
+from requests.exceptions import ConnectTimeout
+from libcloud.common.base import Response, Connection, CertificateConnection
+from libcloud.utils.retry import RETRY_EXCEPTIONS, Retry, RetryForeverOnRateLimitError
+from libcloud.common.exceptions import RateLimitReachedError
 
 
 class BaseConnectionClassTestCase(unittest.TestCase):

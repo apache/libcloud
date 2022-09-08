@@ -16,8 +16,15 @@
 
 import os
 import sys
-import tempfile
 import logging
+import tempfile
+from unittest.mock import patch
+
+import libcloud
+from libcloud import _init_once
+from libcloud.base import DriverTypeNotFoundError
+from libcloud.test import unittest
+from libcloud.utils.loggingconnection import LoggingConnection
 
 try:
     import paramiko  # NOQA
@@ -26,13 +33,7 @@ try:
 except ImportError:
     have_paramiko = False
 
-from unittest.mock import patch
 
-import libcloud
-from libcloud import _init_once
-from libcloud.utils.loggingconnection import LoggingConnection
-from libcloud.base import DriverTypeNotFoundError
-from libcloud.test import unittest
 
 
 class TestUtils(unittest.TestCase):

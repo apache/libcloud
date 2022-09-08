@@ -16,13 +16,12 @@ NFSN DNS Driver
 """
 import re
 
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.nfsn import NFSNConnection
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.types import RecordAlreadyExistsError
-from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
 from libcloud.utils.py3 import httplib
+from libcloud.common.nfsn import NFSNConnection
+from libcloud.common.exceptions import BaseHTTPError
 
 __all__ = [
     "NFSNDNSDriver",

@@ -17,66 +17,49 @@ from __future__ import with_statement
 
 import os
 import sys
-import unittest
 import datetime
+import unittest
 from unittest import mock
-import pytest
+from unittest.mock import Mock, patch
 
+import pytest
+import requests_mock
+from libcloud.test import XML_HEADERS, MockHttp
+from libcloud.pricing import set_pricing, clear_pricing_data
+from libcloud.utils.py3 import u, httplib, method_type
+from libcloud.common.base import LibcloudConnection
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.compute.base import Node, NodeSize, NodeImage
+from libcloud.test.compute import TestCaseMixin
+from libcloud.test.secrets import OPENSTACK_PARAMS
+from libcloud.compute.types import (Provider, StorageVolumeState, VolumeSnapshotState,
+                                    NodeImageMemberState, KeyPairDoesNotExistError)
 from libcloud.utils.iso8601 import UTC
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import OpenStackFixtures, ComputeFileFixtures
+from libcloud.common.openstack_identity import (AUTH_VERSIONS_WITH_EXPIRES,
+                                                OpenStackAuthenticationCache)
+from libcloud.compute.drivers.openstack import (OpenStackKeyPair, OpenStackNetwork,
+                                                OpenStackException, OpenStack_2_NodeDriver,
+                                                OpenStackSecurityGroup, OpenStack_2_ServerGroup,
+                                                OpenStack_1_0_Connection, OpenStack_1_0_NodeDriver,
+                                                OpenStack_1_1_NodeDriver,
+                                                OpenStack_2_FloatingIpPool,
+                                                OpenStackSecurityGroupRule,
+                                                OpenStack_1_1_FloatingIpPool,
+                                                OpenStack_2_PortInterfaceState,
+                                                OpenStack_1_1_FloatingIpAddress)
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from unittest.mock import Mock, patch
-import requests_mock
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import method_type
-from libcloud.utils.py3 import u
 
-from libcloud.common.base import LibcloudConnection
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.openstack_identity import OpenStackAuthenticationCache
-from libcloud.common.openstack_identity import AUTH_VERSIONS_WITH_EXPIRES
-from libcloud.common.types import (
-    InvalidCredsError,
-    MalformedResponseError,
-    LibcloudError,
-)
-from libcloud.compute.types import (
-    Provider,
-    KeyPairDoesNotExistError,
-    StorageVolumeState,
-    VolumeSnapshotState,
-    NodeImageMemberState,
-)
-from libcloud.compute.providers import get_driver
-from libcloud.compute.drivers.openstack import (
-    OpenStack_1_0_NodeDriver,
-    OpenStack_1_1_NodeDriver,
-    OpenStackSecurityGroup,
-    OpenStackSecurityGroupRule,
-    OpenStack_1_1_FloatingIpPool,
-    OpenStack_1_1_FloatingIpAddress,
-    OpenStackKeyPair,
-    OpenStack_1_0_Connection,
-    OpenStack_2_FloatingIpPool,
-    OpenStack_2_NodeDriver,
-    OpenStack_2_PortInterfaceState,
-    OpenStackNetwork,
-    OpenStackException,
-    OpenStack_2_ServerGroup,
-)
-from libcloud.compute.base import Node, NodeImage, NodeSize
-from libcloud.pricing import set_pricing, clear_pricing_data
 
-from libcloud.test import MockHttp, XML_HEADERS
-from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
-from libcloud.test.compute import TestCaseMixin
 
-from libcloud.test.secrets import OPENSTACK_PARAMS
 
 BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
 

@@ -19,13 +19,22 @@ Provides storage driver for working with local filesystem
 
 from __future__ import with_statement
 
-import errno
 import os
 import time
+import errno
 import shutil
 import tempfile
 import threading
 from hashlib import sha256
+
+from libcloud.utils.py3 import u, relpath
+from libcloud.common.base import Connection
+from libcloud.utils.files import read_in_chunks, exhaust_iterator
+from libcloud.common.types import LibcloudError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (ObjectError, ObjectDoesNotExistError, ContainerIsNotEmptyError,
+                                    InvalidContainerNameError, ContainerDoesNotExistError,
+                                    ContainerAlreadyExistsError)
 
 try:
     import fasteners
@@ -35,19 +44,6 @@ except ImportError:
         "using pip: pip install fasteners"
     )
 
-from libcloud.utils.files import read_in_chunks
-from libcloud.utils.files import exhaust_iterator
-from libcloud.utils.py3 import relpath
-from libcloud.utils.py3 import u
-from libcloud.common.base import Connection
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.common.types import LibcloudError
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ObjectError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import InvalidContainerNameError
 
 IGNORE_FOLDERS = [".lock", ".hash"]
 

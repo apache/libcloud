@@ -17,11 +17,11 @@ GiG G8 Driver
 
 """
 import json
-from libcloud.compute.base import NodeImage, NodeSize, Node
-from libcloud.compute.base import NodeDriver, UuidMixin
-from libcloud.compute.base import StorageVolume, NodeAuthSSHKey
-from libcloud.compute.types import Provider, NodeState
+
+from libcloud.compute.base import (Node, NodeSize, NodeImage, UuidMixin, NodeDriver, StorageVolume,
+                                   NodeAuthSSHKey)
 from libcloud.common.gig_g8 import G8Connection
+from libcloud.compute.types import Provider, NodeState
 from libcloud.common.exceptions import BaseHTTPError
 
 

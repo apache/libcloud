@@ -19,8 +19,7 @@ OpenStack driver.
 """
 
 from libcloud.compute.types import Provider, LibcloudError
-from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
-from libcloud.compute.drivers.openstack import OpenStack_1_1_NodeDriver
+from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection, OpenStack_1_1_NodeDriver
 
 __all__ = ["KiliCloudNodeDriver"]
 

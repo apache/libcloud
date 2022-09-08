@@ -23,10 +23,9 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.dnsimple import DNSimpleDNSConnection
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.base import DNSDriver, Zone, Record
-
+from libcloud.common.dnsimple import DNSimpleDNSConnection
 
 DEFAULT_ZONE_TTL = 3600
 

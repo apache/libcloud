@@ -15,39 +15,25 @@
 
 from __future__ import with_statement
 
-import json
 import os
 import sys
+import json
 import tempfile
 from io import BytesIO
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import basestring
-
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container, Object
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.azure_blobs import (
-    AzureBlobsStorageDriver,
-    AzureBlobsActiveDirectoryConnection,
-)
-from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
-
-from libcloud.test import unittest
 from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
-from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
-from libcloud.test.secrets import STORAGE_AZURITE_BLOBS_PARAMS
+from libcloud.test import unittest
+from libcloud.utils.py3 import b, httplib, parse_qs, urlparse, basestring
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Object, Container
+from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS, STORAGE_AZURITE_BLOBS_PARAMS
+from libcloud.storage.types import (ObjectDoesNotExistError, ObjectHashMismatchError,
+                                    ContainerIsNotEmptyError, InvalidContainerNameError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
 from libcloud.test.storage.base import BaseRangeDownloadMockHttp
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.storage.drivers.azure_blobs import (AZURE_UPLOAD_CHUNK_SIZE, AzureBlobsStorageDriver,
+                                                  AzureBlobsActiveDirectoryConnection)
 
 
 class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):

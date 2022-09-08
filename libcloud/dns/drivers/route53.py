@@ -15,26 +15,20 @@
 
 __all__ = ["Route53DNSDriver"]
 
-import base64
-import hmac
-import datetime
-import uuid
 import copy
-from libcloud.utils.py3 import httplib
-
+import hmac
+import uuid
+import base64
+import datetime
 from hashlib import sha1
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import b, urlencode
-
-from libcloud.utils.xml import findtext, findall, fixxpath
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.common.types import LibcloudError
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import ET, b, httplib, urlencode
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.common.aws import AWSGenericResponse, AWSTokenConnection
 from libcloud.common.base import ConnectionUserAndKey
-
+from libcloud.common.types import LibcloudError
 
 API_VERSION = "2012-02-29"
 API_HOST = "route53.amazonaws.com"

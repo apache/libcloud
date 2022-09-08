@@ -15,17 +15,15 @@
 """
 Dimension Data Common Components
 """
-from base64 import b64encode
 from time import sleep
+from base64 import b64encode
 
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
-from libcloud.compute.base import Node
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import b, httplib, basestring
 from libcloud.utils.xml import findtext
+from libcloud.common.base import RawResponse, XmlResponse, ConnectionUserAndKey
+from libcloud.compute.base import Node
 from libcloud.compute.types import LibcloudError, InvalidCredsError
 
 # Roadmap / TODO:

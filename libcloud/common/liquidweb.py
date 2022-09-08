@@ -15,11 +15,9 @@
 
 import base64
 
-from libcloud.common.base import JsonResponse
-from libcloud.common.base import ConnectionUserAndKey
 from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import ProviderError
-
 
 __all__ = [
     "API_HOST",

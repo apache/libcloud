@@ -15,14 +15,10 @@
 Zonomi DNS Driver
 """
 
-from libcloud.common.zonomi import ZonomiConnection, ZonomiResponse
-from libcloud.common.zonomi import ZonomiException
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import Provider, RecordType
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
+from libcloud.common.zonomi import ZonomiResponse, ZonomiException, ZonomiConnection
 
 __all__ = [
     "ZonomiDNSDriver",

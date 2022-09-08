@@ -19,7 +19,7 @@ import os
 import time
 
 from libcloud.loadbalancer.base import Member, Algorithm
-from libcloud.loadbalancer.types import Provider, State
+from libcloud.loadbalancer.types import State, Provider
 from libcloud.loadbalancer.providers import get_driver
 
 

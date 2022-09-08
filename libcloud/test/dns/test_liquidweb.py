@@ -16,15 +16,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.dns.drivers.liquidweb import LiquidWebDNSDriver
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_LIQUIDWEB
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import RecordType
 from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError)
+from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import DNS_PARAMS_LIQUIDWEB
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.liquidweb import LiquidWebDNSDriver
 
 
 class LiquidWebTests(unittest.TestCase):

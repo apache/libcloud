@@ -22,12 +22,10 @@ try:
 except Exception:
     import json  # type: ignore
 
-from libcloud.common.base import BaseDriver, PollingConnection
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState
-from libcloud.utils.py3 import httplib
 
 NODE_STATE_MAP = {
     "ACTIVE": NodeState.RUNNING,

@@ -13,43 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
-import hmac
 import os
+import hmac
+import atexit
 from time import time
 from hashlib import sha1
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import PY3, b, httplib, urlquote, urlencode
+from libcloud.common.base import Response, RawResponse
+from libcloud.utils.files import read_in_chunks
+from libcloud.common.types import LibcloudError, MalformedResponseError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (ObjectDoesNotExistError, ObjectHashMismatchError,
+                                    ContainerIsNotEmptyError, InvalidContainerNameError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
+from libcloud.common.openstack import OpenStackDriverMixin, OpenStackBaseConnection
+from libcloud.common.rackspace import AUTH_URL
+from libcloud.storage.providers import Provider
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlquote
 
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks
-from libcloud.common.types import MalformedResponseError, LibcloudError
-from libcloud.common.base import Response, RawResponse
 
-from libcloud.storage.providers import Provider
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.common.openstack import OpenStackBaseConnection
-from libcloud.common.openstack import OpenStackDriverMixin
 
-from libcloud.common.rackspace import AUTH_URL
 
 CDN_HOST = "cdn.clouddrive.com"
 API_VERSION = "v1.0"

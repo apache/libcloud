@@ -1,8 +1,8 @@
 import os
 
+from libcloud.compute.base import NodeAuthSSHKey
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.compute.base import NodeAuthSSHKey
 
 cls = get_driver(Provider.PROFIT_BRICKS)
 

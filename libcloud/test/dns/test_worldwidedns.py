@@ -15,18 +15,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.worldwidedns import WorldWideDNSDriver
-from libcloud.dns.drivers.worldwidedns import WorldWideDNSError
-from libcloud.common.worldwidedns import NonExistentDomain
-from libcloud.common.worldwidedns import InvalidDomainName
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_WORLDWIDEDNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.common.worldwidedns import InvalidDomainName, NonExistentDomain
+from libcloud.dns.drivers.worldwidedns import WorldWideDNSError, WorldWideDNSDriver
 
 
 class WorldWideDNSTests(unittest.TestCase):

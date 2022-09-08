@@ -19,12 +19,9 @@ Common utilities needed by the :class:`AbiquoNodeDriver`.
 """
 import base64
 
-from libcloud.common.base import ConnectionUserAndKey, PollingConnection
-from libcloud.common.base import XmlResponse
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, httplib, urlparse
+from libcloud.common.base import XmlResponse, PollingConnection, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import NodeState
 
 

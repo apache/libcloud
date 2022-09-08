@@ -1,10 +1,9 @@
 import os.path
 from pprint import pprint
 
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
-import libcloud.security
 
 HTTPS_PROXY_URL_NO_AUTH = "https://<proxy hostname 1>:<proxy port 2>"
 

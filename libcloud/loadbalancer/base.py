@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionKey, BaseDriver
+from libcloud.common.base import BaseDriver, ConnectionKey
 from libcloud.common.types import LibcloudError
 
 __all__ = ["Member", "LoadBalancer", "Algorithm", "Driver", "DEFAULT_ALGORITHM"]

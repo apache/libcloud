@@ -15,20 +15,15 @@
 import sys
 import json
 
-from libcloud.common.types import ProviderError
-from libcloud.dns.drivers.auroradns import AuroraDNSDriver
-from libcloud.dns.drivers.auroradns import AuroraDNSHealthCheckType
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
+from libcloud.test import MockHttp, LibcloudTestCase, unittest
 from libcloud.dns.base import Zone
-from libcloud.test import LibcloudTestCase
-from libcloud.test import MockHttp
-from libcloud.test import unittest
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_AURORADNS
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError)
 from libcloud.utils.py3 import httplib
+from libcloud.common.types import ProviderError
+from libcloud.test.secrets import DNS_PARAMS_AURORADNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.auroradns import AuroraDNSDriver, AuroraDNSHealthCheckType
 
 
 class AuroraDNSDriverTests(LibcloudTestCase):

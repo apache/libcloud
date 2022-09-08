@@ -16,17 +16,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib, urlparse
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node
-from libcloud.compute.drivers.dummy import DummyNodeDriver
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
-
-from libcloud.test import MockHttp
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.compute.drivers.dummy import DummyNodeDriver
+from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
 
 class GoGridTests(unittest.TestCase):

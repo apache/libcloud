@@ -14,24 +14,17 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import ET
-from libcloud.common.dimensiondata import DimensionDataConnection
-from libcloud.common.dimensiondata import DimensionDataPool
-from libcloud.common.dimensiondata import DimensionDataPoolMember
-from libcloud.common.dimensiondata import DimensionDataVirtualListener
-from libcloud.common.dimensiondata import DimensionDataVIPNode
-from libcloud.common.dimensiondata import DimensionDataDefaultHealthMonitor
-from libcloud.common.dimensiondata import DimensionDataPersistenceProfile
-from libcloud.common.dimensiondata import DimensionDataVirtualListenerCompatibility
-from libcloud.common.dimensiondata import DimensionDataDefaultiRule
-from libcloud.common.dimensiondata import API_ENDPOINTS
-from libcloud.common.dimensiondata import DEFAULT_REGION
-from libcloud.common.dimensiondata import TYPES_URN
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.utils.misc import reverse_dict
-from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer
-from libcloud.loadbalancer.base import Member
-from libcloud.loadbalancer.types import Provider
+from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State, Provider
+from libcloud.common.dimensiondata import (TYPES_URN, API_ENDPOINTS, DEFAULT_REGION,
+                                           DimensionDataPool, DimensionDataVIPNode,
+                                           DimensionDataConnection, DimensionDataPoolMember,
+                                           DimensionDataDefaultiRule, DimensionDataVirtualListener,
+                                           DimensionDataPersistenceProfile,
+                                           DimensionDataDefaultHealthMonitor,
+                                           DimensionDataVirtualListenerCompatibility)
 
 
 class DimensionDataLBDriver(Driver):

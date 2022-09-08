@@ -16,18 +16,14 @@
 Vultr DNS Driver
 """
 import json
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
 from libcloud.utils.py3 import urlencode
-from libcloud.common.vultr import VultrConnection
-from libcloud.common.vultr import VultrResponse
-from libcloud.common.vultr import VultrConnectionV2, VultrResponseV2
-from libcloud.common.vultr import DEFAULT_API_VERSION
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.types import ZoneAlreadyExistsError, RecordAlreadyExistsError
-from libcloud.dns.types import Provider, RecordType
-
+from libcloud.common.vultr import (DEFAULT_API_VERSION, VultrResponse, VultrConnection,
+                                   VultrResponseV2, VultrConnectionV2)
 
 __all__ = [
     "ZoneRequiredException",

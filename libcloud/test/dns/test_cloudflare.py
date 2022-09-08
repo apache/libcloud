@@ -14,23 +14,17 @@
 # limitations under the License.
 
 import sys
-
 import json
 
-from libcloud.common.types import LibcloudError
-from libcloud.test import unittest
-
-from libcloud.dns.drivers.cloudflare import CloudFlareDNSDriver
-from libcloud.dns.drivers.cloudflare import GlobalAPIKeyDNSConnection
-from libcloud.dns.drivers.cloudflare import TokenDNSConnection
-from libcloud.dns.drivers.cloudflare import ZONE_EXTRA_ATTRIBUTES
-from libcloud.dns.drivers.cloudflare import RECORD_EXTRA_ATTRIBUTES
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.test import MockHttp, unittest
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib, urlparse
+from libcloud.common.types import LibcloudError
 from libcloud.test.secrets import DNS_PARAMS_CLOUDFLARE
 from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test import MockHttp
+from libcloud.dns.drivers.cloudflare import (ZONE_EXTRA_ATTRIBUTES, RECORD_EXTRA_ATTRIBUTES,
+                                             TokenDNSConnection, CloudFlareDNSDriver,
+                                             GlobalAPIKeyDNSConnection)
 
 
 class CloudFlareDNSDriverTestCase(unittest.TestCase):

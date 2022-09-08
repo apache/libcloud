@@ -14,20 +14,16 @@
 # limitations under the License.
 
 import sys
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ET
-from libcloud.common.dimensiondata import DimensionDataAPIException
-from libcloud.common.types import InvalidCredsError
-from libcloud.backup.base import BackupTargetJob
-from libcloud.backup.drivers.dimensiondata import (
-    DimensionDataBackupDriver as DimensionData,
-)
-from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
 
 from libcloud.test import MockHttp, unittest
-from libcloud.test.file_fixtures import BackupFileFixtures
-
+from libcloud.utils.py3 import ET, httplib
+from libcloud.backup.base import BackupTargetJob
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.test.file_fixtures import BackupFileFixtures
+from libcloud.common.dimensiondata import DimensionDataAPIException
+from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
+from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as DimensionData
 
 
 class DimensionData_v2_3_Tests(unittest.TestCase):

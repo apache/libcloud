@@ -15,31 +15,25 @@
 """
 Tests for Google Connection classes.
 """
-import datetime
-from unittest import mock
 import os
 import sys
+import datetime
 import unittest
+from unittest import mock
+
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib
+from libcloud.common.google import (GoogleAuthType, GoogleAuthError, GoogleBaseConnection,
+                                    GoogleOAuth2Credential, GoogleBaseAuthConnection,
+                                    GoogleServiceAcctAuthConnection,
+                                    GoogleInstalledAppAuthConnection,
+                                    GoogleGCEServiceAcctAuthConnection, _utcnow, _utc_timestamp)
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.google import (
-    GoogleAuthError,
-    GoogleAuthType,
-    GoogleBaseAuthConnection,
-    GoogleInstalledAppAuthConnection,
-    GoogleServiceAcctAuthConnection,
-    GoogleGCEServiceAcctAuthConnection,
-    GoogleOAuth2Credential,
-    GoogleBaseConnection,
-    _utcnow,
-    _utc_timestamp,
-)
-from libcloud.test import MockHttp, LibcloudTestCase
-from libcloud.utils.py3 import httplib
 
 
 # Skip some tests if cryptography is unavailable

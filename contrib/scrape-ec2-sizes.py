@@ -26,14 +26,14 @@ Use it as following (run it in the root of the repo directory):
     $ python contrib/scrape-ec2-sizes.py
 """
 
-import re
 import os
+import re
 import json
 import atexit
 
-import requests
 import tqdm  # pylint: disable=import-error
 import ijson  # pylint: disable=import-error
+import requests
 
 FILEPATH = os.environ.get("TMP_JSON", "/tmp/ec.json")
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"

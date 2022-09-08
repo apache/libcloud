@@ -19,16 +19,14 @@ Tests for Google Container Engine Driver
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.container.drivers.gke import GKEContainerDriver, API_VERSION
-from libcloud.common.google import GoogleBaseAuthConnection
-from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import GKE_PARAMS, GKE_KEYWORD_PARAMS
+from libcloud.common.google import GoogleBaseAuthConnection
 from libcloud.test.container import TestCaseMixin
 from libcloud.test.file_fixtures import ContainerFileFixtures
-
-from libcloud.test.secrets import GKE_PARAMS, GKE_KEYWORD_PARAMS
+from libcloud.container.drivers.gke import API_VERSION, GKEContainerDriver
+from libcloud.test.common.test_google import GoogleTestCase, GoogleAuthMockHttp
 
 
 class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):

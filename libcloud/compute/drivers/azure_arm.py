@@ -19,24 +19,22 @@ Driver for Microsoft Azure Resource Manager (ARM) Virtual Machines provider.
 http://azure.microsoft.com/en-us/services/virtual-machines/
 """
 
-import base64
-import binascii
 import os
 import time
+import base64
+import binascii
 
-from libcloud.common.azure_arm import AzureResourceManagementConnection
-from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.types import NodeState, StorageVolumeState, VolumeSnapshotState
-from libcloud.common.types import LibcloudError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
-from libcloud.utils.py3 import basestring
 from libcloud.utils import iso8601
-
+from libcloud.utils.py3 import basestring
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, NodeAuthSSHKey, VolumeSnapshot, NodeAuthPassword)
+from libcloud.compute.types import NodeState, StorageVolumeState, VolumeSnapshotState
+from libcloud.storage.types import ObjectDoesNotExistError
+from libcloud.common.azure_arm import AzureResourceManagementConnection
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.compute.providers import Provider
+from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 
 RESOURCE_API_VERSION = "2016-04-30-preview"
 DISK_API_VERSION = "2018-06-01"

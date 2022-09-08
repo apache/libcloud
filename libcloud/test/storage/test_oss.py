@@ -18,32 +18,19 @@ from __future__ import unicode_literals
 import os
 import sys
 import unittest
-
 from unittest import mock
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
+from libcloud.test import MockHttp, make_response, generate_random_data  # pylint: disable-msg=E0611
+from libcloud.utils.py3 import b, httplib, parse_qs, urlparse
 from libcloud.common.types import InvalidCredsError
-from libcloud.storage.base import Container, Object
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.oss import OSSConnection
-from libcloud.storage.drivers.oss import OSSStorageDriver
-from libcloud.storage.drivers.oss import CHUNK_SIZE
-from libcloud.storage.drivers.dummy import DummyIterator
-from libcloud.test import (
-    MockHttp,
-    generate_random_data,
-    make_response,
-)  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
+from libcloud.storage.types import (ContainerError, ObjectDoesNotExistError,
+                                    ObjectHashMismatchError, ContainerIsNotEmptyError,
+                                    InvalidContainerNameError, ContainerDoesNotExistError)
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.storage.drivers.oss import CHUNK_SIZE, OSSConnection, OSSStorageDriver
+from libcloud.storage.drivers.dummy import DummyIterator
 
 
 class OSSConnectionTestCase(unittest.TestCase):

@@ -15,19 +15,15 @@
 """
 DurableDNS Driver
 """
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ensure_string
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.base import Record, Zone
-from libcloud.dns.base import DNSDriver
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
 from xml.etree.ElementTree import tostring
-from libcloud.common.durabledns import DurableConnection, DurableResponse
-from libcloud.common.durabledns import DurableDNSException
-from libcloud.common.durabledns import _schema_builder as api_schema_builder
-from libcloud.common.durabledns import SCHEMA_BUILDER_MAP
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError)
+from libcloud.utils.py3 import httplib, ensure_string
+from libcloud.common.durabledns import (SCHEMA_BUILDER_MAP, DurableResponse, DurableConnection,
+                                        DurableDNSException)
+from libcloud.common.durabledns import _schema_builder as api_schema_builder
 
 __all__ = [
     "ZONE_EXTRA_PARAMS_DEFAULT_VALUES",

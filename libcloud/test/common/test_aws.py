@@ -16,13 +16,10 @@
 import sys
 import unittest
 from datetime import datetime
-
 from unittest import mock
 
-from libcloud.common.aws import AWSRequestSignerAlgorithmV4
-from libcloud.common.aws import SignedAWSConnection
-from libcloud.common.aws import UNSIGNED_PAYLOAD
 from libcloud.test import LibcloudTestCase
+from libcloud.common.aws import UNSIGNED_PAYLOAD, SignedAWSConnection, AWSRequestSignerAlgorithmV4
 
 
 class EC2MockDriver(object):

@@ -15,18 +15,15 @@
 
 import os
 import sys
-import tempfile
-
-from unittest import mock
 import json
+import tempfile
+from unittest import mock
 
-from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import b, httplib
 from libcloud.utils.files import exhaust_iterator
-from libcloud.test import unittest
-from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import StorageFileFixtures
+from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver
 
 
 class MockAuthConn(mock.Mock):

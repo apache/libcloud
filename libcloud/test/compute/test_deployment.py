@@ -20,28 +20,19 @@ import os
 import sys
 import time
 import unittest
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import u
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import assertRaisesRegex
-
-from libcloud.compute.deployment import MultiStepDeployment, Deployment
-from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
-from libcloud.compute.deployment import ScriptFileDeployment, FileDeployment
-from libcloud.compute.base import Node
-from libcloud.compute.base import NodeAuthPassword
-from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
-from libcloud.compute.ssh import BaseSSHClient
-from libcloud.compute.ssh import have_paramiko
-from libcloud.compute.ssh import SSHCommandTimeoutError
-from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
-
-from libcloud.test import MockHttp, XML_HEADERS
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from unittest.mock import Mock, patch
 
+from libcloud.test import XML_HEADERS, MockHttp
+from libcloud.utils.py3 import PY3, u, httplib, assertRaisesRegex
+from libcloud.compute.ssh import BaseSSHClient, SSHCommandTimeoutError, have_paramiko
+from libcloud.compute.base import Node, NodeAuthPassword
 from libcloud.test.secrets import RACKSPACE_PARAMS
+from libcloud.compute.types import NodeState, LibcloudError, DeploymentError
+from libcloud.compute.deployment import (Deployment, FileDeployment, ScriptDeployment,
+                                         SSHKeyDeployment, MultiStepDeployment,
+                                         ScriptFileDeployment)
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
 # Keyword arguments which are specific to deploy_node() method, but not
 # create_node()

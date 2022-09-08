@@ -67,27 +67,27 @@ Please remember to secure your keys and access tokens.
 
 from __future__ import with_statement
 
+import os
+import sys
+import time
+import errno
+import base64
+import socket
+import logging
+import datetime
 from typing import Optional
+
+from libcloud.utils.py3 import PY3, b, httplib, urlparse, urlencode
+from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, ProviderError
+from libcloud.utils.connection import get_response_object
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-import logging
-import base64
-import errno
-import time
-import datetime
-import os
-import socket
-import sys
 
-from libcloud.utils.connection import get_response_object
-from libcloud.utils.py3 import b, httplib, urlencode, urlparse, PY3
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse, PollingConnection
-from libcloud.common.base import BaseDriver
-from libcloud.common.types import ProviderError, LibcloudError
 
 try:
     from cryptography.hazmat.backends import default_backend

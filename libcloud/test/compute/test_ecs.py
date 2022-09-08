@@ -18,22 +18,15 @@ from __future__ import unicode_literals
 import sys
 import unittest
 
-from libcloud.common.types import LibcloudError
-from libcloud.compute.base import (
-    Node,
-    NodeAuthPassword,
-    NodeImage,
-    NodeLocation,
-    NodeSize,
-    StorageVolume,
-    VolumeSnapshot,
-)
-from libcloud.compute.drivers.ecs import ECSDriver
-from libcloud.compute.types import NodeState, StorageVolumeState
 from libcloud.test import MockHttp, LibcloudTestCase
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import ECS_PARAMS
 from libcloud.utils.py3 import httplib
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeLocation, StorageVolume,
+                                   VolumeSnapshot, NodeAuthPassword)
+from libcloud.test.secrets import ECS_PARAMS
+from libcloud.compute.types import NodeState, StorageVolumeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.ecs import ECSDriver
 
 
 class ECSDriverTestCase(LibcloudTestCase):

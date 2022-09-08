@@ -18,20 +18,20 @@ Scaleway Driver
 
 import copy
 
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import ProviderError
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
+from libcloud.compute.types import NodeState, VolumeSnapshotState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import ProviderError
-from libcloud.compute.base import NodeDriver, NodeImage, Node, NodeSize
-from libcloud.compute.base import NodeLocation
-from libcloud.compute.base import StorageVolume, VolumeSnapshot, KeyPair
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState, VolumeSnapshotState
-from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
 
 __all__ = ["ScalewayResponse", "ScalewayConnection", "ScalewayNodeDriver"]
 

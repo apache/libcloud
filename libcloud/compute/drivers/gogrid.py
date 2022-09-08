@@ -15,18 +15,16 @@
 """
 GoGrid driver
 """
+import copy
 import time
 import hashlib
-import copy
 
 from libcloud.utils.py3 import b
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
-from libcloud.compute.providers import Provider
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.common.gogrid import BaseGoGridDriver, GoGridConnection
 from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.compute.providers import Provider
 
 STATE = {
     "Starting": NodeState.PENDING,

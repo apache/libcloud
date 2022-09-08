@@ -15,16 +15,10 @@
 
 import sys
 import unittest
-
 from unittest import TestCase
 
-from libcloud.compute.types import (
-    Provider,
-    NodeState,
-    StorageVolumeState,
-    VolumeSnapshotState,
-    Type,
-)
+from libcloud.compute.types import (Type, Provider, NodeState, StorageVolumeState,
+                                    VolumeSnapshotState)
 
 
 class TestType(Type):

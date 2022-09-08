@@ -30,8 +30,8 @@ datetime.datetime(2007, 1, 25, 12, 0, tzinfo=<iso8601.iso8601.Utc ...>)
 
 # Taken from pyiso8601 which is licensed under the MIT license.
 
-from datetime import datetime, timedelta, tzinfo
 import re
+from datetime import tzinfo, datetime, timedelta
 
 __all__ = ["parse_date", "parse_date_allow_empty", "ParseError"]
 

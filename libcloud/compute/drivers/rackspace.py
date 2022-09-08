@@ -15,20 +15,13 @@
 """
 Rackspace driver
 """
-from libcloud.compute.types import Provider, LibcloudError, VolumeSnapshotState
 from libcloud.compute.base import NodeLocation, VolumeSnapshot
-from libcloud.compute.drivers.openstack import (
-    OpenStack_1_0_Connection,
-    OpenStack_1_0_NodeDriver,
-    OpenStack_1_0_Response,
-)
-from libcloud.compute.drivers.openstack import (
-    OpenStack_1_1_Connection,
-    OpenStack_1_1_NodeDriver,
-)
-
-from libcloud.common.rackspace import AUTH_URL
+from libcloud.compute.types import Provider, LibcloudError, VolumeSnapshotState
 from libcloud.utils.iso8601 import parse_date
+from libcloud.common.rackspace import AUTH_URL
+from libcloud.compute.drivers.openstack import (OpenStack_1_0_Response, OpenStack_1_0_Connection,
+                                                OpenStack_1_0_NodeDriver, OpenStack_1_1_Connection,
+                                                OpenStack_1_1_NodeDriver)
 
 SERVICE_TYPE = "compute"
 SERVICE_NAME_GEN1 = "cloudServers"

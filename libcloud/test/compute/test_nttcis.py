@@ -18,26 +18,18 @@ import unittest
 from types import GeneratorType
 
 import pytest
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ET
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.nttcis import NttCisAPIException, NetworkDomainServicePlan
-from libcloud.common.nttcis import (
-    NttCisServerCpuSpecification,
-    NttCisServerDisk,
-    NttCisServerVMWareTools,
-)
-from libcloud.common.nttcis import NttCisTag, NttCisTagKey
-from libcloud.common.nttcis import ClassFactory
-from libcloud.common.nttcis import TYPES_URN
-from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
-from libcloud.compute.drivers.nttcis import NttCisNic
-from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import ET, httplib
+from libcloud.utils.xml import findall, findtext, fixxpath
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeLocation, NodeAuthPassword
 from libcloud.test.secrets import NTTCIS_PARAMS
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.common.nttcis import (TYPES_URN, NttCisTag, ClassFactory, NttCisTagKey,
+                                    NttCisServerDisk, NttCisAPIException, NttCisServerVMWareTools,
+                                    NetworkDomainServicePlan, NttCisServerCpuSpecification)
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.nttcis import NttCisNic
+from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
 
 
 @pytest.fixture()

@@ -1,5 +1,5 @@
-from build.lib.libcloud.storage.providers import get_driver
 from build.lib.libcloud.storage.types import Provider
+from build.lib.libcloud.storage.providers import get_driver
 
 cls = get_driver(Provider.AZURE_BLOBS)
 

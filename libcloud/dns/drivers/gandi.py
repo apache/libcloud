@@ -15,14 +15,13 @@
 
 from __future__ import with_statement
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, RecordError, ZoneDoesNotExistError,
+                                RecordDoesNotExistError)
+from libcloud.common.gandi import GandiResponse, BaseGandiDriver, GandiConnection
+
 __all__ = ["GandiDNSDriver"]
 
-from libcloud.common.gandi import BaseGandiDriver, GandiConnection
-from libcloud.common.gandi import GandiResponse
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import RecordError
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
 
 
 TTL_MIN = 30

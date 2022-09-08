@@ -16,14 +16,12 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.hostvirtual import HostVirtualDNSDriver
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_HOSTVIRTUAL
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.hostvirtual import HostVirtualDNSDriver
 
 
 class HostVirtualTests(unittest.TestCase):

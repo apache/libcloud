@@ -15,16 +15,15 @@
 
 import os
 import sys
-from io import StringIO
 import zlib
-import requests_mock
-
+from io import StringIO
 from unittest import mock
 
 import libcloud
+import requests_mock
+from libcloud.http import LibcloudConnection
 from libcloud.test import unittest
 from libcloud.common.base import Connection
-from libcloud.http import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
 EXPECTED_DATA_JSON = """

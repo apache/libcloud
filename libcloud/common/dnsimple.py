@@ -14,8 +14,7 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import httplib
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 
 class DNSimpleDNSResponse(JsonResponse):

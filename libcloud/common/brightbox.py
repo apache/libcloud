@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.utils.py3 import b, httplib, base64_encode_string
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.types import InvalidCredsError
-
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import base64_encode_string
 
 try:
     import simplejson as json

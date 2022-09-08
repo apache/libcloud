@@ -14,10 +14,8 @@
 # limitations under the License.
 import re
 
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import Response
+from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.common.types import ProviderError
-
 
 OK_CODES = ["200", "211", "212", "213"]
 ERROR_CODES = [

@@ -1,5 +1,4 @@
-from libcloud.storage.types import Provider
-from libcloud.storage.types import ContainerAlreadyExistsError
+from libcloud.storage.types import Provider, ContainerAlreadyExistsError
 from libcloud.storage.providers import get_driver
 
 FILE_PATH = "/home/user/myfile.tar.gz"

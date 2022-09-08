@@ -16,23 +16,15 @@
 1&1 Cloud Server Compute driver
 """
 import json
-
-from libcloud.compute.providers import Provider
-from libcloud.common.base import JsonResponse, ConnectionKey
-from libcloud.compute.base import (
-    NodeSize,
-    NodeImage,
-    NodeLocation,
-    Node,
-    NodeAuthPassword,
-    NodeAuthSSHKey,
-)
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.types import NodeState
-from libcloud.utils.py3 import httplib
-from libcloud.compute.base import NodeDriver
-
 from time import sleep
+
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   NodeAuthSSHKey, NodeAuthPassword)
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
 
 API_HOST = "cloudpanel-api.1and1.com"
 API_VERSION = "/v1/"

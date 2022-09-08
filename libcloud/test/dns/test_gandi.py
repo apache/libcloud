@@ -16,12 +16,11 @@
 import sys
 import unittest
 
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
+from libcloud.test.secrets import DNS_GANDI
 from libcloud.dns.drivers.gandi import GandiDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_GANDI
 from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 

@@ -15,39 +15,25 @@
 
 import sys
 from types import GeneratorType
-from libcloud.utils.py3 import httplib
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.dimensiondata import (
-    DimensionDataAPIException,
-    NetworkDomainServicePlan,
-)
-from libcloud.common.dimensiondata import (
-    DimensionDataServerCpuSpecification,
-    DimensionDataServerDisk,
-    DimensionDataServerVMWareTools,
-)
-from libcloud.common.dimensiondata import DimensionDataTag, DimensionDataTagKey
-from libcloud.common.dimensiondata import (
-    DimensionDataIpAddress,
-    DimensionDataIpAddressList,
-    DimensionDataChildIpAddressList,
-    DimensionDataPortList,
-    DimensionDataPort,
-    DimensionDataChildPortList,
-)
-from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.compute.drivers.dimensiondata import (
-    DimensionDataNodeDriver as DimensionData,
-)
-from libcloud.compute.drivers.dimensiondata import DimensionDataNic
-from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.utils.py3 import ET
 from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import ET, httplib
+from libcloud.utils.xml import findall, findtext, fixxpath
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeLocation, NodeAuthPassword
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.common.dimensiondata import (TYPES_URN, DimensionDataTag, DimensionDataPort,
+                                           DimensionDataTagKey, DimensionDataPortList,
+                                           DimensionDataIpAddress, DimensionDataServerDisk,
+                                           NetworkDomainServicePlan, DimensionDataAPIException,
+                                           DimensionDataChildPortList, DimensionDataIpAddressList,
+                                           DimensionDataServerVMWareTools,
+                                           DimensionDataChildIpAddressList,
+                                           DimensionDataServerCpuSpecification)
+from libcloud.compute.drivers.dimensiondata import DimensionDataNic
+from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 
 
 class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):

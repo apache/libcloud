@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.types import LibcloudError
 from libcloud.common.aws import SignedAWSConnection
-from libcloud.storage.drivers.s3 import BaseS3Connection, S3Connection
-from libcloud.storage.drivers.s3 import BaseS3StorageDriver
+from libcloud.common.types import LibcloudError
+from libcloud.storage.drivers.s3 import S3Connection, BaseS3Connection, BaseS3StorageDriver
 
 __all__ = ["DigitalOceanSpacesStorageDriver"]
 

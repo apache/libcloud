@@ -17,25 +17,15 @@
 Common utilities for OpenStack
 """
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.exceptions import BaseHTTPError
+from libcloud.utils.py3 import ET, httplib
+from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.common.types import ProviderError
-from libcloud.compute.types import LibcloudError, MalformedResponseError
-from libcloud.compute.types import KeyPairDoesNotExistError
-from libcloud.common.openstack_identity import (
-    AUTH_TOKEN_HEADER,
-    get_class_for_auth_version,
-)
-
+from libcloud.compute.types import LibcloudError, MalformedResponseError, KeyPairDoesNotExistError
+from libcloud.common.exceptions import BaseHTTPError
 # Imports for backward compatibility reasons
-from libcloud.common.openstack_identity import (
-    OpenStackServiceCatalog,
-    OpenStackIdentityTokenScope,
-)
-
+from libcloud.common.openstack_identity import (AUTH_TOKEN_HEADER, OpenStackServiceCatalog,
+                                                OpenStackIdentityTokenScope,
+                                                get_class_for_auth_version)
 
 try:
     import simplejson as json

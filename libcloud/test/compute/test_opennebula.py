@@ -22,22 +22,17 @@ OpenNebula.org test suite.
 
 __docformat__ = "epytext"
 
-import unittest
 import sys
+import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeState
-from libcloud.compute.drivers.opennebula import OpenNebulaNodeDriver
-from libcloud.compute.drivers.opennebula import OpenNebulaNetwork
-from libcloud.compute.drivers.opennebula import OpenNebulaNodeSize
-from libcloud.compute.drivers.opennebula import ACTION
 import libcloud.compute.drivers.opennebula
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test import MockHttp
-
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeState
 from libcloud.test.secrets import OPENNEBULA_PARAMS
-
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.opennebula import (ACTION, OpenNebulaNetwork, OpenNebulaNodeSize,
+                                                 OpenNebulaNodeDriver)
 
 libcloud.compute.drivers.opennebula.API_HOST = "dummy"
 

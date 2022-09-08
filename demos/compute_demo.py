@@ -27,19 +27,20 @@ try:
 except ImportError:
     secrets = None
 
-import os.path
 import sys
+import os.path
+from pprint import pprint
+
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.types import Provider
+from libcloud.compute.providers import get_driver
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
 sys.path.append(
     os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 )
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.types import Provider
-from libcloud.compute.providers import get_driver
 
-from pprint import pprint
 
 
 def get_demo_driver(provider_name="RACKSPACE", *args, **kwargs):

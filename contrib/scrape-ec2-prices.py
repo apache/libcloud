@@ -19,15 +19,15 @@
 
 import os
 import re
-import json
-import atexit
 import copy
+import json
 import time
-from collections import defaultdict, OrderedDict
+import atexit
+from collections import OrderedDict, defaultdict
 
-import requests
-import ijson  # pylint: disable=import-error
 import tqdm  # pylint: disable=import-error
+import ijson  # pylint: disable=import-error
+import requests
 
 # Buffer size for ijson.parse() function. Larger buffer size results in increased memory
 # consumption, but faster parsing.

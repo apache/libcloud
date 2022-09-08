@@ -15,10 +15,9 @@
 
 import sys
 
-from libcloud.compute.drivers.auroracompute import AuroraComputeNodeDriver
-from libcloud.compute.drivers.auroracompute import AuroraComputeRegion
-from libcloud.test.compute.test_cloudstack import CloudStackCommonTestCase
 from libcloud.test import unittest
+from libcloud.test.compute.test_cloudstack import CloudStackCommonTestCase
+from libcloud.compute.drivers.auroracompute import AuroraComputeRegion, AuroraComputeNodeDriver
 
 
 class AuroraComputeNodeDriverTestCase(CloudStackCommonTestCase, unittest.TestCase):

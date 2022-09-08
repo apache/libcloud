@@ -15,17 +15,12 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.pointdns import PointDNSDriver
-from libcloud.dns.drivers.pointdns import PointDNSException
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_POINTDNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.pointdns import PointDNSDriver, PointDNSException
 
 
 class PointDNSTests(unittest.TestCase):

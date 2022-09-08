@@ -16,10 +16,10 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.common.base import Connection, Response, JsonResponse, XmlResponse
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import Response, Connection, XmlResponse, JsonResponse
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class FileFixturesTests(unittest.TestCase):

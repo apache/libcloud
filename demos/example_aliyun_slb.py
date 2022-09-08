@@ -15,9 +15,9 @@
 
 from libcloud.compute.types import Provider as NodeProvider
 from libcloud.compute.providers import get_driver as get_node_driver
-from libcloud.loadbalancer.providers import get_driver
-from libcloud.loadbalancer.base import Algorithm, Member
+from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.types import Provider
+from libcloud.loadbalancer.providers import get_driver
 
 SLBDriver = get_driver(Provider.ALIYUN_SLB)
 ECSDriver = get_node_driver(NodeProvider.ALIYUN_ECS)

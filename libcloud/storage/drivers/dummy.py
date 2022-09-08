@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path
 import random
 import hashlib
+import os.path
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import PY3, b
+from libcloud.common.types import LibcloudError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (ObjectDoesNotExistError, ContainerIsNotEmptyError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
 
 if PY3:
     from io import FileIO as file
 
-from libcloud.common.types import LibcloudError
 
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ObjectDoesNotExistError
 
 
 class DummyFileObject(file):

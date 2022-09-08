@@ -15,15 +15,12 @@
 
 import sys
 
-from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver
-from libcloud.compute.types import NodeState
-
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
+from libcloud.compute.types import NodeState
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver
+from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 
 
 class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):

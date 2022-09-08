@@ -16,49 +16,30 @@
 OpenStack driver
 """
 
-from libcloud.common.exceptions import BaseHTTPError
+import base64
+import warnings
+
+from libcloud.pricing import get_size_price
+from libcloud.utils.py3 import ET, b, next, httplib, parse_qs, urlparse
+from libcloud.utils.xml import findall
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, UuidMixin, NodeDriver,
+                                   NodeLocation, StorageVolume, VolumeSnapshot, NodeImageMember)
+from libcloud.compute.types import (Type, Provider, NodeState, LibcloudError, StorageVolumeState,
+                                    VolumeSnapshotState)
 from libcloud.utils.iso8601 import parse_date
+from libcloud.common.openstack import (OpenStackResponse, OpenStackException, OpenStackDriverMixin,
+                                       OpenStackBaseConnection)
+from libcloud.utils.networking import is_public_subnet
+from libcloud.common.exceptions import BaseHTTPError
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-import warnings
-import base64
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
 
 
-from libcloud.common.openstack import OpenStackBaseConnection
-from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.openstack import OpenStackException
-from libcloud.common.openstack import OpenStackResponse
-from libcloud.utils.networking import is_public_subnet
-from libcloud.compute.base import NodeSize, NodeImage, NodeImageMember, UuidMixin
-from libcloud.compute.base import (
-    NodeDriver,
-    Node,
-    NodeLocation,
-    StorageVolume,
-    VolumeSnapshot,
-)
-from libcloud.compute.base import KeyPair
-from libcloud.compute.types import (
-    NodeState,
-    StorageVolumeState,
-    Provider,
-    VolumeSnapshotState,
-    Type,
-    LibcloudError,
-)
-from libcloud.pricing import get_size_price
-from libcloud.utils.xml import findall
-from libcloud.utils.py3 import ET
+
 
 __all__ = [
     "OpenStack_1_0_Response",

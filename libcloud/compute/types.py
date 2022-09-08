@@ -16,9 +16,8 @@
 Base types used by other parts of libcloud
 """
 
-from libcloud.common.types import Type
-from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.types import InvalidCredsError, InvalidCredsException
+from libcloud.common.types import (Type, LibcloudError, InvalidCredsError, InvalidCredsException,
+                                   MalformedResponseError)
 
 __all__ = [
     "Provider",

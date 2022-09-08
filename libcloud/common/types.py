@@ -13,12 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
-from typing import Callable
-from typing import Union
-from typing import cast
-
 from enum import Enum
+from typing import Union, Callable, Optional, cast
 
 if False:
     # Work around for MYPY for cyclic import problem

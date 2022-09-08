@@ -17,17 +17,13 @@ import os
 import sys
 
 import libcloud.security
-from libcloud.common.types import LibcloudError
-from libcloud.compute.base import NodeAuthPassword, NodeImage, NodeSize
-
-from libcloud.test import unittest
-from libcloud.test import LibcloudTestCase
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.test import MockHttp, LibcloudTestCase, unittest
 from libcloud.utils.py3 import httplib
-from libcloud.compute.base import Node, NodeState
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeState, NodeAuthPassword
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class AzureNodeDriverTests(LibcloudTestCase):

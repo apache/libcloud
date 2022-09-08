@@ -14,25 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import with_statement
+from __future__ import with_statement, absolute_import
 
 import os
 import sys
 import tempfile
+from unittest.mock import Mock, MagicMock, call, patch
 
 from libcloud import _init_once
-from libcloud.test import LibcloudTestCase
-from libcloud.test import unittest
-from libcloud.compute.ssh import ParamikoSSHClient
-from libcloud.compute.ssh import ShellOutSSHClient
-from libcloud.compute.ssh import have_paramiko
-
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import u
-from libcloud.utils.py3 import assertRaisesRegex
-
-from unittest.mock import patch, Mock, MagicMock, call
+from libcloud.test import LibcloudTestCase, unittest
+from libcloud.utils.py3 import StringIO, u, assertRaisesRegex
+from libcloud.compute.ssh import ParamikoSSHClient, ShellOutSSHClient, have_paramiko
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA

@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import RecordAlreadyExistsError
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
 
 
 class DummyDNSDriver(DNSDriver):

@@ -14,13 +14,13 @@
 # limitations under the License.
 
 import os
-import sys
 import re
+import sys
 import fnmatch
+from distutils.core import Command
 
 import setuptools
 from setuptools import setup
-from distutils.core import Command
 
 try:
     import epydoc  # NOQA

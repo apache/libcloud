@@ -19,18 +19,13 @@ __all__ = ["ZerigoDNSDriver"]
 import copy
 import base64
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.utils.py3 import ET
-from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.utils.xml import findtext, findall
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import ET, b, httplib
+from libcloud.utils.xml import findall, findtext
+from libcloud.utils.misc import get_new_obj, merge_valid_keys
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
 
 API_HOST = "ns.zerigo.com"
 API_VERSION = "1.1"

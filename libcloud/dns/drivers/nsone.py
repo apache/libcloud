@@ -18,16 +18,11 @@ try:
 except ImportError:
     import json
 
-from libcloud.dns.types import (
-    Provider,
-    ZoneDoesNotExistError,
-    ZoneAlreadyExistsError,
-    RecordDoesNotExistError,
-    RecordAlreadyExistsError,
-)
+from libcloud.dns.base import Zone, Record, DNSDriver, RecordType
+from libcloud.dns.types import (Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
 from libcloud.utils.py3 import httplib
-from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
-from libcloud.common.nsone import NsOneConnection, NsOneResponse, NsOneException
+from libcloud.common.nsone import NsOneResponse, NsOneException, NsOneConnection
 
 __all__ = ["NsOneDNSDriver"]
 

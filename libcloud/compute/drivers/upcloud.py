@@ -15,19 +15,16 @@
 """
 Upcloud node driver
 """
-import base64
 import json
+import base64
 
-from libcloud.utils.py3 import httplib, b
-from libcloud.compute.base import NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, Node, NodeState
-from libcloud.compute.types import Provider
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.upcloud import UpcloudCreateNodeRequestBody
-from libcloud.common.upcloud import UpcloudNodeDestroyer
-from libcloud.common.upcloud import UpcloudNodeOperations
-from libcloud.common.upcloud import PlanPrice
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeState, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider
+from libcloud.common.upcloud import (PlanPrice, UpcloudNodeDestroyer, UpcloudNodeOperations,
+                                     UpcloudCreateNodeRequestBody)
 
 
 class UpcloudResponse(JsonResponse):

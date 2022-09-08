@@ -17,12 +17,18 @@
 Wraps multiple ways to communicate over SSH.
 """
 
-from typing import Type
-from typing import Optional
-from typing import Tuple
-from typing import List
-from typing import Union
-from typing import cast
+import os
+import re
+import time
+import logging
+import warnings
+import subprocess
+from typing import List, Type, Tuple, Union, Optional, cast
+from os.path import join as pjoin
+from os.path import split as psplit
+
+from libcloud.utils.py3 import StringIO, b
+from libcloud.utils.logging import ExtraLogFormatter
 
 have_paramiko = False
 
@@ -39,19 +45,8 @@ except ImportError:
 # warning on Python 2.6.
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
-import os
-import re
-import time
-import subprocess
-import logging
-import warnings
 
-from os.path import split as psplit
-from os.path import join as pjoin
 
-from libcloud.utils.logging import ExtraLogFormatter
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import b
 
 __all__ = [
     "BaseSSHClient",

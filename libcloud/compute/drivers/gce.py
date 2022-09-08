@@ -19,28 +19,22 @@ Module for Google Compute Engine Driver.
 
 from __future__ import with_statement
 
-import datetime
-import time
-import itertools
 import sys
+import time
+import datetime
+import itertools
 
+from libcloud.pricing import get_pricing
 from libcloud.common.base import LazyObject
-from libcloud.common.google import GoogleOAuth2Credential
-from libcloud.common.google import GoogleResponse
-from libcloud.common.google import GoogleBaseConnection
-from libcloud.common.google import GoogleBaseError
-from libcloud.common.google import ResourceNotFoundError
-from libcloud.common.google import ResourceExistsError
 from libcloud.common.types import LibcloudError
-
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
-from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import UuidMixin
-from libcloud.compute.providers import Provider
+from libcloud.compute.base import (Node, NodeSize, NodeImage, UuidMixin, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
+from libcloud.common.google import (GoogleResponse, GoogleBaseError, ResourceExistsError,
+                                    GoogleBaseConnection, ResourceNotFoundError,
+                                    GoogleOAuth2Credential)
 from libcloud.compute.types import NodeState
 from libcloud.utils.iso8601 import parse_date
-from libcloud.pricing import get_pricing
-
+from libcloud.compute.providers import Provider
 
 API_VERSION = "v1"
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180

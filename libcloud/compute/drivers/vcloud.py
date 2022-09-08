@@ -15,31 +15,26 @@
 """
 VMware vCloud driver.
 """
-import copy
-import datetime
-import re
-import base64
 import os
+import re
+import copy
+import time
+import base64
+import datetime
+from xml.parsers.expat import ExpatError
+
+from libcloud.utils.py3 import ET, b, next, httplib, urlparse, urlencode
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import NodeState
 from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import ET
+from libcloud.compute.providers import Provider
 
 urlparse = urlparse.urlparse
 
-import time
 
-from xml.parsers.expat import ExpatError
 
-from libcloud.common.base import XmlResponse, ConnectionUserAndKey
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver, NodeLocation
-from libcloud.compute.base import NodeSize, NodeImage
 
 """
 From vcloud api "The VirtualQuantity element defines the number of MB

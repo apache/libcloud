@@ -19,20 +19,20 @@ Joyent Cloud (http://www.joyentcloud.com) driver.
 
 import base64
 
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
+from libcloud.compute.types import NodeState, InvalidCredsError
+from libcloud.utils.networking import is_private_subnet
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
 
-from libcloud.common.types import LibcloudError
-from libcloud.compute.providers import Provider
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.types import NodeState, InvalidCredsError
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize
-from libcloud.utils.networking import is_private_subnet
 
 API_HOST_SUFFIX = ".api.joyentcloud.com"
 API_VERSION = "~6.5"

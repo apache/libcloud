@@ -14,22 +14,17 @@
 # limitations under the License.
 
 import sys
+
 import pytest
-
-from libcloud.common.types import InvalidCredsError
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
-from libcloud.utils.py3 import next
-
-from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
-from libcloud.compute.drivers.softlayer import SoftLayerException, NODE_STATE_MAP
-from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
-
-from libcloud.test import unittest
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.test import unittest
+from libcloud.utils.py3 import next, httplib, xmlrpclib
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import SOFTLAYER_PARAMS
+from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.softlayer import NODE_STATE_MAP, SoftLayerException
+from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 
 null_fingerprint = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" + "00:00:00:00:00"
 

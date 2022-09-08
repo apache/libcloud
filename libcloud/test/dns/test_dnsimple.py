@@ -16,14 +16,12 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import RecordType
-from libcloud.dns.drivers.dnsimple import DNSimpleDNSDriver
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_DNSIMPLE
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.dnsimple import DNSimpleDNSDriver
 
 
 class DNSimpleDNSTests(unittest.TestCase):

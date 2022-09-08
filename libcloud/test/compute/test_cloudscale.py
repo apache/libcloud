@@ -15,18 +15,19 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import CLOUDSCALE_PARAMS
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.cloudscale import CloudscaleNodeDriver
+
 try:
     import simplejson as json
 except ImportError:
     import json  # NOQA
 
-from libcloud.utils.py3 import httplib
 
-from libcloud.compute.drivers.cloudscale import CloudscaleNodeDriver
 
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import CLOUDSCALE_PARAMS
 
 
 class CloudscaleTests(LibcloudTestCase):

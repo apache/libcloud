@@ -13,20 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import hashlib
 import copy
 import hmac
+import base64
+import hashlib
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import b
-
-from libcloud.common.types import ProviderError
-from libcloud.common.base import ConnectionUserAndKey, PollingConnection
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import MalformedResponseError
+from libcloud.utils.py3 import b, httplib, urlquote, urlencode
+from libcloud.common.base import JsonResponse, PollingConnection, ConnectionUserAndKey
+from libcloud.common.types import ProviderError, MalformedResponseError
 from libcloud.compute.types import InvalidCredsError
 
 

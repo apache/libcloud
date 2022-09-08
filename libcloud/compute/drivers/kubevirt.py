@@ -21,17 +21,13 @@ kubevirt driver with support for nodes (vms)
 import json
 import time
 import hashlib
-
 from datetime import datetime
 
 from libcloud.common.types import LibcloudError
-from libcloud.common.kubernetes import KubernetesBasicAuthConnection
-from libcloud.common.kubernetes import KubernetesDriverMixin
-from libcloud.common.kubernetes import VALID_RESPONSE_CODES
-
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation, StorageVolume
 from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
+from libcloud.common.kubernetes import (VALID_RESPONSE_CODES, KubernetesDriverMixin,
+                                        KubernetesBasicAuthConnection)
 
 __all__ = ["KubeVirtNodeDriver"]
 ROOT_URL = "/api/v1/"

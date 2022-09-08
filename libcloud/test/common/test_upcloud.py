@@ -14,19 +14,13 @@
 # limitations under the License.
 import sys
 import json
-
 from unittest.mock import Mock, call
 
-from libcloud.common.upcloud import (
-    UpcloudCreateNodeRequestBody,
-    UpcloudNodeDestroyer,
-    UpcloudNodeOperations,
-)
-from libcloud.common.upcloud import _StorageDevice
-from libcloud.common.upcloud import UpcloudTimeoutException
-from libcloud.common.upcloud import PlanPrice
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
 from libcloud.test import unittest
+from libcloud.compute.base import NodeSize, NodeImage, NodeLocation, NodeAuthSSHKey
+from libcloud.common.upcloud import (PlanPrice, UpcloudNodeDestroyer, UpcloudNodeOperations,
+                                     UpcloudTimeoutException, UpcloudCreateNodeRequestBody,
+                                     _StorageDevice)
 
 
 class TestUpcloudCreateNodeRequestBody(unittest.TestCase):

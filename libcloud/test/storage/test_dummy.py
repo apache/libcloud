@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import pytest
-
 from libcloud.storage.drivers.dummy import DummyStorageDriver
 
 

@@ -28,10 +28,9 @@
 
 import os
 import sys
+import random
 import argparse
 import subprocess
-import random
-
 from os.path import join as pjoin
 
 DIMENSIONS = "150x150"  # Dimensions of the resized image (<width>x<height>)

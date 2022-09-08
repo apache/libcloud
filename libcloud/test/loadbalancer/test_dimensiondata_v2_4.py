@@ -13,21 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.dimensiondata import DimensionDataVIPNode, DimensionDataPool
-from libcloud.common.dimensiondata import DimensionDataPoolMember
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.dimensiondata import (
-    DimensionDataLBDriver as DimensionData,
-)
-from libcloud.loadbalancer.types import State
 
 from libcloud.test import MockHttp, unittest
-from libcloud.test.file_fixtures import LoadBalancerFileFixtures
-
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
+from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.common.dimensiondata import (DimensionDataPool, DimensionDataVIPNode,
+                                           DimensionDataPoolMember)
+from libcloud.loadbalancer.drivers.dimensiondata import DimensionDataLBDriver as DimensionData
 
 
 class DimensionData_v2_4_Tests(unittest.TestCase):

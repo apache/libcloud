@@ -18,6 +18,10 @@ Softlayer driver
 
 import time
 
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState, KeyPairDoesNotExistError
+from libcloud.common.softlayer import SoftLayerException, SoftLayerConnection
+
 try:
     from cryptography.hazmat.primitives.asymmetric import rsa
     from cryptography.hazmat.backends import default_backend
@@ -27,17 +31,6 @@ try:
 except ImportError:
     crypto = False
 
-from libcloud.common.softlayer import SoftLayerConnection, SoftLayerException
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import (
-    NodeDriver,
-    Node,
-    NodeLocation,
-    NodeSize,
-    NodeImage,
-    KeyPair,
-)
-from libcloud.compute.types import KeyPairDoesNotExistError
 
 DEFAULT_DOMAIN = "example.com"
 DEFAULT_CPU_SIZE = 1

@@ -21,17 +21,14 @@ try:  # Try to use asyncio to perform requests in parallel across projects
 except ImportError:  # If not available will do things serially
     asyncio = None
 
-import datetime
 import json
+import datetime
 
 from libcloud.utils.py3 import httplib
-
-from libcloud.common.base import ConnectionKey, JsonResponse
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
-from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import KeyPair
-from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 EQUINIXMETAL_ENDPOINT = "api.equinix.com"
 

@@ -1,7 +1,7 @@
 import libcloud.security
+from libcloud.common.nttcis import NttCisPort, NttCisIpAddress, NttCisFirewallAddress
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.common.nttcis import NttCisFirewallAddress, NttCisIpAddress, NttCisPort
 
 # Get nttcis driver
 libcloud.security.VERIFY_SSL_CERT = True

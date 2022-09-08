@@ -14,41 +14,26 @@
 # limitations under the License.
 
 from __future__ import print_function
-import datetime
+
 import re
 import sys
-import traceback
+import datetime
 import unittest
-
-from libcloud.utils.py3 import httplib, b, assertRaisesRegex, PY2
-from libcloud.utils.py3 import ET
-from libcloud.utils.iso8601 import UTC
-from libcloud.compute.drivers.vcloud import (
-    TerremarkDriver,
-    VCloudNodeDriver,
-    Subject,
-    Lease,
-    fixxpath,
-    get_url_path,
-)
-from libcloud.compute.drivers.vcloud import (
-    VCloud_1_5_NodeDriver,
-    ControlAccess,
-    Instantiate_1_5_VAppXML,
-)
-from libcloud.compute.drivers.vcloud import VCloud_5_1_NodeDriver
-from libcloud.compute.drivers.vcloud import VCloud_5_5_NodeDriver
-from libcloud.compute.drivers.vcloud import Vdc
-from libcloud.compute.base import Node, NodeImage
-from libcloud.compute.types import NodeState
-
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
+import traceback
 from unittest.mock import patch, mock_open
 
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import ET, PY2, b, httplib, assertRaisesRegex
+from libcloud.compute.base import Node, NodeImage
+from libcloud.test.compute import TestCaseMixin
 from libcloud.test.secrets import VCLOUD_PARAMS
-
+from libcloud.compute.types import NodeState
+from libcloud.utils.iso8601 import UTC
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.vcloud import (Vdc, Lease, Subject, ControlAccess, TerremarkDriver,
+                                             VCloudNodeDriver, VCloud_1_5_NodeDriver,
+                                             VCloud_5_1_NodeDriver, VCloud_5_5_NodeDriver,
+                                             Instantiate_1_5_VAppXML, fixxpath, get_url_path)
 
 BUILTINS = "__builtin__" if PY2 else "builtins"
 

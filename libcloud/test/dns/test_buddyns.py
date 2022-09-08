@@ -17,12 +17,12 @@ import sys
 import unittest
 
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_BUDDYNS
-from libcloud.dns.drivers.buddyns import BuddyNSDNSDriver
-from libcloud.utils.py3 import httplib
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.dns.base import Zone
+from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
+from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import DNS_PARAMS_BUDDYNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.buddyns import BuddyNSDNSDriver
 
 
 class BuddyNSDNSTests(unittest.TestCase):

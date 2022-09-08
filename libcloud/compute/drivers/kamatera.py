@@ -16,14 +16,13 @@
 Kamatera node driver
 """
 import json
-import datetime
 import time
+import datetime
 
 from libcloud.utils.py3 import basestring
-from libcloud.compute.base import NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, Node, NodeState
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeState, NodeDriver, NodeLocation
 from libcloud.compute.types import Provider
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 
 
 class KamateraResponse(JsonResponse):

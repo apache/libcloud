@@ -20,10 +20,8 @@ import os
 import base64
 
 from libcloud.utils.py3 import b
-
-from libcloud.common.kubernetes import KubernetesBasicAuthConnection
-from libcloud.common.kubernetes import KubernetesTLSAuthConnection
-from libcloud.common.kubernetes import KubernetesTokenAuthConnection
+from libcloud.common.kubernetes import (KubernetesTLSAuthConnection, KubernetesBasicAuthConnection,
+                                        KubernetesTokenAuthConnection)
 
 KEY_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../compute/fixtures/azure/libcloud.pem")

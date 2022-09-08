@@ -20,14 +20,11 @@ __all__ = ["WorldWideDNSDriver"]
 
 import re
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, RecordError, ZoneDoesNotExistError,
+                                RecordDoesNotExistError)
 from libcloud.common.types import LibcloudError
 from libcloud.common.worldwidedns import WorldWideDNSConnection
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
-
 
 MAX_RECORD_ENTRIES = 40  # Maximum record entries for zone
 

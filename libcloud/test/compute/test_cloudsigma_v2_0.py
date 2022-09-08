@@ -15,23 +15,21 @@
 
 import sys
 
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, assertRaisesRegex
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.cloudsigma import (CloudSigmaError, CloudSigmaNodeDriver,
+                                                 CloudSigma_2_0_NodeDriver)
+
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.drivers.cloudsigma import CloudSigmaNodeDriver
-from libcloud.compute.drivers.cloudsigma import CloudSigma_2_0_NodeDriver
-from libcloud.compute.drivers.cloudsigma import CloudSigmaError
-from libcloud.compute.types import NodeState
 
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class CloudSigmaAPI20BaseTestCase(object):

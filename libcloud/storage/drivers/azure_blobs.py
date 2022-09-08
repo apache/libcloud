@@ -15,32 +15,22 @@
 
 from __future__ import with_statement
 
+import os
+import hmac
 import base64
 import hashlib
-import hmac
-import os
 import binascii
 from datetime import datetime, timedelta
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import tostring
-from libcloud.utils.py3 import b
-
+from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
 from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
-from libcloud.common.types import LibcloudError
 from libcloud.common.azure import AzureConnection, AzureActiveDirectoryConnection
-
+from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
+from libcloud.storage.types import (ObjectDoesNotExistError, ObjectHashMismatchError,
+                                    ContainerIsNotEmptyError, InvalidContainerNameError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
 
 # Desired number of items in each response inside a paginated request
 RESPONSES_PER_REQUEST = 100

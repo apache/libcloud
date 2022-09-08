@@ -14,8 +14,7 @@
 # limitations under the License.
 
 import time
-
-from email.utils import parsedate_tz, mktime_tz
+from email.utils import mktime_tz, parsedate_tz
 
 __all__ = ["BaseHTTPError", "RateLimitReachedError", "exception_from_message"]
 

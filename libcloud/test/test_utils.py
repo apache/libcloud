@@ -15,44 +15,33 @@
 # limitations under the License.
 
 import sys
-import pytest
-import socket
 import codecs
+import socket
+import os.path
+import platform
 import unittest
 import warnings
-import platform
-import os.path
 from itertools import chain
+
+import pytest
+import libcloud.utils.files
+from libcloud.utils.py3 import PY3, StringIO, b, bchr, urlquote, hexadigits
+from libcloud.utils.misc import get_driver, set_driver, get_secure_random_string
+from libcloud.common.types import LibcloudError
+from libcloud.compute.types import Provider
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint, get_pubkey_openssh_fingerprint
+from libcloud.utils.decorators import wrap_non_libcloud_exceptions
+from libcloud.utils.networking import (is_public_subnet, is_private_subnet, join_ipv4_segments,
+                                       is_valid_ip_address, increment_ipv4_segments)
+from libcloud.compute.providers import DRIVERS
+from libcloud.compute.drivers.dummy import DummyNodeDriver
+from libcloud.storage.drivers.dummy import DummyIterator
 
 # In Python > 2.7 DeprecationWarnings are disabled by default
 warnings.simplefilter("default")
 
-import libcloud.utils.files
 
-from libcloud.utils.misc import get_driver, set_driver
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import bchr
-from libcloud.utils.py3 import hexadigits
-from libcloud.utils.py3 import urlquote
-from libcloud.compute.types import Provider
-from libcloud.compute.providers import DRIVERS
-from libcloud.compute.drivers.dummy import DummyNodeDriver
-from libcloud.utils.misc import get_secure_random_string
-from libcloud.utils.networking import is_public_subnet
-from libcloud.utils.networking import is_private_subnet
-from libcloud.utils.networking import is_valid_ip_address
-from libcloud.utils.networking import join_ipv4_segments
-from libcloud.utils.networking import increment_ipv4_segments
-from libcloud.utils.decorators import wrap_non_libcloud_exceptions
-from libcloud.utils.publickey import (
-    get_pubkey_openssh_fingerprint,
-    get_pubkey_ssh2_fingerprint,
-)
-from libcloud.common.types import LibcloudError
-from libcloud.storage.drivers.dummy import DummyIterator
 
 
 WARNINGS_BUFFER = []

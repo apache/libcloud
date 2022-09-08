@@ -15,20 +15,12 @@
 
 from __future__ import with_statement
 
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Union
-from typing import Type
-from typing import Any
-
 import datetime
+from typing import Any, Dict, List, Type, Union, Iterator, Optional
 
 from libcloud import __version__
-from libcloud.common.base import Connection
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
+from libcloud.common.base import BaseDriver, Connection, ConnectionUserAndKey
 
 __all__ = ["Zone", "Record", "DNSDriver"]
 

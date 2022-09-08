@@ -16,47 +16,26 @@
 Tests for Google Compute Engine Driver
 """
 
-import datetime
-from unittest import mock
 import sys
+import datetime
 import unittest
-
-from libcloud.utils.py3 import httplib
-from libcloud.compute.drivers.gce import (
-    GCENodeDriver,
-    API_VERSION,
-    timestamp_to_datetime,
-    GCEAddress,
-    GCEBackend,
-    GCEBackendService,
-    GCEFirewall,
-    GCEForwardingRule,
-    GCEHealthCheck,
-    GCENetwork,
-    GCENodeImage,
-    GCERoute,
-    GCERegion,
-    GCETargetHttpProxy,
-    GCEUrlMap,
-    GCEZone,
-    GCESubnetwork,
-    GCEProject,
-)
-from libcloud.common.google import (
-    GoogleBaseAuthConnection,
-    ResourceNotFoundError,
-    ResourceExistsError,
-    GoogleBaseError,
-)
-from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
-from libcloud.compute.base import Node, StorageVolume
-from libcloud.compute.types import NodeState
+from unittest import mock
 
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, StorageVolume
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
-
 from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
+from libcloud.common.google import (GoogleBaseError, ResourceExistsError, ResourceNotFoundError,
+                                    GoogleBaseAuthConnection)
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.gce import (API_VERSION, GCEZone, GCERoute, GCERegion, GCEUrlMap,
+                                          GCEAddress, GCEBackend, GCENetwork, GCEProject,
+                                          GCEFirewall, GCENodeImage, GCENodeDriver, GCESubnetwork,
+                                          GCEHealthCheck, GCEBackendService, GCEForwardingRule,
+                                          GCETargetHttpProxy, timestamp_to_datetime)
+from libcloud.test.common.test_google import GoogleTestCase, GoogleAuthMockHttp
 
 
 class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):

@@ -15,12 +15,11 @@
 
 __all__ = ["SoftlayerLBDriver"]
 
+from libcloud.utils.misc import find, reverse_dict
 from libcloud.common.types import LibcloudError
 from libcloud.common.softlayer import SoftLayerConnection
-from libcloud.utils.misc import find, reverse_dict
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Driver, Member, Algorithm, LoadBalancer
 from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer
-from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Member
 
 lb_service = (
     "SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_" "VirtualIpAddress"

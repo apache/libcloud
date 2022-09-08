@@ -15,17 +15,15 @@
 
 __all__ = ["CloudFlareDNSDriver"]
 
-import itertools
 import json
+import itertools
 
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import RecordAlreadyExistsError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError, ZoneDoesNotExistError
-from libcloud.utils.misc import merge_valid_keys, reverse_dict
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
+from libcloud.utils.misc import reverse_dict, merge_valid_keys
+from libcloud.common.base import JsonResponse, ConnectionKey, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
 
 API_HOST = "api.cloudflare.com"
 API_BASE = "/client/v4"

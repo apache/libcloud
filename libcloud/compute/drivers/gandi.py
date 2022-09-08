@@ -17,19 +17,10 @@ Gandi driver for compute
 """
 from datetime import datetime
 
-from libcloud.common.gandi import (
-    BaseGandiDriver,
-    GandiException,
-    NetworkInterface,
-    IPAddress,
-    Disk,
-)
-from libcloud.compute.base import KeyPair
-from libcloud.compute.base import StorageVolume
-from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
-
+from libcloud.common.gandi import Disk, IPAddress, GandiException, BaseGandiDriver, NetworkInterface
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume)
+from libcloud.compute.types import Provider, NodeState
 
 NODE_STATE_MAP = {
     "running": NodeState.RUNNING,

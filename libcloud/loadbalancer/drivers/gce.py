@@ -18,7 +18,7 @@ try:
 except ImportError:
     import json  # NOQA
 
-from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
+from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
 from libcloud.compute.drivers.gce import GCEConnection, GCENodeDriver
 
 # GCE doesn't actually give you an algorithm choice, but this is here simply as

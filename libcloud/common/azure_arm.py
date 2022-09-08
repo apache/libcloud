@@ -19,12 +19,10 @@ except ImportError:
     import json  # type: ignore
 
 import time
-from libcloud.utils.py3 import urlparse
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse, RawResponse
-from libcloud.common.base import BaseDriver
 from libcloud.http import LibcloudConnection
-from libcloud.utils.py3 import basestring, urlencode
+from libcloud.utils.py3 import urlparse, urlencode, basestring
+from libcloud.common.base import BaseDriver, RawResponse, JsonResponse, ConnectionUserAndKey
 
 
 class AzureBaseDriver(BaseDriver):

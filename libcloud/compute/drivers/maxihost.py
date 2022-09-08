@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import re
+import json
 
-from libcloud.compute.base import Node, NodeDriver, NodeLocation
-from libcloud.compute.base import NodeSize, NodeImage
-from libcloud.compute.base import KeyPair
-from libcloud.common.maxihost import MaxihostConnection
-from libcloud.compute.types import Provider, NodeState
-from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.py3 import httplib
-
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+from libcloud.common.maxihost import MaxihostConnection
+from libcloud.common.exceptions import BaseHTTPError
 
 __all__ = ["MaxihostNodeDriver"]
 

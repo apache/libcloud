@@ -13,31 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
-from typing import Optional
-from typing import Type
-
-import base64
-from datetime import datetime
-import hashlib
 import hmac
 import time
+import base64
+import hashlib
+from typing import Dict, Type, Optional
 from hashlib import sha256
+from datetime import datetime
+
+from libcloud.utils.py3 import ET, b, httplib, urlquote, basestring, _real_unicode
+from libcloud.utils.xml import findall_ignore_namespace, findtext_ignore_namespace
+from libcloud.common.base import BaseDriver, XmlResponse, JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import _real_unicode
-from libcloud.utils.py3 import basestring
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.utils.py3 import b, httplib, urlquote
-from libcloud.utils.xml import findall_ignore_namespace
-from libcloud.utils.xml import findtext_ignore_namespace
 
 __all__ = [
     "AWSBaseResponse",

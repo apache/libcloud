@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.base import VolumeSnapshot
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.compute.base import VolumeSnapshot
 
 __all__ = [
     "API_HOST",

@@ -16,20 +16,18 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import b, httplib, urlparse, parse_qsl
+from libcloud.common.types import MalformedResponseError
+from libcloud.common.cloudstack import CloudStackConnection
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import parse_qsl
 
-from libcloud.common.cloudstack import CloudStackConnection
-from libcloud.common.types import MalformedResponseError
 
-from libcloud.test import MockHttp
 
 
 async_delay = 0

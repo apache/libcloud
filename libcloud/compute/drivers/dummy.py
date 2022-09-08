@@ -22,9 +22,7 @@ import socket
 import struct
 
 from libcloud.common.base import ConnectionKey
-from libcloud.compute.base import NodeImage, NodeSize, Node
-from libcloud.compute.base import NodeDriver, NodeLocation
-from libcloud.compute.base import KeyPair
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation
 from libcloud.compute.types import Provider, NodeState
 
 

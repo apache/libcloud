@@ -15,20 +15,21 @@
 
 import sys
 import unittest
+
+from libcloud.test import MockHttp
 from libcloud.utils.py3 import httplib
+from libcloud.common.types import InvalidCredsError
+from libcloud.test.compute import TestCaseMixin
+from libcloud.test.secrets import GRIDSPOT_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.compute.drivers.gridspot import GridspotNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.drivers.gridspot import GridspotNodeDriver
-from libcloud.compute.types import NodeState
 
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.secrets import GRIDSPOT_PARAMS
 
 
 class GridspotTest(unittest.TestCase, TestCaseMixin):

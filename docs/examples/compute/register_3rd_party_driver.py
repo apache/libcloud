@@ -1,6 +1,4 @@
-from libcloud.compute.providers import get_driver
-from libcloud.compute.providers import set_driver
-
+from libcloud.compute.providers import get_driver, set_driver
 
 set_driver(
     "stratuslab", "stratuslab.libcloud.stratuslab_driver", "StratusLabNodeDriver"

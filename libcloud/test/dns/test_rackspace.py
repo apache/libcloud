@@ -15,19 +15,15 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.rackspace import RackspacePTRRecord
-from libcloud.dns.drivers.rackspace import RackspaceDNSDriver
-from libcloud.loadbalancer.base import LoadBalancer
-
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_RACKSPACE
+from libcloud.loadbalancer.base import LoadBalancer
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.rackspace import RackspaceDNSDriver, RackspacePTRRecord
 
 # only the 'extra' will be looked at, so pass in minimal data
 RDNS_NODE = Node(

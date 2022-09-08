@@ -14,21 +14,16 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import ET
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.backup.base import BackupDriver, BackupTarget, BackupTargetJob
-from libcloud.backup.types import BackupTargetType
-from libcloud.backup.types import Provider
-from libcloud.common.dimensiondata import dd_object_to_id
-from libcloud.common.dimensiondata import DimensionDataConnection
-from libcloud.common.dimensiondata import DimensionDataBackupClient
-from libcloud.common.dimensiondata import DimensionDataBackupClientAlert
-from libcloud.common.dimensiondata import DimensionDataBackupClientType
-from libcloud.common.dimensiondata import DimensionDataBackupDetails
-from libcloud.common.dimensiondata import DimensionDataBackupSchedulePolicy
-from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
-from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
-from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.backup.types import Provider, BackupTargetType
+from libcloud.common.dimensiondata import (BACKUP_NS, TYPES_URN, GENERAL_NS, API_ENDPOINTS,
+                                           DEFAULT_REGION, DimensionDataConnection,
+                                           DimensionDataBackupClient, DimensionDataBackupDetails,
+                                           DimensionDataBackupClientType,
+                                           DimensionDataBackupClientAlert,
+                                           DimensionDataBackupStoragePolicy,
+                                           DimensionDataBackupSchedulePolicy, dd_object_to_id)
 
 # pylint: disable=no-member
 

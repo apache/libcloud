@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
-
-from integration.compute.driver.test import TestNodeDriver
+import unittest
 
 from integration.compute.api.data import NODES, REPORT_DATA
+from integration.compute.driver.test import TestNodeDriver
 
 
 class IntegrationTest(unittest.TestCase):

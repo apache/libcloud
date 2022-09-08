@@ -20,25 +20,17 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Type
-
-import os.path  # pylint: disable-msg=W0404
-import hashlib
-import warnings
 import errno
+import hashlib
+import os.path  # pylint: disable-msg=W0404
+import warnings
+from typing import Dict, List, Type, Iterator, Optional
 from os.path import join as pjoin
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
 import libcloud.utils.files
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import BaseDriver, Connection, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import Connection
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
 __all__ = ["Object", "Container", "StorageDriver", "CHUNK_SIZE", "DEFAULT_CONTENT_TYPE"]

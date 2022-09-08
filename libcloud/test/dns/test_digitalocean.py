@@ -15,12 +15,12 @@
 import sys
 import unittest
 
-from libcloud.dns.drivers.digitalocean import DigitalOceanDNSDriver
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.dns.types import RecordType
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.digitalocean import DigitalOceanDNSDriver
 
 
 class DigitalOceanDNSTests(LibcloudTestCase):

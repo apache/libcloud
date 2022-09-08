@@ -19,41 +19,42 @@ from __future__ import with_statement
 import os
 import sys
 import inspect
-from collections import OrderedDict
 from os.path import join as pjoin
+from collections import OrderedDict
+
+from libcloud.dns.base import DNSDriver
+from libcloud.dns.types import Provider as DNSProvider
+from libcloud.backup.base import BackupDriver
+from libcloud.backup.types import Provider as BackupProvider
+from libcloud.compute.base import NodeDriver
+from libcloud.storage.base import StorageDriver
+from libcloud.compute.types import Provider as ComputeProvider
+from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
+from libcloud.dns.providers import get_driver as get_dns_driver
+from libcloud.storage.types import Provider as StorageProvider
+from libcloud.container.base import ContainerDriver
+from libcloud.container.types import Provider as ContainerProvider
+from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
+from libcloud.backup.providers import get_driver as get_backup_driver
+from libcloud.compute.providers import DRIVERS as COMPUTE_DRIVERS
+from libcloud.compute.providers import get_driver as get_compute_driver
+from libcloud.loadbalancer.base import Driver as LBDriver
+from libcloud.storage.providers import DRIVERS as STORAGE_DRIVERS
+from libcloud.storage.providers import get_driver as get_storage_driver
+from libcloud.loadbalancer.types import Provider as LBProvider
+from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
+from libcloud.container.providers import get_driver as get_container_driver
+from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS
+from libcloud.loadbalancer.providers import get_driver as get_lb_driver
 
 this_dir = os.path.abspath(os.path.split(__file__)[0])
 sys.path.insert(0, os.path.join(this_dir, "../"))
 
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.providers import get_driver as get_compute_driver
-from libcloud.compute.providers import DRIVERS as COMPUTE_DRIVERS
-from libcloud.compute.types import Provider as ComputeProvider
 
-from libcloud.loadbalancer.base import Driver as LBDriver
-from libcloud.loadbalancer.providers import get_driver as get_lb_driver
-from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS
-from libcloud.loadbalancer.types import Provider as LBProvider
 
-from libcloud.storage.base import StorageDriver
-from libcloud.storage.providers import get_driver as get_storage_driver
-from libcloud.storage.providers import DRIVERS as STORAGE_DRIVERS
-from libcloud.storage.types import Provider as StorageProvider
 
-from libcloud.dns.base import DNSDriver
-from libcloud.dns.providers import get_driver as get_dns_driver
-from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
-from libcloud.dns.types import Provider as DNSProvider
 
-from libcloud.container.base import ContainerDriver
-from libcloud.container.providers import get_driver as get_container_driver
-from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
-from libcloud.container.types import Provider as ContainerProvider
 
-from libcloud.backup.base import BackupDriver
-from libcloud.backup.providers import get_driver as get_backup_driver
-from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
-from libcloud.backup.types import Provider as BackupProvider
 
 
 HEADER = (

@@ -18,15 +18,13 @@ DigitalOcean Driver
 import json
 import warnings
 
-from libcloud.common.digitalocean import DigitalOcean_v1_Error
-from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
+from libcloud.utils.py3 import httplib
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
-from libcloud.compute.base import StorageVolume, VolumeSnapshot
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
 from libcloud.compute.types import Provider, NodeState
 from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
+from libcloud.common.digitalocean import DigitalOcean_v1_Error, DigitalOcean_v2_BaseDriver
 
 __all__ = ["DigitalOceanNodeDriver", "DigitalOcean_v2_NodeDriver"]
 

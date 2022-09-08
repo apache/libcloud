@@ -2,7 +2,6 @@ import os
 
 # pylint: disable=import-error
 from IPython.terminal.embed import InteractiveShellEmbed
-
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 

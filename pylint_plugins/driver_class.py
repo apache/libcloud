@@ -23,9 +23,7 @@ At the moment, it supports the following scenarios:
    attribute.
 """
 
-from astroid import MANAGER
-from astroid import scoped_nodes
-from astroid import node_classes
+from astroid import MANAGER, node_classes, scoped_nodes
 
 
 def register(linter):

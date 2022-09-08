@@ -14,43 +14,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hmac
 import os
-import os.path  # pylint: disable-msg=W0404
-import math
 import sys
 import copy
-from io import BytesIO
+import hmac
+import math
 import hashlib
+import os.path  # pylint: disable-msg=W0404
+from io import BytesIO
 from hashlib import sha1
-
 from unittest import mock
-from unittest.mock import Mock
-from unittest.mock import PropertyMock
+from unittest.mock import Mock, PropertyMock
 
 import libcloud.utils.files
-
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import PY3
-from libcloud.utils.files import exhaust_iterator
-
-from libcloud.common.types import MalformedResponseError
-from libcloud.storage.base import CHUNK_SIZE, Container, Object
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
-
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
-from libcloud.test import unittest, generate_random_data, make_response
-from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.test import unittest, make_response, generate_random_data
+from libcloud.utils.py3 import PY3, StringIO, b, httplib, urlquote
+from libcloud.utils.files import exhaust_iterator
+from libcloud.common.types import MalformedResponseError
+from libcloud.storage.base import CHUNK_SIZE, Object, Container
+from libcloud.storage.types import (ObjectDoesNotExistError, ObjectHashMismatchError,
+                                    ContainerIsNotEmptyError, InvalidContainerNameError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
 from libcloud.test.storage.base import BaseRangeDownloadMockHttp
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 
 
 class CloudFilesTests(unittest.TestCase):

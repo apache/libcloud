@@ -18,10 +18,10 @@
 
 # pylint: skip-file
 
-import unittest
-import utils
-
 import json
+import unittest
+
+import utils
 
 
 class SplitStringToAlphaNumTest(unittest.TestCase):

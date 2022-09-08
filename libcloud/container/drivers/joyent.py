@@ -15,8 +15,7 @@
 
 
 from libcloud.container.providers import Provider
-
-from libcloud.container.drivers.docker import DockerContainerDriver, DockerConnection
+from libcloud.container.drivers.docker import DockerConnection, DockerContainerDriver
 
 
 class JoyentContainerDriver(DockerContainerDriver):

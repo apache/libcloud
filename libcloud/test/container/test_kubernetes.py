@@ -15,21 +15,14 @@
 
 import sys
 
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-
-from libcloud.container.base import ContainerImage
-from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
-from libcloud.container.drivers.kubernetes import to_n_bytes
-from libcloud.container.drivers.kubernetes import to_cpu_str
-from libcloud.container.drivers.kubernetes import to_n_cpus
-from libcloud.container.drivers.kubernetes import to_memory_str
-from libcloud.container.drivers.kubernetes import sum_resources
-
 from libcloud.test.secrets import CONTAINER_PARAMS_KUBERNETES
-from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
+from libcloud.container.base import ContainerImage
 from libcloud.test.file_fixtures import ContainerFileFixtures
-from libcloud.test import MockHttp
-from libcloud.test import unittest
+from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
+from libcloud.container.drivers.kubernetes import (KubernetesContainerDriver, to_n_cpus, to_cpu_str,
+                                                   to_n_bytes, sum_resources, to_memory_str)
 
 
 class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):

@@ -13,19 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
 import random
 import string
+import unittest
 
 from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.gandi import GandiNodeDriver
 from libcloud.common.gandi import GandiException
-from libcloud.compute.types import NodeState
-
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GANDI_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.gandi import GandiNodeDriver
 from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 

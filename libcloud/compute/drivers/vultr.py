@@ -15,28 +15,22 @@
 """
 Vultr Driver
 """
-import time
 import json
+import time
 import base64
+from typing import Any, Dict, List, Union, Optional
 from functools import update_wrapper
-from typing import Optional, List, Dict, Union, Any
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError
-from libcloud.common.types import ServiceUnavailableError
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import KeyPair, StorageVolume
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.types import NodeState, StorageVolumeState
-from libcloud.compute.types import Provider, VolumeSnapshotState
+from libcloud.utils.py3 import httplib, urlencode
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import LibcloudError, InvalidCredsError, ServiceUnavailableError
+from libcloud.common.vultr import (DEFAULT_API_VERSION, VultrNetwork, VultrConnectionV2,
+                                   VultrNodeSnapshot)
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume)
+from libcloud.compute.types import Provider, NodeState, StorageVolumeState, VolumeSnapshotState
 from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
 from libcloud.utils.publickey import get_pubkey_openssh_fingerprint
-from libcloud.common.vultr import DEFAULT_API_VERSION
-from libcloud.common.vultr import VultrConnectionV2
-from libcloud.common.vultr import VultrNetwork, VultrNodeSnapshot
 
 # For matching region by id
 VULTR_COMPUTE_INSTANCE_LOCATIONS = {

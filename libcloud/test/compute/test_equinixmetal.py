@@ -19,21 +19,18 @@
 #
 
 import sys
-import unittest
 import json
-
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.equinixmetal import EquinixMetalNodeDriver
-from libcloud.compute.base import Node, KeyPair
-from libcloud.compute.types import NodeState
-
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
+import unittest
 
 # This is causing test failures inder Python 3.5
 import libcloud.compute.drivers.equinixmetal
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, KeyPair
+from libcloud.test.compute import TestCaseMixin
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.equinixmetal import EquinixMetalNodeDriver
 
 libcloud.compute.drivers.equinixmetal.USE_ASYNC_IO_IF_AVAILABLE = False
 

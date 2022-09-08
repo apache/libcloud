@@ -16,15 +16,14 @@
 import sys
 import unittest
 
-from libcloud.dns.drivers.vultr import VultrDNSDriver, VultrDNSDriverV1
-from libcloud.dns.types import RecordType
-from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
-from libcloud.test.secrets import VULTR_PARAMS
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.types import ZoneAlreadyExistsError
 from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import (RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError)
+from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import VULTR_PARAMS
+from libcloud.dns.drivers.vultr import VultrDNSDriver, VultrDNSDriverV1
+from libcloud.test.file_fixtures import DNSFileFixtures
 
 
 class VultrTests(unittest.TestCase):

@@ -20,16 +20,25 @@ Code inspired by https://github.com/vmware/pyvmomi-community-samples
 Authors: Dimitris Moraitis, Alex Tsiliris, Markos Gogoulos
 """
 
-import time
-import logging
-import json
-import base64
-import warnings
-import asyncio
 import ssl
+import json
+import time
+import atexit
+import base64
+import asyncio
+import hashlib
+import logging
+import warnings
 import functools
 import itertools
-import hashlib
+
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import LibcloudError, ProviderError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.networking import is_public_subnet
+from libcloud.common.exceptions import BaseHTTPError
 
 try:
     from pyVim import connect
@@ -40,19 +49,8 @@ try:
 except ImportError:
     pyvmomi = None
 
-import atexit
 
 
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node, NodeSize
-from libcloud.compute.base import NodeImage, NodeLocation
-from libcloud.compute.types import NodeState, Provider
-from libcloud.utils.networking import is_public_subnet
-from libcloud.utils.py3 import httplib
-from libcloud.common.types import ProviderError
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.base import JsonResponse, ConnectionKey
 
 logger = logging.getLogger("libcloud.compute.drivers.vsphere")
 

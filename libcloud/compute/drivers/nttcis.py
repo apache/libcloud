@@ -15,48 +15,27 @@
 """
 NTT CIS Driver
 """
-import sys
 import re
+import sys
 
-from libcloud.utils.py3 import ET
-from libcloud.common.nttcis import LooseVersion
+from libcloud.utils.py3 import ET, urlencode, basestring, ensure_string
+from libcloud.utils.xml import findall, findtext, fixxpath
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   NodeAuthPassword)
+from libcloud.common.nttcis import (TYPES_URN, GENERAL_NS, NETWORK_NS, API_ENDPOINTS,
+                                    DEFAULT_REGION, NttCisNic, NttCisTag, NttCisPort, NttCisVlan,
+                                    LooseVersion, NttCisStatus, NttCisTagKey, NttCisNatRule,
+                                    NttCisNetwork, NttCisPortList, NttCisIpAddress,
+                                    NttCisConnection, NttCisServerDisk, NttCisAPIException,
+                                    NttCisFirewallRule, NttCisChildPortList, NttCisIpAddressList,
+                                    NttCisNetworkDomain, NttCisPublicIpBlock, NttCisScsiController,
+                                    NttCisFirewallAddress, NttCisAntiAffinityRule,
+                                    NttCisReservedIpAddress, NttCisServerVMWareTools,
+                                    NetworkDomainServicePlan, NttCisChildIpAddressList,
+                                    NttCisServerCpuSpecification, get_params, process_xml,
+                                    dd_object_to_id)
+from libcloud.compute.types import Provider, NodeState
 from libcloud.common.exceptions import BaseHTTPError
-from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
-from libcloud.common.nttcis import process_xml, get_params
-from libcloud.common.nttcis import dd_object_to_id
-from libcloud.common.nttcis import NttCisAPIException
-from libcloud.common.nttcis import NttCisConnection, NttCisStatus
-from libcloud.common.nttcis import NttCisNetwork
-from libcloud.common.nttcis import NttCisNetworkDomain
-from libcloud.common.nttcis import NttCisVlan
-from libcloud.common.nttcis import NttCisServerCpuSpecification
-from libcloud.common.nttcis import NttCisServerDisk
-from libcloud.common.nttcis import NttCisScsiController
-from libcloud.common.nttcis import NttCisServerVMWareTools
-from libcloud.common.nttcis import NttCisPublicIpBlock
-from libcloud.common.nttcis import NttCisFirewallRule
-from libcloud.common.nttcis import NttCisFirewallAddress
-from libcloud.common.nttcis import NttCisNatRule
-from libcloud.common.nttcis import NttCisAntiAffinityRule
-from libcloud.common.nttcis import NttCisIpAddressList
-from libcloud.common.nttcis import NttCisChildIpAddressList
-from libcloud.common.nttcis import NttCisIpAddress
-from libcloud.common.nttcis import NttCisReservedIpAddress
-from libcloud.common.nttcis import NttCisPortList
-from libcloud.common.nttcis import NttCisPort
-from libcloud.common.nttcis import NttCisChildPortList
-from libcloud.common.nttcis import NttCisNic
-from libcloud.common.nttcis import NetworkDomainServicePlan
-from libcloud.common.nttcis import NttCisTagKey
-from libcloud.common.nttcis import NttCisTag
-from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
-from libcloud.common.nttcis import TYPES_URN
-from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
-from libcloud.utils.py3 import urlencode, ensure_string
-from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.utils.py3 import basestring
-from libcloud.compute.types import NodeState, Provider
 
 # Node state map is a dictionary with the keys as tuples
 # These tuples represent:

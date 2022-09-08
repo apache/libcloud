@@ -20,31 +20,25 @@ http://azure.microsoft.com/en-us/services/virtual-machines/
 """
 
 import re
-import time
-import collections
-import random
 import sys
 import copy
+import time
 import base64
-
-from datetime import datetime
+import random
+import collections
 from xml.dom import minidom
+from datetime import datetime
 from xml.sax.saxutils import escape as xml_escape
 
-from libcloud.utils.py3 import ET
-from libcloud.common.azure import AzureServiceManagementConnection
-from libcloud.common.azure import AzureRedirectException
-from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
-from libcloud.compute.types import NodeState
-from libcloud.common.types import LibcloudError
-from libcloud.utils.py3 import _real_unicode
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import ensure_string
+from libcloud.utils.py3 import ET, httplib, urlparse
 from libcloud.utils.py3 import urlquote as url_quote
+from libcloud.utils.py3 import _real_unicode, ensure_string
 from libcloud.utils.misc import ReprMixin
+from libcloud.common.azure import AzureRedirectException, AzureServiceManagementConnection
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation, StorageVolume
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
 
 HTTPSConnection = httplib.HTTPSConnection
 

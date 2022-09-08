@@ -13,30 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import base64
 import os.path
-import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
-
 import libcloud.utils.files
-
+from libcloud.test import MockHttp, make_response, generate_random_data
+from libcloud.utils.py3 import b, httplib, urlparse
 from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container, Object
-from libcloud.storage.types import (
-    ContainerAlreadyExistsError,
-    ContainerDoesNotExistError,
-    ContainerIsNotEmptyError,
-    ObjectDoesNotExistError,
-)
-from libcloud.storage.drivers.atmos import AtmosConnection, AtmosDriver
-from libcloud.storage.drivers.dummy import DummyIterator
-
-from libcloud.test import MockHttp, generate_random_data, make_response
+from libcloud.storage.base import Object, Container
+from libcloud.storage.types import (ObjectDoesNotExistError, ContainerIsNotEmptyError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
 from libcloud.test.file_fixtures import StorageFileFixtures
+from libcloud.storage.drivers.atmos import AtmosDriver, AtmosConnection
+from libcloud.storage.drivers.dummy import DummyIterator
 
 
 class AtmosTests(unittest.TestCase):

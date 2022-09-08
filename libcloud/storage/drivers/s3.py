@@ -13,17 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
-from typing import Optional
-
-import base64
+import os
 import hmac
 import time
+import base64
+from typing import Dict, Optional
 from hashlib import sha1
-import os
 from datetime import datetime
 
 import libcloud.utils.py3
+from libcloud.utils.py3 import b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.xml import findtext, fixxpath
+from libcloud.common.aws import (AWSDriver, AWSBaseResponse, AWSTokenConnection,
+                                 SignedAWSConnection, UnsignedPayloadSentinel)
+from libcloud.common.base import RawResponse, ConnectionUserAndKey
+from libcloud.utils.files import read_in_chunks
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (ContainerError, ObjectDoesNotExistError,
+                                    ObjectHashMismatchError, ContainerIsNotEmptyError,
+                                    InvalidContainerNameError, ContainerDoesNotExistError,
+                                    ContainerAlreadyExistsError)
 
 try:
     if libcloud.utils.py3.DEFAULT_LXML:
@@ -33,32 +43,8 @@ try:
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import tostring
-from libcloud.utils.py3 import urlencode
 
-from libcloud.utils.xml import fixxpath, findtext
-from libcloud.utils.files import read_in_chunks
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import (
-    AWSBaseResponse,
-    AWSDriver,
-    AWSTokenConnection,
-    SignedAWSConnection,
-    UnsignedPayloadSentinel,
-)
 
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
 
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60

@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import time
+import hashlib
 
 from libcloud.utils.py3 import b
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
 from libcloud.compute.base import NodeLocation
 
 HOST = "api.gogrid.com"

@@ -20,14 +20,13 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
-from libcloud.common.types import LibcloudError
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer, Member
-from libcloud.utils.misc import ReprMixin
 from libcloud.utils.py3 import u
-from libcloud.utils.xml import findattr, findtext, findall
-
+from libcloud.utils.xml import findall, findattr, findtext
+from libcloud.utils.misc import ReprMixin
+from libcloud.common.types import LibcloudError
+from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
+from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
 
 SLB_API_VERSION = "2014-05-15"
 SLB_API_HOST = "slb.aliyuncs.com"

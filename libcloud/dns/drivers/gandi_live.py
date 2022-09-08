@@ -17,23 +17,12 @@ from __future__ import with_statement
 
 import copy
 
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import RecordError
-from libcloud.dns.types import (
-    ZoneDoesNotExistError,
-    RecordDoesNotExistError,
-    ZoneAlreadyExistsError,
-    RecordAlreadyExistsError,
-)
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.common.gandi_live import (
-    ResourceNotFoundError,
-    ResourceConflictError,
-    GandiLiveResponse,
-    GandiLiveConnection,
-    BaseGandiLiveDriver,
-)
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (Provider, RecordType, RecordError, ZoneDoesNotExistError,
+                                ZoneAlreadyExistsError, RecordDoesNotExistError,
+                                RecordAlreadyExistsError)
+from libcloud.common.gandi_live import (GandiLiveResponse, BaseGandiLiveDriver, GandiLiveConnection,
+                                        ResourceConflictError, ResourceNotFoundError)
 
 __all__ = [
     "GandiLiveDNSDriver",

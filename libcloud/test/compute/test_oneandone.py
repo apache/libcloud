@@ -14,13 +14,13 @@
 # limitations under the License.
 import sys
 
-from libcloud.compute.base import NodeImage, NodeAuthPassword, NodeLocation
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-from libcloud.test import unittest, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.types import Provider, NodeState
+from libcloud.compute.base import NodeImage, NodeLocation, NodeAuthPassword
 from libcloud.test.secrets import ONEANDONE_PARAMS
+from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class OneAndOneTests(unittest.TestCase):

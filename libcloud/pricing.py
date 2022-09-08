@@ -19,12 +19,9 @@ A class which handles loading the pricing files.
 
 from __future__ import with_statement
 
-from typing import Dict
-from typing import Optional
-from typing import Union
-
 import re
 import os.path
+from typing import Dict, Union, Optional
 from os.path import join as pjoin
 
 try:

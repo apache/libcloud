@@ -21,12 +21,10 @@ This version is compatible with the following versions of Abiquo:
     * Abiquo 3.4 (http://wiki.abiquo.com/display/ABI34/The+Abiquo+API)
 """
 
-from libcloud.utils.py3 import ET
-from libcloud.compute.base import NodeDriver, NodeSize
+from libcloud.utils.py3 import ET, tostring
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.common.abiquo import AbiquoResponse, AbiquoConnection, get_href
 from libcloud.compute.types import Provider, LibcloudError
-from libcloud.common.abiquo import AbiquoConnection, get_href, AbiquoResponse
-from libcloud.compute.base import NodeLocation, NodeImage, Node
-from libcloud.utils.py3 import tostring
 
 
 class AbiquoNodeDriver(NodeDriver):

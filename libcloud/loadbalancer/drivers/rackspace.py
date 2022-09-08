@@ -15,21 +15,21 @@
 
 from datetime import datetime
 
+from libcloud.utils.py3 import httplib
+from libcloud.utils.misc import reverse_dict
+from libcloud.common.base import JsonResponse, PollingConnection
+from libcloud.common.types import LibcloudError
+from libcloud.common.openstack import OpenStackDriverMixin
+from libcloud.common.rackspace import AUTH_URL
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State, MemberCondition
+from libcloud.compute.drivers.rackspace import RackspaceConnection
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.misc import reverse_dict
-from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
-from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.compute.drivers.rackspace import RackspaceConnection
-from libcloud.common.types import LibcloudError
-from libcloud.common.base import JsonResponse, PollingConnection
-from libcloud.loadbalancer.types import State, MemberCondition
-from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.rackspace import AUTH_URL
 
 ENDPOINT_ARGS_MAP = {
     "dfw": {

@@ -17,17 +17,14 @@
 Module which contains common Kubernetes related code.
 """
 
-from typing import Optional
-
 import os
 import base64
 import warnings
+from typing import Optional
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.base import KeyCertificateConnection, ConnectionKey
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import (JsonResponse, ConnectionKey, ConnectionUserAndKey,
+                                  KeyCertificateConnection)
 from libcloud.common.types import InvalidCredsError
 
 __all__ = [

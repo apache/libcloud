@@ -14,25 +14,24 @@
 # limitations under the License.
 import sys
 import unittest
-
 from datetime import datetime
+
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib, assertRaisesRegex
+from libcloud.compute.base import NodeImage
+from libcloud.test.secrets import SCALEWAY_PARAMS
 from libcloud.utils.iso8601 import UTC
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.scaleway import ScalewayNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json  # NOQA
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
 
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.compute.base import NodeImage
-from libcloud.compute.drivers.scaleway import ScalewayNodeDriver
 
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import SCALEWAY_PARAMS
 
 
 # class ScalewayTests(unittest.TestCase, TestCaseMixin):

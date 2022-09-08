@@ -16,12 +16,9 @@
 import sys
 import unittest
 
-from libcloud.storage.drivers.rgw import S3RGWStorageDriver
-from libcloud.storage.drivers.rgw import S3RGWOutscaleStorageDriver
-from libcloud.storage.drivers.rgw import S3RGWConnectionAWS4
-from libcloud.storage.drivers.rgw import S3RGWConnectionAWS2
-
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.drivers.rgw import (S3RGWStorageDriver, S3RGWConnectionAWS2,
+                                          S3RGWConnectionAWS4, S3RGWOutscaleStorageDriver)
 
 
 class S3RGWTests(unittest.TestCase):

@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import base64
+import unittest
 
 from libcloud.utils.py3 import b
+from libcloud.test.storage.test_atmos import AtmosTests, AtmosMockHttp
 from libcloud.storage.drivers.ninefold import NinefoldStorageDriver
-from libcloud.test.storage.test_atmos import AtmosMockHttp, AtmosTests
 
 
 class NinefoldTests(AtmosTests, unittest.TestCase):

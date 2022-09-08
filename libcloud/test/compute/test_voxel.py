@@ -14,16 +14,14 @@
 # limitations under the License.
 import sys
 import unittest
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation
-from libcloud.compute.drivers.voxel import VoxelNodeDriver as Voxel
-from libcloud.compute.types import InvalidCredsError
 
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation
 from libcloud.test.secrets import VOXEL_PARAMS
+from libcloud.compute.types import InvalidCredsError
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.voxel import VoxelNodeDriver as Voxel
 
 
 class VoxelTest(unittest.TestCase):

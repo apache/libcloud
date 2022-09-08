@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import unittest
 from datetime import datetime
 
-from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.test import LibcloudTestCase
-
-import unittest
-from libcloud.compute.providers import Provider
-from libcloud.compute.providers import get_driver
+from libcloud.common.osc import OSCRequestSignerAlgorithmV4
+from libcloud.compute.providers import Provider, get_driver
 
 
 class OSCRequestSignerAlgorithmV4TestCase(LibcloudTestCase):

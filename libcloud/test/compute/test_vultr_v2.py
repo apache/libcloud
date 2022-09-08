@@ -16,12 +16,11 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.compute.drivers.vultr import VultrNodeDriver
-from libcloud.compute.drivers.vultr import VultrNodeDriverV2
-from libcloud.common.vultr import VultrException
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.common.vultr import VultrException
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.vultr import VultrNodeDriver, VultrNodeDriverV2
 
 
 class VultrTestsV2(unittest.TestCase):

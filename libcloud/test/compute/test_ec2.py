@@ -15,41 +15,25 @@
 
 from __future__ import with_statement
 
-from collections import OrderedDict
-
 import os
 import sys
 import base64
 from datetime import datetime
-from libcloud.utils.iso8601 import UTC
+from collections import OrderedDict
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import b
-
-from libcloud.compute.drivers.ec2 import EC2NodeDriver
-from libcloud.compute.drivers.ec2 import EC2PlacementGroup
-from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
-from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
-from libcloud.compute.drivers.ec2 import IdempotentParamError
-from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
-from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
-from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import StorageVolume, VolumeSnapshot
-from libcloud.compute.types import (
-    KeyPairDoesNotExistError,
-    StorageVolumeState,
-    VolumeSnapshotState,
-)
-
-from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.test import MockHttp, LibcloudTestCase, unittest
+from libcloud.utils.py3 import b, httplib, parse_qs
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeLocation, StorageVolume,
+                                   VolumeSnapshot)
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
-
-from libcloud.test import unittest
 from libcloud.test.secrets import EC2_PARAMS
-
+from libcloud.compute.types import StorageVolumeState, VolumeSnapshotState, KeyPairDoesNotExistError
+from libcloud.utils.iso8601 import UTC
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.ec2 import (VALID_EC2_REGIONS, EC2NodeDriver, EucNodeDriver,
+                                          EC2NetworkSubnet, NimbusNodeDriver, EC2PlacementGroup,
+                                          IdempotentParamError, ExEC2AvailabilityZone,
+                                          OutscaleSASNodeDriver)
 
 null_fingerprint = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" + "00:00:00:00:00"
 

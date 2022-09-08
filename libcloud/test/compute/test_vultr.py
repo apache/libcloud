@@ -15,22 +15,23 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import ServiceUnavailableError
+from libcloud.compute.base import NodeSize, NodeImage
+from libcloud.test.secrets import VULTR_PARAMS
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.vultr import VultrNodeDriver, VultrNodeDriverV1
+
 try:
     import simplejson as json  # pylint: disable=unused-import
 except ImportError:
     # pylint: disable=unused-import
     import json  # NOQA
 
-from libcloud.utils.py3 import httplib
 
-from libcloud.common.types import ServiceUnavailableError
 
-from libcloud.compute.drivers.vultr import VultrNodeDriver, VultrNodeDriverV1
-from libcloud.compute.base import NodeImage, NodeSize
 
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import VULTR_PARAMS
 
 
 # class VultrTests(unittest.TestCase, TestCaseMixin):

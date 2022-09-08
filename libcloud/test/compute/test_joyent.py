@@ -15,15 +15,13 @@
 
 import sys
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, assertRaisesRegex
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeState
-from libcloud.compute.drivers.joyent import JoyentNodeDriver
-
-from libcloud.test import MockHttp, unittest
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import JOYENT_PARAMS
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.joyent import JoyentNodeDriver
 
 
 class JoyentTestCase(unittest.TestCase):

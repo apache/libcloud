@@ -13,15 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
-
 import re
+from typing import Dict, List
 from xml.etree import ElementTree as ET  # noqa
 
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import XmlResponse
-
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 
 # API HOST to connect
 API_HOST = "durabledns.com"

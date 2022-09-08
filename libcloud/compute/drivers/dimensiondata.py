@@ -16,43 +16,30 @@
 Dimension Data Driver
 """
 
-from libcloud.utils.py3 import ET
-from libcloud.common.dimensiondata import LooseVersion
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
-from libcloud.common.dimensiondata import dd_object_to_id
-from libcloud.common.dimensiondata import DimensionDataAPIException
-from libcloud.common.dimensiondata import DimensionDataConnection, DimensionDataStatus
-from libcloud.common.dimensiondata import DimensionDataNetwork
-from libcloud.common.dimensiondata import DimensionDataNetworkDomain
-from libcloud.common.dimensiondata import DimensionDataVlan
-from libcloud.common.dimensiondata import DimensionDataServerCpuSpecification
-from libcloud.common.dimensiondata import DimensionDataServerDisk
-from libcloud.common.dimensiondata import DimensionDataServerVMWareTools
-from libcloud.common.dimensiondata import DimensionDataPublicIpBlock
-from libcloud.common.dimensiondata import DimensionDataFirewallRule
-from libcloud.common.dimensiondata import DimensionDataFirewallAddress
-from libcloud.common.dimensiondata import DimensionDataNatRule
-from libcloud.common.dimensiondata import DimensionDataAntiAffinityRule
-from libcloud.common.dimensiondata import DimensionDataIpAddressList
-from libcloud.common.dimensiondata import DimensionDataChildIpAddressList
-from libcloud.common.dimensiondata import DimensionDataIpAddress
-from libcloud.common.dimensiondata import DimensionDataPortList
-from libcloud.common.dimensiondata import DimensionDataPort
-from libcloud.common.dimensiondata import DimensionDataChildPortList
-from libcloud.common.dimensiondata import DimensionDataNic
-from libcloud.common.dimensiondata import NetworkDomainServicePlan
-from libcloud.common.dimensiondata import DimensionDataTagKey
-from libcloud.common.dimensiondata import DimensionDataTag
-from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
-from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import SERVER_NS, NETWORK_NS, GENERAL_NS
-from libcloud.utils.py3 import urlencode, ensure_string
-from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.utils.py3 import basestring
-from libcloud.compute.types import NodeState, Provider
 import sys
+
+from libcloud.utils.py3 import ET, urlencode, basestring, ensure_string
+from libcloud.utils.xml import findall, findtext, fixxpath
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   NodeAuthPassword)
+from libcloud.compute.types import Provider, NodeState
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.dimensiondata import (SERVER_NS, TYPES_URN, GENERAL_NS, NETWORK_NS,
+                                           API_ENDPOINTS, DEFAULT_REGION, LooseVersion,
+                                           DimensionDataNic, DimensionDataTag, DimensionDataPort,
+                                           DimensionDataVlan, DimensionDataStatus,
+                                           DimensionDataTagKey, DimensionDataNatRule,
+                                           DimensionDataNetwork, DimensionDataPortList,
+                                           DimensionDataIpAddress, DimensionDataConnection,
+                                           DimensionDataServerDisk, NetworkDomainServicePlan,
+                                           DimensionDataAPIException, DimensionDataFirewallRule,
+                                           DimensionDataChildPortList, DimensionDataIpAddressList,
+                                           DimensionDataNetworkDomain, DimensionDataPublicIpBlock,
+                                           DimensionDataFirewallAddress,
+                                           DimensionDataAntiAffinityRule,
+                                           DimensionDataServerVMWareTools,
+                                           DimensionDataChildIpAddressList,
+                                           DimensionDataServerCpuSpecification, dd_object_to_id)
 
 # Node state map is a dictionary with the keys as tuples
 # These tuples represent:

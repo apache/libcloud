@@ -1,8 +1,8 @@
 import os
 
-from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeSize
 from libcloud.compute.type import Provider
+from libcloud.compute.providers import get_driver
 from libcloud.compute.deployment import ScriptDeployment
 
 cls = get_driver(Provider.GRIDSCALE)

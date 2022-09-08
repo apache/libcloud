@@ -15,17 +15,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.google import GoogleDNSDriver
-from libcloud.common.google import GoogleBaseAuthConnection
-
-from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_GOOGLE, DNS_KEYWORD_PARAMS_GOOGLE
+from libcloud.common.google import GoogleBaseAuthConnection
+from libcloud.dns.drivers.google import GoogleDNSDriver
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.test.common.test_google import GoogleTestCase, GoogleAuthMockHttp
 
 
 class GoogleTests(GoogleTestCase):

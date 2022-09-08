@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
+from libcloud.common.base import BaseDriver, ConnectionUserAndKey
 from libcloud.backup.types import BackupTargetType
 
 __all__ = [

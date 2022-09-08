@@ -19,15 +19,13 @@
 
 import sys
 import unittest
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.linode import LinodeNodeDriver
-from libcloud.compute.base import Node, NodeAuthPassword
-from libcloud.compute.base import NodeAuthSSHKey, StorageVolume
 
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, StorageVolume, NodeAuthSSHKey, NodeAuthPassword
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.linode import LinodeNodeDriver
 
 
 class LinodeTest(unittest.TestCase, TestCaseMixin):

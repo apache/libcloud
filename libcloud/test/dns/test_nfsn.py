@@ -15,14 +15,11 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-
-from libcloud.dns.base import Record, Zone
 from libcloud.dns.drivers.nfsn import NFSNDNSDriver
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-
-from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 
 

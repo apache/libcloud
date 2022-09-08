@@ -1,7 +1,6 @@
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
-import libcloud.security
 
 # This assumes you don't have SSL set up.
 # Note: Code like this poses a security risk (MITM attack) and

@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import hashlib
 import hmac
+import hashlib
+from datetime import datetime
 
 from libcloud.utils.py3 import urlquote
 

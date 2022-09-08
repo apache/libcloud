@@ -13,34 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import hashlib
 import hmac
 import time
+import base64
+import hashlib
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import urlunquote
+from libcloud.utils.py3 import PY3, b, next, httplib, urlparse, urlquote, urlencode, urlunquote
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
+from libcloud.utils.files import read_in_chunks
+from libcloud.common.types import LibcloudError
+from libcloud.storage.base import CHUNK_SIZE, Object, Container, StorageDriver
+from libcloud.storage.types import (ObjectDoesNotExistError, ContainerIsNotEmptyError,
+                                    ContainerDoesNotExistError, ContainerAlreadyExistsError)
 
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.common.types import LibcloudError
 
-from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
-from libcloud.storage.types import (
-    ContainerAlreadyExistsError,
-    ContainerDoesNotExistError,
-    ContainerIsNotEmptyError,
-    ObjectDoesNotExistError,
-)
 
 
 def collapse(s):

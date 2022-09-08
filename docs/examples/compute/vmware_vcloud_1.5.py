@@ -1,7 +1,6 @@
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
-import libcloud.security
 
 # Skip this step if you are launching nodes on an official vCloud
 # provider. It is intended only for self signed SSL certs in

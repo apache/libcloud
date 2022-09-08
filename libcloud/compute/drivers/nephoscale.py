@@ -19,20 +19,17 @@ API documentation: http://docs.nephoscale.com
 Created by Markos Gogoulos (https://mist.io)
 """
 
-import base64
-import time
 import os
+import time
+import base64
 import binascii
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlencode
-
-from libcloud.compute.providers import Provider
+from libcloud.utils.py3 import b, httplib, urlencode
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.types import NodeState, InvalidCredsError, LibcloudError
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize, NodeLocation
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import NodeState, LibcloudError, InvalidCredsError
 from libcloud.utils.networking import is_private_subnet
+from libcloud.compute.providers import Provider
 
 API_HOST = "api.nephoscale.com"
 

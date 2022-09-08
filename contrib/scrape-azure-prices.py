@@ -17,11 +17,11 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import os
 import json
 import time
-import os
-import requests
 
+import requests
 
 PRICES_URL = (
     "https://azure.microsoft.com/api/v3/pricing/" "virtual-machines/calculator/"

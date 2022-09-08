@@ -16,9 +16,9 @@
 import sys
 import unittest
 
-from libcloud.dns.drivers.vultr import VultrDNSDriver, VultrDNSDriverV2
-from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.dns.drivers.vultr import VultrDNSDriver, VultrDNSDriverV2
 from libcloud.test.file_fixtures import DNSFileFixtures
 
 

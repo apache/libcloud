@@ -16,13 +16,12 @@ PowerDNS Driver
 """
 import json
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.exceptions import BaseHTTPError
 
 __all__ = [
     "PowerDNSDriver",

@@ -13,21 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hmac
 import time
 import hashlib
-import hmac
+
+from libcloud.utils.py3 import httplib, urlencode
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Container, StorageDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore  # noqa: F401
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.storage.base import Container, StorageDriver
 
 
 class NimbusResponse(JsonResponse):

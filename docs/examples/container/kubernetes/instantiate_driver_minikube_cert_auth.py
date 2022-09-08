@@ -1,7 +1,6 @@
+import libcloud.security
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
-
-import libcloud.security
 
 # Disable cert vertification when running minikube locally using self signed
 # cert

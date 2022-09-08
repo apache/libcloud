@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
+from typing import Dict, List
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-
+from libcloud.common.base import JsonResponse, ConnectionKey
 
 __all__ = ["API_HOST", "BuddyNSException", "BuddyNSResponse", "BuddyNSConnection"]
 

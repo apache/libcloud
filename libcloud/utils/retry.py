@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import socket
 import ssl
 import time
+import socket
+import logging
 from datetime import datetime, timedelta
 from functools import wraps
-import logging
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError

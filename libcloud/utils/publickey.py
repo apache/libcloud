@@ -15,9 +15,7 @@
 
 import hashlib
 
-from libcloud.utils.py3 import hexadigits
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import base64_decode_string
+from libcloud.utils.py3 import b, hexadigits, base64_decode_string
 
 __all__ = [
     "get_pubkey_openssh_fingerprint",

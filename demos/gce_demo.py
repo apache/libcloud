@@ -41,10 +41,20 @@
 #        gce_demo.main_dns()                    # 'dns only demo
 #        gce_demo.main()                        # all demos / tests
 
-import os.path
 import sys
-import datetime
 import time
+import os.path
+import datetime
+
+from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import Provider as Provider_dns
+from libcloud.utils.py3 import PY3
+from libcloud.common.google import ResourceNotFoundError
+from libcloud.compute.types import Provider
+from libcloud.dns.providers import get_driver as get_driver_dns
+from libcloud.compute.providers import get_driver
+from libcloud.loadbalancer.types import Provider as Provider_lb
+from libcloud.loadbalancer.providers import get_driver as get_driver_lb
 
 try:
     import argparse
@@ -73,15 +83,6 @@ sys.path.append(
     os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 )
 
-from libcloud.compute.types import Provider
-from libcloud.compute.providers import get_driver
-from libcloud.common.google import ResourceNotFoundError
-from libcloud.loadbalancer.types import Provider as Provider_lb
-from libcloud.loadbalancer.providers import get_driver as get_driver_lb
-from libcloud.dns.types import Provider as Provider_dns
-from libcloud.dns.providers import get_driver as get_driver_dns
-from libcloud.dns.base import Record, Zone
-from libcloud.utils.py3 import PY3
 
 if PY3:
     # pylint: disable=no-name-in-module,import-error

@@ -13,16 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.dns.types import (
-    Provider,
-    ZoneDoesNotExistError,
-    ZoneAlreadyExistsError,
-    RecordDoesNotExistError,
-    RecordAlreadyExistsError,
-)
-from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
-from libcloud.common.dnspod import DNSPodConnection, DNSPodResponse, DNSPodException
+from libcloud.dns.base import Zone, Record, DNSDriver, RecordType
+from libcloud.dns.types import (Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError,
+                                RecordDoesNotExistError, RecordAlreadyExistsError)
 from libcloud.utils.py3 import urlencode
+from libcloud.common.dnspod import DNSPodResponse, DNSPodException, DNSPodConnection
 
 __all__ = ["DNSPodDNSDriver"]
 

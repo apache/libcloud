@@ -13,26 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import random
-import requests
 import os
-from libcloud.common.base import Response
+import random
+import unittest
+
+import requests
+import requests_mock
 from libcloud.http import LibcloudConnection
-from libcloud.utils.py3 import PY2
+from libcloud.utils.py3 import PY2, httplib, parse_qs, urlparse, urlquote, parse_qsl
+from libcloud.common.base import Response
 
 if PY2:
     from StringIO import StringIO
 else:
     from io import StringIO
 
-import requests_mock
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import parse_qsl
-from libcloud.utils.py3 import urlquote
 
 
 XML_HEADERS = {"content-type": "application/xml"}

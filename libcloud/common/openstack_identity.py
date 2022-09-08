@@ -18,18 +18,13 @@ Common / shared code for handling authentication against OpenStack identity
 service (Keystone).
 """
 
-from collections import namedtuple
 import datetime
+from collections import namedtuple
 
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import Response, ConnectionUserAndKey, CertificateConnection
+from libcloud.compute.types import LibcloudError, InvalidCredsError, MalformedResponseError
 from libcloud.utils.iso8601 import parse_date
-
-from libcloud.common.base import ConnectionUserAndKey, Response, CertificateConnection
-from libcloud.compute.types import (
-    LibcloudError,
-    InvalidCredsError,
-    MalformedResponseError,
-)
 
 try:
     import simplejson as json

@@ -17,22 +17,21 @@ libcloud driver for the Host Virtual Inc. (VR) API
 Home page https://www.hostvirtual.com/
 """
 
-import time
 import re
+import time
+
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   NodeAuthSSHKey, NodeAuthPassword)
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
+from libcloud.common.hostvirtual import (HostVirtualResponse, HostVirtualException,
+                                         HostVirtualConnection)
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.hostvirtual import HostVirtualResponse
-from libcloud.common.hostvirtual import HostVirtualConnection
-from libcloud.common.hostvirtual import HostVirtualException
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 
 API_ROOT = ""
 

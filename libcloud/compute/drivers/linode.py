@@ -29,38 +29,29 @@ Linode(R) is a registered trademark of Linode, LLC.
 
 import os
 import re
+import binascii
+import itertools
+from copy import copy
+from datetime import datetime
+
+from libcloud.utils.py3 import PY3, httplib
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, NodeAuthSSHKey, NodeAuthPassword)
+from libcloud.common.linode import (API_ROOT, LINODE_PLAN_IDS, DEFAULT_API_VERSION,
+                                    LINODE_DISK_FILESYSTEMS, LINODE_DISK_FILESYSTEMS_V4, LinodeDisk,
+                                    LinodeException, LinodeIPAddress, LinodeConnection,
+                                    LinodeExceptionV4, LinodeConnectionV4)
+from libcloud.compute.types import Provider, NodeState, StorageVolumeState
+from libcloud.utils.networking import is_private_subnet
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-import itertools
-import binascii
-from datetime import datetime
 
-from copy import copy
 
-from libcloud.utils.py3 import PY3, httplib
-from libcloud.utils.networking import is_private_subnet
 
-from libcloud.common.linode import (
-    API_ROOT,
-    LinodeException,
-    LinodeConnection,
-    LinodeConnectionV4,
-    LinodeDisk,
-    LinodeIPAddress,
-    LinodeExceptionV4,
-    LINODE_PLAN_IDS,
-    LINODE_DISK_FILESYSTEMS,
-    LINODE_DISK_FILESYSTEMS_V4,
-    DEFAULT_API_VERSION,
-)
-from libcloud.compute.types import Provider, NodeState, StorageVolumeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.base import NodeImage, StorageVolume
 
 
 class LinodeNodeDriver(NodeDriver):

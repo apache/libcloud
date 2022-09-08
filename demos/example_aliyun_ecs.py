@@ -15,9 +15,9 @@
 
 import sys
 
+from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.compute.base import NodeAuthPassword
 
 ECSDriver = get_driver(Provider.ALIYUN_ECS)
 

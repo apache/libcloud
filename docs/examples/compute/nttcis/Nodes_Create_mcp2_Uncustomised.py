@@ -1,7 +1,8 @@
 from pprint import pprint
+
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-import libcloud.security
 
 # Get nttcis driver
 libcloud.security.VERIFY_SSL_CERT = True

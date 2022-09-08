@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bottle import request
 from functools import wraps
 
+from bottle import request
 from integration.compute.config import EXPECTED_AUTH
 
 

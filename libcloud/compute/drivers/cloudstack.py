@@ -18,17 +18,14 @@ from __future__ import with_statement
 import base64
 import warnings
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlparse
-
-from libcloud.compute.providers import Provider
-from libcloud.common.cloudstack import CloudStackDriverMixIn
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
-from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import KeyPair
-from libcloud.compute.types import NodeState, LibcloudError
-from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState
+from libcloud.utils.py3 import b, urlparse
+from libcloud.compute.base import (Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
+from libcloud.compute.types import (NodeState, LibcloudError, StorageVolumeState,
+                                    KeyPairDoesNotExistError)
 from libcloud.utils.networking import is_private_subnet
+from libcloud.common.cloudstack import CloudStackDriverMixIn
+from libcloud.compute.providers import Provider
 
 
 # Utility functions

@@ -17,16 +17,14 @@ Abiquo Test Suite
 """
 import sys
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.abiquo import AbiquoNodeDriver
-from libcloud.common.abiquo import ForbiddenError, get_href
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.compute.base import NodeLocation, NodeImage
-from libcloud.test.compute import TestCaseMixin
 from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import ET, httplib
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import NodeImage, NodeLocation
+from libcloud.test.compute import TestCaseMixin
+from libcloud.common.abiquo import ForbiddenError, get_href
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.abiquo import AbiquoNodeDriver
 
 
 class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):

@@ -13,34 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import os
+import sys
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qsl
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, urlparse, parse_qsl, assertRaisesRegex
+from libcloud.common.types import ProviderError
+from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.test.compute import TestCaseMixin
+from libcloud.compute.types import (Provider, NodeState, LibcloudError, InvalidCredsError,
+                                    KeyPairDoesNotExistError)
+from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, CloudStackAffinityGroupType
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.compute.base import NodeLocation, NodeSize, NodeImage
-from libcloud.common.types import ProviderError
-from libcloud.compute.drivers.cloudstack import (
-    CloudStackNodeDriver,
-    CloudStackAffinityGroupType,
-)
-from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
-from libcloud.compute.types import KeyPairDoesNotExistError
-from libcloud.compute.types import NodeState
-from libcloud.compute.providers import get_driver
-from libcloud.utils.py3 import assertRaisesRegex
 
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class CloudStackCommonTestCase(TestCaseMixin):

@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
-
 import base64
+from typing import Dict, List
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 __all__ = ["API_HOST", "LuadnsException", "LuadnsResponse", "LuadnsConnection"]
 

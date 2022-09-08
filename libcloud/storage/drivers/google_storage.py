@@ -13,25 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
-from typing import Optional
-
 import copy
 import json
-
 import email.utils
+from typing import Dict, Optional
 
+from libcloud.utils.py3 import httplib, urlquote
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.google import GoogleAuthType
-from libcloud.common.google import GoogleOAuth2Credential
-from libcloud.common.google import GoogleResponse
 from libcloud.common.types import ProviderError
-from libcloud.storage.drivers.s3 import BaseS3Connection
-from libcloud.storage.drivers.s3 import BaseS3StorageDriver
-from libcloud.storage.drivers.s3 import S3RawResponse
-from libcloud.storage.drivers.s3 import S3Response
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
+from libcloud.common.google import GoogleAuthType, GoogleResponse, GoogleOAuth2Credential
+from libcloud.storage.drivers.s3 import (S3Response, S3RawResponse, BaseS3Connection,
+                                         BaseS3StorageDriver)
 
 # Docs are a lie. Actual namespace returned is different that the one listed
 # in the docs.

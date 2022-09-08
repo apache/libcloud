@@ -13,32 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
-import json
-from unittest import mock
 import re
 import sys
+import copy
+import json
 import unittest
-
-from io import BytesIO
-
 import email.utils
-import pytest
-from unittest.mock import Mock
-from unittest.mock import PropertyMock
+from io import BytesIO
+from unittest import mock
+from unittest.mock import Mock, PropertyMock
 
-from libcloud.common.google import GoogleAuthType
-from libcloud.common.types import InvalidCredsError
-from libcloud.storage.base import Container
-from libcloud.storage.base import Object
-from libcloud.storage.drivers import google_storage
+import pytest
 from libcloud.test import StorageMockHttp
-from libcloud.test.common.test_google import GoogleTestCase
-from libcloud.test.file_fixtures import StorageFileFixtures
+from libcloud.utils.py3 import StringIO, httplib
+from libcloud.common.types import InvalidCredsError
+from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_GOOGLE_STORAGE_PARAMS
+from libcloud.common.google import GoogleAuthType
+from libcloud.storage.drivers import google_storage
+from libcloud.test.file_fixtures import StorageFileFixtures
 from libcloud.test.storage.test_s3 import S3Tests, S3MockHttp
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import StringIO
+from libcloud.test.common.test_google import GoogleTestCase
 
 CONN_CLS = google_storage.GoogleStorageConnection
 JSON_CONN_CLS = google_storage.GoogleStorageJSONConnection

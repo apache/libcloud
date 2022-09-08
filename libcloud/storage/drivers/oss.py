@@ -15,37 +15,27 @@
 
 # pylint: disable=unexpected-keyword-arg
 
-import base64
-import codecs
 import hmac
 import time
+import base64
+import codecs
 from hashlib import sha1
 
-from libcloud.utils.py3 import ET
+from libcloud.utils.py3 import ET, PY3, b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.xml import findtext, fixxpath
+from libcloud.common.base import RawResponse, XmlResponse, ConnectionUserAndKey
+from libcloud.utils.files import read_in_chunks
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (ContainerError, ObjectDoesNotExistError,
+                                    ObjectHashMismatchError, ContainerIsNotEmptyError,
+                                    InvalidContainerNameError, ContainerDoesNotExistError)
 
 try:
     from lxml.etree import Element, SubElement
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import tostring
-from libcloud.utils.py3 import PY3
-from libcloud.utils.xml import fixxpath, findtext
-from libcloud.utils.files import read_in_chunks
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse, XmlResponse
-from libcloud.common.types import MalformedResponseError
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
 
 __all__ = [
     "OSSStorageDriver",

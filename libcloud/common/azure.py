@@ -13,30 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 import os
+import copy
+import hmac
 import time
 import base64
-import hmac
-
 from hashlib import sha256
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import basestring
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import ET
-from libcloud.utils.xml import fixxpath
-
 from libcloud.http import LibcloudConnection
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.azure_arm import publicEnvironments, AzureAuthJsonResponse
-from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.base import CertificateConnection
-from libcloud.common.base import XmlResponse
-from libcloud.common.base import BaseDriver
+from libcloud.utils.py3 import ET, b, httplib, urlparse, urlencode, basestring
+from libcloud.utils.xml import fixxpath
+from libcloud.common.base import (BaseDriver, RawResponse, XmlResponse, ConnectionUserAndKey,
+                                  CertificateConnection)
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.common.azure_arm import AzureAuthJsonResponse, publicEnvironments
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"

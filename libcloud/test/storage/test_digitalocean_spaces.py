@@ -16,18 +16,14 @@
 import sys
 import unittest
 
-from libcloud.common.types import LibcloudError
-
-from libcloud.storage.base import Container, Object
-from libcloud.storage.drivers.digitalocean_spaces import (
-    DigitalOceanSpacesStorageDriver,
-    DOSpacesConnectionAWS4,
-    DOSpacesConnectionAWS2,
-    DO_SPACES_HOSTS_BY_REGION,
-)
-
 from libcloud.test import LibcloudTestCase
+from libcloud.common.types import LibcloudError
+from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.drivers.digitalocean_spaces import (DO_SPACES_HOSTS_BY_REGION,
+                                                          DOSpacesConnectionAWS2,
+                                                          DOSpacesConnectionAWS4,
+                                                          DigitalOceanSpacesStorageDriver)
 
 
 class DigitalOceanSpacesTests(LibcloudTestCase):

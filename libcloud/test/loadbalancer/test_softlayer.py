@@ -16,17 +16,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
-
-from libcloud.compute.base import NodeLocation
-from libcloud.loadbalancer.base import Member, Algorithm
-from libcloud.loadbalancer.drivers.softlayer import SoftlayerLBDriver
-from libcloud.loadbalancer.types import State
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib, xmlrpclib
+from libcloud.compute.base import NodeLocation
 from libcloud.test.secrets import SOFTLAYER_PARAMS
+from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.softlayer import SoftlayerLBDriver
 
 
 class SoftlayerLBTests(unittest.TestCase):

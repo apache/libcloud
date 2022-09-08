@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.loadbalancer.types import Provider
-from libcloud.loadbalancer.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
+from libcloud.loadbalancer.types import OLD_CONSTANT_TO_NEW_MAPPING, Provider
 
 __all__ = [
     "Provider",

@@ -15,11 +15,10 @@
 
 __all__ = ["ApplicationLBDriver"]
 
-from libcloud.utils.xml import findtext, findall
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
+from libcloud.utils.xml import findall, findtext
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
-
+from libcloud.loadbalancer.base import Driver, Member, LoadBalancer
+from libcloud.loadbalancer.types import State
 
 VERSION = "2015-12-01"
 HOST = "elasticloadbalancing.%s.amazonaws.com"

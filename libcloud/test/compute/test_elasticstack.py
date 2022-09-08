@@ -14,18 +14,16 @@
 # limitations under the License.
 
 import sys
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
-
-from libcloud.compute.base import Node
-from libcloud.compute.drivers.elasticstack import ElasticStackException
-from libcloud.compute.drivers.elastichosts import ElasticHostsNodeDriver as ElasticHosts
-from libcloud.compute.drivers.skalicloud import SkaliCloudNodeDriver as SkaliCloud
-from libcloud.compute.drivers.serverlove import ServerLoveNodeDriver as ServerLove
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, assertRaisesRegex
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.compute.base import Node
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.serverlove import ServerLoveNodeDriver as ServerLove
+from libcloud.compute.drivers.skalicloud import SkaliCloudNodeDriver as SkaliCloud
+from libcloud.compute.drivers.elastichosts import ElasticHostsNodeDriver as ElasticHosts
+from libcloud.compute.drivers.elasticstack import ElasticStackException
 
 
 class ElasticStackTestCase(object):

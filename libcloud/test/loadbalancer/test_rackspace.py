@@ -16,30 +16,25 @@
 import sys
 import datetime
 
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, urlencode
+from libcloud.common.types import LibcloudError
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import MemberCondition
+from libcloud.test.file_fixtures import OpenStackFixtures, LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.rackspace import (RackspaceLBDriver, RackspaceAccessRule,
+                                                     RackspaceHealthMonitor,
+                                                     RackspaceAccessRuleType,
+                                                     RackspaceHTTPHealthMonitor,
+                                                     RackspaceConnectionThrottle)
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
 
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.types import MemberCondition
-from libcloud.loadbalancer.drivers.rackspace import (
-    RackspaceLBDriver,
-    RackspaceHealthMonitor,
-    RackspaceHTTPHealthMonitor,
-    RackspaceConnectionThrottle,
-    RackspaceAccessRule,
-)
-from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
-from libcloud.common.types import LibcloudError
 
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import LoadBalancerFileFixtures
-from libcloud.test.file_fixtures import OpenStackFixtures
 
 
 class RackspaceLBTests(unittest.TestCase):

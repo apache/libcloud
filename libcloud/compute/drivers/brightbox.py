@@ -16,16 +16,12 @@
 Brightbox Driver
 """
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.brightbox import BrightboxConnection
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
-
 import base64
 
+from libcloud.utils.py3 import b, httplib
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+from libcloud.common.brightbox import BrightboxConnection
 
 API_VERSION = "1.0"
 

@@ -15,15 +15,14 @@
 
 import os
 import glob
-import shutil
 import atexit
 import random
+import shutil
 import string
 import tempfile
-
-import pytest
 from unittest import mock
 
+import pytest
 from libcloud.storage.drivers.local import LocalStorageDriver
 
 

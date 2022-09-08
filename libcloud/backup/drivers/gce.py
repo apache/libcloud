@@ -15,16 +15,11 @@
 
 __all__ = ["GCEBackupDriver"]
 
-from libcloud.utils.iso8601 import parse_date
-from libcloud.backup.base import (
-    BackupDriver,
-    BackupTargetRecoveryPoint,
-    BackupTargetJob,
-    BackupTarget,
-)
+from libcloud.backup.base import (BackupDriver, BackupTarget, BackupTargetJob,
+                                  BackupTargetRecoveryPoint)
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
-
 from libcloud.common.google import GoogleResponse, GoogleBaseConnection
+from libcloud.utils.iso8601 import parse_date
 
 API_VERSION = "v1"
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180

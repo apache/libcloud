@@ -14,16 +14,14 @@
 # limitations under the License.
 import sys
 import unittest
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.bluebox import BlueboxNodeDriver as Bluebox
-from libcloud.compute.base import Node, NodeAuthPassword
-from libcloud.compute.types import NodeState
-
 
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, NodeAuthPassword
 from libcloud.test.secrets import BLUEBOX_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.bluebox import BlueboxNodeDriver as Bluebox
 
 
 class BlueboxTest(unittest.TestCase):

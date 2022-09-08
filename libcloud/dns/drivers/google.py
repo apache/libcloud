@@ -19,11 +19,10 @@ __all__ = ["GoogleDNSDriver"]
 API_VERSION = "v1"
 
 import re
-from libcloud.common.google import GoogleResponse, GoogleBaseConnection
-from libcloud.common.google import ResourceNotFoundError
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
+
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.common.google import GoogleResponse, GoogleBaseConnection, ResourceNotFoundError
 
 
 class GoogleDNSResponse(GoogleResponse):

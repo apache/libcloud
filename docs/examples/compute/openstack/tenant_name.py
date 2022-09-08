@@ -1,7 +1,6 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-
 OpenStack = get_driver(Provider.OPENSTACK)
 driver = OpenStack(
     "your_auth_username",

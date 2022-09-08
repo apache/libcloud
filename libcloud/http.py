@@ -20,9 +20,11 @@ verification, depending on libcloud.security settings.
 
 import os
 import warnings
-import requests
 
+import requests
+import libcloud.security
 from requests.adapters import HTTPAdapter
+from libcloud.utils.py3 import PY3, urlparse
 
 try:
     # requests no longer vendors urllib3 in newer versions
@@ -31,8 +33,6 @@ try:
 except ImportError:
     from requests.packages.urllib3.poolmanager import PoolManager  # type: ignore
 
-import libcloud.security
-from libcloud.utils.py3 import urlparse, PY3
 
 
 __all__ = ["LibcloudBaseConnection", "LibcloudConnection"]

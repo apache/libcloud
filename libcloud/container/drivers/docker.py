@@ -13,28 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import re
+import shlex
 import base64
 import datetime
-import shlex
-import re
-import os
+
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey, KeyCertificateConnection
+from libcloud.common.types import InvalidCredsError
+from libcloud.container.base import Container, ContainerImage, ContainerDriver
+from libcloud.container.types import ContainerState
+from libcloud.container.providers import Provider
 
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
 
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.base import KeyCertificateConnection
-from libcloud.common.types import InvalidCredsError
 
-from libcloud.container.base import Container, ContainerDriver, ContainerImage
 
-from libcloud.container.providers import Provider
-from libcloud.container.types import ContainerState
 
 
 VALID_RESPONSE_CODES = [

@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.compute.base import Node, NodeSize, NodeImage
 from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
 

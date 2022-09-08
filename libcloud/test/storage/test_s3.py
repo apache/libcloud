@@ -13,47 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import hmac
 import os
 import sys
+import hmac
+import base64
 import tempfile
-
 from io import BytesIO
 from hashlib import sha1
-
 from unittest import mock
-from unittest.mock import Mock
-from unittest.mock import PropertyMock
+from unittest.mock import Mock, PropertyMock
+
 import libcloud.utils.files  # NOQA: F401
-
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import PY3
-from libcloud.utils.files import exhaust_iterator
-
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.storage.base import Container, Object
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.s3 import BaseS3Connection, S3SignatureV4Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
-from libcloud.storage.drivers.s3 import CHUNK_SIZE
-from libcloud.utils.py3 import b
-
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611  # noqa
 from libcloud.test import unittest, make_response, generate_random_data
-from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.utils.py3 import ET, PY3, StringIO, b, httplib, parse_qs, urlparse
+from libcloud.utils.files import exhaust_iterator
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.types import (ContainerError, ObjectDoesNotExistError,
+                                    ObjectHashMismatchError, ContainerIsNotEmptyError,
+                                    InvalidContainerNameError, ContainerDoesNotExistError)
 from libcloud.test.storage.base import BaseRangeDownloadMockHttp
+from libcloud.storage.drivers.s3 import (CHUNK_SIZE, S3StorageDriver, BaseS3Connection,
+                                         S3USWestStorageDriver, S3SignatureV4Connection)
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
 
 class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):

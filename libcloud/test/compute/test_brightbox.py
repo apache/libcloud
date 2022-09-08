@@ -13,25 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import unittest
 import base64
+import unittest
+
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.types import InvalidCredsError
+from libcloud.test.compute import TestCaseMixin
+from libcloud.test.secrets import BRIGHTBOX_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.brightbox import BrightboxNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.drivers.brightbox import BrightboxNodeDriver
-from libcloud.compute.types import NodeState
 
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import BRIGHTBOX_PARAMS
 
 USER_DATA = "#!/bin/sh\ntest_script.sh\n"
 

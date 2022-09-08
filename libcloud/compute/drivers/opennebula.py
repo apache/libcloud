@@ -22,18 +22,14 @@ OpenNebula.org driver.
 
 __docformat__ = "epytext"
 
-from base64 import b64encode
 import hashlib
+from base64 import b64encode
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import b
-
-from libcloud.compute.base import NodeState, NodeDriver, Node, NodeLocation
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.compute.base import NodeImage, NodeSize, StorageVolume
+from libcloud.utils.py3 import ET, b, next, httplib
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeState, NodeDriver, NodeLocation,
+                                   StorageVolume)
 from libcloud.compute.providers import Provider
 
 __all__ = [

@@ -14,18 +14,16 @@
 # limitations under the License.
 
 import sys
-from six import assertRegex
 
+from six import assertRegex
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.types import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.providers import get_driver
-from libcloud.test import unittest
+from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 from libcloud.test.secrets import PROFIT_BRICKS_PARAMS
+from libcloud.compute.types import Provider, NodeState
 from libcloud.common.exceptions import BaseHTTPError
+from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class ProfitBricksTests(unittest.TestCase):

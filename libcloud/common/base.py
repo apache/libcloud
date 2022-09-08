@@ -13,31 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union, Dict, Any
-from typing import Type
-from typing import Optional
-
-import json
 import os
 import ssl
-import socket
 import copy
-import binascii
+import json
 import time
-
-from libcloud.utils.py3 import ET
+import socket
+import binascii
+from typing import Any, Dict, Type, Union, Optional
 
 import libcloud
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlencode
-
+from libcloud.http import LibcloudConnection, HttpLibResponseProxy
+from libcloud.utils.py3 import ET, httplib, urlparse, urlencode
 from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.retry import Retry
-from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.http import LibcloudConnection, HttpLibResponseProxy
+from libcloud.common.exceptions import exception_from_message
 
 __all__ = [
     "RETRY_FAILED_HTTP_REQUESTS",

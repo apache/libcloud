@@ -13,30 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gzip
 import io
 import os
-import random
 import re
+import sys
+import gzip
+import time
+import atexit
+import random
 import socket
 import string
-import sys
 import tempfile
-import time
 import unittest
-import atexit
 
 import requests
+import libcloud.http
+from libcloud.storage import types, providers
+from libcloud.common.types import LibcloudError
 
 try:
     import docker
 except ImportError:
     docker = None
 
-import libcloud.http
 
-from libcloud.common.types import LibcloudError
-from libcloud.storage import providers, types
 
 libcloud.http.DEFAULT_REQUEST_TIMEOUT = 10
 

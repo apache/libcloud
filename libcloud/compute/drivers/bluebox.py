@@ -26,15 +26,12 @@ Blue Box API documentation    https://boxpanel.bluebox
 import copy
 import base64
 
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import b
-
+from libcloud.utils.py3 import b, urlencode
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.providers import Provider
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   NodeAuthSSHKey, NodeAuthPassword)
 from libcloud.compute.types import NodeState, InvalidCredsError
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
+from libcloud.compute.providers import Provider
 
 # Current end point for Blue Box API.
 BLUEBOX_API_HOST = "boxpanel.bluebox.net"

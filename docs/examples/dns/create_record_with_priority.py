@@ -1,5 +1,5 @@
-from libcloud.dns.providers import get_driver
 from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.providers import get_driver
 
 CREDENTIALS_ZERIGO = ("email", "api key")
 

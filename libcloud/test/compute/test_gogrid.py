@@ -15,19 +15,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
-
-from libcloud.compute.base import NodeState, NodeLocation
-from libcloud.common.types import LibcloudError, InvalidCredsError
-from libcloud.common.gogrid import GoGridIpAddress
-from libcloud.compute.drivers.gogrid import GoGridNodeDriver
-from libcloud.compute.base import Node, NodeImage, NodeSize
-
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
+from libcloud.utils.py3 import httplib, parse_qs, urlparse
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeState, NodeLocation
 from libcloud.test.compute import TestCaseMixin  # pylint: disable-msg=E0611
+from libcloud.common.gogrid import GoGridIpAddress
 from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-msg=E0611
+from libcloud.compute.drivers.gogrid import GoGridNodeDriver
 
 
 class GoGridTests(unittest.TestCase, TestCaseMixin):

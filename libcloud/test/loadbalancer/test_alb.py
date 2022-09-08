@@ -16,14 +16,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.loadbalancer.drivers.alb import ApplicationLBDriver
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Member
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import LB_ALB_PARAMS
+from libcloud.loadbalancer.base import Member
+from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.alb import ApplicationLBDriver
 
 
 class ApplicationLBTests(unittest.TestCase):

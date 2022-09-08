@@ -17,8 +17,8 @@ Softlayer connection
 """
 
 from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
-from libcloud.common.types import InvalidCredsError, LibcloudError
 
 
 class SoftLayerException(LibcloudError):

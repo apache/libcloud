@@ -15,11 +15,10 @@
 
 import sys
 
-from libcloud.test import unittest
-from libcloud.container.utils.docker import HubClient
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
 from libcloud.test.file_fixtures import ContainerFileFixtures
-from libcloud.test import MockHttp
+from libcloud.container.utils.docker import HubClient
 
 
 class DockerUtilitiesTestCase(unittest.TestCase):

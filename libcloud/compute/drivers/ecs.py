@@ -23,20 +23,13 @@ except ImportError:
     import json
 import time
 
-from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
-from libcloud.common.types import LibcloudError
-from libcloud.compute.base import (
-    Node,
-    NodeDriver,
-    NodeImage,
-    NodeSize,
-    StorageVolume,
-    VolumeSnapshot,
-    NodeLocation,
-)
-from libcloud.compute.types import NodeState, StorageVolumeState, VolumeSnapshotState
 from libcloud.utils.py3 import _real_unicode as u
 from libcloud.utils.xml import findall, findattr, findtext
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import (Node, NodeSize, NodeImage, NodeDriver, NodeLocation,
+                                   StorageVolume, VolumeSnapshot)
+from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
+from libcloud.compute.types import NodeState, StorageVolumeState, VolumeSnapshotState
 
 __all__ = [
     "DiskCategory",
