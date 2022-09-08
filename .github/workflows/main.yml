@@ -250,6 +250,11 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
         with:
@@ -273,14 +278,22 @@ jobs:
           source venv/bin/activate
           python -m pip install .
 
-      - name: Run Pip Audit Check
+      - name: Run Pip Audit Check On Main Library Dependencies
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           virtual-environment: venv/
 
-      - name: Run Checks
+      - name: Cleanup
         run: |
           rm -rf venv/ || true
+
+      - name: Run Pip Audit Check On All Development And Test Dependencies
+        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
+        with:
+          inputs: requirements-tests.txt requirements-lint.txt requirements-mypy.txt requirements-docs.txt
+
+      - name: Run Bandit Check
+        run: |
           script -e -c "tox -e bandit"
 
   micro-benchmarks:
