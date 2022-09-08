@@ -250,6 +250,11 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
         with:
