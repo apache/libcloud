@@ -26,7 +26,6 @@ except ImportError:
     boto3 = None
 
 
-
 class S3Test(Integration.TestBase):
     provider = 's3'
 

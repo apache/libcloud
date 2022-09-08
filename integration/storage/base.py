@@ -38,7 +38,6 @@ except ImportError:
     docker = None
 
 
-
 libcloud.http.DEFAULT_REQUEST_TIMEOUT = 10
 
 
