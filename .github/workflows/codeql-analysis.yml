@@ -7,7 +7,7 @@ on:
     branches: [ trunk ]
   schedule:
     - cron: '0 3 * * *'
-    
+
 permissions:
   contents: read  # for actions/checkout to fetch code
 
@@ -31,6 +31,7 @@ jobs:
         # actions
         uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
+          cancel_others: 'true'
           github_token: ${{ github.token }}
 
   analyze:
