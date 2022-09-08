@@ -130,7 +130,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.7]
+        python_version: [3.8]
 
     steps:
       - uses: actions/checkout@master
@@ -172,7 +172,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.7]
+        python_version: [3.8]
 
     steps:
       - uses: actions/checkout@master
@@ -214,7 +214,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.7]
+        python_version: [3.8]
 
     steps:
       - uses: actions/checkout@master
@@ -241,7 +241,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.7]
+        python_version: [3.8]
 
     steps:
       - uses: actions/checkout@master
@@ -290,7 +290,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.7]
+        python_version: [3.8]
 
     steps:
       - uses: actions/checkout@master
@@ -332,7 +332,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.7]
+        python_version: [3.8]
 
     steps:
       - name: Print Environment Info
