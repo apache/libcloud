@@ -49,7 +49,7 @@ class Type(str, Enum):
 
     @classmethod
     def fromstring(cls, value):
-        # type: (str) -> str
+        # type: (str) -> Optional[str]
         """Return the state object attribute that matches the string
         :param str value: the string to look up
         :return: the state object attribute that matches the string
