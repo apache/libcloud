@@ -3,7 +3,7 @@ flake8==5.0.4
 astroid==2.11.4
 pylint==2.13.8
 codecov==2.1.12
-coverage==6.2.0
+coverage==6.4.4
 requests>=2.27.1
 requests_mock==1.10.0
 pytest==7.0.1
