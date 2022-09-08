@@ -57,7 +57,12 @@ INSTANCE_SIZES = [
 
 def download_json():
     if os.path.isfile(FILEPATH):
-        print("Using data from existing cached file %s" % (FILEPATH))
+        mtime_str = time.strftime(
+            "%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH))
+        )
+        print(
+            "Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str)
+        )
         return open(FILEPATH, "r"), True
 
     def remove_partial_cached_file():
@@ -92,7 +97,10 @@ def get_json():
     if not os.path.isfile(FILEPATH):
         return download_json()[0], False
 
-    print("Using data from existing cached file %s" % (FILEPATH))
+    mtime_str = time.strftime(
+        "%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH))
+    )
+    print("Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str))
     return FILEPATH, True
 
 
