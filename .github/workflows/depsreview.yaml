@@ -5,6 +5,7 @@ on:
     branches: [ trunk ]
 
 permissions:
+  actions: write  # Needed for skip-duplicate-jobs job
   contents: read
 
 jobs:
@@ -27,6 +28,7 @@ jobs:
         # actions
         uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
+          cancel_others: 'true'
           github_token: ${{ github.token }}
 
   dependency-review:

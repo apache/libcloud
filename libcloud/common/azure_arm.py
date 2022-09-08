@@ -19,12 +19,10 @@ except ImportError:
     import json  # type: ignore
 
 import time
-from libcloud.utils.py3 import urlparse
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse, RawResponse
-from libcloud.common.base import BaseDriver
 from libcloud.http import LibcloudConnection
-from libcloud.utils.py3 import basestring, urlencode
+from libcloud.utils.py3 import urlparse, urlencode, basestring
+from libcloud.common.base import BaseDriver, RawResponse, JsonResponse, ConnectionUserAndKey
 
 
 class AzureBaseDriver(BaseDriver):
@@ -167,9 +165,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
                 "'activeDirectoryResourceId', "
                 "'storageEndpointSuffix'" % ("', '".join(publicEnvironments.keys()))
             )
-        self.host = urlparse.urlparse(
-            cloud_environment["resourceManagerEndpointUrl"]
-        ).hostname
+        self.host = urlparse.urlparse(cloud_environment["resourceManagerEndpointUrl"]).hostname
         self.login_host = urlparse.urlparse(
             cloud_environment["activeDirectoryEndpointUrl"]
         ).hostname
@@ -212,9 +208,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         self.get_token_from_credentials()
         return super(AzureResourceManagementConnection, self).connect(**kwargs)
 
-    def request(
-        self, action, params=None, data=None, headers=None, method="GET", raw=False
-    ):
+    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
 
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).

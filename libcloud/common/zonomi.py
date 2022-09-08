@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import XmlResponse
-from libcloud.common.base import ConnectionKey
-
+from libcloud.common.base import XmlResponse, ConnectionKey
 
 __all__ = ["ZonomiException", "ZonomiResponse", "ZonomiConnection"]
 

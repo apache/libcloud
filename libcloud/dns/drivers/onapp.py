@@ -20,10 +20,9 @@ __all__ = ["OnAppDNSDriver"]
 
 import json
 
-from libcloud.common.onapp import OnAppConnection
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.base import DNSDriver, Zone, Record
-
+from libcloud.common.onapp import OnAppConnection
 
 DEFAULT_ZONE_TTL = 1200
 
@@ -144,9 +143,7 @@ class OnAppDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request(
-            "/dns_zones/%s/records/%s.json" % (zone_id, record_id)
-        )
+        response = self.connection.request("/dns_zones/%s/records/%s.json" % (zone_id, record_id))
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 

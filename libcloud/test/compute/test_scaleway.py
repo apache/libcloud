@@ -14,25 +14,21 @@
 # limitations under the License.
 import sys
 import unittest
-
 from datetime import datetime
+
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib, assertRaisesRegex
+from libcloud.compute.base import NodeImage
+from libcloud.test.secrets import SCALEWAY_PARAMS
 from libcloud.utils.iso8601 import UTC
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.scaleway import ScalewayNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json  # NOQA
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
-
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.compute.base import NodeImage
-from libcloud.compute.drivers.scaleway import ScalewayNodeDriver
-
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import SCALEWAY_PARAMS
 
 
 # class ScalewayTests(unittest.TestCase, TestCaseMixin):
@@ -44,9 +40,7 @@ class Scaleway_Tests(LibcloudTestCase):
 
     def test_authentication(self):
         ScalewayMockHttp.type = "UNAUTHORIZED"
-        assertRaisesRegex(
-            self, BaseHTTPError, "Authentication error", self.driver.list_nodes
-        )
+        assertRaisesRegex(self, BaseHTTPError, "Authentication error", self.driver.list_nodes)
 
     def test_list_locations_success(self):
         locations = self.driver.list_locations()
@@ -111,15 +105,11 @@ class Scaleway_Tests(LibcloudTestCase):
         self.assertEqual(
             nodes[0].extra["volumes"]["0"]["id"], "c1eb8f3a-4f0b-4b95-a71c-93223e457f5a"
         )
-        self.assertEqual(
-            nodes[0].extra["organization"], "000a115d-2852-4b0a-9ce8-47f1134ba95a"
-        )
+        self.assertEqual(nodes[0].extra["organization"], "000a115d-2852-4b0a-9ce8-47f1134ba95a")
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(
-            nodes[0].created_at, datetime(2014, 5, 22, 12, 57, 22, 514298, tzinfo=UTC)
-        )
+        self.assertEqual(nodes[0].created_at, datetime(2014, 5, 22, 12, 57, 22, 514298, tzinfo=UTC))
 
     def test_create_node_success(self):
         image = self.driver.list_images()[0]
@@ -127,22 +117,14 @@ class Scaleway_Tests(LibcloudTestCase):
         location = self.driver.list_locations()[0]
 
         ScalewayMockHttp.type = "POST"
-        node = self.driver.create_node(
-            name="test", size=size, image=image, region=location
-        )
+        node = self.driver.create_node(name="test", size=size, image=image, region=location)
         self.assertEqual(node.name, "my_server")
         self.assertEqual(node.public_ips, [])
-        self.assertEqual(
-            node.extra["volumes"]["0"]["id"], "d9257116-6919-49b4-a420-dcfdff51fcb1"
-        )
-        self.assertEqual(
-            node.extra["organization"], "000a115d-2852-4b0a-9ce8-47f1134ba95a"
-        )
+        self.assertEqual(node.extra["volumes"]["0"]["id"], "d9257116-6919-49b4-a420-dcfdff51fcb1")
+        self.assertEqual(node.extra["organization"], "000a115d-2852-4b0a-9ce8-47f1134ba95a")
 
     def test_create_node_invalid_size(self):
-        image = NodeImage(
-            id="01234567-89ab-cdef-fedc-ba9876543210", name=None, driver=self.driver
-        )
+        image = NodeImage(id="01234567-89ab-cdef-fedc-ba9876543210", name=None, driver=self.driver)
         size = self.driver.list_sizes()[0]
         location = self.driver.list_locations()[0]
 
@@ -227,12 +209,8 @@ class Scaleway_Tests(LibcloudTestCase):
         keys = self.driver.list_key_pairs()
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0].name, "example")
-        self.assertEqual(
-            keys[0].public_key, "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAQQDGk5"
-        )
-        self.assertEqual(
-            keys[0].fingerprint, "f5:d1:78:ed:28:72:5f:e1:ac:94:fd:1f:e0:a3:48:6d"
-        )
+        self.assertEqual(keys[0].public_key, "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAQQDGk5")
+        self.assertEqual(keys[0].fingerprint, "f5:d1:78:ed:28:72:5f:e1:ac:94:fd:1f:e0:a3:48:6d")
 
     def test_import_key_pair_from_string(self):
         result = self.driver.import_key_pair_from_string(
@@ -324,14 +302,10 @@ class ScalewayMockHttp(MockHttp):
         body = self.fixtures.load("create_volume_snapshot.json")
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _volumes_f929fe39_63f8_4be8_a80e_1e9c8ae22a76_DELETE(
-        self, method, url, body, headers
-    ):
+    def _volumes_f929fe39_63f8_4be8_a80e_1e9c8ae22a76_DELETE(self, method, url, body, headers):
         return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
-    def _snapshots_6f418e5f_b42d_4423_a0b5_349c74c454a4_DELETE(
-        self, method, url, body, headers
-    ):
+    def _snapshots_6f418e5f_b42d_4423_a0b5_349c74c454a4_DELETE(self, method, url, body, headers):
         return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _tokens_token(self, method, url, body, headers):

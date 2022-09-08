@@ -21,19 +21,19 @@ Loads Google Cloud Platform prices and updates the `pricing.json` data file.
 # pylint: skip-file
 
 import os
-import json
 import sys
+import json
 import time
+
 import urllib2
+
 import utils
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRICING_FILE_PATH = os.path.join(BASE_PATH, "../libcloud/data/pricing.json")
 PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 
-GOOGLE_CLOUD_PRICES = (
-    "https://cloudpricingcalculator.appspot.com/static/data/pricelist.json"
-)
+GOOGLE_CLOUD_PRICES = "https://cloudpricingcalculator.appspot.com/static/data/pricelist.json"
 
 
 def main(argv):

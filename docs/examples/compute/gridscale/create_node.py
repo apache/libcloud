@@ -1,6 +1,6 @@
-from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeSize
 from libcloud.compute.type import Provider
+from libcloud.compute.providers import get_driver
 
 cls = get_driver(Provider.GRIDSCALE)
 driver = cls("USER-UUID", "API-TOKEN")

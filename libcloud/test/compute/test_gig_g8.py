@@ -13,20 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import unittest
-import base64
 import json
 import time
-
+import base64
+import unittest
 from unittest import mock
 
-from libcloud.utils.py3 import httplib
-from libcloud.test import MockHttp
-from libcloud.compute.base import NodeImage, NodeSize, Node, StorageVolume
-from libcloud.compute.drivers.gig_g8 import G8NodeDriver, G8Network, G8PortForward
 import libcloud.common.gig_g8
-
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, NodeSize, NodeImage, StorageVolume
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.gig_g8 import G8Network, G8NodeDriver, G8PortForward
 
 # For tests we don't want to actually verify a token since we use an expired on
 original_is_jwt_expired = libcloud.common.gig_g8.is_jwt_expired
@@ -87,9 +85,7 @@ class G8Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         size = self.driver.list_sizes()[0]
         network = self.driver.ex_list_networks()[0]
-        node = self.driver.create_node(
-            "my test", image, network, "my description", size
-        )
+        node = self.driver.create_node("my test", image, network, "my description", size)
         self.assertIsInstance(node, Node)
 
     def test_stop_node(self):

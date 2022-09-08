@@ -21,14 +21,16 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.liquidweb import LiquidWebResponse, LiquidWebConnection
-from libcloud.common.liquidweb import APIException
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import RecordAlreadyExistsError
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
+from libcloud.common.liquidweb import APIException, LiquidWebResponse, LiquidWebConnection
 
 __all__ = ["LiquidWebDNSDriver"]
 
@@ -130,9 +132,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
             if e.error_class == "LW::Exception::RecordNotFound":
-                raise RecordDoesNotExistError(
-                    record_id=record_id, driver=self, value=e.value
-                )
+                raise RecordDoesNotExistError(record_id=record_id, driver=self, value=e.value)
             else:
                 raise e
 
@@ -222,9 +222,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
             if e.error_class == "LW::Exception::DuplicateRecord":
-                raise RecordAlreadyExistsError(
-                    record_id=name, value=e.value, driver=self
-                )
+                raise RecordAlreadyExistsError(record_id=name, value=e.value, driver=self)
             else:
                 raise e
 
@@ -267,9 +265,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method="PUT", data=j_data)
         except APIException as e:
             if e.error_class == "LW::Exception::RecordNotFound":
-                raise RecordDoesNotExistError(
-                    record_id=record.id, driver=self, value=e.value
-                )
+                raise RecordDoesNotExistError(record_id=record.id, driver=self, value=e.value)
             else:
                 raise e
 
@@ -314,9 +310,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
             if e.error_class == "LW::Exception::RecordNotFound":
-                raise RecordDoesNotExistError(
-                    record_id=record.id, driver=self, value=e.value
-                )
+                raise RecordDoesNotExistError(record_id=record.id, driver=self, value=e.value)
             else:
                 raise e
 

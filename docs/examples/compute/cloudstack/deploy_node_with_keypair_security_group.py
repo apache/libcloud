@@ -4,8 +4,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 # Import the deployment specific modules
-from libcloud.compute.deployment import ScriptDeployment
-from libcloud.compute.deployment import MultiStepDeployment
+from libcloud.compute.deployment import ScriptDeployment, MultiStepDeployment
 
 cls = get_driver(Provider.EXOSCALE)
 driver = cls("api key", "api secret key")

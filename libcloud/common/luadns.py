@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
-
 import base64
+from typing import Dict, List
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 __all__ = ["API_HOST", "LuadnsException", "LuadnsResponse", "LuadnsConnection"]
 
@@ -35,9 +33,7 @@ class LuadnsResponse(JsonResponse):
         super(LuadnsResponse, self).__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise LuadnsException(
-                code=self.status, message=self.errors.pop()["message"]
-            )
+            raise LuadnsException(code=self.status, message=self.errors.pop()["message"])
 
     def parse_body_and_errors(self):
         js = super(LuadnsResponse, self).parse_body()

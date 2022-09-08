@@ -15,14 +15,13 @@
 
 import sys
 import unittest
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.maxihost import MaxihostNodeDriver
-from libcloud.compute.base import Node
 
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.maxihost import MaxihostNodeDriver
 
 
 class MaxihostTest(unittest.TestCase, TestCaseMixin):
@@ -49,9 +48,7 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(keys), 1)
         key = keys[0]
         self.assertEqual(key.name, "test_key")
-        self.assertEqual(
-            key.fingerprint, "77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd"
-        )
+        self.assertEqual(key.fingerprint, "77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd")
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -64,9 +61,7 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
-        node = self.driver.create_node(
-            name="node-name", image=image, size=size, location=location
-        )
+        node = self.driver.create_node(name="node-name", image=image, size=size, location=location)
         self.assertTrue(isinstance(node, Node))
 
     def test_destroy_node_response(self):

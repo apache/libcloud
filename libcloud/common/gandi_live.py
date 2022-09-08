@@ -18,10 +18,9 @@ Gandi Live driver base classes
 
 import json
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import ProviderError
-
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import ProviderError
 
 __all__ = [
     "API_HOST",

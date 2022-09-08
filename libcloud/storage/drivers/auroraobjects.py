@@ -15,7 +15,7 @@
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.providers import Provider
-from libcloud.storage.drivers.s3 import BaseS3StorageDriver, BaseS3Connection
+from libcloud.storage.drivers.s3 import BaseS3Connection, BaseS3StorageDriver
 
 __all__ = ["AuroraObjectsStorageDriver"]
 

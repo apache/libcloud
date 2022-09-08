@@ -18,10 +18,7 @@ Common settings and connection objects for DigitalOcean Cloud
 """
 
 from libcloud.utils.py3 import httplib, parse_qs, urlparse
-
-from libcloud.common.base import BaseDriver
-from libcloud.common.base import ConnectionKey
-from libcloud.common.base import JsonResponse
+from libcloud.common.base import BaseDriver, JsonResponse, ConnectionKey
 from libcloud.common.types import LibcloudError, InvalidCredsError
 
 __all__ = [
@@ -187,9 +184,7 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         :type       event_id: ``str``
         """
         params = {}
-        return self.connection.request(
-            "/v2/actions/%s" % event_id, params=params
-        ).object["action"]
+        return self.connection.request("/v2/actions/%s" % event_id, params=params).object["action"]
 
     def _paginated_request(self, url, obj):
         """

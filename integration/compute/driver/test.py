@@ -15,10 +15,9 @@
 
 import base64
 
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.base import NodeDriver, Node
-
 from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.compute.base import Node, NodeDriver
 
 
 class TestResponseType(JsonResponse):

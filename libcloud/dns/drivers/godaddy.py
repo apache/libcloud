@@ -19,11 +19,11 @@ try:
 except Exception:
     import json
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import LibcloudError
-from libcloud.utils.py3 import httplib
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import Provider, RecordType, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import LibcloudError
 
 API_HOST = "api.godaddy.com"
 VALID_RECORD_EXTRA_PARAMS = ["prio", "ttl"]
@@ -176,9 +176,7 @@ class GoDaddyDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        result = self.connection.request(
-            "/v1/domains/%s/records" % (zone.domain)
-        ).object
+        result = self.connection.request("/v1/domains/%s/records" % (zone.domain)).object
         records = self._to_records(items=result, zone=zone)
         return records
 
@@ -250,8 +248,7 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         new_record = self._format_record(name, type, data, extra)
         self.connection.request(
-            "/v1/domains/%s/records/%s/%s"
-            % (record.zone.domain, record.type, record.name),
+            "/v1/domains/%s/records/%s/%s" % (record.zone.domain, record.type, record.name),
             method="PUT",
             data=json.dumps([new_record]),
         )

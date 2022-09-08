@@ -19,35 +19,34 @@ Drivers for CloudSigma API v1.0 and v2.0.
 """
 
 import re
-import time
 import copy
+import time
 import base64
 import hashlib
+
+from libcloud.utils.py3 import b, httplib
+from libcloud.utils.misc import dict2str, str2list, str2dicts, get_secure_random_string
+from libcloud.common.base import Response, JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import ProviderError, InvalidCredsError
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, is_private_subnet
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.common.cloudsigma import (
+    SPECS_TO_SIZE,
+    DEFAULT_REGION,
+    INSTANCE_TYPES,
+    MAX_VIRTIO_UNITS,
+    API_ENDPOINTS_1_0,
+    API_ENDPOINTS_2_0,
+    DEFAULT_API_VERSION,
+    MAX_VIRTIO_CONTROLLERS,
+)
 
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-
-from libcloud.utils.misc import str2dicts, str2list, dict2str
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse, Response
-from libcloud.common.types import InvalidCredsError, ProviderError
-from libcloud.common.cloudsigma import INSTANCE_TYPES
-from libcloud.common.cloudsigma import SPECS_TO_SIZE
-from libcloud.common.cloudsigma import API_ENDPOINTS_1_0
-from libcloud.common.cloudsigma import API_ENDPOINTS_2_0
-from libcloud.common.cloudsigma import DEFAULT_API_VERSION, DEFAULT_REGION
-from libcloud.common.cloudsigma import MAX_VIRTIO_CONTROLLERS, MAX_VIRTIO_UNITS
-from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage
-from libcloud.compute.base import is_private_subnet
-from libcloud.compute.base import KeyPair
-from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.misc import get_secure_random_string
 
 __all__ = [
     "CloudSigmaNodeDriver",
@@ -247,9 +246,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         if not stopped:
             raise CloudSigmaException("Could not stop node with id %s" % (node.id))
 
-        response = self.connection.request(
-            action="/servers/%s/destroy" % (node.id), method="POST"
-        )
+        response = self.connection.request(action="/servers/%s/destroy" % (node.id), method="POST")
         return response.status == 204
 
     def list_images(self, location=None):
@@ -344,9 +341,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
             )
 
         drive_data = {}
-        drive_data.update(
-            {"name": name, "size": "%sG" % (size.disk), "driveType": drive_type}
-        )
+        drive_data.update({"name": name, "size": "%sG" % (size.disk), "driveType": drive_type})
 
         response = self.connection.request(
             action="/drives/%s/clone" % image.id,
@@ -359,14 +354,10 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
 
         drive_uuid = response[0]["drive"]
 
-        response = self.connection.request(
-            action="/drives/%s/info" % (drive_uuid)
-        ).object
+        response = self.connection.request(action="/drives/%s/info" % (drive_uuid)).object
         imaging_start = time.time()
         while "imaging" in response[0]:
-            response = self.connection.request(
-                action="/drives/%s/info" % (drive_uuid)
-            ).object
+            response = self.connection.request(action="/drives/%s/info" % (drive_uuid)).object
             elapsed_time = time.time() - imaging_start
             timed_out = elapsed_time >= self.IMAGING_TIMEOUT
             if "imaging" in response[0] and timed_out:
@@ -400,9 +391,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         if node is None:
             # Insufficient funds, destroy created drive
             self.ex_drive_destroy(drive_uuid)
-            raise CloudSigmaInsufficientFundsException(
-                "Insufficient funds, node creation failed"
-            )
+            raise CloudSigmaInsufficientFundsException("Insufficient funds, node creation failed")
 
         # Start the node after it has been created
         started = self.ex_start_node(node)
@@ -426,13 +415,9 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         drive_uuids = []
         for key, value in node.items():
             if (
-                key.startswith("ide:")
-                or key.startswith("scsi")
-                or key.startswith("block")
+                key.startswith("ide:") or key.startswith("scsi") or key.startswith("block")
             ) and not (
-                key.endswith(":bytes")
-                or key.endswith(":requests")
-                or key.endswith("media")
+                key.endswith(":bytes") or key.endswith(":requests") or key.endswith("media")
             ):
                 drive_uuids.append(value)
 
@@ -577,9 +562,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
 
         :rtype: ``bool``
         """
-        response = self.connection.request(
-            action="/servers/%s/start" % (node.id), method="POST"
-        )
+        response = self.connection.request(action="/servers/%s/start" % (node.id), method="POST")
 
         return response.status == 200
 
@@ -598,9 +581,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
 
         :rtype: ``bool``
         """
-        response = self.connection.request(
-            action="/servers/%s/stop" % (node.id), method="POST"
-        )
+        response = self.connection.request(action="/servers/%s/stop" % (node.id), method="POST")
         return response.status == 204
 
     def ex_shutdown_node(self, node):
@@ -676,9 +657,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
                     extra.update({key: value})
 
             if "vnc:ip" in data and "vnc:password" in data:
-                extra.update(
-                    {"vnc_ip": data["vnc:ip"], "vnc_password": data["vnc:password"]}
-                )
+                extra.update({"vnc_ip": data["vnc:ip"], "vnc_password": data["vnc:password"]})
 
             node = Node(
                 id=data["server"],
@@ -764,9 +743,7 @@ class CloudSigmaError(ProviderError):
         :param error_point: Point at which the error occurred. Can be None.
         :type error_point: ``str`` or ``None``
         """
-        super(CloudSigmaError, self).__init__(
-            http_code=http_code, value=error_msg, driver=driver
-        )
+        super(CloudSigmaError, self).__init__(http_code=http_code, value=error_msg, driver=driver)
         self.error_type = error_type
         self.error_msg = error_msg
         self.error_point = error_point
@@ -893,9 +870,7 @@ class CloudSigmaDrive(NodeImage):
         :param status: Drive status (unmounted / mounted).
         :type status: ``str``
         """
-        super(CloudSigmaDrive, self).__init__(
-            id=id, name=name, driver=driver, extra=extra
-        )
+        super(CloudSigmaDrive, self).__init__(id=id, name=name, driver=driver, extra=extra)
         self.size = size
         self.media = media
         self.status = status
@@ -1075,9 +1050,7 @@ class CloudSigma_2_0_Connection(ConnectionUserAndKey):
         data = json.dumps(data)
         return data
 
-    def request(
-        self, action, params=None, data=None, headers=None, method="GET", raw=False
-    ):
+    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
         params = params or {}
         action = self.api_prefix + action
 
@@ -1270,9 +1243,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             drive = self.ex_clone_drive(drive=image, name=drive_name)
 
             # Wait for drive clone to finish
-            drive = self._wait_for_drive_state_transition(
-                drive=drive, state="unmounted"
-            )
+            drive = self._wait_for_drive_state_transition(drive=drive, state="unmounted")
 
             # 2. Resize drive to the desired disk size if the desired disk size
             # is larger than the cloned drive size.
@@ -1280,9 +1251,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
                 drive = self.ex_resize_drive(drive=drive, size=drive_size)
 
             # Wait for drive resize to finish
-            drive = self._wait_for_drive_state_transition(
-                drive=drive, state="unmounted"
-            )
+            drive = self._wait_for_drive_state_transition(drive=drive, state="unmounted")
         else:
             # No need to clone installation CDs
             drive = image
@@ -1357,9 +1326,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             params = {"recurse": "all_drives"}
         else:
             params = None
-        response = self.connection.request(
-            action=action, method="DELETE", params=params
-        )
+        response = self.connection.request(action=action, method="DELETE", params=params)
         return response.status == httplib.NO_CONTENT
 
     def reboot_node(self, node):
@@ -1425,9 +1392,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         data.update(params)
 
         action = "/servers/%s/" % (node.id)
-        response = self.connection.request(
-            action=action, method="PUT", data=data
-        ).object
+        response = self.connection.request(action=action, method="PUT", data=data).object
         node = self._to_node(data=response)
         return node
 
@@ -1451,9 +1416,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             params["avoid"] = ",".join(ex_avoid)
 
         path = "/servers/%s/action/" % (node.id)
-        response = self._perform_action(
-            path=path, action="start", params=params, method="POST"
-        )
+        response = self._perform_action(path=path, action="start", params=params, method="POST")
         return response.status == httplib.ACCEPTED
 
     def stop_node(self, node):
@@ -1497,9 +1460,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         data["random_vnc_password"] = random_vnc_password
 
         path = "/servers/%s/action/" % (node.id)
-        response = self._perform_action(
-            path=path, action="clone", method="POST", data=data
-        ).object
+        response = self._perform_action(path=path, action="clone", method="POST", data=data).object
         node = self._to_node(data=response)
         return node
 
@@ -1521,9 +1482,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         :rtype: ``str``
         """
         path = "/servers/%s/action/" % (node.id)
-        response = self._perform_action(
-            path=path, action="open_vnc", method="POST"
-        ).object
+        response = self._perform_action(path=path, action="open_vnc", method="POST").object
         vnc_url = response["vnc_url"]
         return vnc_url
 
@@ -1604,9 +1563,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         return drive
 
     def create_volume(self, name, size, media="disk", ex_avoid=None):
-        return self.ex_create_drive(
-            name=name, size=size, media=media, ex_avoid=ex_avoid
-        )
+        return self.ex_create_drive(name=name, size=size, media=media, ex_avoid=ex_avoid)
 
     def ex_clone_drive(self, drive, name=None, ex_avoid=None):
         """
@@ -1659,9 +1616,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         path = "/drives/%s/action/" % (drive.id)
         data = {"name": drive.name, "size": size * 1024 * 1024 * 1024, "media": "disk"}
-        response = self._perform_action(
-            path=path, action="resize", method="POST", data=data
-        )
+        response = self._perform_action(path=path, action="resize", method="POST", data=data)
 
         drive = self._to_drive(data=response.object["objects"][0])
         return drive
@@ -1713,9 +1668,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
     def ex_detach_drive(self, node, drive):
         data = self.ex_get_node(node.id, return_json=True)
-        data["drives"] = [
-            item for item in data["drives"] if item["drive"]["uuid"] != drive.id
-        ]
+        data["drives"] = [item for item in data["drives"] if item["drive"]["uuid"] != drive.id]
         action = "/servers/%s/" % (node.id)
         response = self.connection.request(action=action, data=data, method="PUT")
         return response.status == 200
@@ -1783,9 +1736,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         data["objects"] = [obj]
 
         action = "/fwpolicies/"
-        response = self.connection.request(
-            action=action, method="POST", data=data
-        ).object
+        response = self.connection.request(action=action, method="POST", data=data).object
         policy = self._to_firewall_policy(data=response["objects"][0])
         return policy
 
@@ -1915,9 +1866,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             data["resources"] = resource_uuids
 
         action = "/tags/"
-        response = self.connection.request(
-            action=action, method="POST", data=data
-        ).object
+        response = self.connection.request(action=action, method="POST", data=data).object
         tag = self._to_tag(data=response["objects"][0])
         return tag
 
@@ -1968,9 +1917,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         data = {"name": tag.name, "resources": resources}
 
         action = "/tags/%s/" % (tag.id)
-        response = self.connection.request(
-            action=action, method="PUT", data=data
-        ).object
+        response = self.connection.request(action=action, method="PUT", data=data).object
         tag = self._to_tag(data=response)
         return tag
 
@@ -2044,9 +1991,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         if resources:
             params["resource"] = ",".join(resources)
 
-        response = self.connection.request(
-            action="/subscriptions/", params=params
-        ).object
+        response = self.connection.request(action="/subscriptions/", params=params).object
         subscriptions = self._to_subscriptions(data=response)
         return subscriptions
 
@@ -2091,9 +2036,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             }
         ]
 
-        response = self.connection.request(
-            action="/subscriptions/", data=data, method="POST"
-        )
+        response = self.connection.request(action="/subscriptions/", data=data, method="POST")
         data = response.object["objects"][0]
         subscription = self._to_subscription(data=data)
         return subscription
@@ -2148,9 +2091,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         action = "/keypairs/"
         data = {"objects": [{"name": name}]}
-        response = self.connection.request(
-            action=action, method="POST", data=data
-        ).object
+        response = self.connection.request(action=action, method="POST", data=data).object
         return self._to_key_pair(response["objects"][0])
 
     def import_key_pair_from_string(self, name, key_material):
@@ -2166,12 +2107,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         :rtype: :class:`.KeyPair` object
         """
         action = "/keypairs/"
-        data = {
-            "objects": [{"name": name, "public_key": key_material.replace("\n", "")}]
-        }
-        response = self.connection.request(
-            action=action, method="POST", data=data
-        ).object
+        data = {"objects": [{"name": name, "public_key": key_material.replace("\n", "")}]}
+        response = self.connection.request(action=action, method="POST", data=data).object
         return self._to_key_pair(response["objects"][0])
 
     def delete_key_pair(self, key_pair):
@@ -2414,9 +2351,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             )
             rules.append(rule)
 
-        policy = CloudSigmaFirewallPolicy(
-            id=data["uuid"], name=data["name"], rules=rules
-        )
+        policy = CloudSigmaFirewallPolicy(id=data["uuid"], name=data["name"], rules=rules)
         return policy
 
     def _to_key_pair(self, data):
@@ -2446,9 +2381,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             params = {}
 
         params["do"] = action
-        response = self.connection.request(
-            action=path, method=method, params=params, data=data
-        )
+        response = self.connection.request(action=path, method=method, params=params, data=data)
         return response
 
     def _is_installation_cd(self, image):
@@ -2483,9 +2416,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return result
 
-    def _wait_for_drive_state_transition(
-        self, drive, state, timeout=DRIVE_TRANSITION_TIMEOUT
-    ):
+    def _wait_for_drive_state_transition(self, drive, state, timeout=DRIVE_TRANSITION_TIMEOUT):
         """
         Wait for a drive to transition to the provided state.
 
@@ -2518,9 +2449,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             delta = current_time - start_time
 
             if delta >= timeout:
-                msg = (
-                    "Timed out while waiting for drive transition "
-                    "(timeout=%s seconds)" % (timeout)
+                msg = "Timed out while waiting for drive transition " "(timeout=%s seconds)" % (
+                    timeout
                 )
                 raise Exception(msg)
 

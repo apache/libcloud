@@ -12,7 +12,5 @@ existing_nodes = driver.list_nodes()
 existing_node_uuids = [node.id for node in existing_nodes]
 
 
-node = driver.create_node(
-    name=name, size=size, image=image, ex_avoid=existing_node_uuids
-)
+node = driver.create_node(name=name, size=size, image=image, ex_avoid=existing_node_uuids)
 print(node)

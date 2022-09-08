@@ -14,7 +14,6 @@
 # limitations under the License.
 
 from libcloud.loadbalancer.providers import Provider
-
 from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 
 

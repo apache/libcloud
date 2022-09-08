@@ -17,19 +17,18 @@ VPS.net driver
 """
 import base64
 
+from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 API_HOST = "api.vps.net"
 API_VERSION = "api10json"
@@ -173,9 +172,7 @@ class VPSNetNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         res = self.connection.request("/nodes.%s" % (API_VERSION,))
-        available_nodes = len(
-            [size for size in res.object if size["slice"]["virtual_machine_id"]]
-        )
+        available_nodes = len([size for size in res.object if size["slice"]["virtual_machine_id"]])
         sizes = [self._to_size(i) for i in range(1, available_nodes + 1)]
         return sizes
 

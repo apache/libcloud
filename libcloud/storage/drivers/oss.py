@@ -15,37 +15,32 @@
 
 # pylint: disable=unexpected-keyword-arg
 
-import base64
-import codecs
 import hmac
 import time
+import base64
+import codecs
 from hashlib import sha1
 
-from libcloud.utils.py3 import ET
+from libcloud.utils.py3 import ET, PY3, b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.xml import findtext, fixxpath
+from libcloud.common.base import RawResponse, XmlResponse, ConnectionUserAndKey
+from libcloud.utils.files import read_in_chunks
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (
+    ContainerError,
+    ObjectDoesNotExistError,
+    ObjectHashMismatchError,
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+)
 
 try:
     from lxml.etree import Element, SubElement
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import tostring
-from libcloud.utils.py3 import PY3
-from libcloud.utils.xml import fixxpath, findtext
-from libcloud.utils.files import read_in_chunks
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse, XmlResponse
-from libcloud.common.types import MalformedResponseError
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
 
 __all__ = [
     "OSSStorageDriver",
@@ -98,8 +93,7 @@ class OSSResponse(XmlResponse):
             raise InvalidCredsError(self.body)
         elif self.status == httplib.MOVED_PERMANENTLY:
             raise LibcloudError(
-                "This bucket is located in a different "
-                + "region. Please use the correct driver.",
+                "This bucket is located in a different " + "region. Please use the correct driver.",
                 driver=OSSStorageDriver,
             )
         elif self.status == httplib.METHOD_NOT_ALLOWED:
@@ -128,9 +122,7 @@ class OSSConnection(ConnectionUserAndKey):
     rawResponseCls = OSSRawResponse
 
     @staticmethod
-    def _get_auth_signature(
-        method, headers, params, expires, secret_key, path, vendor_prefix
-    ):
+    def _get_auth_signature(method, headers, params, expires, secret_key, path, vendor_prefix):
         """
         Signature = base64(hmac-sha1(AccessKeySecret,
           VERB + "\n"
@@ -290,14 +282,10 @@ class OSSStorageDriver(StorageDriver):
     def iterate_containers(self):
         response = self.connection.request("/")
         if response.status == httplib.OK:
-            containers = self._to_containers(
-                obj=response.object, xpath="Buckets/Bucket"
-            )
+            containers = self._to_containers(obj=response.object, xpath="Buckets/Bucket")
             return containers
 
-        raise LibcloudError(
-            "Unexpected status code: %s" % (response.status), driver=self
-        )
+        raise LibcloudError("Unexpected status code: %s" % (response.status), driver=self)
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
@@ -333,13 +321,9 @@ class OSSStorageDriver(StorageDriver):
             response = self.connection.request("/", params=params, container=container)
 
             if response.status != httplib.OK:
-                raise LibcloudError(
-                    "Unexpected status code: %s" % (response.status), driver=self
-                )
+                raise LibcloudError("Unexpected status code: %s" % (response.status), driver=self)
 
-            objects = self._to_objs(
-                obj=response.object, xpath="Contents", container=container
-            )
+            objects = self._to_objs(obj=response.object, xpath="Contents", container=container)
             is_truncated = response.object.findtext(
                 fixxpath(xpath="IsTruncated", namespace=self.namespace)
             ).lower()
@@ -354,16 +338,12 @@ class OSSStorageDriver(StorageDriver):
         for container in self.iterate_containers():
             if container.name == container_name:
                 return container
-        raise ContainerDoesNotExistError(
-            value=None, driver=self, container_name=container_name
-        )
+        raise ContainerDoesNotExistError(value=None, driver=self, container_name=container_name)
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
         object_path = self._get_object_path(container, object_name)
-        response = self.connection.request(
-            object_path, method="HEAD", container=container
-        )
+        response = self.connection.request(object_path, method="HEAD", container=container)
 
         if response.status == httplib.OK:
             obj = self._headers_to_object(
@@ -392,9 +372,7 @@ class OSSStorageDriver(StorageDriver):
             data = ""
 
         container = Container(name=container_name, extra=extra, driver=self)
-        response = self.connection.request(
-            "/", data=data, method="PUT", container=container
-        )
+        response = self.connection.request("/", data=data, method="PUT", container=container)
 
         if response.status == httplib.OK:
             return container
@@ -412,9 +390,7 @@ class OSSStorageDriver(StorageDriver):
                 driver=self,
             )
 
-        raise LibcloudError(
-            "Unexpected status code: %s" % (response.status), driver=self
-        )
+        raise LibcloudError("Unexpected status code: %s" % (response.status), driver=self)
 
     def delete_container(self, container):
         # Note: All the objects in the container must be deleted first
@@ -428,9 +404,7 @@ class OSSStorageDriver(StorageDriver):
                 driver=self,
             )
         elif response.status == httplib.NOT_FOUND:
-            raise ContainerDoesNotExistError(
-                value=None, driver=self, container_name=container.name
-            )
+            raise ContainerDoesNotExistError(value=None, driver=self, container_name=container.name)
 
         return False
 
@@ -488,9 +462,7 @@ class OSSStorageDriver(StorageDriver):
             verify_hash=verify_hash,
         )
 
-    def upload_object_via_stream(
-        self, iterator, container, object_name, extra=None, headers=None
-    ):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None, headers=None):
         method = "PUT"
         params = None
 
@@ -510,9 +482,7 @@ class OSSStorageDriver(StorageDriver):
 
     def delete_object(self, obj):
         object_path = self._get_object_path(obj.container, obj.name)
-        response = self.connection.request(
-            object_path, method="DELETE", container=obj.container
-        )
+        response = self.connection.request(object_path, method="DELETE", container=obj.container)
         if response.status == httplib.NO_CONTENT:
             return True
         elif response.status == httplib.NOT_FOUND:
@@ -566,22 +536,17 @@ class OSSStorageDriver(StorageDriver):
             return node.findtext(fixxpath(xpath=text, namespace=self.namespace))
 
         while True:
-            response = self.connection.request(
-                request_path, params=params, container=container
-            )
+            response = self.connection.request(request_path, params=params, container=container)
 
             if response.status != httplib.OK:
                 raise LibcloudError(
-                    "Error fetching multipart uploads. "
-                    "Got code: %s" % response.status,
+                    "Error fetching multipart uploads. " "Got code: %s" % response.status,
                     driver=self,
                 )
 
             body = response.parse_body()
             # pylint: disable=maybe-no-member
-            for node in body.findall(
-                fixxpath(xpath="Upload", namespace=self.namespace)
-            ):
+            for node in body.findall(fixxpath(xpath="Upload", namespace=self.namespace)):
 
                 key = finder(node, "Key")
                 upload_id = finder(node, "UploadId")
@@ -591,9 +556,7 @@ class OSSStorageDriver(StorageDriver):
 
             # Check if this is the last entry in the listing
             # pylint: disable=maybe-no-member
-            is_truncated = body.findtext(
-                fixxpath(xpath="IsTruncated", namespace=self.namespace)
-            )
+            is_truncated = body.findtext(fixxpath(xpath="IsTruncated", namespace=self.namespace))
 
             if is_truncated.lower() == "false":
                 break
@@ -602,9 +565,7 @@ class OSSStorageDriver(StorageDriver):
             upload_marker = body.findtext(
                 fixxpath(xpath="NextUploadIdMarker", namespace=self.namespace)
             )
-            key_marker = body.findtext(
-                fixxpath(xpath="NextKeyMarker", namespace=self.namespace)
-            )
+            key_marker = body.findtext(fixxpath(xpath="NextKeyMarker", namespace=self.namespace))
 
             params["key-marker"] = key_marker
             params["upload-id-marker"] = upload_marker
@@ -622,9 +583,7 @@ class OSSStorageDriver(StorageDriver):
         """
 
         # Iterate through the container and delete the upload ids
-        for upload in self.ex_iterate_multipart_uploads(
-            container, prefix, delimiter=None
-        ):
+        for upload in self.ex_iterate_multipart_uploads(container, prefix, delimiter=None):
             object_path = self._get_object_path(container, upload.key)
             self._abort_multipart(object_path, upload.id, container=container)
 
@@ -756,9 +715,7 @@ class OSSStorageDriver(StorageDriver):
             (chunks, data_hash, bytes_transferred) = result
 
             # Commit the chunk info and complete the upload
-            etag = self._commit_multipart(
-                object_path, upload_id, chunks, container=container
-            )
+            etag = self._commit_multipart(object_path, upload_id, chunks, container=container)
         except Exception as e:
             # Amazon provides a mechanism for aborting an upload.
             self._abort_multipart(object_path, upload_id, container=container)
@@ -911,9 +868,7 @@ class OSSStorageDriver(StorageDriver):
 
         params = {"uploadId": upload_id}
         request_path = "?".join((object_path, urlencode(params)))
-        resp = self.connection.request(
-            request_path, method="DELETE", container=container
-        )
+        resp = self.connection.request(request_path, method="DELETE", container=container)
 
         if resp.status != httplib.NO_CONTENT:
             raise LibcloudError(
@@ -929,9 +884,7 @@ class OSSStorageDriver(StorageDriver):
             "creation_date": findtext(
                 element=element, xpath="CreationDate", namespace=self.namespace
             ),
-            "location": findtext(
-                element=element, xpath="Location", namespace=self.namespace
-            ),
+            "location": findtext(element=element, xpath="Location", namespace=self.namespace),
         }
 
         container = Container(
@@ -959,20 +912,14 @@ class OSSStorageDriver(StorageDriver):
                 "display_name": self._safe_decode(owner_display_name),
             }
         }
-        last_modified = findtext(
-            element=element, xpath="LastModified", namespace=self.namespace
-        )
+        last_modified = findtext(element=element, xpath="LastModified", namespace=self.namespace)
         extra = {"last_modified": last_modified}
 
-        name = self._safe_decode(
-            findtext(element=element, xpath="Key", namespace=self.namespace)
-        )
+        name = self._safe_decode(findtext(element=element, xpath="Key", namespace=self.namespace))
         obj = Object(
             name=name,
             size=int(findtext(element=element, xpath="Size", namespace=self.namespace)),
-            hash=findtext(
-                element=element, xpath="ETag", namespace=self.namespace
-            ).replace('"', ""),
+            hash=findtext(element=element, xpath="ETag", namespace=self.namespace).replace('"', ""),
             extra=extra,
             meta_data=meta_data,
             container=container,

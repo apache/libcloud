@@ -14,23 +14,21 @@
 # limitations under the License.
 
 import sys
-
 import json
 
-from libcloud.common.types import LibcloudError
-from libcloud.test import unittest
-
-from libcloud.dns.drivers.cloudflare import CloudFlareDNSDriver
-from libcloud.dns.drivers.cloudflare import GlobalAPIKeyDNSConnection
-from libcloud.dns.drivers.cloudflare import TokenDNSConnection
-from libcloud.dns.drivers.cloudflare import ZONE_EXTRA_ATTRIBUTES
-from libcloud.dns.drivers.cloudflare import RECORD_EXTRA_ATTRIBUTES
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.test import MockHttp, unittest
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib, urlparse
+from libcloud.common.types import LibcloudError
 from libcloud.test.secrets import DNS_PARAMS_CLOUDFLARE
 from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test import MockHttp
+from libcloud.dns.drivers.cloudflare import (
+    ZONE_EXTRA_ATTRIBUTES,
+    RECORD_EXTRA_ATTRIBUTES,
+    TokenDNSConnection,
+    CloudFlareDNSDriver,
+    GlobalAPIKeyDNSConnection,
+)
 
 
 class CloudFlareDNSDriverTestCase(unittest.TestCase):
@@ -178,7 +176,9 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         CloudFlareMockHttp.type = "error_chain_error"
 
-        expected_msg = r".*1004: DNS Validation Error \(error chain: 9011: Length of content is invalid\)"
+        expected_msg = (
+            r".*1004: DNS Validation Error \(error chain: 9011: Length of content is invalid\)"
+        )
 
         self.assertRaisesRegex(
             LibcloudError,
@@ -241,9 +241,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertTrue(result)
 
     def test_create_zone(self):
-        zone = self.driver.create_zone(
-            domain="example2.com", extra={"jump_start": False}
-        )
+        zone = self.driver.create_zone(domain="example2.com", extra={"jump_start": False})
         self.assertEqual(zone.id, "6789")
         self.assertEqual(zone.domain, "example2.com")
 
@@ -257,9 +255,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_update_zone(self):
         zone = self.driver.list_zones()[0]
 
-        updated_zone = self.driver.update_zone(
-            zone=zone, domain="", extra={"paused": True}
-        )
+        updated_zone = self.driver.update_zone(zone=zone, domain="", extra={"paused": True})
 
         self.assertEqual(zone.id, updated_zone.id)
         self.assertEqual(zone.domain, updated_zone.domain)
@@ -275,9 +271,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_update_zone_with_property_that_cant_be_updated(self):
         zone = self.driver.list_zones()[0]
 
-        updated_zone = self.driver.update_zone(
-            zone, domain="", extra={"owner": "owner"}
-        )
+        updated_zone = self.driver.update_zone(zone, domain="", extra={"owner": "owner"})
 
         self.assertEqual(zone, updated_zone)
 
@@ -309,14 +303,10 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             RecordType.SSHFP, "2 1 ABCDEF12345"
         )
         self.assertIsNone(content)
-        self.assertEqual(
-            data, {"algorithm": "2", "type": "1", "fingerprint": "ABCDEF12345"}
-        )
+        self.assertEqual(data, {"algorithm": "2", "type": "1", "fingerprint": "ABCDEF12345"})
 
     def test_normalize_record_data_from_apu(self):
-        result = self.driver._normalize_record_data_from_api(
-            RecordType.CAA, "0\tissue\tfoo.bar"
-        )
+        result = self.driver._normalize_record_data_from_api(RecordType.CAA, "0\tissue\tfoo.bar")
         self.assertEqual(result, "0 issue foo.bar")
 
 
@@ -377,9 +367,7 @@ class CloudFlareMockHttp(MockHttp, unittest.TestCase):
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _client_v4_zones_1234_dns_records_caa_record_type(
-        self, method, url, body, headers
-    ):
+    def _client_v4_zones_1234_dns_records_caa_record_type(self, method, url, body, headers):
         if method not in ["POST"]:
             raise AssertionError("Unsupported method: %s" % (method))
 
@@ -392,9 +380,7 @@ class CloudFlareMockHttp(MockHttp, unittest.TestCase):
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _client_v4_zones_1234_dns_records_sshfp_record_type(
-        self, method, url, body, headers
-    ):
+    def _client_v4_zones_1234_dns_records_sshfp_record_type(self, method, url, body, headers):
         if method not in ["POST"]:
             raise AssertionError("Unsupported method: %s" % (method))
 
@@ -408,9 +394,7 @@ class CloudFlareMockHttp(MockHttp, unittest.TestCase):
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _client_v4_zones_1234_dns_records_error_chain_error(
-        self, method, url, body, headers
-    ):
+    def _client_v4_zones_1234_dns_records_error_chain_error(self, method, url, body, headers):
         if method not in ["POST"]:
             raise AssertionError("Unsupported method: %s" % (method))
 

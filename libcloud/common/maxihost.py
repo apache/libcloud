@@ -14,9 +14,8 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import JsonResponse
-from libcloud.common.base import ConnectionKey
 
 
 class MaxihostResponse(JsonResponse):

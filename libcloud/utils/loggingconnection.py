@@ -15,21 +15,19 @@
 
 from __future__ import absolute_import
 
+import os
+from pipes import quote as pquote
+from xml.dom.minidom import parseString
+
+from libcloud.utils.py3 import _real_unicode as u
+from libcloud.utils.py3 import ensure_string
+from libcloud.utils.misc import lowercase_keys
+from libcloud.common.base import LibcloudConnection, HttpLibResponseProxy
+
 try:
     import simplejson as json  # type: ignore
 except Exception:
     import json  # type: ignore
-
-from pipes import quote as pquote
-from xml.dom.minidom import parseString
-
-import os
-
-from libcloud.common.base import LibcloudConnection, HttpLibResponseProxy
-from libcloud.utils.py3 import _real_unicode as u
-from libcloud.utils.py3 import ensure_string
-
-from libcloud.utils.misc import lowercase_keys
 
 
 class LoggingConnection(LibcloudConnection):

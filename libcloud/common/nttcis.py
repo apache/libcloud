@@ -16,29 +16,27 @@
 NTTCIS Common Components
 """
 
-from typing import Dict
-
-import xml.etree.ElementTree as etree
 import re
-from functools import wraps
-from copy import deepcopy
-from base64 import b64encode
-from time import sleep
+import xml.etree.ElementTree as etree
 from io import BytesIO
+from copy import deepcopy
+from time import sleep
+from base64 import b64encode
+from typing import Dict
+from functools import wraps
 
-try:
-    from collections.abc import MutableSequence, Mapping
-except ImportError:
-    from collections import MutableSequence, Mapping
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
-from libcloud.compute.base import Node
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import b, httplib, basestring
 from libcloud.utils.xml import findtext
+from libcloud.common.base import RawResponse, XmlResponse, ConnectionUserAndKey
+from libcloud.compute.base import Node
 from libcloud.compute.types import LibcloudError, InvalidCredsError
+
+try:
+    from collections.abc import Mapping, MutableSequence
+except ImportError:
+    from collections import Mapping, MutableSequence
 
 
 # Roadmap / TODO:
@@ -325,8 +323,7 @@ def dd_object_to_id(obj, obj_type, id_value="id"):
         return obj
     else:
         raise TypeError(
-            "Invalid type %s looking for basestring or %s"
-            % (type(obj).__name__, obj_type.__name__)
+            "Invalid type %s looking for basestring or %s" % (type(obj).__name__, obj_type.__name__)
         )
 
 
@@ -363,13 +360,9 @@ class NttCisResponse(XmlResponse):
                 message = findtext(body, message[0], message[1])
                 if message is not None:
                     break
-            raise NttCisAPIException(
-                code=code, msg=message, driver=self.connection.driver
-            )
+            raise NttCisAPIException(code=code, msg=message, driver=self.connection.driver)
         if self.status is not httplib.OK:
-            raise NttCisAPIException(
-                code=self.status, msg=body, driver=self.connection.driver
-            )
+            raise NttCisAPIException(code=self.status, msg=body, driver=self.connection.driver)
 
         return self.body
 
@@ -475,9 +468,7 @@ class NttCisConnection(ConnectionUserAndKey):
             action=action, params=params, data=data, method=method, headers=headers
         )
 
-    def request_api_2(
-        self, path, action, params=None, data="", headers=None, method="GET"
-    ):
+    def request_api_2(self, path, action, params=None, data="", headers=None, method="GET"):
         action = "%s/%s/%s/%s" % (
             self.api_path_version_2,
             self.active_api_version,
@@ -502,18 +493,14 @@ class NttCisConnection(ConnectionUserAndKey):
             raw=True,
         )
 
-    def request_with_orgId_api_1(
-        self, action, params=None, data="", headers=None, method="GET"
-    ):
+    def request_with_orgId_api_1(self, action, params=None, data="", headers=None, method="GET"):
         action = "%s/%s" % (self.get_resource_path_api_1(), action)
 
         return super(NttCisConnection, self).request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
-    def request_with_orgId_api_2(
-        self, action, params=None, data="", headers=None, method="GET"
-    ):
+    def request_with_orgId_api_2(self, action, params=None, data="", headers=None, method="GET"):
         action = "%s/%s" % (self.get_resource_path_api_2(), action)
 
         return super(NttCisConnection, self).request(
@@ -552,9 +539,7 @@ class NttCisConnection(ConnectionUserAndKey):
             params = {}
         params["pageSize"] = page_size
 
-        resp = self.request_with_orgId_api_2(
-            action, params, data, headers, method
-        ).object
+        resp = self.request_with_orgId_api_2(action, params, data, headers, method).object
         yield resp
         if len(resp) <= 0:
             return
@@ -565,9 +550,7 @@ class NttCisConnection(ConnectionUserAndKey):
 
         while int(pcount) >= int(psize):
             params["pageNumber"] = int(pnumber) + 1
-            resp = self.request_with_orgId_api_2(
-                action, params, data, headers, method
-            ).object
+            resp = self.request_with_orgId_api_2(action, params, data, headers, method).object
             pcount = resp.get("pageCount")  # pylint: disable=no-member
             psize = resp.get("pageSize")  # pylint: disable=no-member
             pnumber = resp.get("pageNumber")  # pylint: disable=no-member
@@ -803,10 +786,13 @@ class NttCisPublicIpBlock(object):
         self.status = status
 
     def __repr__(self):
-        return (
-            "<NttCisNetworkDomain: id=%s, base_ip=%s, "
-            "size=%s, location=%s, status=%s>"
-        ) % (self.id, self.base_ip, self.size, self.location, self.status)
+        return ("<NttCisNetworkDomain: id=%s, base_ip=%s, " "size=%s, location=%s, status=%s>") % (
+            self.id,
+            self.base_ip,
+            self.size,
+            self.location,
+            self.status,
+        )
 
 
 class NttCisServerCpuSpecification(object):
@@ -905,9 +891,12 @@ class NttCisScsiController(object):
         self.state = state
 
     def __repr__(self):
-        return (
-            "<NttCisScsiController: " "id=%s, adapter_type=%s, bus_number=%s, state=%s"
-        ) % (self.id, self.adapter_type, self.bus_number, self.state)
+        return ("<NttCisScsiController: " "id=%s, adapter_type=%s, bus_number=%s, state=%s") % (
+            self.id,
+            self.adapter_type,
+            self.bus_number,
+            self.state,
+        )
 
 
 class NttCisServerVMWareTools(object):
@@ -934,11 +923,11 @@ class NttCisServerVMWareTools(object):
         self.api_version = api_version
 
     def __repr__(self):
-        return (
-            "<NttCisServerVMWareTools "
-            "status=%s, version_status=%s, "
-            "api_version=%s>"
-        ) % (self.status, self.version_status, self.api_version)
+        return ("<NttCisServerVMWareTools " "status=%s, version_status=%s, " "api_version=%s>") % (
+            self.status,
+            self.version_status,
+            self.api_version,
+        )
 
 
 class NttCisSnapshot(object):
@@ -1274,9 +1263,13 @@ class NttCisVlan(object):
         self.ipv6_gateway = ipv6_gateway
 
     def __repr__(self):
-        return (
-            "<NttCisVlan: id=%s, name=%s, " "description=%s, location=%s, status=%s>"
-        ) % (self.id, self.name, self.description, self.location, self.status)
+        return ("<NttCisVlan: id=%s, name=%s, " "description=%s, location=%s, status=%s>") % (
+            self.id,
+            self.name,
+            self.description,
+            self.location,
+            self.status,
+        )
 
 
 class NttCisPool(object):
@@ -1375,10 +1368,14 @@ class NttCisPoolMember(object):
         self.node_id = node_id
 
     def __repr__(self):
-        return (
-            "NttCisPoolMember: id=%s, name=%s, "
-            "ip=%s, status=%s, port=%s, node_id=%s>"
-        ) % (self.id, self.name, self.ip, self.status, self.port, self.node_id)
+        return ("NttCisPoolMember: id=%s, name=%s, " "ip=%s, status=%s, port=%s, node_id=%s>") % (
+            self.id,
+            self.name,
+            self.ip,
+            self.status,
+            self.port,
+            self.node_id,
+        )
 
 
 class NttCisVIPNode(object):
@@ -2183,11 +2180,7 @@ def processor(mapping, name=None):
     def handle_map(map, name):
         tmp = {}
         types = [type(x) for x in map.values()]
-        if (
-            XmlListConfig not in types
-            and XmlDictConfig not in types
-            and dict not in types
-        ):
+        if XmlListConfig not in types and XmlDictConfig not in types and dict not in types:
             return map
 
         elif XmlListConfig in types:
@@ -2327,9 +2320,7 @@ class XmlListConfig(list):
                     # property refers to an element used repeatedly
                     #  in the XML for data centers only
                     if "property" in element.tag:
-                        self.append(
-                            {element.attrib.get("name"): element.attrib.get("value")}
-                        )
+                        self.append({element.attrib.get("name"): element.attrib.get("value")})
                     else:
                         self.append(element.attrib)
             elif element.text:
@@ -2348,13 +2339,7 @@ class XmlDictConfig(dict):
     def __init__(self, parent_element):
         if parent_element.items():
             if "property" in parent_element.tag:
-                self.update(
-                    {
-                        parent_element.attrib.get("name"): parent_element.attrib.get(
-                            "value"
-                        )
-                    }
-                )
+                self.update({parent_element.attrib.get("name"): parent_element.attrib.get("value")})
             else:
                 self.update(dict(parent_element.items()))
         for element in parent_element:

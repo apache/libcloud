@@ -15,14 +15,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.hostvirtual import HostVirtualNodeDriver
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import NodeAuthPassword
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import NodeAuthPassword
 from libcloud.test.secrets import HOSTVIRTUAL_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.hostvirtual import HostVirtualNodeDriver
 
 
 class HostVirtualTest(unittest.TestCase):
@@ -117,9 +116,7 @@ class HostVirtualTest(unittest.TestCase):
         auth = NodeAuthPassword("vr!@#hosted#@!")
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        node = self.driver.create_node(
-            name="test.com", image=image, size=size, auth=auth
-        )
+        node = self.driver.create_node(name="test.com", image=image, size=size, auth=auth)
         self.assertEqual("62291", node.id)
         self.assertEqual("server1.vr-cluster.org", node.name)
 

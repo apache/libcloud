@@ -6,9 +6,7 @@ from libcloud.loadbalancer.base import Algorithm
 
 def create_load_balancer():
     # Compute driver to retrieve servers to be pool members (the nodes)
-    cls = libcloud.get_driver(
-        libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.NTTCIS
-    )
+    cls = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.NTTCIS)
     compute_driver = cls("my_username", "my_pass", region="eu")
     net_domain_name = "sdk_test_1"
     net_domains = compute_driver.ex_list_network_domains(location="EU6")

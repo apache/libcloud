@@ -13,25 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
-from typing import Optional
-
 import copy
 import json
-
 import email.utils
+from typing import Dict, Optional
 
+from libcloud.utils.py3 import httplib, urlquote
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.google import GoogleAuthType
-from libcloud.common.google import GoogleOAuth2Credential
-from libcloud.common.google import GoogleResponse
 from libcloud.common.types import ProviderError
-from libcloud.storage.drivers.s3 import BaseS3Connection
-from libcloud.storage.drivers.s3 import BaseS3StorageDriver
-from libcloud.storage.drivers.s3 import S3RawResponse
-from libcloud.storage.drivers.s3 import S3Response
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
+from libcloud.common.google import GoogleAuthType, GoogleResponse, GoogleOAuth2Credential
+from libcloud.storage.drivers.s3 import (
+    S3Response,
+    S3RawResponse,
+    BaseS3Connection,
+    BaseS3StorageDriver,
+)
 
 # Docs are a lie. Actual namespace returned is different that the one listed
 # in the docs.
@@ -82,9 +78,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
     rawResponseCls = S3RawResponse
     PROJECT_ID_HEADER = "x-goog-project-id"
 
-    def __init__(
-        self, user_id, key, secure=True, auth_type=None, credential_file=None, **kwargs
-    ):
+    def __init__(self, user_id, key, secure=True, auth_type=None, credential_file=None, **kwargs):
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if GoogleAuthType.is_oauth2(self.auth_type):
             self.oauth2_credential = GoogleOAuth2Credential(
@@ -300,9 +294,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
         # Try READER permissions: try getting the object.
         try:
-            self.json_connection.request(
-                "/storage/v1/b/%s/o/%s" % (container_name, object_name)
-            )
+            self.json_connection.request("/storage/v1/b/%s/o/%s" % (container_name, object_name))
             return ObjectPermissions.READER
         except ProviderError as e:
             if e.http_code not in [httplib.FORBIDDEN, httplib.NOT_FOUND]:
@@ -331,8 +323,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
             user_id = self._get_user()
             if not user_id:
                 raise ValueError(
-                    "Must provide an entity. Driver is not using an "
-                    "authenticated user."
+                    "Must provide an entity. Driver is not using an " "authenticated user."
                 )
             else:
                 entity = "user-%s" % user_id
@@ -361,15 +352,11 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         """
         object_name = _clean_object_name(object_name)
         obj_perms = (
-            self._get_object_permissions(container_name, object_name)
-            if object_name
-            else None
+            self._get_object_permissions(container_name, object_name) if object_name else None
         )
         return self._get_container_permissions(container_name), obj_perms
 
-    def ex_set_permissions(
-        self, container_name, object_name=None, entity=None, role=None
-    ):
+    def ex_set_permissions(self, container_name, object_name=None, entity=None, role=None):
         """
         Set the permissions for an ACL entity on a container or an object.
 
@@ -409,8 +396,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
             user_id = self._get_user()
             if not user_id:
                 raise ValueError(
-                    "Must provide an entity. Driver is not using an "
-                    "authenticated user."
+                    "Must provide an entity. Driver is not using an " "authenticated user."
                 )
             else:
                 entity = "user-%s" % user_id
@@ -424,9 +410,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
             url, method="POST", data=json.dumps({"role": role, "entity": entity})
         )
 
-    def _get_content_length_from_headers(
-        self, headers: Dict[str, str]
-    ) -> Optional[int]:
+    def _get_content_length_from_headers(self, headers: Dict[str, str]) -> Optional[int]:
         # We need to override this since Google storage doesn't always return
         # Content-Length header.
         # See https://github.com/apache/libcloud/issues/1544 for details.

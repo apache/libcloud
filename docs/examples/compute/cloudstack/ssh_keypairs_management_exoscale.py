@@ -15,9 +15,7 @@ pprint(key_pair)
 # Import an existing public key from a file. If you have public key as a
 # string, you can use import_key_pair_from_string method instead.
 key_file_path = os.path.expanduser("~/.ssh/id_rsa_test.pub")
-key_pair = driver.import_key_pair_from_file(
-    name="test-key-pair-2", key_file_path=key_file_path
-)
+key_pair = driver.import_key_pair_from_file(name="test-key-pair-2", key_file_path=key_file_path)
 pprint(key_pair)
 
 # Retrieve information about previously created key pair

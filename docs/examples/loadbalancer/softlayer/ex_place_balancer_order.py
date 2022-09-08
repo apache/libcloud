@@ -1,5 +1,4 @@
 from libcloud.compute.base import NodeLocation
-
 from libcloud.loadbalancer.types import Provider
 from libcloud.loadbalancer.providers import get_driver
 

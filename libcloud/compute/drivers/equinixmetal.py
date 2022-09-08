@@ -21,17 +21,22 @@ try:  # Try to use asyncio to perform requests in parallel across projects
 except ImportError:  # If not available will do things serially
     asyncio = None
 
-import datetime
 import json
+import datetime
 
 from libcloud.utils.py3 import httplib
-
-from libcloud.common.base import ConnectionKey, JsonResponse
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
+)
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
-from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import KeyPair
-from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 EQUINIXMETAL_ENDPOINT = "api.equinix.com"
 
@@ -225,9 +230,7 @@ def _list_async(driver):
 
         return loop.run_until_complete(loc["_list_async"](loc["self"]))
 
-    def ex_list_nodes_for_project(
-        self, ex_project_id, include="plan", page=1, per_page=1000
-    ):
+    def ex_list_nodes_for_project(self, ex_project_id, include="plan", page=1, per_page=1000):
         params = {"include": include, "page": page, "per_page": per_page}
         data = self.connection.request(
             "/metal/v1/projects/%s/devices" % (ex_project_id), params=params
@@ -239,21 +242,17 @@ def _list_async(driver):
         return list(map(self._to_location, data))
 
     def list_images(self):
-        data = self.connection.request("/metal/v1/operating-systems").object[
-            "operating_systems"
-        ]
+        data = self.connection.request("/metal/v1/operating-systems").object["operating_systems"]
         return list(map(self._to_image, data))
 
     def list_sizes(self, ex_project_id=None):
         project_id = (
-            ex_project_id
-            or self.project_id
-            or (len(self.projects) and self.projects[0].id)
+            ex_project_id or self.project_id or (len(self.projects) and self.projects[0].id)
         )
         if project_id:
-            data = self.connection.request(
-                "/metal/v1/projects/%s/plans" % project_id
-            ).object["plans"]
+            data = self.connection.request("/metal/v1/projects/%s/plans" % project_id).object[
+                "plans"
+            ]
         else:  # This only works with personal tokens
             data = self.connection.request("/metal/v1/plans").object["plans"]
         return [self._to_size(size) for size in data if size.get("line") == "baremetal"]
@@ -341,9 +340,7 @@ def _list_async(driver):
         return res.status == httplib.OK
 
     def destroy_node(self, node):
-        res = self.connection.request(
-            "/metal/v1/devices/%s" % (node.id), method="DELETE"
-        )
+        res = self.connection.request("/metal/v1/devices/%s" % (node.id), method="DELETE")
         return res.status == httplib.OK
 
     def ex_start_node(self, node):
@@ -408,9 +405,7 @@ def _list_async(driver):
         :type       public_key: ``str``
         """
         params = {"label": name, "key": public_key}
-        data = self.connection.request(
-            "/metal/v1/ssh-keys", method="POST", params=params
-        ).object
+        data = self.connection.request("/metal/v1/ssh-keys", method="POST", params=params).object
         return self._to_key_pairs(data)
 
     def delete_key_pair(self, key):
@@ -421,9 +416,7 @@ def _list_async(driver):
         :type       key: :class:`KeyPair`
         """
         key_id = key.name
-        res = self.connection.request(
-            "/metal/v1/ssh-keys/%s" % (key_id), method="DELETE"
-        )
+        res = self.connection.request("/metal/v1/ssh-keys/%s" % (key_id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def _to_node(self, data):
@@ -630,9 +623,7 @@ def _list_async(driver):
             projects = [p.id for p in self.projects]
         retval = []
         for project in projects:
-            retval.extend(
-                self.ex_describe_all_addresses_for_project(project, only_associated)
-            )
+            retval.extend(self.ex_describe_all_addresses_for_project(project, only_associated))
         return retval
 
     def ex_describe_all_addresses_for_project(
@@ -692,9 +683,7 @@ def _list_async(driver):
         result = self.connection.request(path, params=params, method="POST").object
         return result
 
-    def ex_associate_address_with_node(
-        self, node, address, manageable=False, customdata=""
-    ):
+    def ex_associate_address_with_node(self, node, address, manageable=False, customdata=""):
         path = "/metal/v1/devices/%s/ips" % node.id
         params = {
             "address": address,
@@ -730,9 +719,7 @@ def _list_async(driver):
         # In case of Python3 use asyncio to perform requests in parallel
         return self.list_resources_async("volumes")
 
-    def ex_list_volumes_for_project(
-        self, ex_project_id, include="plan", page=1, per_page=1000
-    ):
+    def ex_list_volumes_for_project(self, ex_project_id, include="plan", page=1, per_page=1000):
         params = {"include": include, "page": page, "per_page": per_page}
         data = self.connection.request(
             "/metal/v1/projects/%s/storage" % (ex_project_id), params=params
@@ -840,14 +827,12 @@ def _list_async(driver):
             if not ex_attachment_id or ex_attachment_id in attachment["href"]:
                 attachment_id = attachment["href"].split("/")[-1]
                 if ex_node:
-                    node_id = self.ex_describe_attachment(attachment_id)["device"][
-                        "href"
-                    ].split("/")[-1]
+                    node_id = self.ex_describe_attachment(attachment_id)["device"]["href"].split(
+                        "/"
+                    )[-1]
                     if node_id != ex_node.id:
                         continue
-                path = "/metal/v1/storage/attachments/%s" % (
-                    ex_attachment_id or attachment_id
-                )
+                path = "/metal/v1/storage/attachments/%s" % (ex_attachment_id or attachment_id)
                 result = self.connection.request(path, method="DELETE")
                 success = success and result.status == httplib.NO_CONTENT
 

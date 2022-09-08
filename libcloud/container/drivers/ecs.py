@@ -18,15 +18,10 @@ try:
 except ImportError:
     import json
 
-from libcloud.container.base import (
-    ContainerDriver,
-    Container,
-    ContainerCluster,
-    ContainerImage,
-)
+from libcloud.common.aws import AWSJsonResponse, SignedAWSConnection
+from libcloud.container.base import Container, ContainerImage, ContainerDriver, ContainerCluster
 from libcloud.container.types import ContainerState
 from libcloud.container.utils.docker import RegistryClient
-from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
 
 __all__ = ["ElasticContainerDriver"]
 
@@ -250,9 +245,7 @@ class ElasticContainerDriver(ContainerDriver):
             headers=self._get_headers("RegisterTaskDefinition"),
         ).object
         if start:
-            return self.ex_start_task(response["taskDefinition"]["taskDefinitionArn"])[
-                0
-            ]
+            return self.ex_start_task(response["taskDefinition"]["taskDefinitionArn"])[0]
         else:
             return Container(
                 id=None,
@@ -260,9 +253,7 @@ class ElasticContainerDriver(ContainerDriver):
                 image=image,
                 state=ContainerState.RUNNING,
                 ip_addresses=[],
-                extra={
-                    "taskDefinitionArn": response["taskDefinition"]["taskDefinitionArn"]
-                },
+                extra={"taskDefinitionArn": response["taskDefinition"]["taskDefinitionArn"]},
                 driver=self.connection.driver,
             )
 

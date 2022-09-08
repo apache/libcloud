@@ -17,13 +17,10 @@
 Base classes for working with xmlrpc APIs
 """
 
-from typing import Dict
-from typing import Type
+from typing import Dict, Type
 
-from libcloud.utils.py3 import xmlrpclib
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, xmlrpclib
 from libcloud.common.base import Response, Connection
-
 from libcloud.common.types import LibcloudError
 
 

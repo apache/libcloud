@@ -13,21 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+import hashlib
 from typing import List
 
-import hashlib
-import time
+from libcloud.http import LibcloudConnection
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError
+from libcloud.utils.connection import get_response_object
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.connection import get_response_object
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.http import LibcloudConnection
 
 __all__ = ["OvhResponse", "OvhConnection"]
 
@@ -119,17 +119,14 @@ class OvhConnection(ConnectionUserAndKey):
             msg = (
                 "Your consumer key isn't validated, "
                 "go to '%(validationUrl)s' for valid it. After instantiate "
-                "your driver with \"ex_consumer_key='%(consumerKey)s'\"."
-                % consumer_key_json
+                "your driver with \"ex_consumer_key='%(consumerKey)s'\"." % consumer_key_json
             )
             raise OvhException(msg)
         super(OvhConnection, self).__init__(user_id, *args, **kwargs)
 
     def request_consumer_key(self, user_id):
         action = self.request_path + "/auth/credential"
-        data = json.dumps(
-            {"accessRules": DEFAULT_ACCESS_RULES, "redirection": "http://ovh.com"}
-        )
+        data = json.dumps({"accessRules": DEFAULT_ACCESS_RULES, "redirection": "http://ovh.com"})
         headers = {
             "Content-Type": "application/json",
             "X-Ovh-Application": user_id,
@@ -196,9 +193,7 @@ class OvhConnection(ConnectionUserAndKey):
         )
         return headers
 
-    def request(
-        self, action, params=None, data=None, headers=None, method="GET", raw=False
-    ):
+    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
         data = json.dumps(data) if data else None
         timestamp = self.get_timestamp()
         signature = self.make_signature(method, action, params, data, timestamp)

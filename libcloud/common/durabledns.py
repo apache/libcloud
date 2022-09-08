@@ -13,15 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
-
 import re
+from typing import Dict, List
 from xml.etree import ElementTree as ET  # noqa
 
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import XmlResponse
-
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 
 # API HOST to connect
 API_HOST = "durabledns.com"
@@ -42,9 +38,7 @@ def _schema_builder(urn_nid, method, attributes):
 
     rtype: :class:`Element`
     """
-    soap = ET.Element(
-        "soap:Body", {"xmlns:m": "https://durabledns.com/services/dns/%s" % method}
-    )
+    soap = ET.Element("soap:Body", {"xmlns:m": "https://durabledns.com/services/dns/%s" % method})
     urn = ET.SubElement(soap, "urn:%s:%s" % (urn_nid, method))
     # Attributes specification
     for attribute in attributes:
@@ -195,9 +189,7 @@ class DurableResponse(XmlResponse):
         # parse the xml_obj
         # handle errors
         if "Fault" in method_resp.tag:
-            fault = [
-                fault for fault in list(method_resp) if fault.tag == "faultstring"
-            ][0]
+            fault = [fault for fault in list(method_resp) if fault.tag == "faultstring"][0]
             error_dict["ERRORMESSAGE"] = fault.text.strip()
             error_dict["ERRORCODE"] = self.status
             errors.append(error_dict)
@@ -272,9 +264,7 @@ class DurableResponse(XmlResponse):
         if "deleteRecordResponse" in method_resp.tag:
             answer = list(method_resp)[0]
             if "Record does not exists" in answer.text.strip():
-                errors.append(
-                    {"ERRORMESSAGE": answer.text.strip(), "ERRORCODE": self.status}
-                )
+                errors.append({"ERRORMESSAGE": answer.text.strip(), "ERRORCODE": self.status})
         # parse response in createRecordResponse
         if "createRecordResponse" in method_resp.tag:
             answer = list(method_resp)[0]

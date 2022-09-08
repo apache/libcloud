@@ -13,25 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import os
-import string
 import sys
-import unittest
 import time
+import base64
+import string
 import datetime
+import unittest
+
+from integration.storage.base import Integration, random_string
 
 try:
     from azure import identity
-    from azure.mgmt import resource
-    from azure.mgmt import storage
-    from azure.mgmt.resource.resources import models as resource_models
+    from azure.mgmt import storage, resource
     from azure.mgmt.storage import models as storage_models
+    from azure.mgmt.resource.resources import models as resource_models
 except ImportError as e:
     print("Failed to import from azure module: %s" % (str(e)))
     identity = resource = storage = resource_models = storage_models = None
 
-from integration.storage.base import Integration, random_string
 
 # Prefix which is added to all the groups created by tests
 RESOURCE_GROUP_NAME_PREFIX = 'libclouditests'

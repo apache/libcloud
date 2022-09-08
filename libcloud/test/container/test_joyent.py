@@ -14,15 +14,9 @@
 # limitations under the License.
 
 from libcloud.test import unittest
-
-from libcloud.container.drivers.joyent import JoyentContainerDriver
 from libcloud.test.secrets import CONTAINER_PARAMS_DOCKER
-
-
-from libcloud.test.container.test_docker import (
-    DockerContainerDriverTestCase,
-    DockerMockHttp,
-)
+from libcloud.container.drivers.joyent import JoyentContainerDriver
+from libcloud.test.container.test_docker import DockerMockHttp, DockerContainerDriverTestCase
 
 
 class JoyentContainerDriverTestCase(DockerContainerDriverTestCase, unittest.TestCase):

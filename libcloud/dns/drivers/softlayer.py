@@ -17,12 +17,9 @@
 __all__ = ["SoftLayerDNSDriver"]
 
 
-from libcloud.common.softlayer import SoftLayerConnection
-from libcloud.common.softlayer import SoftLayerObjectDoesntExist
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.common.softlayer import SoftLayerConnection, SoftLayerObjectDoesntExist
 
 VALID_RECORD_EXTRA_PARAMS = ["priority", "ttl"]
 
@@ -49,12 +46,8 @@ class SoftLayerDNSDriver(DNSDriver):
     def create_zone(self, domain, ttl=None, extra=None):
         self.connection.set_context({"resource": "zone", "id": domain})
         data = {"name": domain, "resourceRecords": []}
-        response = self.connection.request(
-            "SoftLayer_Dns_Domain", "createObject", data
-        ).object
-        zone = Zone(
-            id=response["id"], domain=domain, type="master", ttl=3600, driver=self
-        )
+        response = self.connection.request("SoftLayer_Dns_Domain", "createObject", data).object
+        zone = Zone(id=response["id"], domain=domain, type="master", ttl=3600, driver=self)
         return zone
 
     def get_zone(self, zone_id):
@@ -70,18 +63,14 @@ class SoftLayerDNSDriver(DNSDriver):
     def delete_zone(self, zone):
         self.connection.set_context({"resource": "zone", "id": zone.id})
         try:
-            self.connection.request(
-                "SoftLayer_Dns_Domain", "deleteObject", id=zone.id
-            ).object
+            self.connection.request("SoftLayer_Dns_Domain", "deleteObject", id=zone.id).object
         except SoftLayerObjectDoesntExist:
             raise ZoneDoesNotExistError(value="", driver=self, zone_id=zone.id)
         else:
             return True
 
     def iterate_zones(self):
-        zones_list = self.connection.request(
-            "SoftLayer_Dns_Domain", "getByDomainName", "."
-        ).object
+        zones_list = self.connection.request("SoftLayer_Dns_Domain", "getByDomainName", ".").object
         for item in zones_list:
             yield self._to_zone(item)
 
@@ -176,9 +165,7 @@ class SoftLayerDNSDriver(DNSDriver):
 
     def _to_zone(self, item):
         ttl = item.get("ttl", 3600)
-        zone = Zone(
-            id=item["id"], domain=item["name"], type="master", ttl=ttl, driver=self
-        )
+        zone = Zone(id=item["id"], domain=item["name"], type="master", ttl=ttl, driver=self)
         return zone
 
     def _to_record(self, item, zone=None):

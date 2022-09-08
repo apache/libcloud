@@ -10,6 +10,4 @@ credentials = {
 }
 
 ComputeEngine = get_driver(Provider.GCE)
-driver = ComputeEngine(
-    "your_service_account_email", credentials, project="your_project_id"
-)
+driver = ComputeEngine("your_service_account_email", credentials, project="your_project_id")

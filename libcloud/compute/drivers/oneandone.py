@@ -16,23 +16,22 @@
 1&1 Cloud Server Compute driver
 """
 import json
+from time import sleep
 
-from libcloud.compute.providers import Provider
+from libcloud.utils.py3 import httplib
 from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import (
+    Node,
     NodeSize,
     NodeImage,
+    NodeDriver,
     NodeLocation,
-    Node,
-    NodeAuthPassword,
     NodeAuthSSHKey,
+    NodeAuthPassword,
 )
-from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState
-from libcloud.utils.py3 import httplib
-from libcloud.compute.base import NodeDriver
-
-from time import sleep
+from libcloud.compute.providers import Provider
 
 API_HOST = "cloudpanel-api.1and1.com"
 API_VERSION = "/v1/"
@@ -92,9 +91,7 @@ class OneAndOneConnection(ConnectionKey):
         headers["Content-Type"] = "application/json"
         return headers
 
-    def request(
-        self, action, params=None, data=None, headers=None, method="GET", raw=False
-    ):
+    def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
         """
         Some requests will use the href attribute directly.
         If this is not the case, then we should formulate the
@@ -180,9 +177,7 @@ class OneAndOneNodeDriver(NodeDriver):
         return self._to_images(response.object, image_type)
 
     def get_image(self, image_id):
-        response = self.connection.request(
-            action="server_appliances/%s" % image_id, method="GET"
-        )
+        response = self.connection.request(action="server_appliances/%s" % image_id, method="GET")
         return self._to_image(response.object)
 
     """
@@ -362,9 +357,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if description is not None:
             body["description"] = description
 
-        response = self.connection.request(
-            action="servers/%s" % server_id, data=body, method="PUT"
-        )
+        response = self.connection.request(action="servers/%s" % server_id, data=body, method="PUT")
 
         return self._to_node(response.object)
 
@@ -378,9 +371,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: Server's hardware
         :rtype: ``dict``
         """
-        response = self.connection.request(
-            action="servers/%s/hardware" % server_id, method="GET"
-        )
+        response = self.connection.request(action="servers/%s/hardware" % server_id, method="GET")
         return response.object
 
     """
@@ -538,9 +529,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype:     :class: `Node`
         """
 
-        response = self.connection.request(
-            action="servers/%s" % (server_id), method="GET"
-        )
+        response = self.connection.request(action="servers/%s" % (server_id), method="GET")
 
         return self._to_node(response.object)
 
@@ -580,9 +569,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
 
-        response = self.connection.request(
-            action="servers/%s/image" % server_id, method="GET"
-        )
+        response = self.connection.request(action="servers/%s/image" % server_id, method="GET")
         return response.object
 
     def ex_reinstall_server_image(self, server_id, image_id, password=None):
@@ -627,9 +614,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: List of server IP objects
         :rtype: ``list`` of ``dict``
         """
-        response = self.connection.request(
-            action="servers/%s/ips" % server_id, method="GET"
-        )
+        response = self.connection.request(action="servers/%s/ips" % server_id, method="GET")
 
         return response.object
 
@@ -801,9 +786,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: 'dict'
         """
 
-        response = self.connection.request(
-            action="firewall_policy/%s" % fw_id, method="GET"
-        )
+        response = self.connection.request(action="firewall_policy/%s" % fw_id, method="GET")
 
         return response.object
 
@@ -814,9 +797,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :param fw_id: ID of the Firewall
         :return: 'dict'
         """
-        response = self.connection.request(
-            action="firewall_policy/%s" % fw_id, method="DELETE"
-        )
+        response = self.connection.request(action="firewall_policy/%s" % fw_id, method="DELETE")
 
         return response.object
 
@@ -838,15 +819,11 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets a shared storage
         :return: 'dict'
         """
-        response = self.connection.request(
-            action="shared_storages/%s" % (storage_id), method="GET"
-        )
+        response = self.connection.request(action="shared_storages/%s" % (storage_id), method="GET")
 
         return response.object
 
-    def ex_create_shared_storage(
-        self, name, size, datacenter_id=None, description=None
-    ):
+    def ex_create_shared_storage(self, name, size, datacenter_id=None, description=None):
         """
         Creates a shared storage
         :param name: Name of the storage
@@ -861,9 +838,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if description is not None:
             body["description"] = description
 
-        response = self.connection.request(
-            action="shared_storages", data=body, method="POST"
-        )
+        response = self.connection.request(action="shared_storages", data=body, method="POST")
 
         return response.object
 
@@ -1012,9 +987,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if description is not None:
             body["description"] = description
 
-        response = self.connection.request(
-            action="load_balancers", data=body, method="POST"
-        )
+        response = self.connection.request(action="load_balancers", data=body, method="POST")
 
         return response.object
 
@@ -1096,9 +1069,7 @@ class OneAndOneNodeDriver(NodeDriver):
 
         return response.object
 
-    def ex_add_load_balancer_rule(
-        self, lb_id, protocol, port_balancer, port_server, source=None
-    ):
+    def ex_add_load_balancer_rule(self, lb_id, protocol, port_balancer, port_server, source=None):
         """
         Adds a rule to load balancer
 
@@ -1179,9 +1150,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: Instance of load balancer
         :rtype: ``dict``
         """
-        response = self.connection.request(
-            action="load_balancers/%s" % lb_id, method="GET"
-        )
+        response = self.connection.request(action="load_balancers/%s" % lb_id, method="GET")
 
         return response.object
 
@@ -1230,9 +1199,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: Lists of rules
         :rtype: ``list`` of ``dict``
         """
-        response = self.connection.request(
-            action="load_balancers/%s/rules" % lb_id, method="GET"
-        )
+        response = self.connection.request(action="load_balancers/%s/rules" % lb_id, method="GET")
 
         return response.object
 
@@ -1268,9 +1235,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: Instance of load balancer
         :rtype: ``dict``
         """
-        response = self.connection.request(
-            action="load_balancers/%s" % lb_id, method="DELETE"
-        )
+        response = self.connection.request(action="load_balancers/%s" % lb_id, method="DELETE")
 
         return response.object
 
@@ -1312,9 +1277,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if datacenter_id is not None:
             body["datacenter_id"] = datacenter_id
 
-        response = self.connection.request(
-            action="public_ips", data=body, method="POST"
-        )
+        response = self.connection.request(action="public_ips", data=body, method="POST")
 
         return response.object
 
@@ -1342,9 +1305,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: Instance of IP Address
         :rtype: ``dict``
         """
-        response = self.connection.request(
-            action="public_ips/%s" % ip_id, method="DELETE"
-        )
+        response = self.connection.request(action="public_ips/%s" % ip_id, method="DELETE")
 
         return response
 
@@ -1425,9 +1386,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if subnet_mask is not None:
             body["subnet_maks"] = subnet_mask
 
-        response = self.connection.request(
-            action="private_networks", data=body, method="POST"
-        )
+        response = self.connection.request(action="private_networks", data=body, method="POST")
         return response.object
 
     def ex_delete_private_network(self, network_id):
@@ -1440,9 +1399,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return: Instance of the private network being deleted
         :rtype: ``dict``
         """
-        response = self.connection.request(
-            action="private_networks" % network_id, method="DELETE"
-        )
+        response = self.connection.request(action="private_networks" % network_id, method="DELETE")
 
         return response.object
 
@@ -1489,9 +1446,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if subnet_mask is not None:
             body["subnet_maks"] = subnet_mask
 
-        response = self.connection.request(
-            action="private_networks/%s", data=body, method="PUT"
-        )
+        response = self.connection.request(action="private_networks/%s", data=body, method="PUT")
 
         return response.object
 
@@ -1618,9 +1573,7 @@ class OneAndOneNodeDriver(NodeDriver):
         if agent is not None:
             body["agent"] = agent
 
-        response = self.connection.request(
-            action="monitoring_policies", data=body, method="POST"
-        )
+        response = self.connection.request(action="monitoring_policies", data=body, method="POST")
         return response.object
 
     def ex_delete_monitoring_policy(self, policy_id):
@@ -2042,8 +1995,6 @@ class OneAndOneNodeDriver(NodeDriver):
                 raise Exception("Retries count reached")
 
     def _list_fixed_instances(self):
-        response = self.connection.request(
-            action="/servers/fixed_instance_sizes", method="GET"
-        )
+        response = self.connection.request(action="/servers/fixed_instance_sizes", method="GET")
 
         return response.object

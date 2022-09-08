@@ -17,23 +17,23 @@ from __future__ import with_statement
 
 import copy
 
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import RecordError
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    RecordError,
     ZoneDoesNotExistError,
-    RecordDoesNotExistError,
     ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
     RecordAlreadyExistsError,
 )
-from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.common.gandi_live import (
-    ResourceNotFoundError,
-    ResourceConflictError,
     GandiLiveResponse,
-    GandiLiveConnection,
     BaseGandiLiveDriver,
+    GandiLiveConnection,
+    ResourceConflictError,
+    ResourceNotFoundError,
 )
-
 
 __all__ = [
     "GandiLiveDNSDriver",
@@ -104,9 +104,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         try:
             zone = self.connection.request(action=action, method="GET")
         except ResourceNotFoundError:
-            raise ZoneDoesNotExistError(
-                value="", driver=self.connection.driver, zone_id=zone_id
-            )
+            raise ZoneDoesNotExistError(value="", driver=self.connection.driver, zone_id=zone_id)
         return self._to_zone(zone.object)
 
     """
@@ -130,9 +128,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                 action="%s/zones" % API_BASE, method="POST", data=zone_data
             )
         except ResourceConflictError:
-            raise ZoneAlreadyExistsError(
-                value="", driver=self.connection.driver, zone_id=zone_name
-            )
+            raise ZoneAlreadyExistsError(value="", driver=self.connection.driver, zone_id=zone_name)
         new_zone_uuid = new_zone.headers["location"].split("/")[-1]
 
         self.ex_switch_domain_gandi_zone(domain, new_zone_uuid)
@@ -228,8 +224,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             for other_record in other_records:
                 if record.type == RecordType.MX:
                     rvalue.append(
-                        "%s %s"
-                        % (other_record["extra"]["priority"], other_record["data"])
+                        "%s %s" % (other_record["extra"]["priority"], other_record["data"])
                     )
                 else:
                     rvalue.append(other_record["data"])
@@ -278,9 +273,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def export_zone_to_bind_format(self, zone):
         action = "%s/domains/%s/records" % (API_BASE, zone.id)
         headers = {"Accept": "text/plain"}
-        resp = self.connection.request(
-            action=action, method="GET", headers=headers, raw=True
-        )
+        resp = self.connection.request(action=action, method="GET", headers=headers, raw=True)
         return resp.body
 
     # There is nothing you can update about a domain; you can update zones'
@@ -328,9 +321,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
 
     def ex_delete_gandi_zone(self, zone_uuid):
-        self.connection.request(
-            action="%s/zones/%s" % (API_BASE, zone_uuid), method="DELETE"
-        )
+        self.connection.request(action="%s/zones/%s" % (API_BASE, zone_uuid), method="DELETE")
         return True
 
     """
@@ -486,10 +477,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                         record_id=record_id,
                     )
                 if type == "MX" or type == RecordType.MX:
-                    if (
-                        other_value["extra"] is None
-                        or "priority" not in other_value["extra"]
-                    ):
+                    if other_value["extra"] is None or "priority" not in other_value["extra"]:
                         raise RecordError(
                             "MX record must have a priority",
                             driver=self,
@@ -501,6 +489,4 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                     "TTL must be at least 300 seconds", driver=self, record_id=record_id
                 )
             if extra["ttl"] > TTL_MAX:
-                raise RecordError(
-                    "TTL must not exceed 30 days", driver=self, record_id=record_id
-                )
+                raise RecordError("TTL must not exceed 30 days", driver=self, record_id=record_id)

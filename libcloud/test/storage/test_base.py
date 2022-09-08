@@ -13,26 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import errno
 import hashlib
-import sys
 from io import BytesIO
-
 from unittest import mock
 from unittest.mock import Mock
 
+from libcloud.test import MockHttp, BodyStream, unittest
+from libcloud.utils.py3 import PY2, StringIO, b, httplib, assertRaisesRegex
+from libcloud.storage.base import DEFAULT_CONTENT_TYPE, StorageDriver
 from libcloud.common.exceptions import RateLimitReachedError
-from libcloud.storage.base import DEFAULT_CONTENT_TYPE
-from libcloud.storage.base import StorageDriver
-from libcloud.test import BodyStream
-from libcloud.test import MockHttp
-from libcloud.test import unittest
 from libcloud.test.storage.base import BaseRangeDownloadMockHttp
-from libcloud.utils.py3 import PY2
-from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import assertRaisesRegex
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
 
 
 class BaseMockRawResponse(MockHttp):
@@ -323,9 +315,7 @@ class BaseStorageTests(unittest.TestCase):
             else:
                 raise RateLimitReachedError()
 
-        self.driver1.connection.connection.session.send = Mock(
-            side_effect=succeed_on_second
-        )
+        self.driver1.connection.connection.session.send = Mock(side_effect=succeed_on_second)
         uploaded_object = self.driver1._upload_object(
             object_name="some name",
             content_type="something",

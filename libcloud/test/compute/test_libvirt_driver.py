@@ -14,14 +14,11 @@
 # limitations under the License.
 
 import sys
-
 from unittest import mock
 
-from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver
-from libcloud.compute.drivers.libvirt_driver import have_libvirt
-from libcloud.utils.py3 import PY3
-
 from libcloud.test import unittest
+from libcloud.utils.py3 import PY3
+from libcloud.compute.drivers.libvirt_driver import LibvirtNodeDriver, have_libvirt
 
 __all__ = ["LibvirtNodeDriverTestCase"]
 

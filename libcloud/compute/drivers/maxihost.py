@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import re
+import json
 
-from libcloud.compute.base import Node, NodeDriver, NodeLocation
-from libcloud.compute.base import NodeSize, NodeImage
-from libcloud.compute.base import KeyPair
-from libcloud.common.maxihost import MaxihostConnection
-from libcloud.compute.types import Provider, NodeState
-from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.py3 import httplib
-
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+from libcloud.common.maxihost import MaxihostConnection
+from libcloud.common.exceptions import BaseHTTPError
 
 __all__ = ["MaxihostNodeDriver"]
 
@@ -69,9 +66,7 @@ class MaxihostNodeDriver(NodeDriver):
         Start a node.
         """
         params = {"type": "power_on"}
-        res = self.connection.request(
-            "/devices/%s/actions" % node.id, params=params, method="PUT"
-        )
+        res = self.connection.request("/devices/%s/actions" % node.id, params=params, method="PUT")
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -80,9 +75,7 @@ class MaxihostNodeDriver(NodeDriver):
         Stop a node.
         """
         params = {"type": "power_off"}
-        res = self.connection.request(
-            "/devices/%s/actions" % node.id, params=params, method="PUT"
-        )
+        res = self.connection.request("/devices/%s/actions" % node.id, params=params, method="PUT")
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -99,9 +92,7 @@ class MaxihostNodeDriver(NodeDriver):
         Reboot a node.
         """
         params = {"type": "power_cycle"}
-        res = self.connection.request(
-            "/devices/%s/actions" % node.id, params=params, method="PUT"
-        )
+        res = self.connection.request("/devices/%s/actions" % node.id, params=params, method="PUT")
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -234,9 +225,7 @@ class MaxihostNodeDriver(NodeDriver):
         :type       public_key: ``str``
         """
         attr = {"name": name, "public_key": public_key}
-        res = self.connection.request(
-            "/account/keys", method="POST", data=json.dumps(attr)
-        )
+        res = self.connection.request("/account/keys", method="POST", data=json.dumps(attr))
 
         data = res.object["ssh_key"]
 

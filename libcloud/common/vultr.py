@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.base import VolumeSnapshot
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.compute.base import VolumeSnapshot
 
 __all__ = [
     "API_HOST",
@@ -48,8 +48,7 @@ class VultrResponse(JsonResponse):
         + " and matches your assigned key.",
         405: "Invalid HTTP method. Check that the method (POST|GET) matches"
         + " what the documentation indicates.",
-        412: "Request failed. Check the response body for a more detailed"
-        + " description.",
+        412: "Request failed. Check the response body for a more detailed" + " description.",
         500: "Internal server error. Try again at a later time.",
         503: "Rate limit hit. API requests are limited to an average of 1/s."
         + " Try your request again later.",

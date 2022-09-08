@@ -16,6 +16,4 @@ image = hub.get_image("ubuntu", "latest")
 for cluster in conn.list_clusters():
     print(cluster.name)
     if cluster.name == "default":
-        container = conn.deploy_container(
-            cluster=cluster, name="my-simple-app", image=image
-        )
+        container = conn.deploy_container(cluster=cluster, name="my-simple-app", image=image)

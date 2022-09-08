@@ -1,0 +1,3 @@
+rstcheck==6.0.0; python_version >= '3.7'
+fasteners
+sphinx==5.1.1

@@ -12,23 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 import os
-import pytest
-from libcloud.utils.py3 import httplib
+import sys
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.nttcis import NttCisVIPNode, NttCisPool
-from libcloud.common.nttcis import NttCisPoolMember
-from libcloud.common.nttcis import NttCisAPIException
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.nttcis import NttCisLBDriver
-from libcloud.loadbalancer.types import State
+import pytest
 
 from libcloud.test import MockHttp, unittest
-from libcloud.test.file_fixtures import LoadBalancerFileFixtures
-
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import NTTCIS_PARAMS
+from libcloud.common.nttcis import NttCisPool, NttCisVIPNode, NttCisPoolMember, NttCisAPIException
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
+from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.nttcis import NttCisLBDriver
 
 
 @pytest.fixture()
@@ -502,9 +499,7 @@ def test_ex_destroy_pool_member_with_node(driver):
 
 
 def test_ex_get_default_health_monitors(driver):
-    monitors = driver.ex_get_default_health_monitors(
-        "4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"
-    )
+    monitors = driver.ex_get_default_health_monitors("4d360b1f-bc2c-4ab7-9884-1f03ba2768f7")
     assert len(monitors) == 6
     assert monitors[0].id == "01683574-d487-11e4-811f-005056806999"
     assert monitors[0].name == "CCDEFAULT.Http"
@@ -513,9 +508,7 @@ def test_ex_get_default_health_monitors(driver):
 
 
 def test_ex_get_default_persistence_profiles(driver):
-    profiles = driver.ex_get_default_persistence_profiles(
-        "4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"
-    )
+    profiles = driver.ex_get_default_persistence_profiles("4d360b1f-bc2c-4ab7-9884-1f03ba2768f7")
     assert len(profiles) == 4
     assert profiles[0].id == "a34ca024-f3db-11e4-b010-005056806999"
     assert profiles[0].name == "CCDEFAULT.Cookie"
@@ -565,8 +558,7 @@ def test_ex_insert_ssl_certificate_FAIL(driver):
             net_dom_id, "denis", cert, key, description="test cert"
         )
     assert (
-        excinfo.value.msg
-        == "Data Center EU6 requires key length must be one of 512, 1024, 2048."
+        excinfo.value.msg == "Data Center EU6 requires key length must be one of 512, 1024, 2048."
     )
 
 
@@ -596,9 +588,7 @@ def test_edit_ssl_offload_profile(driver):
     profile_name = "ssl_offload"
     datacenter_id = "EU6"
     NttCisMockHttp.type = "LIST"
-    profile = driver.ex_list_ssl_offload_profiles(
-        name=profile_name, datacenter_id=datacenter_id
-    )[0]
+    profile = driver.ex_list_ssl_offload_profiles(name=profile_name, datacenter_id=datacenter_id)[0]
     NttCisMockHttp.type = None
     result = driver.ex_edit_ssl_offload_profile(
         profile.id,
@@ -679,9 +669,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml"
-        )
+        body = self.fixtures.load("networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember(
@@ -756,9 +744,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml"
-        )
+        body = self.fixtures.load("networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode(

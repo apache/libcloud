@@ -16,7 +16,6 @@
 import json
 
 from bottle import route
-
 from integration.compute.api.data import NODES, REPORT_DATA
 from integration.compute.api.util import secure
 

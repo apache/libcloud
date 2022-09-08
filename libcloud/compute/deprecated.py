@@ -39,17 +39,14 @@ DEPRECATED_DRIVERS = {
     },
     Provider.HPCLOUD: {
         "reason": "HP Helion Public Cloud was shut down in January 2016.",
-        "url": "http://libcloud.apache.org/blog/"
-        "2016/02/16/new-drivers-deprecated-drivers.html",
+        "url": "http://libcloud.apache.org/blog/" "2016/02/16/new-drivers-deprecated-drivers.html",
     },
     Provider.CLOUDFRAMES: {
         "reason": "The CloudFrames Provider is no longer supported",
-        "url": "http://libcloud.apache.org/blog/2016/02/16/new-drivers-"
-        "deprecated-drivers.html",
+        "url": "http://libcloud.apache.org/blog/2016/02/16/new-drivers-" "deprecated-drivers.html",
     },
     Provider.RUNABOVE: {
-        "reason": "The RunAbove compute is no longer supported. "
-        "Use the OVH one instead.",
+        "reason": "The RunAbove compute is no longer supported. " "Use the OVH one instead.",
         "url": "https://www.runabove.com/cloud-instance.xml",
     },
 }

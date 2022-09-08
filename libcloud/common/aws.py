@@ -13,31 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
-from typing import Optional
-from typing import Type
-
-import base64
-from datetime import datetime
-import hashlib
 import hmac
 import time
+import base64
+import hashlib
+from typing import Dict, Type, Optional
 from hashlib import sha256
+from datetime import datetime
+
+from libcloud.utils.py3 import ET, b, httplib, urlquote, basestring, _real_unicode
+from libcloud.utils.xml import findall_ignore_namespace, findtext_ignore_namespace
+from libcloud.common.base import BaseDriver, XmlResponse, JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import _real_unicode
-from libcloud.utils.py3 import basestring
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.utils.py3 import b, httplib, urlquote
-from libcloud.utils.xml import findall_ignore_namespace
-from libcloud.utils.xml import findtext_ignore_namespace
 
 __all__ = [
     "AWSBaseResponse",
@@ -80,9 +73,7 @@ class AWSBaseResponse(XmlResponse):
         :return: ``tuple`` with two elements: (code, message)
         :rtype: ``tuple``
         """
-        code = findtext_ignore_namespace(
-            element=element, xpath="Code", namespace=self.namespace
-        )
+        code = findtext_ignore_namespace(element=element, xpath="Code", namespace=self.namespace)
         message = findtext_ignore_namespace(
             element=element, xpath="Message", namespace=self.namespace
         )
@@ -290,9 +281,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
         return params, headers
 
-    def _get_authorization_v4_header(
-        self, params, headers, dt, method="GET", path="/", data=None
-    ):
+    def _get_authorization_v4_header(self, params, headers, dt, method="GET", path="/", data=None):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
         signature = self._get_signature(
@@ -455,9 +444,7 @@ class SignedAWSConnection(AWSTokenConnection):
         )
 
     def add_default_params(self, params):
-        params = self.signer.get_request_params(
-            params=params, method=self.method, path=self.action
-        )
+        params = self.signer.get_request_params(params=params, method=self.method, path=self.action)
 
         # Verify that params only contain simple types and no nested
         # dictionaries.

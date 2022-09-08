@@ -15,13 +15,13 @@
 import sys
 import unittest
 
-from libcloud.dns.drivers.onapp import OnAppDNSDriver
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.dns.types import RecordType
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_ONAPP
 from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import DNS_PARAMS_ONAPP
 from libcloud.common.exceptions import BaseHTTPError
+from libcloud.dns.drivers.onapp import OnAppDNSDriver
+from libcloud.test.file_fixtures import DNSFileFixtures
 
 
 class OnAppDNSTests(LibcloudTestCase):
@@ -55,18 +55,14 @@ class OnAppDNSTests(LibcloudTestCase):
         self.assertEqual(zone1.type, "master")
         self.assertEqual(zone1.domain, "example.com")
         self.assertEqual(zone1.ttl, 1200)
-        self.assertHasKeys(
-            zone1.extra, ["user_id", "cdn_reference", "created_at", "updated_at"]
-        )
+        self.assertHasKeys(zone1.extra, ["user_id", "cdn_reference", "created_at", "updated_at"])
 
         zone2 = zones[1]
         self.assertEqual(zone2.id, "2")
         self.assertEqual(zone2.type, "master")
         self.assertEqual(zone2.domain, "example.net")
         self.assertEqual(zone2.ttl, 1200)
-        self.assertHasKeys(
-            zone2.extra, ["user_id", "cdn_reference", "created_at", "updated_at"]
-        )
+        self.assertHasKeys(zone2.extra, ["user_id", "cdn_reference", "created_at", "updated_at"])
 
     def test_get_zone_success(self):
         zone1 = self.driver.get_zone(zone_id="1")
@@ -74,9 +70,7 @@ class OnAppDNSTests(LibcloudTestCase):
         self.assertEqual(zone1.type, "master")
         self.assertEqual(zone1.domain, "example.com")
         self.assertEqual(zone1.ttl, 1200)
-        self.assertHasKeys(
-            zone1.extra, ["user_id", "cdn_reference", "created_at", "updated_at"]
-        )
+        self.assertHasKeys(zone1.extra, ["user_id", "cdn_reference", "created_at", "updated_at"])
 
     def test_get_zone_not_found(self):
         OnAppDNSMockHttp.type = "NOT_FOUND"
@@ -92,9 +86,7 @@ class OnAppDNSTests(LibcloudTestCase):
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.ttl, 1200)
         self.assertEqual(zone.type, "master")
-        self.assertHasKeys(
-            zone.extra, ["user_id", "cdn_reference", "created_at", "updated_at"]
-        )
+        self.assertHasKeys(zone.extra, ["user_id", "cdn_reference", "created_at", "updated_at"])
 
     def test_delete_zone(self):
         zone = self.driver.get_zone(zone_id="1")

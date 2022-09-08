@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.gandi import BaseObject
+from libcloud.common.types import LibcloudError, InvalidCredsError
 
 __all__ = [
     "API_HOST",
@@ -273,8 +273,7 @@ class LinodeDisk(BaseObject):
 
     def __repr__(self):
         return (
-            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s,"
-            " filesystem=%s, driver=%s ...>"
+            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s," " filesystem=%s, driver=%s ...>"
         ) % (
             self.id,
             self.name,

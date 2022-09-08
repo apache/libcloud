@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeState
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.types import Provider
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeState, NodeDriver
+from libcloud.compute.types import Provider
 
 
 class GridspotAPIException(Exception):

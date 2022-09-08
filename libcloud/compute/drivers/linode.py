@@ -29,38 +29,42 @@ Linode(R) is a registered trademark of Linode, LLC.
 
 import os
 import re
+import binascii
+import itertools
+from copy import copy
+from datetime import datetime
+
+from libcloud.utils.py3 import PY3, httplib
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    NodeAuthSSHKey,
+    NodeAuthPassword,
+)
+from libcloud.common.linode import (
+    API_ROOT,
+    LINODE_PLAN_IDS,
+    DEFAULT_API_VERSION,
+    LINODE_DISK_FILESYSTEMS,
+    LINODE_DISK_FILESYSTEMS_V4,
+    LinodeDisk,
+    LinodeException,
+    LinodeIPAddress,
+    LinodeConnection,
+    LinodeExceptionV4,
+    LinodeConnectionV4,
+)
+from libcloud.compute.types import Provider, NodeState, StorageVolumeState
+from libcloud.utils.networking import is_private_subnet
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-import itertools
-import binascii
-from datetime import datetime
-
-from copy import copy
-
-from libcloud.utils.py3 import PY3, httplib
-from libcloud.utils.networking import is_private_subnet
-
-from libcloud.common.linode import (
-    API_ROOT,
-    LinodeException,
-    LinodeConnection,
-    LinodeConnectionV4,
-    LinodeDisk,
-    LinodeIPAddress,
-    LinodeExceptionV4,
-    LINODE_PLAN_IDS,
-    LINODE_DISK_FILESYSTEMS,
-    LINODE_DISK_FILESYSTEMS_V4,
-    DEFAULT_API_VERSION,
-)
-from libcloud.compute.types import Provider, NodeState, StorageVolumeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.base import NodeImage, StorageVolume
 
 
 class LinodeNodeDriver(NodeDriver):
@@ -794,11 +798,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         for ip_list in ip_answers:
             for ip in ip_list:
                 lid = ip["LINODEID"]
-                which = (
-                    nodes[lid].public_ips
-                    if ip["ISPUBLIC"] == 1
-                    else nodes[lid].private_ips
-                )
+                which = nodes[lid].public_ips if ip["ISPUBLIC"] == 1 else nodes[lid].private_ips
                 which.append(ip["IPADDRESS"])
         return list(nodes.values())
 
@@ -887,9 +887,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request(
-            "/v4/linode/instances/%s/boot" % node.id, method="POST"
-        )
+        response = self.connection.request("/v4/linode/instances/%s/boot" % node.id, method="POST")
         return response.status == httplib.OK
 
     def ex_start_node(self, node):
@@ -931,9 +929,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request(
-            "/v4/linode/instances/%s" % node.id, method="DELETE"
-        )
+        response = self.connection.request("/v4/linode/instances/%s" % node.id, method="DELETE")
         return response.status == httplib.OK
 
     def reboot_node(self, node):
@@ -1026,9 +1022,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         if image is not None:
             if root_pass is None:
-                raise LinodeExceptionV4(
-                    "root password required " "when providing an image"
-                )
+                raise LinodeExceptionV4("root password required " "when providing an image")
             attr["image"] = image.id
             attr["root_pass"] = root_pass
 
@@ -1074,9 +1068,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        data = self._paginated_request(
-            "/v4/linode/instances/%s/disks" % node.id, "data"
-        )
+        data = self._paginated_request("/v4/linode/instances/%s/disks" % node.id, "data")
 
         return [self._to_disk(obj) for obj in data]
 
@@ -1149,9 +1141,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
                 raise LinodeExceptionV4("Invalid image instance")
             # when an image is set, root pass must be set as well
             if ex_root_pass is None:
-                raise LinodeExceptionV4(
-                    "root_pass is required when " "deploying an image"
-                )
+                raise LinodeExceptionV4("root_pass is required when " "deploying an image")
             attr["image"] = image.id
             attr["root_pass"] = ex_root_pass
 
@@ -1187,9 +1177,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             raise LinodeExceptionV4("Invalid disk instance")
 
         if node.state != self.LINODE_STATES["stopped"]:
-            raise LinodeExceptionV4(
-                "Node needs to be stopped" " before disk is destroyed"
-            )
+            raise LinodeExceptionV4("Node needs to be stopped" " before disk is destroyed")
 
         response = self.connection.request(
             "/v4/linode/instances/%s/disks/%s" % (node.id, disk.id), method="DELETE"
@@ -1309,9 +1297,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if volume.extra["linode_id"] is None:
             raise LinodeExceptionV4("Volume is already detached")
 
-        response = self.connection.request(
-            "/v4/volumes/%s/detach" % volume.id, method="POST"
-        )
+        response = self.connection.request("/v4/volumes/%s/detach" % volume.id, method="POST")
         return response.status == httplib.OK
 
     def destroy_volume(self, volume):
@@ -1326,12 +1312,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             raise LinodeExceptionV4("Invalid volume instance")
 
         if volume.extra["linode_id"] is not None:
-            raise LinodeExceptionV4(
-                "Volume must be detached" " before it can be deleted."
-            )
-        response = self.connection.request(
-            "/v4/volumes/%s" % volume.id, method="DELETE"
-        )
+            raise LinodeExceptionV4("Volume must be detached" " before it can be deleted.")
+        response = self.connection.request("/v4/volumes/%s" % volume.id, method="DELETE")
         return response.status == httplib.OK
 
     def ex_resize_volume(self, volume, size):
@@ -1458,9 +1440,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        response = self.connection.request(
-            "/v4/linode/instances/%s/ips" % node.id
-        ).object
+        response = self.connection.request("/v4/linode/instances/%s/ips" % node.id).object
         return self._to_addresses(response)
 
     def ex_allocate_private_address(self, node, address_type="ipv4"):

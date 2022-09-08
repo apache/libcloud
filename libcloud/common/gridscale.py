@@ -22,12 +22,10 @@ try:
 except Exception:
     import json  # type: ignore
 
-from libcloud.common.base import BaseDriver, PollingConnection
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState
-from libcloud.utils.py3 import httplib
 
 NODE_STATE_MAP = {
     "ACTIVE": NodeState.RUNNING,
@@ -89,9 +87,7 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
 
     def _poll_request_initial(self, **kwargs):
         if self.async_request_counter == 0:
-            self.poll_response_initial = super(GridscaleConnection, self).request(
-                **kwargs
-            )
+            self.poll_response_initial = super(GridscaleConnection, self).request(**kwargs)
             r = self.poll_response_initial
             self.async_request_counter += 1
         else:

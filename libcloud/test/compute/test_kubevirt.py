@@ -15,15 +15,12 @@
 
 import sys
 
-from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver
-from libcloud.compute.types import NodeState
-
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
+from libcloud.compute.types import NodeState
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver
+from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 
 
 class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
@@ -162,18 +159,10 @@ class KubeVirtMockHttp(MockHttp):
         data_stop = {"spec": {"running": False}}
         data_start = {"spec": {"running": True}}
 
-        if (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_start
-        ):
+        if method == "PATCH" and headers["Content-Type"] == header and body == data_start:
             body = self.fixtures.load("start_testvm.json")
 
-        elif (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_stop
-        ):
+        elif method == "PATCH" and headers["Content-Type"] == header and body == data_stop:
             body = self.fixtures.load("stop_testvm.json")
 
         else:
@@ -188,18 +177,10 @@ class KubeVirtMockHttp(MockHttp):
         data_stop = {"spec": {"running": False}}
         data_start = {"spec": {"running": True}}
 
-        if (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_start
-        ):
+        if method == "PATCH" and headers["Content-Type"] == header and body == data_start:
             body = self.fixtures.load("start_vm_cirros.json")
 
-        elif (
-            method == "PATCH"
-            and headers["Content-Type"] == header
-            and body == data_stop
-        ):
+        elif method == "PATCH" and headers["Content-Type"] == header and body == data_stop:
             body = self.fixtures.load("stop_vm_cirros.json")
 
         else:

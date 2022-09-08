@@ -1,5 +1,5 @@
-from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider
+from libcloud.compute.providers import get_driver
 
 ECSDriver = get_driver(Provider.ALIYUN_ECS)
 

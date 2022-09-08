@@ -15,9 +15,8 @@
 
 from base64 import b64encode
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 
 class OnAppResponse(JsonResponse):

@@ -14,19 +14,18 @@
 # limitations under the License.
 import sys
 import json
-
 from unittest.mock import Mock, call
 
+from libcloud.test import unittest
+from libcloud.compute.base import NodeSize, NodeImage, NodeLocation, NodeAuthSSHKey
 from libcloud.common.upcloud import (
-    UpcloudCreateNodeRequestBody,
+    PlanPrice,
     UpcloudNodeDestroyer,
     UpcloudNodeOperations,
+    UpcloudTimeoutException,
+    UpcloudCreateNodeRequestBody,
+    _StorageDevice,
 )
-from libcloud.common.upcloud import _StorageDevice
-from libcloud.common.upcloud import UpcloudTimeoutException
-from libcloud.common.upcloud import PlanPrice
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
-from libcloud.test import unittest
 
 
 class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
@@ -37,9 +36,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
             driver="",
             extra={"type": "template"},
         )
-        self.location = NodeLocation(
-            id="fi-hel1", name="Helsinki #1", country="FI", driver=""
-        )
+        self.location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver="")
         self.size = NodeSize(
             id="1xCPU-1GB",
             name="1xCPU-1GB",
@@ -198,9 +195,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
         dict_body = json.loads(json_body)
 
         login_user = dict_body["server"]["login_user"]
-        self.assertDictEqual(
-            {"username": "someone", "create_password": "yes"}, login_user
-        )
+        self.assertDictEqual({"username": "someone", "create_password": "yes"}, login_user)
 
 
 class TestStorageDevice(unittest.TestCase):
@@ -240,9 +235,7 @@ class TestUpcloudNodeDestroyer(unittest.TestCase):
     def setUp(self):
         self.mock_sleep = Mock()
         self.mock_operations = Mock(spec=UpcloudNodeOperations)
-        self.destroyer = UpcloudNodeDestroyer(
-            self.mock_operations, sleep_func=self.mock_sleep
-        )
+        self.destroyer = UpcloudNodeDestroyer(self.mock_operations, sleep_func=self.mock_sleep)
 
     def test_node_already_in_stopped_state(self):
         self.mock_operations.get_node_state.side_effect = ["stopped"]
@@ -335,9 +328,7 @@ class TestPlanPrice(unittest.TestCase):
         self.pp = PlanPrice(prices)
 
     def test_zone_prices(self):
-        location = NodeLocation(
-            id="fi-hel1", name="Helsinki #1", country="FI", driver=None
-        )
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=None)
         self.assertEqual(self.pp.get_price("1xCPU-1GB", location), 1.588)
 
     def test_plan_not_found_in_zone(self):

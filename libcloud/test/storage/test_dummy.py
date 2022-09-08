@@ -48,7 +48,5 @@ def test_list_container_objects_filter_by_prefix(driver, container_with_contents
     objects = driver.list_container_objects(container=container, prefix=object_name[:3])
     assert any(o for o in objects if o.name == object_name)
 
-    objects = driver.list_container_objects(
-        container=container, prefix="does-not-exist.dat"
-    )
+    objects = driver.list_container_objects(container=container, prefix="does-not-exist.dat")
     assert not objects

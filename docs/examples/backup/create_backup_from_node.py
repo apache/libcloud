@@ -1,17 +1,14 @@
 import time
 from pprint import pprint
 
-from libcloud.backup.types import BackupTargetJobStatusType
 from libcloud.backup.types import Provider as BackupProvider
-from libcloud.backup.providers import get_driver as get_backup_driver
-
-from libcloud.compute.providers import get_driver as get_compute_driver
+from libcloud.backup.types import BackupTargetJobStatusType
 from libcloud.compute.types import Provider as ComputeProvider
+from libcloud.backup.providers import get_driver as get_backup_driver
+from libcloud.compute.providers import get_driver as get_compute_driver
 
 backup_driver = get_backup_driver(BackupProvider.DIMENSIONDATA)("username", "api key")
-compute_driver = get_compute_driver(ComputeProvider.DIMENSIONDATA)(
-    "username", "api key"
-)
+compute_driver = get_compute_driver(ComputeProvider.DIMENSIONDATA)("username", "api key")
 
 nodes = compute_driver.list_nodes()
 

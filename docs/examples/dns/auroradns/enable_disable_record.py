@@ -1,5 +1,4 @@
-from libcloud.dns.types import Provider
-from libcloud.dns.types import RecordType
+from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.providers import get_driver
 
 cls = get_driver(Provider.AURORADNS)

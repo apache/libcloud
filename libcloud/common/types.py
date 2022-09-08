@@ -13,12 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
-from typing import Callable
-from typing import Union
-from typing import cast
-
 from enum import Enum
+from typing import Union, Callable, Optional, cast
 
 if False:
     # Work around for MYPY for cyclic import problem
@@ -173,9 +169,7 @@ class ServiceUnavailableError(ProviderError):
         # type: (str, Optional[BaseDriver]) -> None
         # NOTE: We don't use http.client constants here since that adds ~20ms
         # import time overhead
-        super(ServiceUnavailableError, self).__init__(
-            value, http_code=503, driver=driver
-        )
+        super(ServiceUnavailableError, self).__init__(value, http_code=503, driver=driver)
 
 
 class LazyList(object):

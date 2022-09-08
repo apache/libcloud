@@ -1,6 +1,5 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
 from libcloud.loadbalancer.types import Provider as LBProvider
 from libcloud.loadbalancer.providers import get_driver as lb_get_driver
 

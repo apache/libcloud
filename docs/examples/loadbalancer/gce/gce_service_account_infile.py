@@ -10,6 +10,4 @@ credentials = {
 }
 
 LoadBalancer = get_driver(Provider.GCE)
-driver = LoadBalancer(
-    "your_service_account_email", credentials, project="your_project_id"
-)
+driver = LoadBalancer("your_service_account_email", credentials, project="your_project_id")

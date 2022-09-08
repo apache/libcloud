@@ -13,31 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import re
 import os
-
+import re
+import base64
 import collections
+
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey, KeyCertificateConnection
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import StorageVolume
+from libcloud.container.base import Container, ContainerImage, ContainerDriver
+from libcloud.container.types import ContainerState
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.container.providers import Provider
 
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.base import KeyCertificateConnection
-from libcloud.common.types import InvalidCredsError
-
-from libcloud.container.base import Container, ContainerDriver, ContainerImage
-from libcloud.common.exceptions import BaseHTTPError
-
-from libcloud.compute.base import StorageVolume
-
-from libcloud.container.providers import Provider
-from libcloud.container.types import ContainerState
 
 # Acceptable success strings comping from LXD API
 LXD_API_SUCCESS_STATUS = ["Success"]
@@ -67,16 +61,14 @@ def check_certificates(key_file, cert_file, **kwargs):
     # there is no point attempting to connect if either is missing
     if key_file is None or cert_file is None:
         raise InvalidCredsError(
-            "TLS Connection requires specification "
-            "of a key file and a certificate file"
+            "TLS Connection requires specification " "of a key file and a certificate file"
         )
 
     # if they are not none they may be empty strings
     # or certificates that are not appropriate
     if key_file == "" or cert_file == "":
         raise InvalidCredsError(
-            "TLS Connection requires specification "
-            "of a key file and a certificate file"
+            "TLS Connection requires specification " "of a key file and a certificate file"
         )
 
     # if none of the above check the types
@@ -108,8 +100,7 @@ def check_certificates(key_file, cert_file, **kwargs):
     is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
     if not is_file_path:
         raise InvalidCredsError(
-            "You need a key file to authenticate with "
-            "LXD tls. This can be found in the server."
+            "You need a key file to authenticate with " "LXD tls. This can be found in the server."
         )
 
     certpath = os.path.expanduser(cert_file)
@@ -131,9 +122,7 @@ def assert_response(response_dict, status_code):
     # if the type of the response is an error
     if response_dict["type"] == LXD_ERROR_STATUS_RESP:
         # an error returned
-        raise LXDAPIException(
-            message="response type is error", response_dict=response_dict
-        )
+        raise LXDAPIException(message="response type is error", response_dict=response_dict)
 
     # anything else apart from the status_code given should be treated as error
     if response_dict["status_code"] != status_code:
@@ -151,9 +140,7 @@ class LXDAPIException(Exception):
     returns with some kind of error
     """
 
-    def __init__(
-        self, message="Unknown Error Occurred", response_dict=None, error_type=""
-    ):
+    def __init__(self, message="Unknown Error Occurred", response_dict=None, error_type=""):
         self.message = message
         self.response_dict = response_dict
         self.type = error_type
@@ -316,9 +303,7 @@ class LXDResponse(JsonResponse):
                 error_msg = m.group(1)
                 raise Exception(error_msg)
             else:
-                msg = "ConnectionError: Failed to parse JSON response " "(body=%s)" % (
-                    self.body
-                )
+                msg = "ConnectionError: Failed to parse JSON response " "(body=%s)" % (self.body)
                 raise Exception(msg)
         return body
 
@@ -597,9 +582,7 @@ class LXDContainerDriver(ContainerDriver):
 
                 try:
                     # this means the image must be downloaded
-                    image = self.install_image(
-                        path=None, ex_timeout=ex_timeout, **parameters
-                    )
+                    image = self.install_image(path=None, ex_timeout=ex_timeout, **parameters)
                 except Exception as e:
                     raise LXDAPIException(
                         message="Deploying "
@@ -1141,9 +1124,7 @@ class LXDContainerDriver(ContainerDriver):
 
         has, fingerprint = self.ex_has_image(alias=image_alias)
         if not has:
-            raise LXDAPIException(
-                message="Image %s was " "not installed " % image_alias
-            )
+            raise LXDAPIException(message="Image %s was " "not installed " % image_alias)
 
         return self.ex_get_image(fingerprint=fingerprint)
 
@@ -1181,9 +1162,7 @@ class LXDContainerDriver(ContainerDriver):
 
         # get all the images existing on the host
         try:
-            response = self.connection.request(
-                "/{}/images/aliases/{}".format(self.version, alias)
-            )
+            response = self.connection.request("/{}/images/aliases/{}".format(self.version, alias))
             metadata = response.object["metadata"]
             return True, metadata.get("target")
         except BaseHTTPError as err:
@@ -1296,9 +1275,7 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not definition:
-            raise LXDAPIException(
-                "Cannot create a storage pool " " without a definition"
-            )
+            raise LXDAPIException("Cannot create a storage pool " " without a definition")
 
         data = json.dumps(definition)
 
@@ -1368,13 +1345,9 @@ class LXDContainerDriver(ContainerDriver):
                     "type": type,
                     "used_by": None,
                 }
-                volumes.append(
-                    self._to_storage_volume(pool_id=pool_id, metadata=metadata)
-                )
+                volumes.append(self._to_storage_volume(pool_id=pool_id, metadata=metadata))
             else:
-                volume = self.ex_get_storage_pool_volume(
-                    pool_id=pool_id, type=type, name=name
-                )
+                volume = self.ex_get_storage_pool_volume(pool_id=pool_id, type=type, name=name)
                 volumes.append(volume)
 
         return volumes
@@ -1393,9 +1366,7 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        return self._to_storage_volume(
-            pool_id=pool_id, metadata=response_dict["metadata"]
-        )
+        return self._to_storage_volume(pool_id=pool_id, metadata=response_dict["metadata"])
 
     def ex_get_volume_by_name(self, name, vol_type="custom"):
         """
@@ -1442,15 +1413,11 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not definition:
-            raise LXDAPIException(
-                "Cannot create a storage volume " "without a definition"
-            )
+            raise LXDAPIException("Cannot create a storage volume " "without a definition")
 
         size_type = definition.pop("size_type")
         definition["config"]["size"] = str(
-            LXDContainerDriver._to_bytes(
-                definition["config"]["size"], size_type=size_type
-            )
+            LXDContainerDriver._to_bytes(definition["config"]["size"], size_type=size_type)
         )
 
         data = json.dumps(definition)
@@ -1520,9 +1487,7 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if not definition:
-            raise LXDAPIException(
-                "Cannot create a storage " "volume without a definition"
-            )
+            raise LXDAPIException("Cannot create a storage " "volume without a definition")
 
         data = json.dumps(definition)
         response = self.connection.request(
@@ -1742,11 +1707,7 @@ class LXDContainerDriver(ContainerDriver):
 
         # if the container is ephemeral and the action is to stop
         # then the container is removed so return sth dummy
-        if (
-            state == ContainerState.RUNNING
-            and container.extra["ephemeral"]
-            and action == "stop"
-        ):
+        if state == ContainerState.RUNNING and container.extra["ephemeral"] and action == "stop":
             # return a dummy container otherwise we get 404 error
             container = Container(
                 driver=self,
@@ -1962,9 +1923,7 @@ class LXDContainerDriver(ContainerDriver):
         return input
 
     @staticmethod
-    def _fix_cont_params(
-        architecture, profiles, ephemeral, config, devices, instance_type
-    ):
+    def _fix_cont_params(architecture, profiles, ephemeral, config, devices, instance_type):
         """
         Returns a dict with the container parameters
         """

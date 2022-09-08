@@ -15,17 +15,15 @@
 
 import sys
 import unittest
-
 from datetime import datetime
-from libcloud.utils.iso8601 import UTC
 
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.utils.py3 import httplib
-from libcloud.compute.drivers.gridscale import GridscaleNodeDriver
 from libcloud.compute.base import NodeSize
-
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GRIDSCALE_PARAMS
+from libcloud.utils.iso8601 import UTC
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.gridscale import GridscaleNodeDriver
 
 
 class Gridscale_Tests(LibcloudTestCase):
@@ -164,9 +162,7 @@ class Gridscale_Tests(LibcloudTestCase):
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(
-            nodes[0].created_at, datetime(2019, 6, 7, 12, 56, 44, tzinfo=UTC)
-        )
+        self.assertEqual(nodes[0].created_at, datetime(2019, 6, 7, 12, 56, 44, tzinfo=UTC))
 
     def test_ex_list_volumes_for_node(self):
         node = self.driver.list_nodes()[0]
@@ -240,18 +236,14 @@ class GridscaleMockHttp(MockHttp):
         body = self.fixtures.load("list_volume_snapshots.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f(
-        self, method, url, body, headers
-    ):
+    def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f(self, method, url, body, headers):
         # test_ex_rename_node
         if method == "PATCH":
             return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
         else:  # pragma: no cover
             raise ValueError("Invalid method")
 
-    def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee(
-        self, method, url, body, headers
-    ):
+    def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee(self, method, url, body, headers):
         # test_ex_rename_node
         if method == "PATCH":
             return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
@@ -273,9 +265,7 @@ class GridscaleMockHttp(MockHttp):
         else:  # pragma: no cover
             raise ValueError("Invalid method")
 
-    def _requests_x123xx1x_123x_1x12_123x_123xxx123x1x_POST(
-        self, method, url, body, headers
-    ):
+    def _requests_x123xx1x_123x_1x12_123x_123xxx123x1x_POST(self, method, url, body, headers):
         body = self.fixtures.load("create_node_response_dict.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -304,9 +294,7 @@ class GridscaleMockHttp(MockHttp):
         else:  # pragma: no cover
             raise ValueError("Invalid method")
 
-    def _objects_ips_690de890_13c0_4e76_8a01_e10ba8786e53_POST(
-        self, method, url, body, headers
-    ):
+    def _objects_ips_690de890_13c0_4e76_8a01_e10ba8786e53_POST(self, method, url, body, headers):
         body = self.fixtures.load("create_ip_response_dict.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

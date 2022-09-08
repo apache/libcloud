@@ -16,25 +16,22 @@
 AuroraDNS DNS Driver
 """
 
-import base64
-import json
 import hmac
+import json
+import base64
 import datetime
-
 from hashlib import sha256
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-
-from libcloud.common.types import InvalidCredsError, ProviderError
-from libcloud.common.types import LibcloudError
-
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import ZoneAlreadyExistsError, RecordDoesNotExistError
-
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, ProviderError, InvalidCredsError
 
 API_HOST = "api.auroradns.eu"
 
@@ -240,9 +237,7 @@ class AuroraDNSConnection(ConnectionUserAndKey):
 
     def calculate_auth_signature(self, secret_key, method, url, timestamp):
         b64_hmac = base64.b64encode(
-            hmac.new(
-                b(secret_key), b(method) + b(url) + b(timestamp), digestmod=sha256
-            ).digest()
+            hmac.new(b(secret_key), b(method) + b(url) + b(timestamp), digestmod=sha256).digest()
         )
 
         return b64_hmac.decode("utf-8")
@@ -330,9 +325,7 @@ class AuroraDNSDriver(DNSDriver):
 
     def create_zone(self, domain, type="master", ttl=None, extra=None):
         self.connection.set_context({"resource": "zone", "id": domain})
-        res = self.connection.request(
-            "/zones", method="POST", data=json.dumps({"name": domain})
-        )
+        res = self.connection.request("/zones", method="POST", data=json.dumps({"name": domain}))
         zone = res.parse_body()
         return self.__res_to_zone(zone)
 
@@ -428,9 +421,7 @@ class AuroraDNSDriver(DNSDriver):
         :return: :class:`AuroraDNSHealthCheck`
         """
         self.connection.set_context({"resource": "healthcheck", "id": health_check_id})
-        res = self.connection.request(
-            "/zones/%s/health_checks/%s" % (zone.id, health_check_id)
-        )
+        res = self.connection.request("/zones/%s/health_checks/%s" % (zone.id, health_check_id))
         check = res.parse_body()
 
         return self.__res_to_healthcheck(zone, check)

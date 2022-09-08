@@ -32,9 +32,7 @@ class ExtraLogFormatter(logging.Formatter):
     """
 
     def format(self, record):
-        custom_attributes = dict(
-            [(k, v) for k, v in record.__dict__.items() if k.startswith("_")]
-        )
+        custom_attributes = dict([(k, v) for k, v in record.__dict__.items() if k.startswith("_")])
         custom_attributes = self._dict_to_str(custom_attributes)
 
         msg = logging.Formatter.format(self, record)

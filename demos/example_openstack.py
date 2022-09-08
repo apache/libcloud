@@ -15,8 +15,8 @@
 
 from pprint import pprint
 
-from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider
+from libcloud.compute.providers import get_driver
 
 Openstack = get_driver(Provider.OPENSTACK)
 

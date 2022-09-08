@@ -13,21 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.dimensiondata import DimensionDataVIPNode, DimensionDataPool
-from libcloud.common.dimensiondata import DimensionDataPoolMember
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.dimensiondata import (
-    DimensionDataLBDriver as DimensionData,
-)
-from libcloud.loadbalancer.types import State
 
 from libcloud.test import MockHttp, unittest
-from libcloud.test.file_fixtures import LoadBalancerFileFixtures
-
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
+from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.common.dimensiondata import (
+    DimensionDataPool,
+    DimensionDataVIPNode,
+    DimensionDataPoolMember,
+)
+from libcloud.loadbalancer.drivers.dimensiondata import DimensionDataLBDriver as DimensionData
 
 
 class DimensionData_v2_4_Tests(unittest.TestCase):
@@ -63,9 +62,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         self.assertEqual(balancer.id, "8334f461-0df0-42d5-97eb-f4678eb26bea")
         self.assertEqual(balancer.ip, "165.180.12.22")
         self.assertEqual(balancer.port, 80)
-        self.assertEqual(
-            balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54"
-        )
+        self.assertEqual(balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54")
         self.assertEqual(balancer.extra["network_domain_id"], "1234")
         self.assertEqual(balancer.extra["listener_ip_address"], "5.6.7.8")
 
@@ -79,9 +76,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         self.assertEqual(balancer.id, "8334f461-0df0-42d5-97eb-f4678eb26bea")
         self.assertEqual(balancer.ip, "165.180.12.22")
         self.assertIsNone(balancer.port)
-        self.assertEqual(
-            balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54"
-        )
+        self.assertEqual(balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54")
         self.assertEqual(balancer.extra["network_domain_id"], "1234")
 
     def test_create_balancer_no_members(self):
@@ -99,9 +94,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         self.assertEqual(balancer.id, "8334f461-0df0-42d5-97eb-f4678eb26bea")
         self.assertEqual(balancer.ip, "165.180.12.22")
         self.assertEqual(balancer.port, 80)
-        self.assertEqual(
-            balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54"
-        )
+        self.assertEqual(balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54")
         self.assertEqual(balancer.extra["network_domain_id"], "1234")
 
     def test_create_balancer_empty_members(self):
@@ -119,9 +112,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         self.assertEqual(balancer.id, "8334f461-0df0-42d5-97eb-f4678eb26bea")
         self.assertEqual(balancer.ip, "165.180.12.22")
         self.assertEqual(balancer.port, 80)
-        self.assertEqual(
-            balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54"
-        )
+        self.assertEqual(balancer.extra["pool_id"], "9e6b496d-5261-4542-91aa-b50c7f569c54")
         self.assertEqual(balancer.extra["network_domain_id"], "1234")
 
     def test_list_balancers(self):
@@ -166,9 +157,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             driver=self.driver,
             extra=extra,
         )
-        member = Member(
-            id=None, ip="112.12.2.2", port=80, balancer=balancer, extra=None
-        )
+        member = Member(id=None, ip="112.12.2.2", port=80, balancer=balancer, extra=None)
         member = self.driver.balancer_attach_member(balancer, member)
         self.assertEqual(member.id, "3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0")
 
@@ -186,9 +175,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             driver=self.driver,
             extra=extra,
         )
-        member = Member(
-            id=None, ip="112.12.2.2", port=None, balancer=balancer, extra=None
-        )
+        member = Member(id=None, ip="112.12.2.2", port=None, balancer=balancer, extra=None)
         member = self.driver.balancer_attach_member(balancer, member)
         self.assertEqual(member.id, "3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0")
         self.assertIsNone(member.port)
@@ -250,9 +237,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             service_down_action=None,
             slow_ramp_time=None,
         )
-        node = DimensionDataVIPNode(
-            id="2344", name="test", status=State.RUNNING, ip="123.23.3.2"
-        )
+        node = DimensionDataVIPNode(id="2344", name="test", status=State.RUNNING, ip="123.23.3.2")
         member = self.driver.ex_create_pool_member(pool=pool, node=node, port=80)
         self.assertEqual(member.id, "3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0")
         self.assertEqual(member.name, "10.0.3.13")
@@ -424,9 +409,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         self.assertTrue(response)
 
     def test_get_pool_members(self):
-        members = self.driver.ex_get_pool_members(
-            "4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"
-        )
+        members = self.driver.ex_get_pool_members("4d360b1f-bc2c-4ab7-9884-1f03ba2768f7")
         self.assertEqual(2, len(members))
         self.assertEqual(members[0].id, "3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0")
         self.assertEqual(members[0].name, "10.0.3.13")
@@ -495,14 +478,10 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         self.assertEqual(profiles[0].name, "CCDEFAULT.Cookie")
         self.assertEqual(profiles[0].fallback_compatible, False)
         self.assertEqual(len(profiles[0].compatible_listeners), 1)
-        self.assertEqual(
-            profiles[0].compatible_listeners[0].type, "PERFORMANCE_LAYER_4"
-        )
+        self.assertEqual(profiles[0].compatible_listeners[0].type, "PERFORMANCE_LAYER_4")
 
     def test_ex_get_default_irules(self):
-        irules = self.driver.ex_get_default_irules(
-            "4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"
-        )
+        irules = self.driver.ex_get_default_irules("4d360b1f-bc2c-4ab7-9884-1f03ba2768f7")
         self.assertEqual(len(irules), 4)
         self.assertEqual(irules[0].id, "2b20cb2c-ffdc-11e4-b010-005056806999")
         self.assertEqual(irules[0].name, "CCDEFAULT.HttpsRedirect")
@@ -548,9 +527,7 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml"
-        )
+        body = self.fixtures.load("networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember(
@@ -624,9 +601,7 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml"
-        )
+        body = self.fixtures.load("networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editNode(

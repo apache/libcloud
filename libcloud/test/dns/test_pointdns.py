@@ -15,17 +15,12 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.pointdns import PointDNSDriver
-from libcloud.dns.drivers.pointdns import PointDNSException
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_POINTDNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.pointdns import PointDNSDriver, PointDNSException
 
 
 class PointDNSTests(unittest.TestCase):
@@ -351,9 +346,7 @@ class PointDNSTests(unittest.TestCase):
         PointDNSMockHttp.type = "GET"
         zone = self.driver.list_zones()[0]
         PointDNSMockHttp.type = "CREATE"
-        mail_redirect = self.driver.ex_create_mail_redirect(
-            "user@example-site.com", "admin", zone
-        )
+        mail_redirect = self.driver.ex_create_mail_redirect("user@example-site.com", "admin", zone)
         self.assertEqual(mail_redirect.id, "5")
         self.assertEqual(mail_redirect.source, "admin")
         self.assertEqual(mail_redirect.destination, "user@example-site.com")
@@ -453,9 +446,7 @@ class PointDNSTests(unittest.TestCase):
         redirect = self.driver.ex_get_redirect(zone.id, "36843229")
         PointDNSMockHttp.type = "UPDATE_WITH_ERROR"
         try:
-            self.driver.ex_update_redirect(
-                redirect, "http://updatedother.com", "redirect3", "302"
-            )
+            self.driver.ex_update_redirect(redirect, "http://updatedother.com", "redirect3", "302")
         except PointDNSException as e:
             # The API actually responds with httplib.UNPROCESSABLE_ENTITY code,
             # but httplib.responses doesn't have it.

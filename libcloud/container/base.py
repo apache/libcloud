@@ -15,12 +15,10 @@
 
 from __future__ import with_statement
 
-from typing import Optional
-from typing import List
+from typing import List, Optional
 
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
+from libcloud.common.base import BaseDriver, ConnectionUserAndKey
 from libcloud.container.types import ContainerState
-
 
 __all__ = [
     "Container",

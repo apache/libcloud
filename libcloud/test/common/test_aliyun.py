@@ -16,9 +16,9 @@
 import sys
 import unittest
 
+from libcloud.test import LibcloudTestCase
 from libcloud.common import aliyun
 from libcloud.common.aliyun import AliyunRequestSignerAlgorithmV1_0
-from libcloud.test import LibcloudTestCase
 
 
 class AliyunRequestSignerAlgorithmV1_0TestCase(LibcloudTestCase):

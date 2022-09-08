@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.google import GoogleOAuth2Credential
+from libcloud.common.google import GoogleResponse, GoogleBaseConnection, GoogleOAuth2Credential
 from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
-from libcloud.common.google import GoogleResponse
-from libcloud.common.google import GoogleBaseConnection
 
 API_VERSION = "v1"
 
@@ -162,9 +160,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     credential_file: ``str``
         """
         if not project:
-            raise ValueError(
-                "Project name must be specified using " '"project" keyword.'
-            )
+            raise ValueError("Project name must be specified using " '"project" keyword.')
         if host is None:
             host = GKEContainerDriver.website
         self.auth_type = auth_type
@@ -174,8 +170,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         if datacenter is not None:
             self.zone = datacenter
         self.credential_file = (
-            credential_file
-            or GoogleOAuth2Credential.default_credential_file + "." + self.project
+            credential_file or GoogleOAuth2Credential.default_credential_file + "." + self.project
         )
 
         super(GKEContainerDriver, self).__init__(

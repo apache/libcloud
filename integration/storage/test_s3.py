@@ -16,13 +16,14 @@ import os
 import sys
 import unittest
 
+from integration.storage.base import Integration
+
+from libcloud.storage import types
+
 try:
     import boto3
 except ImportError:
     boto3 = None
-
-from integration.storage.base import Integration
-from libcloud.storage import types
 
 
 class S3Test(Integration.TestBase):

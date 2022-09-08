@@ -15,22 +15,19 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import ServiceUnavailableError
+from libcloud.compute.base import NodeSize, NodeImage
+from libcloud.test.secrets import VULTR_PARAMS
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.vultr import VultrNodeDriver, VultrNodeDriverV1
+
 try:
     import simplejson as json  # pylint: disable=unused-import
 except ImportError:
     # pylint: disable=unused-import
     import json  # NOQA
-
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.types import ServiceUnavailableError
-
-from libcloud.compute.drivers.vultr import VultrNodeDriver, VultrNodeDriverV1
-from libcloud.compute.base import NodeImage, NodeSize
-
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import VULTR_PARAMS
 
 
 # class VultrTests(unittest.TestCase, TestCaseMixin):
@@ -144,9 +141,7 @@ class VultrTests(LibcloudTestCase):
         test_size = self.driver.list_sizes()[0]
         test_image = self.driver.list_images()[0]
         test_location = self.driver.list_locations()[0]
-        created_node = self.driver.create_node(
-            "test-node", test_size, test_image, test_location
-        )
+        created_node = self.driver.create_node("test-node", test_size, test_image, test_location)
         self.assertEqual(created_node.id, "41326859")
 
     def test_destroy_node_success(self):

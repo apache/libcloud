@@ -16,16 +16,12 @@
 Brightbox Driver
 """
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.brightbox import BrightboxConnection
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
-
 import base64
 
+from libcloud.utils.py3 import b, httplib
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+from libcloud.common.brightbox import BrightboxConnection
 
 API_VERSION = "1.0"
 
@@ -145,9 +141,7 @@ class BrightboxNodeDriver(NodeDriver):
         if data.get("ancestor", None):
             extra_data["ancestor"] = self._to_image(data["ancestor"])
 
-        return NodeImage(
-            id=data["id"], name=data["name"], driver=self, extra=extra_data
-        )
+        return NodeImage(id=data["id"], name=data["name"], driver=self, extra=extra_data)
 
     def _to_size(self, data):
         return NodeSize(
@@ -162,9 +156,7 @@ class BrightboxNodeDriver(NodeDriver):
 
     def _to_location(self, data):
         if data:
-            return NodeLocation(
-                id=data["id"], name=data["handle"], country="GB", driver=self
-            )
+            return NodeLocation(id=data["id"], name=data["handle"], country="GB", driver=self)
         else:
             return None
 
@@ -176,9 +168,7 @@ class BrightboxNodeDriver(NodeDriver):
         headers = {"Content-Type": "application/json"}
         return self.connection.request(path, data=data, headers=headers, method="PUT")
 
-    def create_node(
-        self, name, size, image, location=None, ex_userdata=None, ex_servergroup=None
-    ):
+    def create_node(self, name, size, image, location=None, ex_userdata=None, ex_servergroup=None):
         """Create a new Brightbox node
 
         Reference: https://api.gb1.brightbox.com/1.0/#server_create_server
@@ -319,9 +309,7 @@ class BrightboxNodeDriver(NodeDriver):
         :return: True if the unmap was successful.
         :rtype: ``bool``
         """
-        response = self._post(
-            "/%s/cloud_ips/%s/unmap" % (self.api_version, cloud_ip_id)
-        )
+        response = self._post("/%s/cloud_ips/%s/unmap" % (self.api_version, cloud_ip_id))
         return response.status == httplib.ACCEPTED
 
     def ex_destroy_cloud_ip(self, cloud_ip_id):

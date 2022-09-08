@@ -13,18 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import hashlib
-import hmac
 import sys
+import hmac
 import time
 import uuid
+import base64
+import hashlib
 
-from libcloud.utils.py3 import ET
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.common.types import MalformedResponseError
-from libcloud.utils.py3 import b, u, urlquote, PY3
+from libcloud.utils.py3 import ET, PY3, b, u, urlquote
 from libcloud.utils.xml import findtext
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
+from libcloud.common.types import MalformedResponseError
 
 __all__ = [
     "AliyunXmlResponse",
@@ -67,9 +66,7 @@ class AliyunXmlResponse(XmlResponse):
             raise MalformedResponseError(
                 "Failed to parse XML", body=self.body, driver=self.connection.driver
             )
-        self.request_id = findtext(
-            element=body, xpath="RequestId", namespace=self.namespace
-        )
+        self.request_id = findtext(element=body, xpath="RequestId", namespace=self.namespace)
         self.host_id = findtext(element=body, xpath="HostId", namespace=self.namespace)
         return body
 
@@ -225,9 +222,7 @@ class SignedAliyunConnection(AliyunConnection):
         )
 
     def add_default_params(self, params):
-        params = self.signer.get_request_params(
-            params=params, method=self.method, path=self.action
-        )
+        params = self.signer.get_request_params(params=params, method=self.method, path=self.action)
         return params
 
 

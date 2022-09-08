@@ -223,9 +223,7 @@ def work_with_storage_pools():
         "name": "vol1",
         "type": "custom",
     }
-    volume = conn.ex_create_storage_pool_volume(
-        storage_pool_id="Pool100", definition=definition
-    )
+    volume = conn.ex_create_storage_pool_volume(storage_pool_id="Pool100", definition=definition)
 
     print("Volume name: ", volume.name)
     print("Volume size: ", volume.size)

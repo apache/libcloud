@@ -13,34 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import os
+import sys
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qsl
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, urlparse, parse_qsl, assertRaisesRegex
+from libcloud.common.types import ProviderError
+from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.test.compute import TestCaseMixin
+from libcloud.compute.types import (
+    Provider,
+    NodeState,
+    LibcloudError,
+    InvalidCredsError,
+    KeyPairDoesNotExistError,
+)
+from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, CloudStackAffinityGroupType
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-from libcloud.compute.base import NodeLocation, NodeSize, NodeImage
-from libcloud.common.types import ProviderError
-from libcloud.compute.drivers.cloudstack import (
-    CloudStackNodeDriver,
-    CloudStackAffinityGroupType,
-)
-from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
-from libcloud.compute.types import KeyPairDoesNotExistError
-from libcloud.compute.types import NodeState
-from libcloud.compute.providers import get_driver
-from libcloud.utils.py3 import assertRaisesRegex
-
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class CloudStackCommonTestCase(TestCaseMixin):
@@ -48,9 +43,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
     def setUp(self):
         self.driver_klass.connectionCls.conn_class = CloudStackMockHttp
-        self.driver = self.driver_klass(
-            "apikey", "secret", path="/test/path", host="api.dummy.com"
-        )
+        self.driver = self.driver_klass("apikey", "secret", path="/test/path", host="api.dummy.com")
         self.driver.path = "/test/path"
         self.driver.type = -1
         CloudStackMockHttp.type = None
@@ -59,9 +52,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
     def test_invalid_credentials(self):
         CloudStackMockHttp.type = "invalid_credentials"
-        driver = self.driver_klass(
-            "invalid", "invalid", path="/test/path", host="api.dummy.com"
-        )
+        driver = self.driver_klass("invalid", "invalid", path="/test/path", host="api.dummy.com")
         self.assertRaises(InvalidCredsError, driver.list_nodes)
 
     def test_import_keypair_from_string_api_error(self):
@@ -115,9 +106,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         networks = [
-            nw
-            for nw in self.driver.ex_list_networks()
-            if str(nw.zoneid) == str(location.id)
+            nw for nw in self.driver.ex_list_networks() if str(nw.zoneid) == str(location.id)
         ]
 
         node = self.driver.create_node(
@@ -141,9 +130,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         ipaddress = "10.1.0.128"
 
         networks = [
-            nw
-            for nw in self.driver.ex_list_networks()
-            if str(nw.zoneid) == str(location.id)
+            nw for nw in self.driver.ex_list_networks() if str(nw.zoneid) == str(location.id)
         ]
 
         node = self.driver.create_node(
@@ -169,9 +156,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         rootdisksize = "50"
 
         networks = [
-            nw
-            for nw in self.driver.ex_list_networks()
-            if str(nw.zoneid) == str(location.id)
+            nw for nw in self.driver.ex_list_networks() if str(nw.zoneid) == str(location.id)
         ]
 
         node = self.driver.create_node(
@@ -197,9 +182,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         networks = [
-            nw
-            for nw in self.driver.ex_list_networks()
-            if str(nw.zoneid) == str(location.id)
+            nw for nw in self.driver.ex_list_networks() if str(nw.zoneid) == str(location.id)
         ]
 
         node = self.driver.create_node(
@@ -275,9 +258,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(0, len(images))
 
     def test_list_images(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "listTemplates_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("listTemplates_default.json")
         templates = fixture["listtemplatesresponse"]["template"]
 
         images = self.driver.list_images()
@@ -300,9 +281,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(10, diskOffering.size)
 
     def test_ex_list_networks(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "listNetworks_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("listNetworks_default.json")
         fixture_networks = fixture["listnetworksresponse"]["network"]
 
         networks = self.driver.ex_list_networks()
@@ -311,40 +290,30 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(network.id, fixture_networks[i]["id"])
             self.assertEqual(network.displaytext, fixture_networks[i]["displaytext"])
             self.assertEqual(network.name, fixture_networks[i]["name"])
-            self.assertEqual(
-                network.networkofferingid, fixture_networks[i]["networkofferingid"]
-            )
+            self.assertEqual(network.networkofferingid, fixture_networks[i]["networkofferingid"])
             self.assertEqual(network.zoneid, fixture_networks[i]["zoneid"])
 
     def test_ex_list_network_offerings(self):
         _, fixture = self.driver.connection.connection._load_fixture(
             "listNetworkOfferings_default.json"
         )
-        fixture_networkoffers = fixture["listnetworkofferingsresponse"][
-            "networkoffering"
-        ]
+        fixture_networkoffers = fixture["listnetworkofferingsresponse"]["networkoffering"]
 
         networkoffers = self.driver.ex_list_network_offerings()
 
         for i, networkoffer in enumerate(networkoffers):
             self.assertEqual(networkoffer.id, fixture_networkoffers[i]["id"])
             self.assertEqual(networkoffer.name, fixture_networkoffers[i]["name"])
-            self.assertEqual(
-                networkoffer.display_text, fixture_networkoffers[i]["displaytext"]
-            )
+            self.assertEqual(networkoffer.display_text, fixture_networkoffers[i]["displaytext"])
             self.assertEqual(networkoffer.for_vpc, fixture_networkoffers[i]["forvpc"])
-            self.assertEqual(
-                networkoffer.guest_ip_type, fixture_networkoffers[i]["guestiptype"]
-            )
+            self.assertEqual(networkoffer.guest_ip_type, fixture_networkoffers[i]["guestiptype"])
             self.assertEqual(
                 networkoffer.service_offering_id,
                 fixture_networkoffers[i]["serviceofferingid"],
             )
 
     def test_ex_create_network(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "createNetwork_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("createNetwork_default.json")
 
         fixture_network = fixture["createnetworkresponse"]["network"]
 
@@ -367,9 +336,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(network.id, fixture_network["id"])
         self.assertEqual(network.extra["gateway"], fixture_network["gateway"])
         self.assertEqual(network.extra["netmask"], fixture_network["netmask"])
-        self.assertEqual(
-            network.networkofferingid, fixture_network["networkofferingid"]
-        )
+        self.assertEqual(network.networkofferingid, fixture_network["networkofferingid"])
         self.assertEqual(network.extra["vpc_id"], fixture_network["vpcid"])
         self.assertEqual(network.extra["project_id"], fixture_network["projectid"])
 
@@ -381,9 +348,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertTrue(result)
 
     def test_ex_list_nics(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "listNics_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("listNics_default.json")
 
         fixture_nic = fixture["listnicsresponse"]["nic"]
         vm = self.driver.list_nodes()[0]
@@ -404,9 +369,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         network = self.driver.ex_list_networks()[0]
         ip = "10.1.4.123"
 
-        result = self.driver.ex_attach_nic_to_node(
-            node=vm, network=network, ip_address=ip
-        )
+        result = self.driver.ex_attach_nic_to_node(node=vm, network=network, ip_address=ip)
         self.assertTrue(result)
 
     def test_ex_remove_nic_from_node(self):
@@ -431,9 +394,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(vpcoffer.display_text, fixture_vpcoffers[i]["displaytext"])
 
     def test_ex_list_vpcs(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "listVPCs_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("listVPCs_default.json")
         fixture_vpcs = fixture["listvpcsresponse"]["vpc"]
 
         vpcs = self.driver.ex_list_vpcs()
@@ -446,9 +407,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(vpc.zone_id, fixture_vpcs[i]["zoneid"])
 
     def test_ex_list_routers(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "listRouters_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("listRouters_default.json")
         fixture_routers = fixture["listroutersresponse"]["router"]
 
         routers = self.driver.ex_list_routers()
@@ -461,9 +420,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(router.vpc_id, fixture_routers[i]["vpcid"])
 
     def test_ex_create_vpc(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "createVPC_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("createVPC_default.json")
 
         fixture_vpc = fixture["createvpcresponse"]
 
@@ -532,9 +489,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(network_acl.id, fixture_network_acllist["id"])
 
     def test_ex_list_projects(self):
-        _, fixture = self.driver.connection.connection._load_fixture(
-            "listProjects_default.json"
-        )
+        _, fixture = self.driver.connection.connection._load_fixture("listProjects_default.json")
         fixture_projects = fixture["listprojectsresponse"]["project"]
 
         projects = self.driver.ex_list_projects()
@@ -564,9 +519,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
         location = self.driver.list_locations()[0]
 
-        self.assertRaises(
-            LibcloudError, self.driver.create_volume, "vol-0", location, 11
-        )
+        self.assertRaises(LibcloudError, self.driver.create_volume, "vol-0", location, 11)
 
     def test_create_volume_with_custom_disk_size_offering(self):
         CloudStackMockHttp.fixture_tag = "withcustomdisksize"
@@ -769,9 +722,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
     def test_get_key_pair_doesnt_exist(self):
         CloudStackMockHttp.fixture_tag = "get_one_doesnt_exist"
 
-        self.assertRaises(
-            KeyPairDoesNotExistError, self.driver.get_key_pair, name="does-not-exist"
-        )
+        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair, name="does-not-exist")
 
     def test_create_keypair(self):
         key_pair = self.driver.create_key_pair(name="test-keypair")
@@ -788,9 +739,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
     def test_import_keypair_from_file(self):
         fingerprint = "c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15"
-        path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub"
-        )
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub")
 
         key_pair = self.driver.import_key_pair_from_file("foobar", path)
         self.assertEqual(key_pair.name, "foobar")
@@ -803,23 +752,17 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
     def test_ex_import_keypair_from_string(self):
         fingerprint = "c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15"
-        path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub"
-        )
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub")
         fh = open(path)
         key_material = fh.read()
         fh.close()
 
-        key_pair = self.driver.import_key_pair_from_string(
-            "foobar", key_material=key_material
-        )
+        key_pair = self.driver.import_key_pair_from_string("foobar", key_material=key_material)
         self.assertEqual(key_pair.name, "foobar")
         self.assertEqual(key_pair.fingerprint, fingerprint)
 
         # Test old and deprecated way
-        res = self.driver.ex_import_keypair_from_string(
-            "foobar", key_material=key_material
-        )
+        res = self.driver.ex_import_keypair_from_string("foobar", key_material=key_material)
         self.assertEqual(res["keyName"], "foobar")
         self.assertEqual(res["keyFingerprint"], fingerprint)
 
@@ -868,9 +811,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(rule["startport"], 0)
 
     def test_ex_create_affinity_group(self):
-        res = self.driver.ex_create_affinity_group(
-            "MyAG2", CloudStackAffinityGroupType("MyAGType")
-        )
+        res = self.driver.ex_create_affinity_group("MyAG2", CloudStackAffinityGroupType("MyAGType"))
         self.assertEqual(res.name, "MyAG2")
         self.assertIsInstance(res.type, CloudStackAffinityGroupType)
         self.assertEqual(res.type.type, "MyAGType")
@@ -884,9 +825,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         )
 
     def test_delete_ex_affinity_group(self):
-        afg = self.driver.ex_create_affinity_group(
-            "MyAG3", CloudStackAffinityGroupType("MyAGType")
-        )
+        afg = self.driver.ex_create_affinity_group("MyAG3", CloudStackAffinityGroupType("MyAGType"))
         res = self.driver.ex_delete_affinity_group(afg)
         self.assertTrue(res)
 
@@ -1146,12 +1085,8 @@ class CloudStackCommonTestCase(TestCaseMixin):
         snapshot = self.driver.create_volume_snapshot(volume)
 
         self.assertEqual(snapshot.id, 190547)
-        self.assertEqual(
-            snapshot.extra["name"], "i-123-87654-VM_ROOT-23456_20140917105548"
-        )
-        self.assertEqual(
-            snapshot.extra["volume_id"], "fe1ada16-57a0-40ae-b577-01a153690fb4"
-        )
+        self.assertEqual(snapshot.extra["name"], "i-123-87654-VM_ROOT-23456_20140917105548")
+        self.assertEqual(snapshot.extra["volume_id"], "fe1ada16-57a0-40ae-b577-01a153690fb4")
 
     def test_destroy_volume_snapshot(self):
         snapshot = self.driver.list_snapshots()[0]
@@ -1161,9 +1096,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
     def test_ex_create_snapshot_template(self):
         snapshot = self.driver.list_snapshots()[0]
 
-        template = self.driver.ex_create_snapshot_template(
-            snapshot, "test-libcloud-template", 99
-        )
+        template = self.driver.ex_create_snapshot_template(snapshot, "test-libcloud-template", 99)
 
         self.assertEqual(template.id, "10260")
         self.assertEqual(template.name, "test-libcloud-template")
@@ -1188,9 +1121,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(vpn_gateways[0].id, "cffa0cab-d1da-42a7-92f6-41379267a29f")
         self.assertEqual(vpn_gateways[0].account, "some_account")
         self.assertEqual(vpn_gateways[0].domain, "some_domain")
-        self.assertEqual(
-            vpn_gateways[0].domain_id, "9b397dea-25ef-4c5d-b47d-627eaebe8ed8"
-        )
+        self.assertEqual(vpn_gateways[0].domain_id, "9b397dea-25ef-4c5d-b47d-627eaebe8ed8")
         self.assertEqual(vpn_gateways[0].public_ip, "1.2.3.4")
         self.assertEqual(vpn_gateways[0].vpc_id, "4d25e181-8850-4d52-8ecb-a6f35bbbabde")
 
@@ -1215,9 +1146,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
 
         self.assertEqual(len(vpn_customer_gateways), 1)
 
-        self.assertEqual(
-            vpn_customer_gateways[0].id, "ea67eaae-1c2a-4e65-b910-441e77f69bea"
-        )
+        self.assertEqual(vpn_customer_gateways[0].id, "ea67eaae-1c2a-4e65-b910-441e77f69bea")
         self.assertEqual(vpn_customer_gateways[0].cidr_list, "10.2.2.0/24")
         self.assertEqual(vpn_customer_gateways[0].esp_policy, "3des-md5")
         self.assertEqual(vpn_customer_gateways[0].gateway, "10.2.2.1")
@@ -1233,9 +1162,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
             ipsec_psk="ipsecpsk",
         )
 
-        self.assertEqual(
-            vpn_customer_gateway.id, "cef3c766-116a-4e83-9844-7d08ab7d3fd4"
-        )
+        self.assertEqual(vpn_customer_gateway.id, "cef3c766-116a-4e83-9844-7d08ab7d3fd4")
         self.assertEqual(vpn_customer_gateway.esp_policy, "3des-md5")
         self.assertEqual(vpn_customer_gateway.gateway, "10.0.0.1")
         self.assertEqual(vpn_customer_gateway.ike_policy, "3des-md5")
@@ -1256,18 +1183,14 @@ class CloudStackCommonTestCase(TestCaseMixin):
             vpn_connections[0].vpn_customer_gateway_id,
             "ea67eaae-1c2a-4e65-b910-441e77f69bea",
         )
-        self.assertEqual(
-            vpn_connections[0].vpn_gateway_id, "cffa0cab-d1da-42a7-92f6-41379267a29f"
-        )
+        self.assertEqual(vpn_connections[0].vpn_gateway_id, "cffa0cab-d1da-42a7-92f6-41379267a29f")
         self.assertEqual(vpn_connections[0].state, "Connected")
 
     def test_ex_create_vpn_connection(self):
         vpn_customer_gateway = self.driver.ex_list_vpn_customer_gateways()[0]
         vpn_gateway = self.driver.ex_list_vpn_gateways()[0]
 
-        vpn_connection = self.driver.ex_create_vpn_connection(
-            vpn_customer_gateway, vpn_gateway
-        )
+        vpn_connection = self.driver.ex_create_vpn_connection(vpn_customer_gateway, vpn_gateway)
 
         self.assertEqual(vpn_connection.id, "f45c3af8-f909-4f16-9d40-ed4409c575f8")
         self.assertEqual(vpn_connection.passive, False)
@@ -1275,9 +1198,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
             vpn_connection.vpn_customer_gateway_id,
             "ea67eaae-1c2a-4e65-b910-441e77f69bea",
         )
-        self.assertEqual(
-            vpn_connection.vpn_gateway_id, "cffa0cab-d1da-42a7-92f6-41379267a29f"
-        )
+        self.assertEqual(vpn_connection.vpn_gateway_id, "cffa0cab-d1da-42a7-92f6-41379267a29f")
         self.assertEqual(vpn_connection.state, "Connected")
 
     def test_ex_delete_vpn_connection(self):

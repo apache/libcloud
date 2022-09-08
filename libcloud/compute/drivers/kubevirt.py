@@ -21,17 +21,23 @@ kubevirt driver with support for nodes (vms)
 import json
 import time
 import hashlib
-
 from datetime import datetime
 
 from libcloud.common.types import LibcloudError
-from libcloud.common.kubernetes import KubernetesBasicAuthConnection
-from libcloud.common.kubernetes import KubernetesDriverMixin
-from libcloud.common.kubernetes import VALID_RESPONSE_CODES
-
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+)
 from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
+from libcloud.common.kubernetes import (
+    VALID_RESPONSE_CODES,
+    KubernetesDriverMixin,
+    KubernetesBasicAuthConnection,
+)
 
 __all__ = ["KubeVirtNodeDriver"]
 ROOT_URL = "/api/v1/"
@@ -142,11 +148,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         method = "DELETE"
         try:
             result = self.connection.request(
-                KUBEVIRT_URL
-                + "namespaces/"
-                + namespace
-                + "/virtualmachineinstances/"
-                + name,
+                KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachineinstances/" + name,
                 method=method,
             )
 
@@ -321,23 +323,15 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             },
         }
         memory = str(ex_memory) + "Mi"
-        vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
-            "memory"
-        ] = memory
-        vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"][
-            "memory"
-        ] = memory
+        vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["memory"] = memory
+        vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"] = memory
         if ex_cpu < 10:
             cpu = int(ex_cpu)
-            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
-                "cpu"
-            ] = cpu
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"] = cpu
             vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
         else:
             cpu = str(ex_cpu) + "m"
-            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
-                "cpu"
-            ] = cpu
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"] = cpu
             vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
         i = 0
         for disk in ex_disks:
@@ -347,9 +341,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             i += 1
             device = disk.get("device", "disk")
             if disk_type not in DISK_TYPES:
-                raise ValueError(
-                    "The possible values for this " "parameter are: ", DISK_TYPES
-                )
+                raise ValueError("The possible values for this " "parameter are: ", DISK_TYPES)
             # depending on disk_type, in the future,
             # when more will be supported,
             # additional elif should be added
@@ -364,9 +356,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             if disk_type == "persistentVolumeClaim":
                 if "claim_name" in disk:
                     claimName = disk["claim_name"]
-                    if claimName not in self.ex_list_persistent_volume_claims(
-                        namespace=namespace
-                    ):
+                    if claimName not in self.ex_list_persistent_volume_claims(namespace=namespace):
                         if "size" not in disk or "storage_class_name" not in disk:
                             msg = (
                                 "disk['size'] and "
@@ -406,9 +396,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     "name": disk_name,
                 }
             disk_dict = {device: {"bus": bus}, "name": disk_name}
-            vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(
-                disk_dict
-            )
+            vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
             vm["spec"]["template"]["spec"]["volumes"].append(volumes_dict)
 
         # adding image in a container Disk
@@ -444,9 +432,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 ports_to_expose.append({"port": port, "protocol": "UDP"})
             interface_dict[interface]["ports"] = ports_to_expose
         vm["spec"]["template"]["spec"]["networks"].append(network_dict)
-        vm["spec"]["template"]["spec"]["domain"]["devices"]["interfaces"].append(
-            interface_dict
-        )
+        vm["spec"]["template"]["spec"]["domain"]["devices"]["interfaces"].append(interface_dict)
 
         method = "POST"
         data = json.dumps(vm)
@@ -495,9 +481,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             name = item["metadata"]["name"]
             ID = item["metadata"]["uid"]
             namespaces.append(
-                NodeLocation(
-                    id=ID, name=name, country="", driver=self.connection.driver
-                )
+                NodeLocation(id=ID, name=name, country="", driver=self.connection.driver)
             )
         return namespaces
 
@@ -695,13 +679,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         if result.object["status"]["phase"] != "Bound":
             for _ in range(3):
 
-                req = (
-                    ROOT_URL
-                    + "namespaces/"
-                    + namespace
-                    + "/persistentvolumeclaims/"
-                    + name
-                )
+                req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + name
                 try:
                     result = self.connection.request(req).object
                 except Exception:
@@ -747,9 +725,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         if volume.extra["is_bound"]:
             pvc = volume.extra["pvc"]["name"]
             namespace = volume.extra["pvc"]["namespace"]
-            req = (
-                ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + pvc
-            )
+            req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + pvc
             try:
                 result = self.connection.request(req, method=method)
 
@@ -961,23 +937,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         extra["pvcs"] = []
         memory = 0
         if "limits" in vm["spec"]["template"]["spec"]["domain"]["resources"]:
-            if (
-                "memory"
-                in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]
-            ):
-                memory = vm["spec"]["template"]["spec"]["domain"]["resources"][
-                    "limits"
-                ]["memory"]
-        elif vm["spec"]["template"]["spec"]["domain"]["resources"].get(
-            "requests", None
-        ):
+            if "memory" in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]:
+                memory = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"]
+        elif vm["spec"]["template"]["spec"]["domain"]["resources"].get("requests", None):
 
             if vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"].get(
                 "memory", None
             ):
-                memory = vm["spec"]["template"]["spec"]["domain"]["resources"][
-                    "requests"
-                ]["memory"]
+                memory = vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["memory"]
         if not isinstance(memory, int):
             if "M" in memory or "Mi" in memory:
                 memory = memory.rstrip("M")
@@ -991,20 +958,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 memory = int(memory) // 1024
         cpu = 1
         if vm["spec"]["template"]["spec"]["domain"]["resources"].get("limits", None):
-            if vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"].get(
-                "cpu", None
-            ):
-                cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"][
-                    "cpu"
-                ]
-        elif vm["spec"]["template"]["spec"]["domain"]["resources"].get(
-            "requests", None
-        ) and vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"].get(
-            "cpu", None
-        ):
-            cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"][
-                "cpu"
-            ]
+            if vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"].get("cpu", None):
+                cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"]
+        elif vm["spec"]["template"]["spec"]["domain"]["resources"].get("requests", None) and vm[
+            "spec"
+        ]["template"]["spec"]["domain"]["resources"]["requests"].get("cpu", None):
+            cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"]
         elif vm["spec"]["template"]["spec"]["domain"].get("cpu", None):
             cpu = vm["spec"]["template"]["spec"]["domain"]["cpu"].get("cores", 1)
         if not isinstance(cpu, int):
@@ -1101,14 +1060,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             if cont_status["name"] != "compute":
                 image = NodeImage(ID, cont_status["image"], driver)
                 state = (
-                    NodeState.RUNNING
-                    if "running" in cont_status["state"]
-                    else NodeState.PENDING
+                    NodeState.RUNNING if "running" in cont_status["state"] else NodeState.PENDING
                 )
         public_ips = None
-        created_at = datetime.strptime(
-            vm["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
-        )
+        created_at = datetime.strptime(vm["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ")
 
         if "podIPs" in pod["status"]:
             private_ips = [ip["ip"] for ip in pod["status"]["podIPs"]]
@@ -1201,9 +1156,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         # check if service exists first
         namespace = node.extra.get("namespace", "default")
         service_name = "service-{}-{}".format(service_type.lower(), node.name)
-        service_list = self.ex_list_services(
-            namespace=namespace, service_name=service_name
-        )
+        service_list = self.ex_list_services(namespace=namespace, service_name=service_name)
 
         ports_to_expose = []
         # if ports has a falsey value like None or 0
@@ -1241,9 +1194,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     spec = {"ports": existing_ports.extend(ports_to_expose)}
                 data = json.dumps({"spec": spec})
                 headers = {"Content-Type": "application/merge-patch+json"}
-            req = "{}/namespaces/{}/services/{}".format(
-                ROOT_URL, namespace, service_name
-            )
+            req = "{}/namespaces/{}/services/{}".format(ROOT_URL, namespace, service_name)
         else:
             if not ports:
                 raise ValueError(
@@ -1273,9 +1224,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             data = json.dumps(service)
             req = "{}/namespaces/{}/services".format(ROOT_URL, namespace)
         try:
-            result = self.connection.request(
-                req, method=method, data=data, headers=headers
-            )
+            result = self.connection.request(req, method=method, data=data, headers=headers)
         except Exception:
             raise
         return result.status in VALID_RESPONSE_CODES

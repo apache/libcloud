@@ -15,18 +15,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.worldwidedns import WorldWideDNSDriver
-from libcloud.dns.drivers.worldwidedns import WorldWideDNSError
-from libcloud.common.worldwidedns import NonExistentDomain
-from libcloud.common.worldwidedns import InvalidDomainName
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_WORLDWIDEDNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.common.worldwidedns import InvalidDomainName, NonExistentDomain
+from libcloud.dns.drivers.worldwidedns import WorldWideDNSError, WorldWideDNSDriver
 
 
 class WorldWideDNSTests(unittest.TestCase):
@@ -136,9 +131,7 @@ class WorldWideDNSTests(unittest.TestCase):
             self.fail("Exception was not thrown")
 
     def test_get_record_success(self):
-        record = self.driver.get_record(
-            zone_id="niteowebsponsoredthisone.com", record_id="1"
-        )
+        record = self.driver.get_record(zone_id="niteowebsponsoredthisone.com", record_id="1")
         self.assertEqual(record.id, "1")
         self.assertEqual(record.name, "www")
         self.assertEqual(record.type, RecordType.A)
@@ -155,18 +148,14 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_get_record_record_does_not_exist(self):
         try:
-            self.driver.get_record(
-                zone_id="niteowebsponsoredthisone.com", record_id="3585100"
-            )
+            self.driver.get_record(zone_id="niteowebsponsoredthisone.com", record_id="3585100")
         except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, "3585100")
         else:
             self.fail("Exception was not thrown")
 
     def test_create_zone_success(self):
-        zone = self.driver.create_zone(
-            domain="niteowebsponsoredthisone.com", type="master"
-        )
+        zone = self.driver.create_zone(domain="niteowebsponsoredthisone.com", type="master")
         self.assertEqual(zone.id, "niteowebsponsoredthisone.com")
         self.assertEqual(zone.domain, "niteowebsponsoredthisone.com")
         self.assertEqual(zone.ttl, "43200")
@@ -176,9 +165,7 @@ class WorldWideDNSTests(unittest.TestCase):
         WorldWideDNSMockHttp.type = "VALIDATION_ERROR"
 
         try:
-            self.driver.create_zone(
-                domain="foo.%.com", type="master", ttl=None, extra=None
-            )
+            self.driver.create_zone(domain="foo.%.com", type="master", ttl=None, extra=None)
         except InvalidDomainName as e:
             self.assertEqual(e.code, 410)
         else:
@@ -194,17 +181,13 @@ class WorldWideDNSTests(unittest.TestCase):
             extra={"HOSTMASTER": "mail.niteowebsponsoredthisone.com"},
         )  # noqa
 
-        self.assertEqual(
-            zone.extra["HOSTMASTER"], "hostmaster.niteowebsponsoredthisone.com"
-        )
+        self.assertEqual(zone.extra["HOSTMASTER"], "hostmaster.niteowebsponsoredthisone.com")
 
         self.assertEqual(updated_zone.id, zone.id)
         self.assertEqual(updated_zone.domain, "niteowebsponsoredthisone.com")
         self.assertEqual(updated_zone.type, zone.type)
         self.assertEqual(updated_zone.ttl, "3800")
-        self.assertEqual(
-            updated_zone.extra["HOSTMASTER"], "mail.niteowebsponsoredthisone.com"
-        )
+        self.assertEqual(updated_zone.extra["HOSTMASTER"], "mail.niteowebsponsoredthisone.com")
         self.assertEqual(updated_zone.extra["REFRESH"], zone.extra["REFRESH"])
         self.assertEqual(updated_zone.extra["RETRY"], zone.extra["RETRY"])
         self.assertEqual(updated_zone.extra["EXPIRE"], zone.extra["EXPIRE"])
@@ -401,9 +384,7 @@ class WorldWideDNSMockHttp(MockHttp):
         body = self.fixtures.load("api_dns_list_domain_asp_CREATE_SECOND_RECORD")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES(
-        self, method, url, body, headers
-    ):
+    def _api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES(self, method, url, body, headers):
         body = self.fixtures.load("api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -417,19 +398,13 @@ class WorldWideDNSMockHttp(MockHttp):
     def _api_dns_list_domain_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "_api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY"
-        )
+        body = self.fixtures.load("_api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(
-        self, method, url, body, headers
-    ):
+    def _api_dns_modify_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(self, method, url, body, headers):
         return (httplib.OK, "211\r\n212\r\n213", {}, httplib.responses[httplib.OK])
 
-    def _api_dns_list_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(
-        self, method, url, body, headers
-    ):
+    def _api_dns_list_asp_CREATE_RECORD_MAX_ENTRIES_WITH_ENTRY(self, method, url, body, headers):
         body = self.fixtures.load("api_dns_list")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -447,9 +422,7 @@ class WorldWideDNSMockHttp(MockHttp):
     def _api_dns_delete_domain_asp(self, method, url, body, headers):
         return (httplib.OK, "200", {}, httplib.responses[httplib.OK])
 
-    def _api_dns_delete_domain_asp_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_dns_delete_domain_asp_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         return (httplib.OK, "405", {}, httplib.responses[httplib.OK])
 
     def _api_dns_list_asp_DELETE_RECORD(self, method, url, body, headers):

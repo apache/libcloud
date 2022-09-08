@@ -23,10 +23,9 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.dnsimple import DNSimpleDNSConnection
+from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.base import DNSDriver, Zone, Record
-
+from libcloud.common.dnsimple import DNSimpleDNSConnection
 
 DEFAULT_ZONE_TTL = 3600
 
@@ -104,9 +103,7 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request(
-            "/v1/domains/%s/records/%s" % (zone_id, record_id)
-        )
+        response = self.connection.request("/v1/domains/%s/records/%s" % (zone_id, record_id))
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 
@@ -234,9 +231,7 @@ class DNSimpleDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         zone_id = record.zone.id
-        self.connection.request(
-            "/v1/domains/%s/records/%s" % (zone_id, record.id), method="DELETE"
-        )
+        self.connection.request("/v1/domains/%s/records/%s" % (zone_id, record.id), method="DELETE")
         return True
 
     def _to_zones(self, data):

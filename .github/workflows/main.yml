@@ -11,6 +11,7 @@ on:
     - cron: '0 1 * * *'
 
 permissions:
+  actions: write  # Needed for skip-duplicate-jobs job
   contents: read
 
 jobs:
@@ -33,6 +34,7 @@ jobs:
         # actions
         uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
+          cancel_others: 'true'
           github_token: ${{ github.token }}
 
   unit_tests:
@@ -193,7 +195,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -203,7 +205,7 @@ jobs:
 
       - name: Run Checks
         run: |
-          script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
+          script -e -c "tox -e black-check,isort-check,checks,import-timings,lint,pylint"
 
   build_test_docker_image:
     name: Build and Verify Docker Image
@@ -257,7 +259,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -358,7 +360,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-docs.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 

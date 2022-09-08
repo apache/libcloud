@@ -15,11 +15,10 @@
 
 
 from libcloud.utils.py3 import httplib
-from libcloud.common.brightbox import BrightboxConnection
-from libcloud.loadbalancer.base import Driver, Algorithm, Member
-from libcloud.loadbalancer.base import LoadBalancer
-from libcloud.loadbalancer.types import State
 from libcloud.utils.misc import reverse_dict
+from libcloud.common.brightbox import BrightboxConnection
+from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
 
 API_VERSION = "1.0"
 
@@ -76,9 +75,7 @@ class BrightboxLBDriver(Driver):
         return response.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
-        data = self.connection.request(
-            "/%s/load_balancers/%s" % (API_VERSION, balancer_id)
-        ).object
+        data = self.connection.request("/%s/load_balancers/%s" % (API_VERSION, balancer_id)).object
         return self._to_balancer(data)
 
     def balancer_attach_compute_node(self, balancer, node):

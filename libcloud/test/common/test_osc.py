@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import unittest
 from datetime import datetime
 
-from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.test import LibcloudTestCase
-
-import unittest
-from libcloud.compute.providers import Provider
-from libcloud.compute.providers import get_driver
+from libcloud.common.osc import OSCRequestSignerAlgorithmV4
+from libcloud.compute.providers import Provider, get_driver
 
 
 class OSCRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
@@ -71,9 +69,7 @@ class OSCRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
             service_name=self.driver.service_name,
             region=self.driver.region,
         )
-        self.assertIn(
-            "SignedHeaders=content-type;host;x-osc-date", headers["Authorization"]
-        )
+        self.assertIn("SignedHeaders=content-type;host;x-osc-date", headers["Authorization"])
 
     def test_get_signed_headers_contains_all_headers_lowercased(self):
         path = "my_region/my_service/outscale.com"

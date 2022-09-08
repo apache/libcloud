@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import time
+import hashlib
 
 from libcloud.utils.py3 import b
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
 from libcloud.compute.base import NodeLocation
 
 HOST = "api.gogrid.com"
@@ -50,9 +48,7 @@ class GoGridResponse(JsonResponse):
         try:
             return self.parse_body()["status"] == "success"
         except ValueError:
-            raise MalformedResponseError(
-                "Malformed reply", body=self.body, driver=self.driver
-            )
+            raise MalformedResponseError("Malformed reply", body=self.body, driver=self.driver)
 
     def parse_error(self):
         try:
@@ -82,12 +78,8 @@ class GoGridConnection(ConnectionUserAndKey):
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
-    def request(
-        self, action, params=None, data="", headers=None, method="GET", raw=False
-    ):
-        return super(GoGridConnection, self).request(
-            action, params, data, headers, method, raw
-        )
+    def request(self, action, params=None, data="", headers=None, method="GET", raw=False):
+        return super(GoGridConnection, self).request(action, params, data, headers, method, raw)
 
 
 class GoGridIpAddress(object):
@@ -167,9 +159,7 @@ class BaseGoGridDriver(object):
         if "public" in kwargs and kwargs["public"] is not None:
             params["ip.type"] = {True: "Public", False: "Private"}[kwargs["public"]]
         if "assigned" in kwargs and kwargs["assigned"] is not None:
-            params["ip.state"] = {True: "Assigned", False: "Unassigned"}[
-                kwargs["assigned"]
-            ]
+            params["ip.state"] = {True: "Assigned", False: "Unassigned"}[kwargs["assigned"]]
         if "location" in kwargs and kwargs["location"] is not None:
             params["datacenter"] = kwargs["location"].id
 

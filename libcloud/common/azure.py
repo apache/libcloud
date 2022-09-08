@@ -13,30 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 import os
+import copy
+import hmac
 import time
 import base64
-import hmac
-
 from hashlib import sha256
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import basestring
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import ET
-from libcloud.utils.xml import fixxpath
-
 from libcloud.http import LibcloudConnection
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.azure_arm import publicEnvironments, AzureAuthJsonResponse
-from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.base import CertificateConnection
-from libcloud.common.base import XmlResponse
-from libcloud.common.base import BaseDriver
+from libcloud.utils.py3 import ET, b, httplib, urlparse, urlencode, basestring
+from libcloud.utils.xml import fixxpath
+from libcloud.common.base import (
+    BaseDriver,
+    RawResponse,
+    XmlResponse,
+    ConnectionUserAndKey,
+    CertificateConnection,
+)
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.common.azure_arm import AzureAuthJsonResponse, publicEnvironments
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
@@ -87,9 +82,7 @@ class AzureResponse(XmlResponse):
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
             raise InvalidCredsError(error_msg)
 
-        raise LibcloudError(
-            "%s Status code: %d." % (error_msg, self.status), driver=self
-        )
+        raise LibcloudError("%s Status code: %d." % (error_msg, self.status), driver=self)
 
     def parse_body(self):
         is_redirect = int(self.status) == httplib.TEMPORARY_REDIRECT
@@ -252,9 +245,7 @@ class AzureConnection(ConnectionUserAndKey):
 
         return params, headers
 
-    def _get_azure_auth_signature(
-        self, method, headers, params, account, secret_key, path="/"
-    ):
+    def _get_azure_auth_signature(self, method, headers, params, account, secret_key, path="/"):
         """
         Signature = Base64( HMAC-SHA1( YourSecretAccessKeyID,
                             UTF-8-Encoding-Of( StringToSign ) ) ) );
@@ -315,9 +306,7 @@ class AzureConnection(ConnectionUserAndKey):
 
         string_to_sign = b("\n".join(values_to_sign))
         secret_key = b(secret_key)
-        b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
-        )
+        b64_hmac = base64.b64encode(hmac.new(secret_key, string_to_sign, digestmod=sha256).digest())
 
         return "SharedKey %s:%s" % (self.user_id, b64_hmac.decode("utf-8"))
 
@@ -386,9 +375,7 @@ class AzureServiceManagementConnection(CertificateConnection):
         :type   key_file: ``str``
         """
 
-        super(AzureServiceManagementConnection, self).__init__(
-            key_file, *args, **kwargs
-        )
+        super(AzureServiceManagementConnection, self).__init__(key_file, *args, **kwargs)
 
         self.subscription_id = subscription_id
 

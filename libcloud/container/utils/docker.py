@@ -56,9 +56,7 @@ class DockerHubConnection(Connection):
         headers["Content-Type"] = "application/json"
         if self.username is not None:
             authstr = "Basic " + str(
-                b64encode(
-                    ("%s:%s" % (self.username, self.password)).encode("latin1")
-                ).strip()
+                b64encode(("%s:%s" % (self.username, self.password)).encode("latin1")).strip()
             )
             headers["Authorization"] = authstr
         return headers

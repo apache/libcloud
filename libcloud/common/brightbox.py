@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.utils.py3 import b, httplib, base64_encode_string
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.types import InvalidCredsError
-
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import base64_encode_string
 
 try:
     import simplejson as json
@@ -62,8 +59,7 @@ class BrightboxConnection(ConnectionUserAndKey):
         body = json.dumps({"client_id": self.user_id, "grant_type": "none"})
 
         authorization = (
-            "Basic "
-            + str(base64_encode_string(b("%s:%s" % (self.user_id, self.key)))).rstrip()
+            "Basic " + str(base64_encode_string(b("%s:%s" % (self.user_id, self.key)))).rstrip()
         )
 
         self.connect()
@@ -77,16 +73,12 @@ class BrightboxConnection(ConnectionUserAndKey):
         }
 
         # pylint: disable=assignment-from-no-return
-        response = self.connection.request(
-            method="POST", url="/token", body=body, headers=headers
-        )
+        response = self.connection.request(method="POST", url="/token", body=body, headers=headers)
 
         if response.status == httplib.OK:
             return json.loads(response.read())["access_token"]
         else:
-            responseCls = BrightboxResponse(
-                response=response.getresponse(), connection=self
-            )
+            responseCls = BrightboxResponse(response=response.getresponse(), connection=self)
             message = responseCls.parse_error()
             raise InvalidCredsError(message)
 

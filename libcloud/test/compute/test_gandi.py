@@ -13,19 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
 import random
 import string
+import unittest
 
 from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.gandi import GandiNodeDriver
 from libcloud.common.gandi import GandiException
-from libcloud.compute.types import NodeState
-
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GANDI_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.gandi import GandiNodeDriver
 from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 
@@ -44,19 +42,11 @@ class GandiTests(unittest.TestCase):
         self.assertTrue(len(nodes[0].public_ips) > 1)
 
     def test_list_locations(self):
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
         self.assertEqual(loc.country, "France")
 
     def test_list_images(self):
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
         images = self.driver.list_images(loc)
         self.assertTrue(len(images) > 2)
 
@@ -84,11 +74,7 @@ class GandiTests(unittest.TestCase):
         passwd = "".join(random.choice(string.ascii_letters) for i in range(10))
 
         # Get france datacenter
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
 
         # Get a debian image
         images = self.driver.list_images(loc)
@@ -108,11 +94,7 @@ class GandiTests(unittest.TestCase):
         self.assertEqual(node.name, self.node_name)
 
     def test_create_volume(self):
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
         volume = self.driver.create_volume(size=1024, name="libcloud", location=loc)
         self.assertEqual(volume.name, "libcloud")
         self.assertEqual(volume.size, 1024)
@@ -209,11 +191,7 @@ class GandiRatingTests(unittest.TestCase):
         passwd = "".join(random.choice(string.ascii_letters) for i in range(10))
 
         # Get france datacenter
-        loc = list(
-            filter(
-                lambda x: "france" in x.country.lower(), self.driver.list_locations()
-            )
-        )[0]
+        loc = list(filter(lambda x: "france" in x.country.lower(), self.driver.list_locations()))[0]
 
         # Get a debian image
         images = self.driver.list_images(loc)

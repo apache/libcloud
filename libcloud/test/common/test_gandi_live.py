@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import re
+
 from libcloud.test import MockHttp
 
 FORMAT_URL = re.compile(r"[./?=-]")

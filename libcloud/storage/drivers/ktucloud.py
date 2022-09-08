@@ -15,9 +15,7 @@
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.providers import Provider
-
-from libcloud.storage.drivers.cloudfiles import CloudFilesConnection
-from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
+from libcloud.storage.drivers.cloudfiles import CloudFilesConnection, CloudFilesStorageDriver
 
 KTUCLOUDSTORAGE_AUTH_URL = "https://ssproxy.ucloudbiz.olleh.com/auth/v1.0"
 KTUCLOUDSTORAGE_API_VERSION = "1.0"

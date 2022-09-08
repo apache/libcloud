@@ -56,9 +56,7 @@ def findtext_ignore_namespace(element, xpath, namespace=None, no_text_value=""):
     )
 
     if not result and namespace:
-        result = findtext(
-            element=element, xpath=xpath, namespace=None, no_text_value=no_text_value
-        )
+        result = findtext(element=element, xpath=xpath, namespace=None, no_text_value=no_text_value)
 
     return result
 

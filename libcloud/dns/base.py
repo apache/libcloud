@@ -15,20 +15,12 @@
 
 from __future__ import with_statement
 
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Union
-from typing import Type
-from typing import Any
-
 import datetime
+from typing import Any, Dict, List, Type, Union, Iterator, Optional
 
 from libcloud import __version__
-from libcloud.common.base import Connection
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
+from libcloud.common.base import BaseDriver, Connection, ConnectionUserAndKey
 
 __all__ = ["Zone", "Record", "DNSDriver"]
 
@@ -79,9 +71,7 @@ class Zone(object):
 
     def create_record(self, name, type, data, extra=None):
         # type: (str, RecordType, str, Optional[dict]) -> Record
-        return self.driver.create_record(
-            name=name, zone=self, type=type, data=data, extra=extra
-        )
+        return self.driver.create_record(name=name, zone=self, type=type, data=data, extra=extra)
 
     def update(
         self,
@@ -91,9 +81,7 @@ class Zone(object):
         extra=None,  # type: Optional[dict]
     ):
         # type: (...) -> Zone
-        return self.driver.update_zone(
-            zone=self, domain=domain, type=type, ttl=ttl, extra=extra
-        )
+        return self.driver.update_zone(zone=self, domain=domain, type=type, ttl=ttl, extra=extra)
 
     def delete(self):
         # type: () -> bool
@@ -174,9 +162,7 @@ class Record(object):
         extra=None,  # type: Optional[dict]
     ):
         # type: (...) -> Record
-        return self.driver.update_record(
-            record=self, name=name, type=type, data=data, extra=extra
-        )
+        return self.driver.update_record(record=self, name=name, type=type, data=data, extra=extra)
 
     def delete(self):
         # type: () -> bool
@@ -204,10 +190,13 @@ class Record(object):
     def __repr__(self):
         # type: () -> str
         zone = self.zone.domain if self.zone.domain else self.zone.id
-        return (
-            "<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, "
-            "ttl=%s ...>"
-            % (zone, self.name, self.type, self.data, self.driver.name, self.ttl)
+        return "<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, " "ttl=%s ...>" % (
+            zone,
+            self.name,
+            self.type,
+            self.data,
+            self.driver.name,
+            self.ttl,
         )
 
 

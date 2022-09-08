@@ -20,8 +20,8 @@ libcloud provides a unified interface to the cloud computing resources.
 """
 
 import os
-import codecs
 import atexit
+import codecs
 
 from libcloud.base import DriverType  # NOQA
 from libcloud.base import DriverTypeFactoryMap  # NOQA

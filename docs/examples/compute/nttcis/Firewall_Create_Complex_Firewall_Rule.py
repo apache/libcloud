@@ -1,7 +1,7 @@
 import libcloud.security
+from libcloud.common.nttcis import NttCisPort, NttCisIpAddress, NttCisFirewallAddress
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.common.nttcis import NttCisFirewallAddress, NttCisIpAddress, NttCisPort
 
 # Get nttcis driver
 libcloud.security.VERIFY_SSL_CERT = True
@@ -44,9 +44,7 @@ description = "A test port list"
 
 # rerquires an instance of NttCisPort object
 ports = [NttCisPort(begin="8000", end="8080")]
-result = driver.ex_create_portlist(
-    my_network_domain.id, port_list_name, description, ports
-)
+result = driver.ex_create_portlist(my_network_domain.id, port_list_name, description, ports)
 
 try:
     assert result is True

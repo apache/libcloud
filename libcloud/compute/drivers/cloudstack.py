@@ -18,17 +18,26 @@ from __future__ import with_statement
 import base64
 import warnings
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import urlparse
-
-from libcloud.compute.providers import Provider
-from libcloud.common.cloudstack import CloudStackDriverMixIn
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
-from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import KeyPair
-from libcloud.compute.types import NodeState, LibcloudError
-from libcloud.compute.types import KeyPairDoesNotExistError, StorageVolumeState
+from libcloud.utils.py3 import b, urlparse
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
+)
+from libcloud.compute.types import (
+    NodeState,
+    LibcloudError,
+    StorageVolumeState,
+    KeyPairDoesNotExistError,
+)
 from libcloud.utils.networking import is_private_subnet
+from libcloud.common.cloudstack import CloudStackDriverMixIn
+from libcloud.compute.providers import Provider
 
 
 # Utility functions
@@ -322,9 +331,7 @@ class CloudStackNode(Node):
         """
         return self.driver.ex_release_public_ip(self, address)
 
-    def ex_create_ip_forwarding_rule(
-        self, address, protocol, start_port, end_port=None
-    ):
+    def ex_create_ip_forwarding_rule(self, address, protocol, start_port, end_port=None):
         """
         Add a NAT/firewall forwarding rule for a port or ports.
         """
@@ -725,8 +732,7 @@ class CloudStackNetworkACLList(object):
 
     def __repr__(self):
         return (
-            "<CloudStackNetworkACLList: id=%s, name=%s, vpc_id=%s, "
-            "driver=%s, description=%s>"
+            "<CloudStackNetworkACLList: id=%s, name=%s, vpc_id=%s, " "driver=%s, description=%s>"
         ) % (self.id, self.name, self.vpc_id, self.driver.name, self.description)
 
 
@@ -816,9 +822,7 @@ class CloudStackNetwork(object):
     Class representing a CloudStack Network.
     """
 
-    def __init__(
-        self, displaytext, name, networkofferingid, id, zoneid, driver, extra=None
-    ):
+    def __init__(self, displaytext, name, networkofferingid, id, zoneid, driver, extra=None):
         self.displaytext = displaytext
         self.name = name
         self.networkofferingid = networkofferingid
@@ -983,9 +987,12 @@ class CloudStackVPCOffering(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            "<CloudStackVPCOffering: name=%s, display_text=%s, " "id=%s, " "driver=%s>"
-        ) % (self.name, self.display_text, self.id, self.driver.name)
+        return ("<CloudStackVPCOffering: name=%s, display_text=%s, " "id=%s, " "driver=%s>") % (
+            self.name,
+            self.display_text,
+            self.id,
+            self.driver.name,
+        )
 
 
 class CloudStackVpnGateway(object):
@@ -993,9 +1000,7 @@ class CloudStackVpnGateway(object):
     Class representing a CloudStack VPN Gateway.
     """
 
-    def __init__(
-        self, id, account, domain, domain_id, public_ip, vpc_id, driver, extra=None
-    ):
+    def __init__(self, id, account, domain, domain_id, public_ip, vpc_id, driver, extra=None):
         self.id = id
         self.account = account
         self.domain = domain
@@ -1102,13 +1107,10 @@ class CloudStackVpnConnection(object):
     @property
     def vpn_customer_gateway(self):
         try:
-            return self.driver.ex_list_vpn_customer_gateways(
-                id=self.vpn_customer_gateway_id
-            )[0]
+            return self.driver.ex_list_vpn_customer_gateways(id=self.vpn_customer_gateway_id)[0]
         except IndexError:
             raise LibcloudError(
-                "VPN Customer Gateway with id=%s not found"
-                % self.vpn_customer_gateway_id
+                "VPN Customer Gateway with id=%s not found" % self.vpn_customer_gateway_id
             )
 
     @property
@@ -1116,9 +1118,7 @@ class CloudStackVpnConnection(object):
         try:
             return self.driver.ex_list_vpn_gateways(id=self.vpn_gateway_id)[0]
         except IndexError:
-            raise LibcloudError(
-                "VPN Gateway with id=%s not found" % self.vpn_gateway_id
-            )
+            raise LibcloudError("VPN Gateway with id=%s not found" % self.vpn_gateway_id)
 
     def delete(self):
         return self.driver.ex_delete_vpn_connection(vpn_connection=self)
@@ -1153,8 +1153,7 @@ class CloudStackRouter(object):
 
     def __repr__(self):
         return (
-            "<CloudStackRouter: id=%s, name=%s, state=%s, "
-            "public_ip=%s, vpc_id=%s, driver=%s>"
+            "<CloudStackRouter: id=%s, name=%s, state=%s, " "public_ip=%s, vpc_id=%s, driver=%s>"
         ) % (
             self.id,
             self.name,
@@ -1492,9 +1491,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             for r in port_forwarding_rules.get("portforwardingrule", []):
                 if str(r["virtualmachineid"]) == node.id:
                     addr = [
-                        CloudStackAddress(
-                            id=a["id"], address=a["ipaddress"], driver=node.driver
-                        )
+                        CloudStackAddress(id=a["id"], address=a["ipaddress"], driver=node.driver)
                         for a in addrs.get("publicipaddress", [])
                         if a["ipaddress"] == r["ipaddress"]
                     ]
@@ -1602,9 +1599,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         sizes = []
         for sz in szs["serviceoffering"]:
             extra = {"cpu": sz["cpunumber"]}
-            sizes.append(
-                NodeSize(sz["id"], sz["name"], sz["memory"], 0, 0, 0, self, extra=extra)
-            )
+            sizes.append(NodeSize(sz["id"], sz["name"], sz["memory"], 0, 0, 0, self, extra=extra))
         return sizes
 
     def create_node(
@@ -1802,9 +1797,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``bool``
         """
-        self._async_request(
-            command="rebootVirtualMachine", params={"id": node.id}, method="GET"
-        )
+        self._async_request(command="rebootVirtualMachine", params={"id": node.id}, method="GET")
         return True
 
     def ex_restore(self, node, template=None):
@@ -1823,9 +1816,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if template:
             params["templateid"] = template.id
 
-        res = self._async_request(
-            command="restoreVirtualMachine", params=params, method="GET"
-        )
+        res = self._async_request(command="restoreVirtualMachine", params=params, method="GET")
         return res["virtualmachine"]["templateid"]
 
     def ex_change_node_size(self, node, offering):
@@ -1890,9 +1881,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         diskOfferings = []
 
-        diskOfferResponse = self._sync_request(
-            command="listDiskOfferings", method="GET"
-        )
+        diskOfferResponse = self._sync_request(command="listDiskOfferings", method="GET")
         for diskOfferDict in diskOfferResponse.get("diskoffering", ()):
             diskOfferings.append(
                 CloudStackDiskOffering(
@@ -2174,9 +2163,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return routers
 
-    def ex_create_vpc(
-        self, cidr, display_text, name, vpc_offering, zone_id, network_domain=None
-    ):
+    def ex_create_vpc(self, cidr, display_text, name, vpc_offering, zone_id, network_domain=None):
         """
 
         Creates a VPC, only available in advanced zones.
@@ -2282,9 +2269,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return projects
 
-    def create_volume(
-        self, size, name, location=None, snapshot=None, ex_volume_type=None
-    ):
+    def create_volume(self, size, name, location=None, snapshot=None, ex_volume_type=None):
         """
         Creates a data volume
         Defaults to the first location
@@ -2302,9 +2287,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                         size = diskOffering.size
                     break
             else:
-                raise LibcloudError(
-                    "Volume type with name=%s not found" % ex_volume_type
-                )
+                raise LibcloudError("Volume type with name=%s not found" % ex_volume_type)
 
         if location is None:
             location = self.list_locations()[0]
@@ -2318,9 +2301,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if diskOffering.customizable:
             params["size"] = size
 
-        requestResult = self._async_request(
-            command="createVolume", params=params, method="GET"
-        )
+        requestResult = self._async_request(command="createVolume", params=params, method="GET")
 
         volumeResponse = requestResult["volume"]
 
@@ -2339,9 +2320,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         :rtype: ``bool``
         """
-        self._sync_request(
-            command="deleteVolume", params={"id": volume.id}, method="GET"
-        )
+        self._sync_request(command="deleteVolume", params={"id": volume.id}, method="GET")
         return True
 
     def attach_volume(self, node, volume, device=None):
@@ -2363,9 +2342,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         :rtype: ``bool``
         """
-        self._async_request(
-            command="detachVolume", params={"id": volume.id}, method="GET"
-        )
+        self._async_request(command="detachVolume", params={"id": volume.id}, method="GET")
         return True
 
     def list_volumes(self, node=None):
@@ -2496,9 +2473,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype:   ``list`` of :class:`libcloud.compute.base.KeyPair`
         """
         extra_args = kwargs.copy()
-        res = self._sync_request(
-            command="listSSHKeyPairs", params=extra_args, method="GET"
-        )
+        res = self._sync_request(command="listSSHKeyPairs", params=extra_args, method="GET")
         key_pairs = res.get("sshkeypair", [])
         key_pairs = self._to_key_pairs(data=key_pairs)
         return key_pairs
@@ -2552,9 +2527,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         params = {"name": name}
         params.update(extra_args)
 
-        res = self._sync_request(
-            command="createSSHKeyPair", params=params, method="GET"
-        )
+        res = self._sync_request(command="createSSHKeyPair", params=params, method="GET")
         key_pair = self._to_key_pair(data=res["keypair"])
         return key_pair
 
@@ -2604,9 +2577,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         params = {"name": key_pair.name}
         params.update(extra_args)
 
-        res = self._sync_request(
-            command="deleteSSHKeyPair", params=params, method="GET"
-        )
+        res = self._sync_request(command="deleteSSHKeyPair", params=params, method="GET")
         return res["success"] == "true"
 
     def ex_list_public_ips(self):
@@ -2666,9 +2637,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if network_id is not None:
             args["networkid"] = network_id
 
-        addr = self._async_request(
-            command="associateIpAddress", params=args, method="GET"
-        )
+        addr = self._async_request(command="associateIpAddress", params=args, method="GET")
         addr = addr["ipaddress"]
         addr = CloudStackAddress(addr["id"], addr["ipaddress"], self)
         return addr
@@ -2760,9 +2729,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             args["startport"] = int(start_port)
         if end_port is not None:
             args["endport"] = int(end_port)
-        result = self._async_request(
-            command="createFirewallRule", params=args, method="GET"
-        )
+        result = self._async_request(command="createFirewallRule", params=args, method="GET")
         rule = CloudStackFirewallRule(
             result["firewallrule"]["id"],
             address,
@@ -2860,9 +2827,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if end_port is not None:
             args["endport"] = int(end_port)
 
-        result = self._async_request(
-            command="createEgressFirewallRule", params=args, method="GET"
-        )
+        result = self._async_request(command="createEgressFirewallRule", params=args, method="GET")
 
         rule = CloudStackEgressFirewallRule(
             result["firewallrule"]["id"],
@@ -2995,9 +2960,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             args["projectid"] = project_id
 
         rules = []
-        result = self._sync_request(
-            command="listPortForwardingRules", params=args, method="GET"
-        )
+        result = self._sync_request(command="listPortForwardingRules", params=args, method="GET")
         if result != {}:
             public_ips = self.ex_list_public_ips()
             nodes = self.list_nodes()
@@ -3072,9 +3035,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if network_id:
             args["networkid"] = network_id
 
-        result = self._async_request(
-            command="createPortForwardingRule", params=args, method="GET"
-        )
+        result = self._async_request(command="createPortForwardingRule", params=args, method="GET")
         rule = CloudStackPortForwardingRule(
             node,
             result["portforwardingrule"]["id"],
@@ -3209,9 +3170,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if virtualmachine_id is not None:
             args["virtualmachineid"] = virtualmachine_id
 
-        result = self._sync_request(
-            command="listIpForwardingRules", params=args, method="GET"
-        )
+        result = self._sync_request(command="listIpForwardingRules", params=args, method="GET")
 
         rules = []
         if result != {}:
@@ -3232,9 +3191,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 )
         return rules
 
-    def ex_create_ip_forwarding_rule(
-        self, node, address, protocol, start_port, end_port=None
-    ):
+    def ex_create_ip_forwarding_rule(self, node, address, protocol, start_port, end_port=None):
         """
         "Add a NAT/firewall forwarding rule.
 
@@ -3268,9 +3225,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if end_port is not None:
             args["endport"] = int(end_port)
 
-        result = self._async_request(
-            command="createIpForwardingRule", params=args, method="GET"
-        )
+        result = self._async_request(command="createIpForwardingRule", params=args, method="GET")
         result = result["ipforwardingrule"]
         rule = CloudStackIPForwardingRule(
             node, result["id"], address, protocol, start_port, end_port
@@ -3292,9 +3247,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         node.extra["ip_forwarding_rules"].remove(rule)
-        self._async_request(
-            command="deleteIpForwardingRule", params={"id": rule.id}, method="GET"
-        )
+        self._async_request(command="deleteIpForwardingRule", params={"id": rule.id}, method="GET")
         return True
 
     def ex_create_network_acllist(self, name, vpc_id, description=None):
@@ -3317,13 +3270,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if description:
             args["description"] = description
 
-        result = self._sync_request(
-            command="createNetworkACLList", params=args, method="GET"
-        )
+        result = self._sync_request(command="createNetworkACLList", params=args, method="GET")
 
-        acl_list = CloudStackNetworkACLList(
-            result["id"], name, vpc_id, self, description
-        )
+        acl_list = CloudStackNetworkACLList(result["id"], name, vpc_id, self, description)
         return acl_list
 
     def ex_create_network_acl(
@@ -3382,9 +3331,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if traffic_type:
             args["traffictype"] = traffic_type
 
-        result = self._async_request(
-            command="createNetworkACL", params=args, method="GET"
-        )
+        result = self._async_request(command="createNetworkACL", params=args, method="GET")
 
         acl = CloudStackNetworkACL(
             result["networkacl"]["id"],
@@ -3521,9 +3468,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :return:   A list of keypair dictionaries
         :rtype:   ``list`` of ``dict``
         """
-        warnings.warn(
-            "This method has been deprecated in favor of " "list_key_pairs method"
-        )
+        warnings.warn("This method has been deprecated in favor of " "list_key_pairs method")
 
         key_pairs = self.list_key_pairs(**kwargs)
 
@@ -3561,9 +3506,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :return:   A keypair dictionary
         :rtype:    ``dict``
         """
-        warnings.warn(
-            "This method has been deprecated in favor of " "create_key_pair method"
-        )
+        warnings.warn("This method has been deprecated in favor of " "create_key_pair method")
 
         key_pair = self.create_key_pair(name=name, **kwargs)
 
@@ -3588,13 +3531,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``dict``
         """
         warnings.warn(
-            "This method has been deprecated in favor of "
-            "import_key_pair_from_string method"
+            "This method has been deprecated in favor of " "import_key_pair_from_string method"
         )
 
-        key_pair = self.import_key_pair_from_string(
-            name=name, key_material=key_material
-        )
+        key_pair = self.import_key_pair_from_string(name=name, key_material=key_material)
         result = {"keyName": key_pair.name, "keyFingerprint": key_pair.fingerprint}
 
         return result
@@ -3612,8 +3552,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``dict``
         """
         warnings.warn(
-            "This method has been deprecated in favor of "
-            "import_key_pair_from_file method"
+            "This method has been deprecated in favor of " "import_key_pair_from_file method"
         )
 
         key_pair = self.import_key_pair_from_file(name=name, key_file_path=keyfile)
@@ -3641,9 +3580,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :return:   True of False based on success of Keypair deletion
         :rtype:    ``bool``
         """
-        warnings.warn(
-            "This method has been deprecated in favor of " "delete_key_pair method"
-        )
+        warnings.warn("This method has been deprecated in favor of " "delete_key_pair method")
 
         key_pair = KeyPair(name=keypair, public_key=None, fingerprint=None, driver=self)
 
@@ -3699,9 +3636,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype ``list``
         """
         extra_args = kwargs.copy()
-        res = self._sync_request(
-            command="listSecurityGroups", params=extra_args, method="GET"
-        )
+        res = self._sync_request(command="listSecurityGroups", params=extra_args, method="GET")
 
         security_groups = res.get("securitygroup", [])
         return security_groups
@@ -3740,9 +3675,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         params = {"name": name}
         params.update(extra_args)
 
-        return self._sync_request(
-            command="createSecurityGroup", params=params, method="GET"
-        )["securitygroup"]
+        return self._sync_request(command="createSecurityGroup", params=params, method="GET")[
+            "securitygroup"
+        ]
 
     def ex_delete_security_group(self, name):
         """
@@ -3853,17 +3788,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             }
         )
 
-        if protocol not in ("TCP", "UDP") and (
-            startport is not None or endport is not None
-        ):
+        if protocol not in ("TCP", "UDP") and (startport is not None or endport is not None):
             raise LibcloudError(
                 '"startport" and "endport" are only valid ' "with protocol TCP or UDP."
             )
 
         if protocol != "ICMP" and (icmptype is not None or icmpcode is not None):
-            raise LibcloudError(
-                '"icmptype" and "icmpcode" are only valid ' "with protocol ICMP."
-            )
+            raise LibcloudError('"icmptype" and "icmpcode" are only valid ' "with protocol ICMP.")
 
         if protocol in ("TCP", "UDP"):
             if startport is None:
@@ -3928,9 +3859,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         params = {"name": name, "type": group_type.type}
 
-        result = self._async_request(
-            command="createAffinityGroup", params=params, method="GET"
-        )
+        result = self._async_request(command="createAffinityGroup", params=params, method="GET")
 
         return self._to_affinity_group(result["affinitygroup"])
 
@@ -4168,9 +4097,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return self._to_snapshot(snapshot["snapshot"])
 
     def destroy_volume_snapshot(self, snapshot):
-        self._async_request(
-            command="deleteSnapshot", params={"id": snapshot.id}, method="GET"
-        )
+        self._async_request(command="deleteSnapshot", params={"id": snapshot.id}, method="GET")
         return True
 
     def ex_create_snapshot_template(self, snapshot, name, ostypeid, displaytext=None):
@@ -4209,9 +4136,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             "os": img["ostypename"],
             "displaytext": img["displaytext"],
         }
-        return NodeImage(
-            id=img["id"], name=img["name"], driver=self.connection.driver, extra=extra
-        )
+        return NodeImage(id=img["id"], name=img["name"], driver=self.connection.driver, extra=extra)
 
     def ex_list_os_types(self):
         """
@@ -4553,9 +4478,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if project_id is not None:
             args["projectid"] = project_id
 
-        res = self._sync_request(
-            command="listVpnCustomerGateways", params=args, method="GET"
-        )
+        res = self._sync_request(command="listVpnCustomerGateways", params=args, method="GET")
 
         items = res.get("vpncustomergateway", [])
         vpn_customer_gateways = []
@@ -4664,9 +4587,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if name is not None:
             args["name"] = name
 
-        res = self._async_request(
-            command="createVpnCustomerGateway", params=args, method="GET"
-        )
+        res = self._async_request(command="createVpnCustomerGateway", params=args, method="GET")
 
         item = res["vpncustomergateway"]
         extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP["vpncustomergateway"]
@@ -4794,9 +4715,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if vpc_id is not None:
             args["vpcid"] = vpc_id
 
-        res = self._sync_request(
-            command="listVpnConnections", params=args, method="GET"
-        )
+        res = self._sync_request(command="listVpnConnections", params=args, method="GET")
 
         items = res.get("vpnconnection", [])
         vpn_connections = []
@@ -4850,9 +4769,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if passive is not None:
             args["passive"] = passive
 
-        res = self._async_request(
-            command="createVpnConnection", params=args, method="GET"
-        )
+        res = self._async_request(command="createVpnConnection", params=args, method="GET")
 
         item = res["vpnconnection"]
         extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP["vpnconnection"]

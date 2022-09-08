@@ -12,16 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import hashlib
+import time
 import random
 import string
-import time
+import hashlib
 
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError, ProviderError
-from libcloud.utils.py3 import basestring, httplib, urlencode
-
+from libcloud.utils.py3 import httplib, urlencode, basestring
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import ProviderError, InvalidCredsError
 
 SALT_CHARACTERS = string.ascii_letters + string.digits
 

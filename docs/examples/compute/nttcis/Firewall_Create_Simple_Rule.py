@@ -1,8 +1,9 @@
 from pprint import pprint
+
+import libcloud.security
+from libcloud.common.nttcis import NttCisFirewallAddress
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.common.nttcis import NttCisFirewallAddress
-import libcloud.security
 
 # Get nttcis driver
 libcloud.security.VERIFY_SSL_CERT = True

@@ -15,19 +15,15 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.rackspace import RackspacePTRRecord
-from libcloud.dns.drivers.rackspace import RackspaceDNSDriver
-from libcloud.loadbalancer.base import LoadBalancer
-
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_RACKSPACE
+from libcloud.loadbalancer.base import LoadBalancer
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.rackspace import RackspaceDNSDriver, RackspacePTRRecord
 
 # only the 'extra' will be looked at, so pass in minimal data
 RDNS_NODE = Node(
@@ -94,12 +90,8 @@ class RackspaceUSTests(unittest.TestCase):
         }
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
 
-        self.assertEqual(
-            kwargs["ex_force_auth_url"], driver.connection._ex_force_auth_url
-        )
-        self.assertEqual(
-            kwargs["ex_force_auth_version"], driver.connection._auth_version
-        )
+        self.assertEqual(kwargs["ex_force_auth_url"], driver.connection._ex_force_auth_url)
+        self.assertEqual(kwargs["ex_force_auth_version"], driver.connection._auth_version)
 
     def test_gets_auth_2_0_endpoint(self):
         kwargs = {"ex_force_auth_version": "2.0_password", "region": self.region}
@@ -145,9 +137,7 @@ class RackspaceUSTests(unittest.TestCase):
         self.assertEqual(records[0].data, "127.7.7.7")
         self.assertEqual(records[0].extra["ttl"], 777)
         self.assertEqual(records[0].extra["comment"], "lulz")
-        self.assertEqual(
-            records[0].extra["fqdn"], "test3.%s" % (records[0].zone.domain)
-        )
+        self.assertEqual(records[0].extra["fqdn"], "test3.%s" % (records[0].zone.domain))
 
     def test_list_records_no_results(self):
         zone = self.driver.list_zones()[0]
@@ -374,9 +364,7 @@ class RackspaceUSTests(unittest.TestCase):
             self.assertTrue(isinstance(record, RackspacePTRRecord))
             self.assertEqual(record.type, RecordType.PTR)
             self.assertEqual(record.extra["uri"], RDNS_NODE.extra["uri"])
-            self.assertEqual(
-                record.extra["service_name"], RDNS_NODE.extra["service_name"]
-            )
+            self.assertEqual(record.extra["service_name"], RDNS_NODE.extra["service_name"])
 
     def test_ex_list_ptr_not_found(self):
         RackspaceMockHttp.type = "RECORD_DOES_NOT_EXIST"
@@ -468,9 +456,7 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load("list_records_no_results.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_domains_2946063_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_domains_2946063_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("does_not_exist.json")
         return (
             httplib.NOT_FOUND,
@@ -509,9 +495,7 @@ class RackspaceMockHttp(MockHttp):
             httplib.responses[httplib.NOT_FOUND],
         )
 
-    def _v1_0_11111_domains_12345678_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_domains_12345678_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("get_zone_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
@@ -538,9 +522,7 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load("create_zone_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_domains_CREATE_ZONE_VALIDATION_ERROR(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_domains_CREATE_ZONE_VALIDATION_ERROR(self, method, url, body, headers):
         body = self.fixtures.load("create_zone_validation_error.json")
         return (
             httplib.BAD_REQUEST,
@@ -549,9 +531,7 @@ class RackspaceMockHttp(MockHttp):
             httplib.responses[httplib.BAD_REQUEST],
         )
 
-    def _v1_0_11111_status_116a8f17_38ac_4862_827c_506cd04800d5(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_status_116a8f17_38ac_4862_827c_506cd04800d5(self, method, url, body, headers):
         # Aync status - update_zone
         body = self.fixtures.load("update_zone_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
@@ -563,16 +543,12 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load("create_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_domains_2946063_records_CREATE_RECORD(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_domains_2946063_records_CREATE_RECORD(self, method, url, body, headers):
         # Aync response - create_record
         body = self.fixtures.load("create_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_status_251c0d0c_95bc_4e09_b99f_4b8748b66246(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_status_251c0d0c_95bc_4e09_b99f_4b8748b66246(self, method, url, body, headers):
         # Aync response - update_record
         body = self.fixtures.load("update_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
@@ -582,9 +558,7 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load("update_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_status_0b40cd14_2e5d_490f_bb6e_fdc65d1118a9(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_status_0b40cd14_2e5d_490f_bb6e_fdc65d1118a9(self, method, url, body, headers):
         # Async status - delete_zone
         body = self.fixtures.load("delete_zone_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
@@ -627,9 +601,7 @@ class RackspaceMockHttp(MockHttp):
             httplib.responses[httplib.NOT_FOUND],
         )
 
-    def _v1_0_11111_rdns_cloudServersOpenStack_PTR_7423034(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_rdns_cloudServersOpenStack_PTR_7423034(self, method, url, body, headers):
         body = self.fixtures.load("get_ptr_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
@@ -637,15 +609,11 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load("create_ptr_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_status_12345678_5739_43fb_8939_f3a2c4c0e99c(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_status_12345678_5739_43fb_8939_f3a2c4c0e99c(self, method, url, body, headers):
         body = self.fixtures.load("create_ptr_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_status_12345678_2e5d_490f_bb6e_fdc65d1118a9(
-        self, method, url, body, headers
-    ):
+    def _v1_0_11111_status_12345678_2e5d_490f_bb6e_fdc65d1118a9(self, method, url, body, headers):
         body = self.fixtures.load("delete_ptr_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 

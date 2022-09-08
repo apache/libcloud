@@ -28,10 +28,9 @@
 
 import os
 import sys
+import random
 import argparse
 import subprocess
-import random
-
 from os.path import join as pjoin
 
 DIMENSIONS = "150x150"  # Dimensions of the resized image (<width>x<height>)
@@ -53,9 +52,7 @@ def setup(output_path):
 
 def get_logo_files(input_path):
     logo_files = os.listdir(input_path)
-    logo_files = [
-        name for name in logo_files if "resized" not in name and name.endswith("png")
-    ]
+    logo_files = [name for name in logo_files if "resized" not in name and name.endswith("png")]
     logo_files = [pjoin(input_path, name) for name in logo_files]
 
     return logo_files
@@ -113,9 +110,7 @@ def main(input_path, output_path):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Assemble provider logos " " in a single image"
-    )
+    parser = argparse.ArgumentParser(description="Assemble provider logos " " in a single image")
     parser.add_argument(
         "--input-path",
         action="store",

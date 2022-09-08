@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bottle import run
-
 import integration.api.routes  # noqa
+from bottle import run
 
 if __name__ == '__main__':
     run(host='localhost', port=9898)

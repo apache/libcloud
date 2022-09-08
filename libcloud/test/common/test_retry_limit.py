@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import socket
 import ssl
+import socket
+from unittest.mock import Mock, MagicMock, patch
 
-from unittest.mock import Mock, patch, MagicMock
-
-from libcloud.utils.retry import TRANSIENT_SSL_ERROR
-from libcloud.common.base import Connection
 from libcloud.test import unittest
+from libcloud.common.base import Connection
+from libcloud.utils.retry import TRANSIENT_SSL_ERROR
 
 CONFLICT_RESPONSE_STATUS = [
     ("status", "429"),

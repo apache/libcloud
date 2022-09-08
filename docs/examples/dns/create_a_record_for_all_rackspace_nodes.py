@@ -1,10 +1,10 @@
 from pprint import pprint
 
-from libcloud.compute.providers import get_driver as get_compute_driver
-from libcloud.compute.types import Provider as ComputeProvider
-from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.types import Provider as DNSProvider
 from libcloud.dns.types import RecordType
+from libcloud.compute.types import Provider as ComputeProvider
+from libcloud.dns.providers import get_driver as get_dns_driver
+from libcloud.compute.providers import get_driver as get_compute_driver
 
 CREDENTIALS_RACKSPACE = ("username", "api key")
 CREDENTIALS_ZERIGO = ("email", "api key")

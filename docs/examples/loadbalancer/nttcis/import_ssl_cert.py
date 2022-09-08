@@ -23,9 +23,7 @@ def lbdriver():
 
 
 def compute_driver():
-    cls = libcloud.get_driver(
-        libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.NTTCIS
-    )
+    cls = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.NTTCIS)
     driver = cls("mitchgeo-test", "Snmpv2c!", region="eu")
     return driver
 

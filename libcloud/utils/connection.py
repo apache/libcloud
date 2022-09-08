@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils.py3 import urlparse, parse_qs
+from libcloud.utils.py3 import parse_qs, urlparse
 from libcloud.common.base import Connection
 
 __all__ = ["get_response_object"]

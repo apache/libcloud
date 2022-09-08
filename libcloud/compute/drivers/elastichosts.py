@@ -20,7 +20,6 @@ ElasticHosts Driver
 from libcloud.compute.types import Provider
 from libcloud.compute.drivers.elasticstack import ElasticStackBaseNodeDriver
 
-
 # API end-points
 API_ENDPOINTS = {
     "lon-p": {

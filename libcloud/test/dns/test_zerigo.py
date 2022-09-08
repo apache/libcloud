@@ -15,16 +15,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.zerigo import ZerigoDNSDriver, ZerigoError
-
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.test.secrets import DNS_PARAMS_ZERIGO
+from libcloud.dns.drivers.zerigo import ZerigoError, ZerigoDNSDriver
+from libcloud.test.file_fixtures import DNSFileFixtures
 
 
 class ZerigoTests(unittest.TestCase):
@@ -148,9 +145,7 @@ class ZerigoTests(unittest.TestCase):
     def test_create_zone_success(self):
         ZerigoMockHttp.type = "CREATE_ZONE"
 
-        zone = self.driver.create_zone(
-            domain="foo.bar.com", type="master", ttl=None, extra=None
-        )
+        zone = self.driver.create_zone(domain="foo.bar.com", type="master", ttl=None, extra=None)
         self.assertEqual(zone.id, "12345679")
         self.assertEqual(zone.domain, "foo.bar.com")
 
@@ -158,9 +153,7 @@ class ZerigoTests(unittest.TestCase):
         ZerigoMockHttp.type = "CREATE_ZONE_VALIDATION_ERROR"
 
         try:
-            self.driver.create_zone(
-                domain="foo.bar.com", type="master", ttl=10, extra=None
-            )
+            self.driver.create_zone(domain="foo.bar.com", type="master", ttl=10, extra=None)
         except ZerigoError as e:
             self.assertEqual(len(e.errors), 2)
         else:
@@ -168,9 +161,7 @@ class ZerigoTests(unittest.TestCase):
 
     def test_update_zone_success(self):
         zone = self.driver.list_zones()[0]
-        updated_zone = self.driver.update_zone(
-            zone=zone, ttl=10, extra={"notes": "bar foo"}
-        )
+        updated_zone = self.driver.update_zone(zone=zone, ttl=10, extra={"notes": "bar foo"})
 
         self.assertEqual(zone.extra["notes"], "test foo bar")
 
@@ -279,9 +270,7 @@ class ZerigoMockHttp(MockHttp):
         body = self.fixtures.load("list_records_no_results.xml")
         return (httplib.OK, body, {"x-query-count": "0"}, httplib.responses[httplib.OK])
 
-    def _api_1_1_zones_12345678_hosts_xml_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_zones_12345678_hosts_xml_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = ""
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 
@@ -301,15 +290,11 @@ class ZerigoMockHttp(MockHttp):
         body = ""
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 
-    def _api_1_1_zones_12345678_xml_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_zones_12345678_xml_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("get_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_1_1_hosts_28536_xml_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_hosts_28536_xml_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = ""
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 
@@ -317,27 +302,19 @@ class ZerigoMockHttp(MockHttp):
         body = self.fixtures.load("create_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_1_1_zones_xml_CREATE_ZONE_VALIDATION_ERROR(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_zones_xml_CREATE_ZONE_VALIDATION_ERROR(self, method, url, body, headers):
         body = self.fixtures.load("create_zone_validation_error.xml")
         return (httplib.UNPROCESSABLE_ENTITY, body, {}, httplib.responses[httplib.OK])
 
-    def _api_1_1_zones_12345678_hosts_xml_CREATE_RECORD(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_zones_12345678_hosts_xml_CREATE_RECORD(self, method, url, body, headers):
         body = self.fixtures.load("create_record.xml")
         return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
 
-    def _api_1_1_zones_12345678_xml_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_zones_12345678_xml_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = ""
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 
-    def _api_1_1_hosts_23456789_xml_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _api_1_1_hosts_23456789_xml_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = ""
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 

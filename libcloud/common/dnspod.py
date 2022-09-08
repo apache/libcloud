@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
+from typing import Dict, List
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-
+from libcloud.common.base import JsonResponse, ConnectionKey
 
 __all__ = ["API_HOST", "DNSPodException", "DNSPodResponse", "DNSPodConnection"]
 
@@ -33,9 +31,7 @@ class DNSPodResponse(JsonResponse):
         super(DNSPodResponse, self).__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise DNSPodException(
-                code=self.status, message=self.errors.pop()["status"]["message"]
-            )
+            raise DNSPodException(code=self.status, message=self.errors.pop()["status"]["message"])
 
     def parse_body_and_errors(self):
         js = super(DNSPodResponse, self).parse_body()
