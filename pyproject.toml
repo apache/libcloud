@@ -11,3 +11,11 @@ exclude = '''
   )/
 )
 '''
+
+[tool.isort]
+profile = "hug"
+src_paths = ["libcloud", "contrib", "docs", "demos", "pylint_plugins"]
+line_length = 100
+indent = "    "
+skip_glob = [".venv/*", ".tox/*", ".github/actions/*"]
+length_sort = true

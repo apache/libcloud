@@ -203,7 +203,7 @@ jobs:
 
       - name: Run Checks
         run: |
-          script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
+          script -e -c "tox -e black-check,isort-check,checks,import-timings,lint,pylint"
 
   build_test_docker_image:
     name: Build and Verify Docker Image
