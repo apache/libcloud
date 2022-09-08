@@ -38,6 +38,16 @@ Compute
   (GITHUB-1736)
   [Palash Gandhi - @palashgandhi]
 
+- [GCE] Add improved support for retrieving GCE image pricing data using
+  ``libcloud.pricing.get_image_price("gce_images", ...)`` method.
+
+  Existing way of retrieving image pricing using
+  ``libcloud.pricing.get_pricing("compute", "gce_images")`` method continues to
+  work.
+
+  (GITHUB-1699)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Storage
 ~~~~~~~
 
