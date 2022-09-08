@@ -33,6 +33,7 @@ jobs:
           github_token: ${{ github.token }}
 
   dependency-review:
+    name: Dependency Review
     runs-on: ubuntu-latest
 
     needs: pre_job
@@ -44,4 +45,5 @@ jobs:
 
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v2
-        allow-licenses: MIT Apache-2.0 BSD-3-Clause
+        with:
+          allow-licenses: MIT Apache-2.0 BSD-3-Clause
