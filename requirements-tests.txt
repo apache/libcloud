@@ -1,9 +1,9 @@
 pep8==1.7.1
 flake8==5.0.4
-astroid==2.12.9
-pylint==2.15.2
+astroid==2.12.9; python_version >= '3.8'
+pylint==2.15.2; python_version >= '3.8'
 codecov==2.1.12
-coverage==6.4.4
+coverage==6.4.4; python_version >= '3.8'
 requests>=2.27.1
 requests_mock==1.10.0
 pytest==7.0.1
