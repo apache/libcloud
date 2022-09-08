@@ -193,7 +193,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -257,7 +257,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -358,7 +358,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-docs.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
