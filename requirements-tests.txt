@@ -10,6 +10,7 @@ pytest==7.0.1
 pytest-xdist==2.5.0
 pytest-benchmark[histogram]==3.4.1
 cryptography==38.0.1
+black==22.8.0; python_version >= '3.6' and implementation_name == "cpython"
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==22.0.0
 more-itertools==8.14.0
