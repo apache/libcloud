@@ -12,6 +12,22 @@ Common
   (GITHUB-1717, GITHUB-1718)
   [Dimitris Galanis - @dimgal1]
 
+
+- Update EC2 price scraping script to utilize official pricing API endpoint.
+
+  Pricing file has also been updated to include latest EC2 pricing data.
+
+  Complete raw pricing data file size has grown by ~1 MB (from ~2 MB to
+  ~3 MB).
+
+  By default when requesting pricing data we only cache pricing data in memory
+  for used / requested drivers so a slight memory increase due to the pricing
+  file size increase will only affect users who utilize pricing related
+  functionality in the EC2 driver.
+
+  (GITHUB-1715)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Compute
 ~~~~~~~
 
@@ -64,14 +80,6 @@ Storage
 
   (GITHUB-1712)
   [Tomaz Muraus - @Kami]
-
-Common
-~~~~~~
-
-- Update EC2 price scraping script to utilize official pricing API endpoint.
-
-  (GITHUB-1715)
-  [Eis D. Zaster - @Eis-D-Z]
 
 Changes in Apache Libcloud 3.6.0
 --------------------------------
