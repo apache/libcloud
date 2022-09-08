@@ -34,11 +34,16 @@ Code style guide
 * We follow `The Black code style`_ and automatically enforce it for all the
   new code using black tool. You can re-format your code using black by
   running ``black`` tox target (``tox -eblack``).
+* We enforce consistent import ordering using the isort library. Imports can be
+  automatically re-ordered / sorted by using ``isort`` tox target (``tox -e
+  isort``).
 * Use 4 spaces for a tab
 * Use 100 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
+* Make sure new code contains type annotations
 * You can verify that your changes don't break any rules by running the
-  following tox targets - ``lint,pylint,black`` - ``tox -elint,pylint,black``.
+  following tox targets - ``lint,pylint,black`` - ``tox
+  -elint,pylint,black,isort``.
 
 And most importantly, follow the existing style in the file you are editing and
 **be consistent**.
