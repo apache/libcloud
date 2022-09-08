@@ -26,6 +26,7 @@ github:
     - cloud
     - libcloud
     - apache
+  del_branch_on_merge: true
   features:
     wiki: false
     issues: true
