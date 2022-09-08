@@ -11,6 +11,7 @@ on:
     - cron: '0 1 * * *'
 
 permissions:
+  actions: write  # Needed for skip-duplicate-jobs job
   contents: read
 
 jobs:
