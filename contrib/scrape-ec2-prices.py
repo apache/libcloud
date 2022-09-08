@@ -143,10 +143,11 @@ def scrape_ec2_pricing():
     json_file, from_file = get_json()
     with open(json_file, "r") as f:
         print("Starting to parse pricing data, this could take up to 15 minutes...")
+        # use parser because file is very large
         parser = ijson.parse(f, buf_size=IJSON_BUF_SIZE)
         current_sku = ""
 
-        for prefix, event, value in parser:
+        for prefix, event, value in tqdm.tqdm(parser):
             if "terms" in prefix:
                 break
             if (prefix, event) == ("products", "map_key"):
@@ -196,6 +197,7 @@ def scrape_ec2_pricing():
                     and "Dedicated Host" not in skus[current_sku]["family"]
                 ):
                     del skus[current_sku]
+
     ec2_linux = defaultdict(OrderedDict)
     ec2_windows = defaultdict(OrderedDict)
     ec2_rhel = defaultdict(OrderedDict)
