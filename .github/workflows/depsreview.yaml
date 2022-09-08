@@ -2,7 +2,8 @@ name: 'Dependency Review'
 
 on:
   pull_request:
-    branches: [ trunk ]
+    branches:
+      - trunk
 
 permissions:
   actions: write  # Needed for skip-duplicate-jobs job
@@ -40,5 +41,7 @@ jobs:
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
+
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v2
+        allow-licenses: MIT Apache-2.0 BSD-3-Clause
