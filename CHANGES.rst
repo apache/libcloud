@@ -81,6 +81,18 @@ Storage
   (GITHUB-1712)
   [Tomaz Muraus - @Kami]
 
+Other
+~~~~~
+
+- All the imports in the code have been re-organized / sorted using the ``isort``
+  library.
+
+  Going forward, consistent import ordering will be automatically enforced
+  using ``isort`` check on the CI.
+
+  Developers can run the isort check locally using
+  ``tox -e <isort|isort-check>`` command.
+
 Changes in Apache Libcloud 3.6.0
 --------------------------------
 
