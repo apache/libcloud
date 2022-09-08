@@ -22,40 +22,37 @@ import inspect
 from os.path import join as pjoin
 from collections import OrderedDict
 
-from libcloud.dns.base import DNSDriver
-from libcloud.dns.types import Provider as DNSProvider
-from libcloud.backup.base import BackupDriver
-from libcloud.backup.types import Provider as BackupProvider
-from libcloud.compute.base import NodeDriver
-from libcloud.storage.base import StorageDriver
-from libcloud.compute.types import Provider as ComputeProvider
-from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
-from libcloud.dns.providers import get_driver as get_dns_driver
-from libcloud.storage.types import Provider as StorageProvider
-from libcloud.container.base import ContainerDriver
-from libcloud.container.types import Provider as ContainerProvider
-from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
-from libcloud.backup.providers import get_driver as get_backup_driver
-from libcloud.compute.providers import DRIVERS as COMPUTE_DRIVERS
-from libcloud.compute.providers import get_driver as get_compute_driver
-from libcloud.loadbalancer.base import Driver as LBDriver
-from libcloud.storage.providers import DRIVERS as STORAGE_DRIVERS
-from libcloud.storage.providers import get_driver as get_storage_driver
-from libcloud.loadbalancer.types import Provider as LBProvider
-from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
-from libcloud.container.providers import get_driver as get_container_driver
-from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS
-from libcloud.loadbalancer.providers import get_driver as get_lb_driver
+# Add parent dir of this file's dir to sys.path (OS-agnostically)
+sys.path.append(
+    os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+)
 
-this_dir = os.path.abspath(os.path.split(__file__)[0])
-sys.path.insert(0, os.path.join(this_dir, "../"))
-
-
-
-
-
-
-
+# isort:skip pragma is needed to make sure those imports are not moved above
+# sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
+from libcloud.dns.base import DNSDriver # isort:skip
+from libcloud.dns.types import Provider as DNSProvider # isort:skip
+from libcloud.backup.base import BackupDriver # isort:skip
+from libcloud.backup.types import Provider as BackupProvider # isort:skip
+from libcloud.compute.base import NodeDriver # isort:skip
+from libcloud.storage.base import StorageDriver # isort:skip
+from libcloud.compute.types import Provider as ComputeProvider # isort:skip
+from libcloud.dns.providers import DRIVERS as DNS_DRIVERS # isort:skip
+from libcloud.dns.providers import get_driver as get_dns_driver # isort:skip
+from libcloud.storage.types import Provider as StorageProvider # isort:skip
+from libcloud.container.base import ContainerDriver # isort:skip
+from libcloud.container.types import Provider as ContainerProvider # isort:skip
+from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS # isort:skip
+from libcloud.backup.providers import get_driver as get_backup_driver # isort:skip
+from libcloud.compute.providers import DRIVERS as COMPUTE_DRIVERS # isort:skip
+from libcloud.compute.providers import get_driver as get_compute_driver # isort:skip
+from libcloud.loadbalancer.base import Driver as LBDriver # isort:skip
+from libcloud.storage.providers import DRIVERS as STORAGE_DRIVERS # isort:skip
+from libcloud.storage.providers import get_driver as get_storage_driver # isort:skip
+from libcloud.loadbalancer.types import Provider as LBProvider # isort:skip
+from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS # isort:skip
+from libcloud.container.providers import get_driver as get_container_driver # isort:skip
+from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS # isort:skip
+from libcloud.loadbalancer.providers import get_driver as get_lb_driver # isort:skip
 
 HEADER = (
     ".. NOTE: This file has been generated automatically using "

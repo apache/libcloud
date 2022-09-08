@@ -44,26 +44,25 @@
 import sys
 import time
 import os.path
+import argparse
 import datetime
 
-from libcloud.dns.base import Zone, Record
-from libcloud.dns.types import Provider as Provider_dns
-from libcloud.utils.py3 import PY3
-from libcloud.common.google import ResourceNotFoundError
-from libcloud.compute.types import Provider
-from libcloud.dns.providers import get_driver as get_driver_dns
-from libcloud.compute.providers import get_driver
-from libcloud.loadbalancer.types import Provider as Provider_lb
-from libcloud.loadbalancer.providers import get_driver as get_driver_lb
+# Add parent dir of this file's dir to sys.path (OS-agnostically)
+sys.path.append(
+    os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+)
 
-try:
-    import argparse
-except Exception:
-    print(
-        'This script uses the python "argparse" module. Please use Python '
-        "2.7 or greater."
-    )
-    raise
+# isort:skip pragma is needed to make sure those imports are not moved above
+# sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
+from libcloud.dns.base import Zone, Record  # isort:skip
+from libcloud.dns.types import Provider as Provider_dns  # isort:skip
+from libcloud.utils.py3 import PY3  # isort:skip
+from libcloud.common.google import ResourceNotFoundError  # isort:skip
+from libcloud.compute.types import Provider  # isort:skip
+from libcloud.dns.providers import get_driver as get_driver_dns  # isort:skip
+from libcloud.compute.providers import get_driver  # isort:skip
+from libcloud.loadbalancer.types import Provider as Provider_lb  # isort:skip
+from libcloud.loadbalancer.providers import get_driver as get_driver_lb  # isort:skip
 
 try:
     import secrets
@@ -77,11 +76,6 @@ except ImportError:
         "libcloud/common/google.py\n"
     )
     sys.exit(1)
-
-# Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(
-    os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
-)
 
 
 if PY3:
