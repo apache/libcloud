@@ -16,6 +16,7 @@
 DigitalOcean Driver
 """
 import json
+from typing import Optional
 import warnings
 
 from libcloud.common.digitalocean import DigitalOcean_v1_Error
@@ -93,8 +94,21 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
     EX_CREATE_ATTRIBUTES = ["backups", "ipv6", "private_networking", "tags", "ssh_keys"]
 
-    def list_images(self):
-        data = self._paginated_request("/v2/images", "images")
+    def list_images(self, ex_private: Optional[bool] = None, ex_tag_name: Optional[str] = None):
+        """
+        List all the available images.
+
+        :param ex_private: Filters only user (private) images.
+        :type ex_private: ``bool``
+
+        :param ex_tag_name: Filters only user (private) images. Example: ``tag_name=base-image``
+        :type ex_tag_name: ``bool``
+
+        :return: Available Images/Snapshots keys.
+        :rtype: ``list`` of :class:`NodeImage`
+        """
+        params = dict(private=ex_private, tag_name=ex_tag_name)
+        data = self._paginated_request("/v2/images", "images", params)
         return list(map(self._to_image, data))
 
     def list_key_pairs(self):
@@ -112,6 +126,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         List locations
 
         :param ex_available: Only return locations which are available.
+                             This is a convenience filter, and will only filter results
+                             already returned by the API.
         :type ex_evailable: ``bool``
         """
         locations = []
@@ -124,11 +140,30 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
                 locations.append(self._to_location(location))
         return locations
 
-    def list_nodes(self):
-        data = self._paginated_request("/v2/droplets", "droplets")
+    def list_nodes(self, ex_tag_name: Optional[str] = None):
+        """
+        List Nodes
+
+        :param ex_tag_name: Filter droplets by tag.
+        :type ex_tag_name: ``str``
+
+        :return: List all droplets.
+        :rtype: ``list`` of :class:`Node`
+        """
+        params = dict(tag_name=ex_tag_name)
+        data = self._paginated_request("/v2/droplets", "droplets", params)
         return list(map(self._to_node, data))
 
     def list_sizes(self, location=None):
+        """
+        List Sizes
+
+        :param location: Filter by location.
+        :type location: ``str``
+
+        :return: List all available sizes.
+        :rtype: ``list`` of :class:`NodeSize`
+        """
         data = self._paginated_request("/v2/sizes", "sizes")
         sizes = list(map(self._to_size, data))
         if location:
@@ -138,6 +173,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         return sizes
 
     def list_volumes(self):
+        """
+        List All Volumes (Block Storage)
+
+        :return: List all available volumes.
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
         data = self._paginated_request("/v2/volumes", "volumes")
         return list(map(self._to_volume, data))
 
@@ -217,6 +258,15 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         return self._to_node(data=data)
 
     def destroy_node(self, node):
+        """
+        Destroy a node
+
+        :param node: The Node Object.
+        :type node: :class:`Node`
+
+        :return: Boolean of success/false.
+        :rtype: ``bool``
+        """
         res = self.connection.request("/v2/droplets/%s" % (node.id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
@@ -841,5 +891,10 @@ class DigitalOcean_v2_FloatingIpAddress(object):
     def __repr__(self):
         return (
             "<DigitalOcean_v2_FloatingIpAddress: id=%s, ip_addr=%s,"
-            " driver=%s>" % (self.id, self.ip_address, self.driver)
+            " driver=%s>"
+            % (
+                self.id,
+                self.ip_address,
+                self.driver,
+            )
         )

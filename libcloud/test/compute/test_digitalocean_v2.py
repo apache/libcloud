@@ -72,6 +72,22 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertTrue(image.id is not None)
         self.assertTrue(image.name is not None)
 
+    def test_list_images_filter_by_tag_name(self):
+        images = self.driver.list_images(ex_tag_name="base-image")
+        self.assertTrue(len(images) >= 1)
+
+        image = images[0]
+        self.assertTrue(image.id is not None)
+        self.assertTrue(image.name is not None)
+
+    def test_list_images_filter_by_private(self):
+        images = self.driver.list_images(ex_private=True)
+        self.assertTrue(len(images) >= 1)
+
+        image = images[0]
+        self.assertTrue(image.id is not None)
+        self.assertTrue(image.name is not None)
+
     def test_list_sizes_success(self):
         sizes = self.driver.list_sizes()
         self.assertTrue(len(sizes) >= 1)

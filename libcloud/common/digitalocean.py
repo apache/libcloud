@@ -191,7 +191,26 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
             "/v2/actions/%s" % event_id, params=params
         ).object["action"]
 
-    def _paginated_request(self, url, obj):
+    def _parse_query_params(self, params):
+        """
+        Fixes the query params to convert booleans to lowercase
+        and removes ``null`` params.
+
+        :param params: The dictionary with the params
+        :type params: ``dict``
+
+        :return: ``dict`` of params
+        :rtype: ``dict``
+        """
+        params = {key: value for key, value in params.items() if value is not None}
+        params = {
+            key: str(value).lower()
+            for key, value in params.items()
+            if isinstance(value, bool)
+        }
+        return params
+
+    def _paginated_request(self, url, obj, params=None):
         """
         Perform multiple calls in order to have a full list of elements when
         the API responses are paginated.
@@ -205,21 +224,21 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         :return: ``list`` of API response objects
         :rtype: ``list``
         """
-        params = {}
-        data = self.connection.request(url)
+        params = {} if params is None else params
+        params = self._parse_query_params(params)
+        data = self.connection.request(url, params=params)
         try:
             query = urlparse.urlparse(data.object["links"]["pages"]["last"])
-            # The query[4] references the query parameters from the url
-            pages = parse_qs(query[4])["page"][0]
+            url_query_params = query[4]
+            pages = parse_qs(url_query_params)["page"][0]
             values = data.object[obj]
             for page in range(2, int(pages) + 1):
                 params.update({"page": page})
                 new_data = self.connection.request(url, params=params)
-
                 more_values = new_data.object[obj]
                 for value in more_values:
                     values.append(value)
             data = values
-        except KeyError:  # No pages.
+        except KeyError:
             data = data.object[obj]
         return data
