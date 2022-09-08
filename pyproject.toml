@@ -13,7 +13,7 @@ exclude = '''
 '''
 
 [tool.isort]
-profile = "hug"
+profile = "black"
 src_paths = ["libcloud", "contrib", "docs", "demos", "pylint_plugins"]
 line_length = 100
 indent = "    "
