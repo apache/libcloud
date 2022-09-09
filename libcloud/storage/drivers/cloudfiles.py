@@ -41,9 +41,7 @@ try:
 except ImportError:
     import json  # type: ignore
 
-
 from io import FileIO as file
-
 
 CDN_HOST = "cdn.clouddrive.com"
 API_VERSION = "v1.0"

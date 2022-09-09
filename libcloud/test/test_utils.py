@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import sys
-import codecs
 import socket
 import os.path
 import platform

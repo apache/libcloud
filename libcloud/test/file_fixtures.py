@@ -16,7 +16,6 @@
 # Helper class for loading large fixture data
 
 import os
-import codecs
 
 from libcloud.utils.py3 import u
 

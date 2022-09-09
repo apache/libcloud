@@ -17,6 +17,7 @@ import hmac
 import time
 import base64
 import hashlib
+from io import FileIO as file
 
 from libcloud.utils.py3 import b, next, httplib, urlparse, urlquote, urlencode, urlunquote
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
@@ -29,8 +30,6 @@ from libcloud.storage.types import (
     ContainerDoesNotExistError,
     ContainerAlreadyExistsError,
 )
-
-from io import FileIO as file
 
 
 def collapse(s):

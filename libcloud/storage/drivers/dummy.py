@@ -16,6 +16,7 @@
 import random
 import hashlib
 import os.path
+from io import FileIO as file
 
 from libcloud.utils.py3 import b
 from libcloud.common.types import LibcloudError
@@ -26,8 +27,6 @@ from libcloud.storage.types import (
     ContainerDoesNotExistError,
     ContainerAlreadyExistsError,
 )
-
-from io import FileIO as file
 
 
 class DummyFileObject(file):

@@ -15,4 +15,4 @@ more-itertools==8.14.0
 # Required by subset of tests
 fasteners
 paramiko==2.11.0; platform_python_implementation != 'PyPy'
-libvirt-python==7.9.0
+libvirt-python==8.7.0
