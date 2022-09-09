@@ -13,7 +13,7 @@ jobs:
   generate_and_publish_pricing_data:
     name: Generate and Publish Pricing file to S3
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
 
     strategy:
       matrix:
