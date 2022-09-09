@@ -16,6 +16,6 @@ extended_exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 99
-src_paths = ["libcloud", "contrib", "docs", "demos", "pylint_plugins"]
+src_paths = ["libcloud", "contrib", "docs", "demos", "pylint_plugins", "integration"]
 skip_glob = [".venv/*", ".tox/*", ".github/actions/*"]
 length_sort = true
