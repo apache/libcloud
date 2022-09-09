@@ -45,5 +45,8 @@ jobs:
 
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v2
-        with:
-          allow-licenses: MIT Apache-2.0 BSD-3-Clause
+        # TODO: We really want one check for direct prod dependencies where we
+        # only allows ASF, MIT, BSD and nother one for testing / dev
+        # dependencies where we also allow GPL, etc.
+        #with:
+        #   allow-licenses: MIT, Apache-2.0, BSD-3-Clause
