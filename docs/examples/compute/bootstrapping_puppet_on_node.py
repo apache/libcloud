@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import os
 
 from libcloud.compute.types import Provider

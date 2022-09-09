@@ -57,7 +57,7 @@ def relative_to(base, relativee):
         if relative.startswith(os.sep):
             relative = relative[1:]
         return os.path.join(base, relative)
-    raise ValueError("%s is not a subpath of %s" % (relativee, basepath))
+    raise ValueError("{} is not a subpath of {}".format(relativee, basepath))
 
 
 def get_packages(dname, pkgname=None, results=None, ignore=None, parent=None):

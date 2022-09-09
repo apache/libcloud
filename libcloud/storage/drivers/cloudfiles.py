@@ -19,7 +19,7 @@ import atexit
 from time import time
 from hashlib import sha1
 
-from libcloud.utils.py3 import PY3, b, httplib, urlquote, urlencode
+from libcloud.utils.py3 import b, httplib, urlquote, urlencode
 from libcloud.common.base import Response, RawResponse
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -42,8 +42,7 @@ except ImportError:
     import json  # type: ignore
 
 
-if PY3:
-    from io import FileIO as file
+from io import FileIO as file
 
 
 CDN_HOST = "cdn.clouddrive.com"
@@ -112,7 +111,7 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
     def __init__(self, user_id, key, secure=True, **kwargs):
         # Ignore this for now
         kwargs.pop("use_internal_url", None)
-        super(OpenStackSwiftConnection, self).__init__(user_id, key, secure=secure, **kwargs)
+        super().__init__(user_id, key, secure=secure, **kwargs)
         self.api_version = API_VERSION
         self.accept_format = "application/json"
 
@@ -164,7 +163,7 @@ class OpenStackSwiftConnection(OpenStackBaseConnection):
         if method in ["POST", "PUT"] and "Content-Type" not in headers:
             headers.update({"Content-Type": "application/json; charset=UTF-8"})
 
-        return super(OpenStackSwiftConnection, self).request(
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -186,7 +185,7 @@ class CloudFilesConnection(OpenStackSwiftConnection):
     _auth_version = "2.0"
 
     def __init__(self, user_id, key, secure=True, use_internal_url=False, **kwargs):
-        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure, **kwargs)
+        super().__init__(user_id, key, secure=secure, **kwargs)
         self.api_version = API_VERSION
         self.accept_format = "application/json"
         self.cdn_request = False
@@ -246,7 +245,7 @@ class CloudFilesConnection(OpenStackSwiftConnection):
         if method in ["POST", "PUT"] and "Content-Type" not in headers:
             headers.update({"Content-Type": "application/json; charset=UTF-8"})
 
-        return super(CloudFilesConnection, self).request(
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -292,7 +291,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         self.use_internal_url = use_internal_url
         OpenStackDriverMixin.__init__(self, **kwargs)
-        super(CloudFilesStorageDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -334,7 +333,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name_encoded = self._encode_object_name(object_name)
 
         response = self.connection.request(
-            "/%s/%s" % (container_name_encoded, object_name_encoded), method="HEAD"
+            "/{}/{}".format(container_name_encoded, object_name_encoded), method="HEAD"
         )
         if response.status in [httplib.OK, httplib.NO_CONTENT]:
             obj = self._headers_to_object(object_name, container, response.headers)
@@ -364,7 +363,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def get_object_cdn_url(self, obj):
         container_cdn_url = self.get_container_cdn_url(container=obj.container)
-        return "%s/%s" % (container_cdn_url, obj.name)
+        return "{}/{}".format(container_cdn_url, obj.name)
 
     def enable_container_cdn(self, container, ex_ttl=None):
         """
@@ -423,7 +422,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_name = obj.container.name
         object_name = obj.name
         response = self.connection.request(
-            "/%s/%s" % (container_name, object_name), method="GET", raw=True
+            "/{}/{}".format(container_name, object_name), method="GET", raw=True
         )
 
         return self._get_object(
@@ -444,7 +443,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_name = obj.container.name
         object_name = obj.name
         response = self.connection.request(
-            "/%s/%s" % (container_name, object_name), method="GET", raw=True
+            "/{}/{}".format(container_name, object_name), method="GET", raw=True
         )
 
         return self._get_object(
@@ -473,7 +472,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name = obj.name
         headers = {"Range": self._get_standard_range_str(start_bytes, end_bytes)}
         response = self.connection.request(
-            "/%s/%s" % (container_name, object_name),
+            "/{}/{}".format(container_name, object_name),
             method="GET",
             headers=headers,
             raw=True,
@@ -500,7 +499,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name = obj.name
         headers = {"Range": self._get_standard_range_str(start_bytes, end_bytes)}
         response = self.connection.request(
-            "/%s/%s" % (container_name, object_name),
+            "/{}/{}".format(container_name, object_name),
             headers=headers,
             method="GET",
             raw=True,
@@ -558,7 +557,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name = self._encode_object_name(obj.name)
 
         response = self.connection.request(
-            "/%s/%s" % (container_name, object_name), method="DELETE"
+            "/{}/{}".format(container_name, object_name), method="DELETE"
         )
 
         if response.status == httplib.NO_CONTENT:
@@ -582,7 +581,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         # pylint: disable=unexpected-keyword-arg
         response = self.connection.request(
-            "/%s/%s" % (container_name, object_name),
+            "/{}/{}".format(container_name, object_name),
             method="DELETE",
             headers=headers,
             cdn_request=True,
@@ -736,7 +735,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         # pylint: disable=no-member
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
-        path = "%s/%s/%s" % (self.connection.request_path, obj.container.name, obj.name)
+        path = "{}/{}/{}".format(self.connection.request_path, obj.container.name, obj.name)
         try:
             key = self.ex_get_meta_data()["temp_url_key"]
             assert key is not None
@@ -748,11 +747,11 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 + "ex_set_account_metadata_temp_url_key before "
                 + "you can use this method."
             )
-        hmac_body = "%s\n%s\n%s" % (method, expires, path)
+        hmac_body = "{}\n{}\n{}".format(method, expires, path)
         sig = hmac.new(b(key), b(hmac_body), sha1).hexdigest()
         params = urlencode({"temp_url_sig": sig, "temp_url_expires": expires})
 
-        temp_url = "https://%s/%s/%s?%s" % (
+        temp_url = "https://{}/{}/{}?{}".format(
             self.connection.host + self.connection.request_path,
             obj.container.name,
             obj.name,
@@ -779,12 +778,12 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         container_name_encoded = self._encode_container_name(container.name)
         object_name_encoded = self._encode_object_name(object_name)
-        request_path = "/%s/%s" % (container_name_encoded, object_name_encoded)
+        request_path = "/{}/{}".format(container_name_encoded, object_name_encoded)
 
         # pylint: disable=no-member
         headers = {
             "X-Auth-Token": self.connection.auth_token,
-            "X-Object-Manifest": "%s/%s/" % (container_name_encoded, object_name_encoded),
+            "X-Object-Manifest": "{}/{}/".format(container_name_encoded, object_name_encoded),
         }
 
         data = ""
@@ -890,7 +889,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         if content_disposition is not None:
             headers["Content-Disposition"] = content_disposition
 
-        request_path = "/%s/%s" % (container_name_encoded, object_name_encoded)
+        request_path = "/{}/{}".format(container_name_encoded, object_name_encoded)
         result_dict = self._upload_object(
             object_name=object_name,
             content_type=content_type,
@@ -1046,7 +1045,7 @@ class OpenStackSwiftStorageDriver(CloudFilesStorageDriver):
     # TODO: Reverse the relationship - Swift -> CloudFiles
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, region=None, **kwargs):
-        super(OpenStackSwiftStorageDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -1057,7 +1056,7 @@ class OpenStackSwiftStorageDriver(CloudFilesStorageDriver):
         )
 
 
-class FileChunkReader(object):
+class FileChunkReader:
     def __init__(self, file_path, chunk_size):
         self.file_path = file_path
         self.total = os.path.getsize(file_path)
@@ -1089,7 +1088,7 @@ class FileChunkReader(object):
         return self.next()
 
 
-class ChunkStreamReader(object):
+class ChunkStreamReader:
     def __init__(self, file_path, start_block, end_block, chunk_size):
         self.fd = open(file_path, "rb")
         self.fd.seek(start_block)

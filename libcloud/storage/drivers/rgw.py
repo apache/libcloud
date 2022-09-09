@@ -57,7 +57,7 @@ class S3RGWConnectionAWS4(SignedAWSConnection, BaseS3Connection):
         **kwargs,
     ):
 
-        super(S3RGWConnectionAWS4, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure,
@@ -90,7 +90,7 @@ class S3RGWConnectionAWS2(S3Connection):
         **kwargs,
     ):
 
-        super(S3RGWConnectionAWS2, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure,
@@ -141,9 +141,7 @@ class S3RGWStorageDriver(BaseS3StorageDriver):
             self.connectionCls = S3RGWConnectionAWS4
         self.connectionCls.host = host
 
-        super(S3RGWStorageDriver, self).__init__(
-            key, secret, secure, host, port, api_version, region, **kwargs
-        )
+        super().__init__(key, secret, secure, host, port, api_version, region, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
@@ -170,6 +168,4 @@ class S3RGWOutscaleStorageDriver(S3RGWStorageDriver):
             raise LibcloudError("Unknown region (%s)" % (region), driver=self)
         host = S3_RGW_OUTSCALE_HOSTS_BY_REGION[region]
         kwargs["name"] = "OUTSCALE Ceph RGW S3 (%s)" % region
-        super(S3RGWOutscaleStorageDriver, self).__init__(
-            key, secret, secure, host, port, api_version, region, **kwargs
-        )
+        super().__init__(key, secret, secure, host, port, api_version, region, **kwargs)

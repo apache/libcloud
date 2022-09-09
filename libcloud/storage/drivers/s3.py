@@ -197,7 +197,7 @@ class BaseS3Connection(ConnectionUserAndKey):
 
         buf = []
         for key, value in sorted(vendor_headers.items()):
-            buf.append("%s:%s" % (key, value))
+            buf.append("{}:{}".format(key, value))
         header_string = "\n".join(buf)
 
         values_to_sign = []
@@ -258,7 +258,7 @@ class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
         retry_delay=None,
         backoff=None,
     ):
-        super(S3SignatureV4Connection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure,
@@ -274,7 +274,7 @@ class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
         )  # force version 4
 
 
-class S3MultipartUpload(object):
+class S3MultipartUpload:
     """
     Class representing an amazon s3 multipart upload
     """
@@ -427,7 +427,7 @@ class BaseS3StorageDriver(StorageDriver):
         """
         container_url = self._get_container_path(container)
         object_name_cleaned = self._clean_object_name(object_name)
-        object_path = "%s/%s" % (container_url, object_name_cleaned)
+        object_path = "{}/{}".format(container_url, object_name_cleaned)
         return object_path
 
     def create_container(self, container_name):
@@ -744,7 +744,7 @@ class BaseS3StorageDriver(StorageDriver):
             element = response.object
             # pylint: disable=maybe-no-member
             code, message = response._parse_error_details(element=element)
-            msg = "Error in multipart commit: %s (%s)" % (message, code)
+            msg = "Error in multipart commit: {} ({})".format(message, code)
             raise LibcloudError(msg, driver=self)
 
         # Get the server's etag to be passed back to the caller
@@ -988,7 +988,7 @@ class BaseS3StorageDriver(StorageDriver):
         # for details
         if verify_hash and not aws_kms_encryption and not hash_matches:
             raise ObjectHashMismatchError(
-                value="MD5 hash {0} checksum does not match {1}".format(
+                value="MD5 hash {} checksum does not match {}".format(
                     server_hash, result_dict["data_hash"]
                 ),
                 object_name=object_name,
@@ -1245,7 +1245,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         if host is None:
             host = REGION_TO_HOST_MAP[region]
 
-        super(S3StorageDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

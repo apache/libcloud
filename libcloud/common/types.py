@@ -64,7 +64,7 @@ class Type(str, Enum):
         elif isinstance(other, str):
             return self.value == other
 
-        return super(Type, self).__eq__(other)
+        return super().__eq__(other)
 
     def upper(self):
         return self.value.upper()  # pylint: disable=no-member
@@ -90,7 +90,7 @@ class LibcloudError(Exception):
 
     def __init__(self, value, driver=None):
         # type: (str, BaseDriver) -> None
-        super(LibcloudError, self).__init__(value)
+        super().__init__(value)
         self.value = value
         self.driver = driver
 
@@ -138,7 +138,7 @@ class ProviderError(LibcloudError):
 
     def __init__(self, value, http_code, driver=None):
         # type: (str, int, Optional[BaseDriver]) -> None
-        super(ProviderError, self).__init__(value=value, driver=driver)
+        super().__init__(value=value, driver=driver)
         self.http_code = http_code
 
     def __str__(self):
@@ -155,7 +155,7 @@ class InvalidCredsError(ProviderError):
         # type: (str, Optional[BaseDriver]) -> None
         # NOTE: We don't use http.client constants here since that adds ~20ms
         # import time overhead
-        super(InvalidCredsError, self).__init__(value, http_code=401, driver=driver)
+        super().__init__(value, http_code=401, driver=driver)
 
 
 # Deprecated alias of :class:`InvalidCredsError`
@@ -169,10 +169,10 @@ class ServiceUnavailableError(ProviderError):
         # type: (str, Optional[BaseDriver]) -> None
         # NOTE: We don't use http.client constants here since that adds ~20ms
         # import time overhead
-        super(ServiceUnavailableError, self).__init__(value, http_code=503, driver=driver)
+        super().__init__(value, http_code=503, driver=driver)
 
 
-class LazyList(object):
+class LazyList:
     def __init__(self, get_more, value_dict=None):
         # type: (Callable, Optional[dict]) -> None
         self._data = []  # type: list
@@ -187,8 +187,7 @@ class LazyList(object):
             self._load_all()
 
         data = self._data
-        for i in data:
-            yield i
+        yield from data
 
     def __getitem__(self, index):
         if index >= len(self._data) and not self._all_loaded:

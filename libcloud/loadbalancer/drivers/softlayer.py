@@ -24,7 +24,7 @@ from libcloud.loadbalancer.types import State
 lb_service = "SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_" "VirtualIpAddress"
 
 
-class LBPackage(object):
+class LBPackage:
 
     """
     Defines a single Softlayer package to be used when placing orders (

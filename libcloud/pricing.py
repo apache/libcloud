@@ -17,7 +17,6 @@
 A class which handles loading the pricing files.
 """
 
-from __future__ import with_statement
 
 import re
 import os.path
@@ -115,7 +114,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=Fals
     if not pricing_file_path:
         pricing_file_path = get_pricing_file_path(file_path=pricing_file_path)
 
-    with open(pricing_file_path, "r") as fp:
+    with open(pricing_file_path) as fp:
         content = fp.read()
 
     pricing_data = json.loads(content)
@@ -337,7 +336,7 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET, file_path=CUSTOM_
 
     if not os.path.exists(dir_name):
         # Verify a valid path is provided
-        msg = "Can't write to %s, directory %s, doesn't exist" % (file_path, dir_name)
+        msg = "Can't write to {}, directory {}, doesn't exist".format(file_path, dir_name)
         raise ValueError(msg)
 
     if os.path.exists(file_path) and os.path.isdir(file_path):

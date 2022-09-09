@@ -207,7 +207,7 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
     def _xmlrpc(self, method, url, body, headers):
         params, meth_name = xmlrpclib.loads(body)
         url = url.replace("/", "_")
-        meth_name = "%s_%s" % (url, meth_name)
+        meth_name = "{}_{}".format(url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
     def _xmlrpc_v3_SoftLayer_Virtual_Guest_getCreateObjectOptions(self, method, url, body, headers):

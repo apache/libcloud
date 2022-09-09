@@ -67,11 +67,11 @@ class DigitalOceanNodeDriver(NodeDriver):
                 cls = DigitalOcean_v2_NodeDriver
             else:
                 raise NotImplementedError("Unsupported API version: %s" % (api_version))
-        return super(DigitalOceanNodeDriver, cls).__new__(cls, **kwargs)
+        return super().__new__(cls, **kwargs)
 
 
 # TODO Implement v1 driver using KeyPair
-class SSHKey(object):
+class SSHKey:
     def __init__(self, id, name, pub_key):
         self.id = id
         self.name = name
@@ -802,7 +802,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         )
 
 
-class DigitalOcean_v2_FloatingIpAddress(object):
+class DigitalOcean_v2_FloatingIpAddress:
     """
     Floating IP info.
     """

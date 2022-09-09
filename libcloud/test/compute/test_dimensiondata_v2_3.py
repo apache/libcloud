@@ -2194,7 +2194,7 @@ class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
-        super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
+        super().__init__("Invalid Request - %s" % tag)
 
 
 class DimensionDataMockHttp(MockHttp):
@@ -2544,7 +2544,7 @@ class DimensionDataMockHttp(MockHttp):
             elif key == "sourceImageId":
                 assert value == "fake_image"
             else:
-                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("server_server.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2570,7 +2570,7 @@ class DimensionDataMockHttp(MockHttp):
             elif key == "networkDomainId":
                 pass
             else:
-                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("server_antiAffinityRule_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2704,7 +2704,7 @@ class DimensionDataMockHttp(MockHttp):
             elif key == "state":
                 assert value == "fake_state"
             else:
-                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("network_networkDomain.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2734,7 +2734,7 @@ class DimensionDataMockHttp(MockHttp):
             elif key == "state":
                 assert value == "fake_state"
             else:
-                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("network_vlan.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3178,7 +3178,7 @@ class DimensionDataMockHttp(MockHttp):
             elif key == "pageSize":
                 assert value == "250"
             else:
-                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("tag_tagKey_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3354,7 +3354,7 @@ class DimensionDataMockHttp(MockHttp):
             elif key == "tagKeyId":
                 assert value == "fake_tag_key_id"
             else:
-                raise ValueError("Could not find in url parameters {0}:{1}".format(key, value))
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("tag_tag_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

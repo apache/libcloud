@@ -166,7 +166,7 @@ class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
             raise ValueError("Invalid region: %s" % (region))
 
         self._host_argument_set = host is not None
-        super(ElasticHostsNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

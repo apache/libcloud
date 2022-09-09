@@ -30,7 +30,7 @@ from libcloud.utils.iso8601 import parse_date
 VERSION = "2015-10-01"
 HOST = "ec2.amazonaws.com"
 ROOT = "/%s/" % (VERSION)
-NS = "http://ec2.amazonaws.com/doc/%s/" % (VERSION,)
+NS = "http://ec2.amazonaws.com/doc/{}/".format(VERSION)
 
 
 class EBSResponse(AWSGenericResponse):
@@ -56,7 +56,7 @@ class EBSBackupDriver(BackupDriver):
     connectionCls = EBSConnection
 
     def __init__(self, access_id, secret, region):
-        super(EBSBackupDriver, self).__init__(access_id, secret)
+        super().__init__(access_id, secret)
         self.region = region
         self.connection.host = HOST % (region)
 

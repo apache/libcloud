@@ -60,7 +60,7 @@ class OneAndOneResponse(JsonResponse):
         else:
             body = self.parse_body()
             if "message" in body:
-                error = "%s (code: %s)" % (body["message"], self.status)
+                error = "{} (code: {})".format(body["message"], self.status)
             else:
                 error = body
             return error
@@ -101,7 +101,7 @@ class OneAndOneConnection(ConnectionKey):
         """
         action = self.api_prefix + action.lstrip("/")
 
-        return super(OneAndOneConnection, self).request(
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -452,7 +452,7 @@ class OneAndOneNodeDriver(NodeDriver):
             body["size"] = size
 
             response = self.connection.request(
-                action="servers/%s/hardware/hdds/%s" % (server_id, hdd_id),
+                action="servers/{}/hardware/hdds/{}".format(server_id, hdd_id),
                 data=body,
                 method="PUT",
             )
@@ -498,7 +498,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="servers/%s/hardware/hdds/%s" % (server_id, hdd_id), method="DELETE"
+            action="servers/{}/hardware/hdds/{}".format(server_id, hdd_id), method="DELETE"
         )
 
         return self._to_node(response.object)
@@ -632,7 +632,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self.connection.request(
-            action="servers/%s/ips/%s" % (server_id, ip_id), method="GET"
+            action="servers/{}/ips/{}".format(server_id, ip_id), method="GET"
         )
 
         return response.object
@@ -682,7 +682,7 @@ class OneAndOneNodeDriver(NodeDriver):
             body["keep_ip"] = keep_ip
 
         response = self.connection.request(
-            action="servers/%s/ips/%s" % (server_id, ip_id), data=body, method="DELETE"
+            action="servers/{}/ips/{}".format(server_id, ip_id), data=body, method="DELETE"
         )
 
         return self._to_node(response.object)
@@ -702,7 +702,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="/servers/%s/ips/%s/firewall_policy" % (server_id, ip_id),
+            action="/servers/{}/ips/{}/firewall_policy".format(server_id, ip_id),
             method="GET",
         )
 
@@ -726,7 +726,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
         body = {"id": firewall_id}
         response = self.connection.request(
-            action="/servers/%s/ips/%s/firewall_policy" % (server_id, ip_id),
+            action="/servers/{}/ips/{}/firewall_policy".format(server_id, ip_id),
             data=body,
             method="POST",
         )
@@ -884,7 +884,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :return:
         """
         response = self.connection.request(
-            action="shared_storages/%s/servers/%s" % (storage_id, server_id),
+            action="shared_storages/{}/servers/{}".format(storage_id, server_id),
         )
 
         return response.object
@@ -903,7 +903,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self.connection.request(
-            action="shared_storages/%s/servers/%s" % (storage_id, server_id),
+            action="shared_storages/{}/servers/{}".format(storage_id, server_id),
             method="DELETE",
         )
 
@@ -1063,7 +1063,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="/load_balancers/%s/server_ips/%s" % (lb_id, server_ip),
+            action="/load_balancers/{}/server_ips/{}".format(lb_id, server_ip),
             method="DELETE",
         )
 
@@ -1125,7 +1125,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self.connection.request(
-            action="/load_balancers/%s/rules/%s" % (lb_id, rule_id), method="DELETE"
+            action="/load_balancers/{}/rules/{}".format(lb_id, rule_id), method="DELETE"
         )
 
         return response.object
@@ -1184,7 +1184,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self.connection.request(
-            action="load_balancers/%s/server_ips/%s" % (lb_id, server_ip), method="GET"
+            action="load_balancers/{}/server_ips/{}".format(lb_id, server_ip), method="GET"
         )
 
         return response.object
@@ -1217,7 +1217,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self.connection.request(
-            action="load_balancers/%s/rules/%s" % (lb_id, rule_id), method="GET"
+            action="load_balancers/{}/rules/{}".format(lb_id, rule_id), method="GET"
         )
 
         return response.object
@@ -1502,7 +1502,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="/private_networks/%s/servers/%s" % (network_id, server_id),
+            action="/private_networks/{}/servers/{}".format(network_id, server_id),
             method="POST",
         )
         return response.object
@@ -1682,7 +1682,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="monitoring_policies/%s/ports/%s" % (policy_id, port_id),
+            action="monitoring_policies/{}/ports/{}".format(policy_id, port_id),
             method="GET",
         )
 
@@ -1703,7 +1703,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="monitoring_policies/%s/ports/%s" % (policy_id, port_id),
+            action="monitoring_policies/{}/ports/{}".format(policy_id, port_id),
             method="DELETE",
         )
 
@@ -1771,7 +1771,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="monitoring_policies/%s/processes/%s" % (policy_id, process_id),
+            action="monitoring_policies/{}/processes/{}".format(policy_id, process_id),
             method="GET",
         )
 
@@ -1792,7 +1792,7 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action="monitoring_policies/%s/processes/%s" % (policy_id, process_id),
+            action="monitoring_policies/{}/processes/{}".format(policy_id, process_id),
             method="DELETE",
         )
 
@@ -1882,7 +1882,7 @@ class OneAndOneNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self.connection.request(
-            action="monitoring_policies/%s/servers/%s" % (policy_id, server_id),
+            action="monitoring_policies/{}/servers/{}".format(policy_id, server_id),
             method="DELETE",
         )
 

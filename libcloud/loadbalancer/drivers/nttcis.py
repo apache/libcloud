@@ -90,7 +90,7 @@ class NttCisLBDriver(Driver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
-        super(NttCisLBDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -106,7 +106,7 @@ class NttCisLBDriver(Driver):
         Add the region to the kwargs before the connection is instantiated
         """
 
-        kwargs = super(NttCisLBDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["region"] = self.selected_region
         return kwargs
 

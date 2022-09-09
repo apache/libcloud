@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import os
 
 from libcloud.compute.types import Provider
@@ -13,7 +11,7 @@ PRIVATE_SSH_KEY_PATH = os.path.expanduser("~/.ssh/id_rsa_gce")
 # the root user
 PUBLIC_SSH_KEY_PATH = os.path.expanduser("~/.ssh/id_rsa_gce.pub")
 
-with open(PUBLIC_SSH_KEY_PATH, "r") as fp:
+with open(PUBLIC_SSH_KEY_PATH) as fp:
     PUBLIC_SSH_KEY_CONTENT = fp.read().strip()
 
 # GCE authentication related info

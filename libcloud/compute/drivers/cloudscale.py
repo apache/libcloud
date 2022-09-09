@@ -86,7 +86,7 @@ class CloudscaleNodeDriver(NodeDriver):
     )
 
     def __init__(self, key, **kwargs):
-        super(CloudscaleNodeDriver, self).__init__(key, **kwargs)
+        super().__init__(key, **kwargs)
 
     def list_nodes(self):
         """

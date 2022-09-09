@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import sys
@@ -341,7 +340,7 @@ def generate_providers_table(api):
             cls = get_driver_method(enum)
         except Exception as e:
             # Deprecated providers throw an exception
-            print('Ignoring deprecated constant "%s": %s' % (enum, str(e)))
+            print('Ignoring deprecated constant "{}": {}'.format(enum, str(e)))
             continue
 
         # Hack for providers which expose multiple classes and support multiple
@@ -478,7 +477,7 @@ def generate_supported_methods_table(api, provider_matrix):
 
     result += "\n\n"
     for provider, values in sorted(provider_matrix.items()):
-        result += ".. _`%s`: %s\n" % (values["name"], values["website"])
+        result += ".. _`{}`: {}\n".format(values["name"], values["website"])
     return result
 
 
@@ -535,7 +534,7 @@ def generate_supported_providers_table(api, provider_matrix):
 
     result += "\n\n"
     for provider, values in sorted(provider_matrix.items()):
-        result += ".. _`%s`: %s\n" % (values["name"], values["website"])
+        result += ".. _`{}`: {}\n".format(values["name"], values["website"])
     return result
 
 

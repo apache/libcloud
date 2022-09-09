@@ -20,7 +20,6 @@ http://azure.microsoft.com/en-us/services/virtual-machines/
 """
 
 import re
-import sys
 import copy
 import time
 import base64
@@ -49,18 +48,8 @@ from libcloud.compute.providers import Provider
 
 HTTPSConnection = httplib.HTTPSConnection
 
-if sys.version_info < (3,):
-    _unicode_type = unicode  # NOQA  pylint: disable=undefined-variable
-
-    def _str(value):
-        if isinstance(value, unicode):  # NOQA  pylint: disable=undefined-variable
-            return value.encode("utf-8")
-
-        return str(value)
-
-else:
-    _str = str
-    _unicode_type = str
+_str = str
+_unicode_type = str
 
 
 AZURE_SERVICE_MANAGEMENT_HOST = "management.core.windows.net"
@@ -343,9 +332,7 @@ class AzureNodeDriver(NodeDriver):
         self.subscription_id = subscription_id
         self.key_file = key_file
         self.follow_redirects = kwargs.get("follow_redirects", True)
-        super(AzureNodeDriver, self).__init__(
-            self.subscription_id, self.key_file, secure=True, **kwargs
-        )
+        super().__init__(self.subscription_id, self.key_file, secure=True, **kwargs)
 
     def list_sizes(self):
         """
@@ -706,13 +693,13 @@ class AzureNodeDriver(NodeDriver):
                 blob_url = "http://%s.blob.core.windows.net" % (ex_storage_service_name)
 
                 # Azure's pattern in the UI.
-                disk_name = "%s-%s-%s.vhd" % (
+                disk_name = "{}-{}-{}.vhd".format(
                     ex_cloud_service_name,
                     name,
                     time.strftime("%Y-%m-%d"),
                 )
 
-                media_link = "%s/vhds/%s" % (blob_url, disk_name)
+                media_link = "{}/vhds/{}".format(blob_url, disk_name)
 
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
@@ -749,12 +736,12 @@ class AzureNodeDriver(NodeDriver):
                 #  network_config = None
             else:
                 blob_url = "http://%s.blob.core.windows.net" % (ex_storage_service_name)
-                disk_name = "%s-%s-%s.vhd" % (
+                disk_name = "{}-{}-{}.vhd".format(
                     ex_cloud_service_name,
                     name,
                     time.strftime("%Y-%m-%d"),
                 )
-                media_link = "%s/vhds/%s" % (blob_url, disk_name)
+                media_link = "{}/vhds/{}".format(blob_url, disk_name)
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
             path = self._get_role_path(ex_cloud_service_name, _deployment_name)
@@ -1415,7 +1402,7 @@ class AzureNodeDriver(NodeDriver):
             request.path += "?"
             for name, value in request.query:
                 if value is not None:
-                    request.path += "%s=%s%s" % (name, url_quote(value, "/()$=',"), "&")
+                    request.path += "{}={}{}".format(name, url_quote(value, "/()$=',"), "&")
             request.path = request.path[:-1]
 
         return request.path, request.query
@@ -1814,7 +1801,7 @@ def _lower(text):
     return text.lower()
 
 
-class AzureXmlSerializer(object):
+class AzureXmlSerializer:
     @staticmethod
     def create_storage_service_input_to_xml(
         service_name,
@@ -2597,7 +2584,7 @@ Borrowed from the Azure SDK for Python.
 """
 
 
-class WindowsAzureData(object):
+class WindowsAzureData:
 
     """
     This is the base of data class.
@@ -3134,7 +3121,7 @@ class SubscriptionCertificates(WindowsAzureDataTypedList):
     _repr_attributes = ["items"]
 
 
-class AzureHTTPRequest(object):
+class AzureHTTPRequest:
     def __init__(self):
         self.host = ""
         self.method = ""
@@ -3145,7 +3132,7 @@ class AzureHTTPRequest(object):
         self.protocol_override = None
 
 
-class AzureHTTPResponse(object):
+class AzureHTTPResponse:
     def __init__(self, status, message, headers, body):
         self.status = status
         self.message = message
@@ -3175,7 +3162,7 @@ class _ListOf(list):
             self.xml_element_name = list_type.__name__
         else:
             self.xml_element_name = xml_element_name
-        super(_ListOf, self).__init__()
+        super().__init__()
 
 
 class ScalarListOf(list):
@@ -3189,7 +3176,7 @@ class ScalarListOf(list):
     def __init__(self, list_type, xml_element_name):
         self.list_type = list_type
         self.xml_element_name = xml_element_name
-        super(ScalarListOf, self).__init__()
+        super().__init__()
 
 
 class _DictOf(dict):
@@ -3203,7 +3190,7 @@ class _DictOf(dict):
         self.pair_xml_element_name = pair_xml_element_name
         self.key_xml_element_name = key_xml_element_name
         self.value_xml_element_name = value_xml_element_name
-        super(_DictOf, self).__init__()
+        super().__init__()
 
 
 class AzureNodeLocation(NodeLocation):
@@ -3211,7 +3198,7 @@ class AzureNodeLocation(NodeLocation):
     # extra to the API with Azure
 
     def __init__(self, id, name, country, driver, available_services, virtual_machine_role_sizes):
-        super(AzureNodeLocation, self).__init__(id, name, country, driver)
+        super().__init__(id, name, country, driver)
         self.available_services = available_services
         self.virtual_machine_role_sizes = virtual_machine_role_sizes
 

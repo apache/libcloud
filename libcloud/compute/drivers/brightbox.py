@@ -27,7 +27,7 @@ API_VERSION = "1.0"
 
 
 def _extract(d, keys):
-    return dict((k, d[k]) for k in keys if k in d and d[k] is not None)
+    return {k: d[k] for k in keys if k in d and d[k] is not None}
 
 
 class BrightboxNodeDriver(NodeDriver):
@@ -61,7 +61,7 @@ class BrightboxNodeDriver(NodeDriver):
         api_version=API_VERSION,
         **kwargs,
     ):
-        super(BrightboxNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -204,7 +204,7 @@ class BrightboxNodeDriver(NodeDriver):
 
     def destroy_node(self, node):
         response = self.connection.request(
-            "/%s/servers/%s" % (self.api_version, node.id), method="DELETE"
+            "/{}/servers/{}".format(self.api_version, node.id), method="DELETE"
         )
         return response.status == httplib.ACCEPTED
 
@@ -267,7 +267,7 @@ class BrightboxNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         response = self._put(
-            "/%s/cloud_ips/%s" % (self.api_version, cloud_ip_id),
+            "/{}/cloud_ips/{}".format(self.api_version, cloud_ip_id),
             {"reverse_dns": reverse_dns},
         )
         return response.status == httplib.OK
@@ -290,7 +290,7 @@ class BrightboxNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         response = self._post(
-            "/%s/cloud_ips/%s/map" % (self.api_version, cloud_ip_id),
+            "/{}/cloud_ips/{}/map".format(self.api_version, cloud_ip_id),
             {"destination": interface_id},
         )
         return response.status == httplib.ACCEPTED
@@ -309,7 +309,7 @@ class BrightboxNodeDriver(NodeDriver):
         :return: True if the unmap was successful.
         :rtype: ``bool``
         """
-        response = self._post("/%s/cloud_ips/%s/unmap" % (self.api_version, cloud_ip_id))
+        response = self._post("/{}/cloud_ips/{}/unmap".format(self.api_version, cloud_ip_id))
         return response.status == httplib.ACCEPTED
 
     def ex_destroy_cloud_ip(self, cloud_ip_id):
@@ -325,6 +325,6 @@ class BrightboxNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         response = self.connection.request(
-            "/%s/cloud_ips/%s" % (self.api_version, cloud_ip_id), method="DELETE"
+            "/{}/cloud_ips/{}".format(self.api_version, cloud_ip_id), method="DELETE"
         )
         return response.status == httplib.OK

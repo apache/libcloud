@@ -120,7 +120,7 @@ class ElasticStackResponse(JsonResponse):
 
     def parse_error(self):
         error_header = self.headers.get("x-elastic-error", "")
-        return "X-Elastic-Error: %s (%s)" % (error_header, self.body.strip())
+        return "X-Elastic-Error: {} ({})".format(error_header, self.body.strip())
 
 
 class ElasticStackNodeSize(NodeSize):
@@ -162,7 +162,7 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
         headers["Accept"] = "application/json"
         headers["Content-Type"] = "application/json"
         headers["Authorization"] = "Basic %s" % (
-            base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+            base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         ).decode("utf-8")
         return headers
 
@@ -280,7 +280,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         # Then we image the selected pre-installed system drive onto it
         response = self.connection.request(
-            action="/drives/%s/image/%s/gunzip" % (drive_uuid, image.id), method="POST"
+            action="/drives/{}/image/{}/gunzip".format(drive_uuid, image.id), method="POST"
         )
 
         if response.status not in (200, 204):
@@ -432,7 +432,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         if not kwargs.get("ssh_username", None):
             kwargs["ssh_username"] = "toor"
 
-        return super(ElasticStackBaseNodeDriver, self).deploy_node(**kwargs)
+        return super().deploy_node(**kwargs)
 
     def ex_shutdown_node(self, node):
         """

@@ -21,7 +21,7 @@ import base64
 import codecs
 from hashlib import sha1
 
-from libcloud.utils.py3 import ET, PY3, b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
 from libcloud.utils.xml import findtext, fixxpath
 from libcloud.common.base import RawResponse, XmlResponse, ConnectionUserAndKey
 from libcloud.utils.files import read_in_chunks
@@ -77,11 +77,8 @@ class OSSResponse(XmlResponse):
             return self.body
 
         try:
-            if PY3:
-                parser = ET.XMLParser(encoding="utf-8")
-                body = ET.XML(self.body.encode("utf-8"), parser=parser)
-            else:
-                body = ET.XML(self.body)
+            parser = ET.XMLParser(encoding="utf-8")
+            body = ET.XML(self.body.encode("utf-8"), parser=parser)
         except Exception:
             raise MalformedResponseError(
                 "Failed to parse XML", body=self.body, driver=self.connection.driver
@@ -152,7 +149,7 @@ class OSSConnection(ConnectionUserAndKey):
 
         buf = []
         for key, value in sorted(vendor_headers.items()):
-            buf.append("%s:%s" % (key, value))
+            buf.append("{}:{}".format(key, value))
         header_string = "\n".join(buf)
 
         values_to_sign = []
@@ -196,7 +193,7 @@ class OSSConnection(ConnectionUserAndKey):
 
     def pre_connect_hook(self, params, headers):
         if self._container:
-            path = "/%s%s" % (self._container.name, self.action)
+            path = "/{}{}".format(self._container.name, self.action)
         else:
             path = self.action
 
@@ -222,18 +219,18 @@ class OSSConnection(ConnectionUserAndKey):
         raw=False,
         container=None,
     ):
-        self.host = "%s.%s" % (self._default_location, self._domain)
+        self.host = "{}.{}".format(self._default_location, self._domain)
         self._container = container
         if container and container.name:
             if "location" in container.extra:
-                self.host = "%s.%s.%s" % (
+                self.host = "{}.{}.{}".format(
                     container.name,
                     container.extra["location"],
                     self._domain,
                 )
             else:
-                self.host = "%s.%s" % (container.name, self.host)
-        return super(OSSConnection, self).request(
+                self.host = "{}.{}".format(container.name, self.host)
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -243,7 +240,7 @@ class OSSConnection(ConnectionUserAndKey):
         )
 
 
-class OSSMultipartUpload(object):
+class OSSMultipartUpload:
     """
     Class representing an Aliyun OSS multipart upload
     """
@@ -646,7 +643,7 @@ class OSSStorageDriver(StorageDriver):
 
         if verify_hash and result_dict["data_hash"] != server_hash:
             raise ObjectHashMismatchError(
-                value="MD5 hash {0} checksum does not match {1}".format(
+                value="MD5 hash {} checksum does not match {}".format(
                     server_hash, result_dict["data_hash"]
                 ),
                 object_name=object_name,
@@ -843,7 +840,7 @@ class OSSStorageDriver(StorageDriver):
             element = response.object
             # pylint: disable=maybe-no-member
             code, message = response._parse_error_details(element=element)
-            msg = "Error in multipart commit: %s (%s)" % (message, code)
+            msg = "Error in multipart commit: {} ({})".format(message, code)
             raise LibcloudError(msg, driver=self)
 
         # Get the server's etag to be passed back to the caller

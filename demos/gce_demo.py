@@ -54,7 +54,6 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path
 # sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
 from libcloud.dns.base import Zone, Record  # isort:skip
 from libcloud.dns.types import Provider as Provider_dns  # isort:skip
-from libcloud.utils.py3 import PY3  # isort:skip
 from libcloud.common.google import ResourceNotFoundError  # isort:skip
 from libcloud.compute.types import Provider  # isort:skip
 from libcloud.dns.providers import get_driver as get_driver_dns  # isort:skip
@@ -76,11 +75,8 @@ except ImportError:
     sys.exit(1)
 
 
-if PY3:
-    # pylint: disable=no-name-in-module,import-error
-    import urllib.request as url_req
-else:
-    import urllib2 as url_req  # pylint: disable=import-error
+# pylint: disable=no-name-in-module,import-error
+import urllib.request as url_req
 
 # Maximum number of 1-CPU nodes to allow to run simultaneously
 MAX_NODES = 5
@@ -159,7 +155,7 @@ def create_mig(gce, mig_base_name, zone, template, postfix, num_instances=2):
     :returns: initialized Managed Instance Group.
     :rtype: :class:`GCEInstanceGroupManager`
     """
-    mig_name = "%s-%s" % (mig_base_name, postfix)
+    mig_name = "{}-{}".format(mig_base_name, postfix)
     mig = gce.ex_create_instancegroupmanager(
         mig_name,
         zone,
@@ -168,7 +164,7 @@ def create_mig(gce, mig_base_name, zone, template, postfix, num_instances=2):
         base_instance_name=mig_name,
         description="Demo for %s" % postfix,
     )
-    display('    Managed Instance Group [%s] "%s" created' % (postfix.upper(), mig.name))
+    display('    Managed Instance Group [{}] "{}" created'.format(postfix.upper(), mig.name))
     display(
         "    ... MIG instances created: %s"
         % ",".join([x["name"] for x in mig.list_managed_instances()])
@@ -196,14 +192,14 @@ def display(title, resource_list=[]):
     for item in resource_list:
         if isinstance(item, Record):
             if item.name.startswith(DEMO_BASE_NAME):
-                print("=>   name=%s, type=%s" % (item.name, item.type))
+                print("=>   name={}, type={}".format(item.name, item.type))
             else:
-                print("     name=%s, type=%s" % (item.name, item.type))
+                print("     name={}, type={}".format(item.name, item.type))
         elif isinstance(item, Zone):
             if item.domain.startswith(DEMO_BASE_NAME):
-                print("=>   name=%s, dnsname=%s" % (item.id, item.domain))
+                print("=>   name={}, dnsname={}".format(item.id, item.domain))
             else:
-                print("     name=%s, dnsname=%s" % (item.id, item.domain))
+                print("     name={}, dnsname={}".format(item.id, item.domain))
         elif hasattr(item, "name"):
             if item.name.startswith(DEMO_BASE_NAME):
                 print("=>   %s" % item.name)
@@ -339,12 +335,12 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
             try:
                 resrc.destroy()
                 class_name = resrc.__class__.__name__
-                display("   Deleted %s (%s)" % (resrc.name, class_name))
+                display("   Deleted {} ({})".format(resrc.name, class_name))
             except ResourceNotFoundError:
-                display("   Not found: %s (%s)" % (resrc.name, resrc.__class__.__name__))
+                display("   Not found: {} ({})".format(resrc.name, resrc.__class__.__name__))
             except Exception:
                 class_name = resrc.__class__.__name__
-                display("   Failed to Delete %s (%s)" % (resrc.name, class_name))
+                display("   Failed to Delete {} ({})".format(resrc.name, class_name))
                 raise
 
 
@@ -547,21 +543,21 @@ def main_compute():
         gce.ex_set_machine_type(node_1, "custom-2-4096")  # 2 vCPU, 4GB RAM
         gce.ex_start_node(node_1)
         node_1 = gce.ex_get_node(name)
-        display("  %s: state=%s, size=%s" % (name, node_1.extra["status"], node_1.size))
+        display("  {}: state={}, size={}".format(name, node_1.extra["status"], node_1.size))
 
         # == Create, and attach a disk ==
         display("Creating a new disk:")
         disk_name = "%s-attach-disk" % DEMO_BASE_NAME
         volume = gce.create_volume(10, disk_name)
         if gce.attach_volume(node_1, volume, ex_auto_delete=True):
-            display("  Attached %s to %s" % (volume.name, node_1.name))
-        display("  Disabled auto-delete for %s on %s" % (volume.name, node_1.name))
+            display("  Attached {} to {}".format(volume.name, node_1.name))
+        display("  Disabled auto-delete for {} on {}".format(volume.name, node_1.name))
         gce.ex_set_volume_auto_delete(volume, node_1, auto_delete=False)
 
         if CLEANUP:
             # == Detach the disk ==
             if gce.detach_volume(volume, ex_node=node_1):
-                display("  Detached %s from %s" % (volume.name, node_1.name))
+                display("  Detached {} from {}".format(volume.name, node_1.name))
 
     # == Create Snapshot ==
     display("Creating a snapshot from existing disk:")
@@ -595,7 +591,7 @@ def main_compute():
         ex_boot_disk=volume,
         ex_disk_auto_delete=False,
     )
-    display("  Node %s created with attached disk %s" % (node_2.name, volume.name))
+    display("  Node {} created with attached disk {}".format(node_2.name, volume.name))
 
     # == Update Tags for Node ==
     display("Updating Tags for %s:" % node_2.name)
@@ -647,7 +643,7 @@ def main_compute():
     display("Creating an Address:")
     name = "%s-address" % DEMO_BASE_NAME
     address_1 = gce.ex_create_address(name)
-    display("  Address %s created with IP %s" % (address_1.name, address_1.address))
+    display("  Address {} created with IP {}".format(address_1.name, address_1.address))
 
     # == List Updated Resources in current zone/region ==
     display("Updated Resources in current zone/region")
@@ -775,31 +771,31 @@ def main_load_balancer():
     # == Attach third Node ==
     display("Attaching additional node to Load Balancer")
     member = balancer.attach_compute_node(lb_nodes[2])
-    display("      Attached %s to %s" % (member.id, balancer.name))
+    display("      Attached {} to {}".format(member.id, balancer.name))
 
     # == Show Balancer Members ==
     members = balancer.list_members()
     display("Load Balancer Members")
     for member in members:
-        display("      ID: %s IP: %s" % (member.id, member.ip))
+        display("      ID: {} IP: {}".format(member.id, member.ip))
 
     # == Remove a Member ==
     display("Removing a Member")
     detached = members[0]
     detach = balancer.detach_member(detached)
     if detach:
-        display("      Member %s detached from %s" % (detached.id, balancer.name))
+        display("      Member {} detached from {}".format(detached.id, balancer.name))
 
     # == Show Updated Balancer Members ==
     members = balancer.list_members()
     display("Updated Load Balancer Members")
     for member in members:
-        display("      ID: %s IP: %s" % (member.id, member.ip))
+        display("      ID: {} IP: {}".format(member.id, member.ip))
 
     # == Reattach Member ==
     display("Reattaching Member")
     member = balancer.attach_member(detached)
-    display("      Member %s attached to %s" % (member.id, balancer.name))
+    display("      Member {} attached to {}".format(member.id, balancer.name))
 
     # == Test Load Balancer by connecting to it multiple times ==
     PAUSE = 60
@@ -808,13 +804,10 @@ def main_load_balancer():
     rounds = 200
     url = "http://%s/" % balancer.ip
     line_length = 75
-    display("Connecting to %s %s times" % (url, rounds))
+    display("Connecting to {} {} times".format(url, rounds))
     for x in range(rounds):
         response = url_req.urlopen(url)
-        if PY3:
-            output = str(response.read(), encoding="utf-8").strip()
-        else:
-            output = response.read().strip()
+        output = str(response.read(), encoding="utf-8").strip()
         if "www-001" in output:
             padded_output = output.center(line_length)
         elif "www-002" in output:
@@ -934,7 +927,7 @@ def main_backend_service():
 
     # == Create a Static Address ==
     address = gce.ex_create_address(address_name, region="global")
-    display('    Address "%s" created with IP "%s"' % (address.name, address.address))
+    display('    Address "{}" created with IP "{}"'.format(address.name, address.address))
     # == Create a Global Forwarding Rule ==
     gfr = gce.ex_create_forwarding_rule(
         gfr_name,

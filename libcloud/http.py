@@ -25,7 +25,7 @@ import requests
 from requests.adapters import HTTPAdapter
 
 import libcloud.security
-from libcloud.utils.py3 import PY3, urlparse
+from libcloud.utils.py3 import urlparse
 
 try:
     # requests no longer vendors urllib3 in newer versions
@@ -50,7 +50,7 @@ class SignedHTTPSAdapter(HTTPAdapter):
     def __init__(self, cert_file, key_file):
         self.cert_file = cert_file
         self.key_file = key_file
-        super(SignedHTTPSAdapter, self).__init__()
+        super().__init__()
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(
@@ -62,7 +62,7 @@ class SignedHTTPSAdapter(HTTPAdapter):
         )
 
 
-class LibcloudBaseConnection(object):
+class LibcloudBaseConnection:
     """
     Base connection class to inherit from.
 
@@ -191,10 +191,10 @@ class LibcloudConnection(LibcloudBaseConnection):
 
     def __init__(self, host, port, secure=None, **kwargs):
         scheme = "https" if secure is not None and secure else "http"
-        self.host = "{0}://{1}{2}".format(
+        self.host = "{}://{}{}".format(
             "https" if port == 443 else scheme,
             host,
-            ":{0}".format(port) if port not in (80, 443) else "",
+            ":{}".format(port) if port not in (80, 443) else "",
         )
 
         # Support for HTTP(s) proxy
@@ -294,7 +294,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         return headers
 
 
-class HttpLibResponseProxy(object):
+class HttpLibResponseProxy:
     """
     Provides a proxy pattern around the :class:`requests.Reponse`
     object to a :class:`httplib.HTTPResponse` object
@@ -320,10 +320,7 @@ class HttpLibResponseProxy(object):
         """
         Return a list of (header, value) tuples.
         """
-        if PY3:
-            return list(self._response.headers.items())
-        else:
-            return self._response.headers.items()
+        return list(self._response.headers.items())
 
     @property
     def status(self):

@@ -30,7 +30,7 @@ except ImportError:
 async_delay = 0
 
 
-class CloudStackMockDriver(object):
+class CloudStackMockDriver:
     host = "nonexistent."
     path = "/path"
     async_poll_frequency = 0

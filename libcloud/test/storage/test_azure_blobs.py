@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import sys
@@ -370,7 +369,7 @@ class AzuriteBlobsMockHttp(AzureBlobsMockHttp):
     fixtures = StorageFileFixtures("azurite_blobs")
 
     def _get_method_name(self, *args, **kwargs):
-        method_name = super(AzuriteBlobsMockHttp, self)._get_method_name(*args, **kwargs)
+        method_name = super()._get_method_name(*args, **kwargs)
 
         if method_name.startswith("_account"):
             method_name = method_name[8:]
@@ -712,7 +711,7 @@ class AzureBlobsTests(unittest.TestCase):
         )
         self.assertTrue(result)
 
-        with open(destination_path, "r") as fp:
+        with open(destination_path) as fp:
             content = fp.read()
 
         self.assertEqual(content, "56")

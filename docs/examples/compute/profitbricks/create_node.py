@@ -35,7 +35,7 @@ for img in images:
 node_key = None
 # Read SSH key from file
 # Specify correct path
-with open("/home/user/.ssh/id_rsa.pub", "r") as f:
+with open("/home/user/.ssh/id_rsa.pub") as f:
     node_key = NodeAuthSSHKey(f.read())
 f.close()
 

@@ -64,22 +64,22 @@ def work_with_containers():
     else:
         print("\tNumber of containers: %s" % len(containers))
         for container in containers:
-            print("\t\tContainer: %s is: %s" % (container.name, container.state))
+            print("\t\tContainer: {} is: {}".format(container.name, container.state))
 
     # start the first container
     print("\tStarting container: %s" % containers[0].name)
     container = conn.start_container(container=containers[0])
-    print("\tContainer: %s is: %s" % (container.name, container.state))
+    print("\tContainer: {} is: {}".format(container.name, container.state))
 
     # stop the container returned
     print("\tStopping container: %s" % containers[0].name)
     container = conn.stop_container(container=container)
-    print("\tContainer: %s is: %s" % (container.name, container.state))
+    print("\tContainer: {} is: {}".format(container.name, container.state))
 
     # restart the container
     print("\tRestarting container: %s" % container.name)
     container = conn.restart_container(container=container)
-    print("\tContainer: %s is: %s" % (container.name, container.state))
+    print("\tContainer: {} is: {}".format(container.name, container.state))
 
     """
     if len(containers) == 2:

@@ -37,16 +37,16 @@ VALID_RESPONSE_CODES = [
 
 class RancherResponse(JsonResponse):
     def parse_error(self):
-        parsed = super(RancherResponse, self).parse_error()
+        parsed = super().parse_error()
         if "fieldName" in parsed:
-            return "Field %s is %s: %s - %s" % (
+            return "Field {} is {}: {} - {}".format(
                 parsed["fieldName"],
                 parsed["code"],
                 parsed["message"],
                 parsed["detail"],
             )
         else:
-            return "%s - %s" % (parsed["message"], parsed["detail"])
+            return "{} - {}".format(parsed["message"], parsed["detail"])
 
     def success(self):
         return self.status in VALID_RESPONSE_CODES
@@ -59,10 +59,10 @@ class RancherException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "RancherException %s %s" % (self.code, self.message)
+        return "RancherException {} {}".format(self.code, self.message)
 
 
 class RancherConnection(ConnectionUserAndKey):
@@ -79,7 +79,7 @@ class RancherConnection(ConnectionUserAndKey):
         headers["Content-Type"] = "application/json"
         headers["Accept"] = "application/json"
         if self.key and self.user_id:
-            user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+            user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
             headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
@@ -147,7 +147,7 @@ class RancherContainerDriver(ContainerDriver):
             host = "//" + host
         parsed = urlparse.urlparse(host)
 
-        super(RancherContainerDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=False if parsed.scheme == "http" else secure,
@@ -218,7 +218,7 @@ class RancherContainerDriver(ContainerDriver):
             "rancherCompose": rancher_compose,
             "startOnCreate": start,
         }
-        data = json.dumps(dict((k, v) for (k, v) in payload.items() if v is not None))
+        data = json.dumps({k: v for (k, v) in payload.items() if v is not None})
         result = self.connection.request(
             "%s/environments" % self.baseuri, data=data, method="POST"
         ).object
@@ -234,7 +234,7 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: ``dict``
         """
-        result = self.connection.request("%s/environments/%s" % (self.baseuri, env_id)).object
+        result = self.connection.request("{}/environments/{}".format(self.baseuri, env_id)).object
 
         return result
 
@@ -253,7 +253,9 @@ class RancherContainerDriver(ContainerDriver):
         for f, v in search_params.items():
             search_list.append(f + "=" + v)
         search_items = "&".join(search_list)
-        result = self.connection.request("%s/environments?%s" % (self.baseuri, search_items)).object
+        result = self.connection.request(
+            "{}/environments?{}".format(self.baseuri, search_items)
+        ).object
 
         return result["data"]
 
@@ -270,7 +272,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "%s/environments/%s" % (self.baseuri, env_id), method="DELETE"
+            "{}/environments/{}".format(self.baseuri, env_id), method="DELETE"
         )
         return result.status in VALID_RESPONSE_CODES
 
@@ -287,7 +289,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "%s/environments/%s?action=activateservices" % (self.baseuri, env_id),
+            "{}/environments/{}?action=activateservices".format(self.baseuri, env_id),
             method="POST",
         )
         return result.status in VALID_RESPONSE_CODES
@@ -306,7 +308,7 @@ class RancherContainerDriver(ContainerDriver):
         """
 
         result = self.connection.request(
-            "%s/environments/%s?action=deactivateservices" % (self.baseuri, env_id),
+            "{}/environments/{}?action=deactivateservices".format(self.baseuri, env_id),
             method="POST",
         )
         return result.status in VALID_RESPONSE_CODES
@@ -418,7 +420,7 @@ class RancherContainerDriver(ContainerDriver):
             "vip": vip,
         }
 
-        data = json.dumps(dict((k, v) for (k, v) in service_payload.items() if v is not None))
+        data = json.dumps({k: v for (k, v) in service_payload.items() if v is not None})
         result = self.connection.request(
             "%s/services" % self.baseuri, data=data, method="POST"
         ).object
@@ -434,7 +436,7 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: ``dict``
         """
-        result = self.connection.request("%s/services/%s" % (self.baseuri, service_id)).object
+        result = self.connection.request("{}/services/{}".format(self.baseuri, service_id)).object
 
         return result
 
@@ -453,7 +455,7 @@ class RancherContainerDriver(ContainerDriver):
         for f, v in search_params.items():
             search_list.append(f + "=" + v)
         search_items = "&".join(search_list)
-        result = self.connection.request("%s/services?%s" % (self.baseuri, search_items)).object
+        result = self.connection.request("{}/services?{}".format(self.baseuri, search_items)).object
 
         return result["data"]
 
@@ -470,7 +472,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "%s/services/%s" % (self.baseuri, service_id), method="DELETE"
+            "{}/services/{}".format(self.baseuri, service_id), method="DELETE"
         )
         return result.status in VALID_RESPONSE_CODES
 
@@ -487,7 +489,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "%s/services/%s?action=activate" % (self.baseuri, service_id), method="POST"
+            "{}/services/{}?action=activate".format(self.baseuri, service_id), method="POST"
         )
         return result.status in VALID_RESPONSE_CODES
 
@@ -504,7 +506,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "%s/services/%s?action=deactivate" % (self.baseuri, service_id),
+            "{}/services/{}?action=deactivate".format(self.baseuri, service_id),
             method="POST",
         )
         return result.status in VALID_RESPONSE_CODES
@@ -582,7 +584,7 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("%s/containers/%s" % (self.baseuri, con_id)).object
+        result = self.connection.request("{}/containers/{}".format(self.baseuri, con_id)).object
 
         return self._to_container(result)
 
@@ -597,7 +599,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request(
-            "%s/containers/%s?action=start" % (self.baseuri, container.id),
+            "{}/containers/{}?action=start".format(self.baseuri, container.id),
             method="POST",
         ).object
 
@@ -614,7 +616,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request(
-            "%s/containers/%s?action=stop" % (self.baseuri, container.id), method="POST"
+            "{}/containers/{}?action=stop".format(self.baseuri, container.id), method="POST"
         ).object
 
         return self._to_container(result)
@@ -634,7 +636,9 @@ class RancherContainerDriver(ContainerDriver):
         for f, v in search_params.items():
             search_list.append(f + "=" + v)
         search_items = "&".join(search_list)
-        result = self.connection.request("%s/containers?%s" % (self.baseuri, search_items)).object
+        result = self.connection.request(
+            "{}/containers?{}".format(self.baseuri, search_items)
+        ).object
 
         return result["data"]
 
@@ -649,7 +653,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "%s/containers/%s" % (self.baseuri, container.id), method="DELETE"
+            "{}/containers/{}".format(self.baseuri, container.id), method="DELETE"
         ).object
 
         return self._to_container(result)

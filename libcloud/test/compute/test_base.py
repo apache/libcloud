@@ -29,7 +29,7 @@ from libcloud.compute.base import (
 from libcloud.compute.types import StorageVolumeState
 
 
-class FakeDriver(object):
+class FakeDriver:
     type = 0
 
 

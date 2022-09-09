@@ -22,7 +22,7 @@ from libcloud.test import LibcloudTestCase
 from libcloud.common.aws import UNSIGNED_PAYLOAD, SignedAWSConnection, AWSRequestSignerAlgorithmV4
 
 
-class EC2MockDriver(object):
+class EC2MockDriver:
     region_name = "my_region"
 
 
@@ -97,9 +97,9 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
     def test_get_signature_(self):
         def _sign(key, msg, hex=False):
             if hex:
-                return "H|%s|%s" % (key, msg)
+                return "H|{}|{}".format(key, msg)
             else:
-                return "%s|%s" % (key, msg)
+                return "{}|{}".format(key, msg)
 
         with mock.patch(
             "libcloud.common.aws.AWSRequestSignerAlgorithmV4._get_key_to_sign_with"
@@ -133,7 +133,7 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
 
     def test_get_key_to_sign_with(self):
         def _sign(key, msg, hex=False):
-            return "%s|%s" % (key, msg)
+            return "{}|{}".format(key, msg)
 
         with mock.patch("libcloud.common.aws._sign", new=_sign):
             key = self.signer._get_key_to_sign_with(self.now)

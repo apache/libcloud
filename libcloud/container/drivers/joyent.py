@@ -45,7 +45,7 @@ class JoyentContainerDriver(DockerContainerDriver):
         cert_file=None,
     ):
 
-        super(JoyentContainerDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

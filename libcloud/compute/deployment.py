@@ -17,19 +17,18 @@
 Provides generic deployment steps for machines post boot.
 """
 
-from __future__ import with_statement
 
 import os
 import re
 import binascii
 from typing import IO, List, Union, Optional, cast
 
-from libcloud.utils.py3 import PY3, basestring
+from libcloud.utils.py3 import basestring
 from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.base import Node
 
 
-class Deployment(object):
+class Deployment:
     """
     Base class for deployment tasks.
     """
@@ -127,7 +126,7 @@ class FileDeployment(Deployment):
         return self.__repr__()
 
     def __repr__(self):
-        return "<FileDeployment source=%s, target=%s>" % (self.source, self.target)
+        return "<FileDeployment source={}, target={}>".format(self.source, self.target)
 
 
 class ScriptDeployment(Deployment):
@@ -213,7 +212,7 @@ class ScriptDeployment(Deployment):
 
         if self.args:
             # Append arguments to the command
-            cmd = "%s %s" % (name, " ".join(self.args))
+            cmd = "{} {}".format(name, " ".join(self.args))
         else:
             cmd = name
 
@@ -284,13 +283,10 @@ class ScriptFileDeployment(ScriptDeployment):
         with open(script_file, "rb") as fp:
             content = fp.read()  # type: Union[bytes, str]
 
-        if PY3:
-            content = cast(bytes, content)
-            content = content.decode("utf-8")
+        content = cast(bytes, content)
+        content = content.decode("utf-8")
 
-        super(ScriptFileDeployment, self).__init__(
-            script=content, args=args, name=name, delete=delete, timeout=timeout
-        )
+        super().__init__(script=content, args=args, name=name, delete=delete, timeout=timeout)
 
 
 class MultiStepDeployment(Deployment):

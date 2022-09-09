@@ -44,7 +44,7 @@ class PointDNSConnection(ConnectionUserAndKey):
 
         This method adds ``token`` to the request.
         """
-        b64string = b("%s:%s" % (self.user_id, self.key))
+        b64string = b("{}:{}".format(self.user_id, self.key))
         token = base64.b64encode(b64string)
         headers["Authorization"] = "Basic %s" % token
         headers["Accept"] = "application/json"

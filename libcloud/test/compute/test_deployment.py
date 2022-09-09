@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more§
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import sys
@@ -23,7 +21,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from libcloud.test import XML_HEADERS, MockHttp
-from libcloud.utils.py3 import PY3, u, httplib, assertRaisesRegex
+from libcloud.utils.py3 import u, httplib, assertRaisesRegex
 from libcloud.compute.ssh import BaseSSHClient, SSHCommandTimeoutError, have_paramiko
 from libcloud.compute.base import Node, NodeAuthPassword
 from libcloud.test.secrets import RACKSPACE_PARAMS
@@ -168,8 +166,7 @@ class DeploymentTests(unittest.TestCase):
         with open(file_path, "rb") as fp:
             content = fp.read()
 
-        if PY3:
-            content = content.decode("utf-8")
+        content = content.decode("utf-8")
 
         sfd1 = ScriptFileDeployment(script_file=file_path)
         self.assertEqual(sfd1.script, content)
@@ -238,7 +235,7 @@ class DeploymentTests(unittest.TestCase):
         client.run.assert_called_once_with(expected, timeout=None)
 
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
-        class FileObject(object):
+        class FileObject:
             def __init__(self, name):
                 self.name = name
 

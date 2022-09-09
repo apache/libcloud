@@ -53,7 +53,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
-        super(RackspaceFirstGenConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_endpoint(self):
         if "2.0" in self._auth_version:
@@ -103,7 +103,7 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         if region not in ["us", "uk"]:
             raise ValueError("Invalid region: %s" % (region))
 
-        super(RackspaceFirstGenNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -146,7 +146,7 @@ class RackspaceConnection(OpenStack_1_1_Connection):
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
         self.get_endpoint_args = kwargs.pop("get_endpoint_args", None)
-        super(RackspaceConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_service_name(self):
         if not self.get_endpoint_args:
@@ -208,7 +208,7 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         else:
             self.api_name = "rackspacenovaus"
 
-        super(RackspaceNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

@@ -70,7 +70,7 @@ class GCEConnection(GoogleBaseConnection):
         project=None,
         **kwargs,
     ):
-        super(GCEConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -78,7 +78,7 @@ class GCEConnection(GoogleBaseConnection):
             credential_file=credential_file,
             **kwargs,
         )
-        self.request_path = "/compute/%s/projects/%s" % (API_VERSION, project)
+        self.request_path = "/compute/{}/projects/{}".format(API_VERSION, project)
         self.gce_params = {}
 
     def pre_connect_hook(self, params, headers):
@@ -87,7 +87,7 @@ class GCEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
-        params, headers = super(GCEConnection, self).pre_connect_hook(params, headers)
+        params, headers = super().pre_connect_hook(params, headers)
         if self.gce_params:
             params.update(self.gce_params)
         return params, headers
@@ -98,7 +98,7 @@ class GCEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
-        response = super(GCEConnection, self).request(*args, **kwargs)
+        response = super().request(*args, **kwargs)
 
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
@@ -165,11 +165,11 @@ class GCEBackupDriver(BackupDriver):
         self.scopes = scopes
         self.credential_file = credential_file or "~/.gce_libcloud_auth" + "." + self.project
 
-        super(GCEBackupDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
         # Cache Zone and Region information to reduce API calls and
         # increase speed
-        self.base_path = "/compute/%s/projects/%s" % (API_VERSION, self.project)
+        self.base_path = "/compute/{}/projects/{}".format(API_VERSION, self.project)
 
     def get_supported_target_types(self):
         """
@@ -377,7 +377,7 @@ class GCEBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         name = target.name
-        request = "/zones/%s/disks/%s/createSnapshot" % (
+        request = "/zones/{}/disks/{}/createSnapshot".format(
             target.extra["zone"].name,
             target.name,
         )

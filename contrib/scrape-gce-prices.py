@@ -393,7 +393,7 @@ def scrape_sku_price_info(key):
 
 def scrape_only_prices(key):
     data = get_all_skus(key)
-    with open(PRICING_FILE_PATH, "r") as fp:
+    with open(PRICING_FILE_PATH) as fp:
         content = fp.read()
     dict_ = json.loads(content)["compute"]
     for sku in data:
@@ -441,7 +441,7 @@ def price_from_sku(sku):
 
 
 def update_pricing_file(pricing_file_path, pricing_data):
-    with open(pricing_file_path, "r") as fp:
+    with open(pricing_file_path) as fp:
         content = fp.read()
 
     data = json.loads(content)

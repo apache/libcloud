@@ -16,7 +16,7 @@
 from libcloud.backup.base import BackupTarget, BackupTargetType
 
 
-class TestCaseMixin(object):
+class TestCaseMixin:
     def get_supported_target_types(self):
         targets = self.driver.get_supported_target_types()
         self.assertTrue(isinstance(targets, list))

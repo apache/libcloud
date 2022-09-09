@@ -43,7 +43,7 @@ def get_driver(drivers, provider, deprecated_providers=None, deprecated_constant
     if provider in deprecated_providers:
         url = deprecated_providers[provider]["url"]
         reason = deprecated_providers[provider]["reason"]
-        msg = "Provider no longer supported: %s, please visit: %s" % (url, reason)
+        msg = "Provider no longer supported: {}, please visit: {}".format(url, reason)
         raise Exception(msg)
 
     # Those drivers have moved to "region" constructor argument model

@@ -53,7 +53,7 @@ class IndosatNodeDriver(DimensionDataNodeDriver):
 
         self.selected_region = API_ENDPOINTS[region]
 
-        super(IndosatNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

@@ -44,7 +44,7 @@ class TestConnection(ConnectionUserAndKey):
         api_version=None,
         **conn_kwargs,
     ):
-        super(TestConnection, self).__init__(
+        super().__init__(
             user_id=user_id,
             key=key,
             secure=secure,
@@ -56,7 +56,7 @@ class TestConnection(ConnectionUserAndKey):
         )
 
     def add_default_headers(self, headers):
-        user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (user_b64)
         return headers
 
@@ -70,9 +70,7 @@ class TestNodeDriver(NodeDriver):
     features = {"create_node": ["ssh_key", "password"]}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
-        super(TestNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def list_nodes(self):
         r = self.connection.request("/compute/nodes")

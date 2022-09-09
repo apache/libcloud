@@ -19,7 +19,6 @@
 # Based on
 # https://github.com/ssorj/scripts/blob/master/check-asf-license-headers
 
-from __future__ import print_function
 
 import os
 import sys

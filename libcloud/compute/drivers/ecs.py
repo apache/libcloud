@@ -170,7 +170,7 @@ class ECSConnection(SignedAliyunConnection):
     service_name = "ecs"
 
 
-class ECSSecurityGroup(object):
+class ECSSecurityGroup:
     """
     Security group used to control nodes internet and intranet accessibility.
     """
@@ -184,14 +184,14 @@ class ECSSecurityGroup(object):
         self.creation_time = creation_time
 
     def __repr__(self):
-        return "<ECSSecurityGroup: id=%s, name=%s, driver=%s ...>" % (
+        return "<ECSSecurityGroup: id={}, name={}, driver={} ...>".format(
             self.id,
             self.name,
             self.driver.name,
         )
 
 
-class ECSSecurityGroupAttribute(object):
+class ECSSecurityGroupAttribute:
 
     """
     Security group attribute.
@@ -215,7 +215,7 @@ class ECSSecurityGroupAttribute(object):
         return "<ECSSecurityGroupAttribute: ip_protocol=%s ...>" % (self.ip_protocol)
 
 
-class ECSZone(object):
+class ECSZone:
     """
     ECSZone used to represent an availability zone in a region.
     """
@@ -237,14 +237,14 @@ class ECSZone(object):
         self.available_disk_categories = available_disk_categories
 
     def __repr__(self):
-        return "<ECSZone: id=%s, name=%s, driver=%s>" % (
+        return "<ECSZone: id={}, name={}, driver={}>".format(
             self.id,
             self.name,
             self.driver,
         )
 
 
-class InternetChargeType(object):
+class InternetChargeType:
     """
     Internet connection billing types for Aliyun Nodes.
     """
@@ -253,7 +253,7 @@ class InternetChargeType(object):
     BY_TRAFFIC = "PayByTraffic"
 
 
-class DiskCategory(object):
+class DiskCategory:
     """
     Enum defined disk types supported by Aliyun system and data disks.
     """
@@ -264,7 +264,7 @@ class DiskCategory(object):
     EPHEMERAL_SSD = "ephemeral_ssd"
 
 
-class Pagination(object):
+class Pagination:
     """
     Pagination used to describe the multiple pages results.
     """
@@ -1376,7 +1376,7 @@ class ECSDriver(NodeDriver):
         }
         params = {}
         for idx, disk in enumerate(data_disks):
-            key_base = "DataDisk.{0}.".format(idx + 1)
+            key_base = "DataDisk.{}.".format(idx + 1)
             for attr in mappings.keys():
                 if attr in disk:
                     if attr == "delete_with_instance":

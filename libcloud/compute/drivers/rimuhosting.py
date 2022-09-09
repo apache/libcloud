@@ -55,7 +55,7 @@ class RimuHostingResponse(JsonResponse):
 
     def parse_body(self):
         try:
-            js = super(RimuHostingResponse, self).parse_body()
+            js = super().parse_body()
             keys = list(js.keys())
             if js[keys[0]]["response_type"] == "ERROR":
                 raise RimuHostingException(js[keys[0]]["human_readable_message"])
@@ -141,7 +141,7 @@ class RimuHostingNodeDriver(NodeDriver):
 
     def _order_uri(self, node, resource):
         # Returns the order uri with its resourse appended.
-        return "/orders/%s/%s" % (node.id, resource)
+        return "/orders/{}/{}".format(node.id, resource)
 
     # TODO: Get the node state.
     def _to_node(self, order):

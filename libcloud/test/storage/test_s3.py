@@ -26,7 +26,7 @@ from unittest.mock import Mock, PropertyMock
 import libcloud.utils.files  # NOQA: F401
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611  # noqa
 from libcloud.test import unittest, make_response, generate_random_data
-from libcloud.utils.py3 import ET, PY3, StringIO, b, httplib, parse_qs, urlparse
+from libcloud.utils.py3 import ET, StringIO, b, httplib, parse_qs, urlparse
 from libcloud.utils.files import exhaust_iterator
 from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
 from libcloud.storage.base import Object, Container
@@ -676,7 +676,7 @@ class S3Tests(unittest.TestCase):
         )
         self.assertTrue(result)
 
-        with open(self._file_path, "r") as fp:
+        with open(self._file_path) as fp:
             content = fp.read()
 
         self.assertEqual(content, "56")
@@ -768,9 +768,7 @@ class S3Tests(unittest.TestCase):
         )
         result = self.driver.download_object_as_stream(obj=obj)
         result = exhaust_iterator(result)
-
-        if PY3:
-            result = result.decode("utf-8")
+        result = result.decode("utf-8")
 
         self.assertEqual(result, "a" * 1000)
 

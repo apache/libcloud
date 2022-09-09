@@ -17,7 +17,6 @@
 Provides storage driver for working with local filesystem
 """
 
-from __future__ import with_statement
 
 import os
 import time
@@ -52,7 +51,7 @@ except ImportError:
 IGNORE_FOLDERS = [".lock", ".hash"]
 
 
-class NoOpLockLocalStorage(object):
+class NoOpLockLocalStorage:
     def __init__(self, path, timeout=5):
         self.path = path
         self.lock_acquire_timeout = timeout
@@ -64,7 +63,7 @@ class NoOpLockLocalStorage(object):
         return value
 
 
-class LockLocalStorage(object):
+class LockLocalStorage:
     """
     A class which locks a local path which is being updated. To correctly handle all the scenarios
     use a thread based and IPC based lock.
@@ -165,9 +164,7 @@ class LocalStorageDriver(StorageDriver):
         else:
             self._lock_cls = NoOpLockLocalStorage
 
-        super(LocalStorageDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def _make_path(self, path, ignore_existing=True):
         """
@@ -455,7 +452,7 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             shutil.copy(obj_path, file_path)
-        except IOError:
+        except OSError:
             if delete_on_failure:
                 try:
                     os.unlink(file_path)
@@ -480,8 +477,7 @@ class LocalStorageDriver(StorageDriver):
         """
         path = self.get_object_cdn_url(obj)
         with open(path, "rb") as obj_file:
-            for data in read_in_chunks(obj_file, chunk_size=chunk_size):
-                yield data
+            yield from read_in_chunks(obj_file, chunk_size=chunk_size)
 
     def download_object_range(
         self,

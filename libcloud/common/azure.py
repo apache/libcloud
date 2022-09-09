@@ -71,13 +71,13 @@ class AzureResponse(XmlResponse):
                 code = body.findtext(fixxpath(xpath="Code"))
                 message = body.findtext(fixxpath(xpath="Message"))
                 message = message.split("\n")[0]
-                error_msg = "%s: %s" % (code, message)
+                error_msg = "{}: {}".format(code, message)
 
         except MalformedResponseError:
             pass
 
         if msg:
-            error_msg = "%s - %s" % (msg, error_msg)
+            error_msg = "{} - {}".format(msg, error_msg)
 
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
             raise InvalidCredsError(error_msg)
@@ -90,7 +90,7 @@ class AzureResponse(XmlResponse):
         if is_redirect and self.connection.driver.follow_redirects:
             raise AzureRedirectException(self)
         else:
-            return super(AzureResponse, self).parse_body()
+            return super().parse_body()
 
 
 class AzureRawResponse(RawResponse):
@@ -126,7 +126,7 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         cloud_environment="default",
         **kwargs,
     ):
-        super(AzureActiveDirectoryConnection, self).__init__(identity, secret, **kwargs)
+        super().__init__(identity, secret, **kwargs)
         if isinstance(cloud_environment, basestring):
             cloud_environment = publicEnvironments[cloud_environment]
         if not isinstance(cloud_environment, dict):
@@ -176,7 +176,7 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
 
     def connect(self, **kwargs):
         self.get_client_credentials()
-        return super(AzureActiveDirectoryConnection, self).connect(**kwargs)
+        return super().connect(**kwargs)
 
     def request(
         self,
@@ -197,7 +197,7 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         if (time.time() + 300) >= int(self.expires_on):
             self.get_client_credentials()
 
-        return super(AzureActiveDirectoryConnection, self).request(
+        return super().request(
             action,
             params=params,
             data=data,
@@ -290,10 +290,10 @@ class AzureConnection(ConnectionUserAndKey):
         xms_header_values.sort()
 
         for header, value in xms_header_values:
-            values_to_sign.append("%s:%s" % (header, value))
+            values_to_sign.append("{}:{}".format(header, value))
 
         # Add the canonicalized path
-        values_to_sign.append("/%s%s" % (account, path))
+        values_to_sign.append("/{}{}".format(account, path))
 
         # URL query parameters (sorted and lower case)
         for key, value in params.items():
@@ -302,13 +302,13 @@ class AzureConnection(ConnectionUserAndKey):
         param_list.sort()
 
         for key, value in param_list:
-            values_to_sign.append("%s:%s" % (key, value))
+            values_to_sign.append("{}:{}".format(key, value))
 
         string_to_sign = b("\n".join(values_to_sign))
         secret_key = b(secret_key)
         b64_hmac = base64.b64encode(hmac.new(secret_key, string_to_sign, digestmod=sha256).digest())
 
-        return "SharedKey %s:%s" % (self.user_id, b64_hmac.decode("utf-8"))
+        return "SharedKey {}:{}".format(self.user_id, b64_hmac.decode("utf-8"))
 
     def _format_special_header_values(self, headers, method):
         is_change = method not in ("GET", "HEAD")
@@ -375,7 +375,7 @@ class AzureServiceManagementConnection(CertificateConnection):
         :type   key_file: ``str``
         """
 
-        super(AzureServiceManagementConnection, self).__init__(key_file, *args, **kwargs)
+        super().__init__(key_file, *args, **kwargs)
 
         self.subscription_id = subscription_id
 

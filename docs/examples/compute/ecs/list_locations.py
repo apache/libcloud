@@ -11,4 +11,4 @@ driver = ECSDriver(access_key_id, access_key_secret, region=region)
 
 locations = driver.list_locations()
 for each in locations:
-    print("id: {0:>16s}".format(each.id))
+    print("id: {:>16s}".format(each.id))

@@ -44,7 +44,7 @@ class GoGridLBResponse(GoGridResponse):
                     " address not assigned to your account",
                     driver=self,
                 )
-        return super(GoGridLBResponse, self).success()
+        return super().success()
 
 
 class GoGridLBConnection(GoGridConnection):
@@ -72,7 +72,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         """
         @inherits: :class:`Driver.__init__`
         """
-        super(GoGridLBDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def list_protocols(self):
         # GoGrid only supports http

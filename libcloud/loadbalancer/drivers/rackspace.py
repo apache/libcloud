@@ -69,13 +69,13 @@ class RackspaceResponse(JsonResponse):
     def parse_body(self):
         if not self.body:
             return None
-        return super(RackspaceResponse, self).parse_body()
+        return super().parse_body()
 
     def success(self):
         return 200 <= int(self.status) <= 299
 
 
-class RackspaceHealthMonitor(object):
+class RackspaceHealthMonitor:
     """
     :param type: type of load balancer.  currently CONNECT (connection
                  monitoring), HTTP, HTTPS (connection and HTTP
@@ -146,9 +146,7 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
         body_regex,
         status_regex,
     ):
-        super(RackspaceHTTPHealthMonitor, self).__init__(
-            type, delay, timeout, attempts_before_deactivation
-        )
+        super().__init__(type, delay, timeout, attempts_before_deactivation)
         self.path = path
         self.body_regex = body_regex
         self.status_regex = status_regex
@@ -170,7 +168,7 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
         )
 
     def _to_dict(self):
-        super_dict = super(RackspaceHTTPHealthMonitor, self)._to_dict()
+        super_dict = super()._to_dict()
         super_dict["path"] = self.path
         super_dict["statusRegex"] = self.status_regex
 
@@ -180,7 +178,7 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
         return super_dict
 
 
-class RackspaceConnectionThrottle(object):
+class RackspaceConnectionThrottle:
     """
     :param min_connections: Minimum number of connections per IP address
                             before applying throttling.
@@ -238,14 +236,14 @@ class RackspaceConnectionThrottle(object):
         }
 
 
-class RackspaceAccessRuleType(object):
+class RackspaceAccessRuleType:
     ALLOW = 0
     DENY = 1
 
     _RULE_TYPE_STRING_MAP = {ALLOW: "ALLOW", DENY: "DENY"}
 
 
-class RackspaceAccessRule(object):
+class RackspaceAccessRule:
     """
     An access rule allows or denies traffic to a Load Balancer based on the
     incoming IPs.
@@ -293,7 +291,7 @@ class RackspaceConnection(RackspaceConnection, PollingConnection):
         if method in ("POST", "PUT"):
             headers["Content-Type"] = "application/json"
 
-        return super(RackspaceConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
@@ -359,9 +357,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
             # For backward compatibility
             region = ex_force_region
         OpenStackDriverMixin.__init__(self, **kwargs)
-        super(RackspaceLBDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, region=region
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, region=region)
 
     @classmethod
     def list_regions(cls):
@@ -548,7 +544,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         # Loadbalancer always needs to have at least 1 member.
         # Last member cannot be detached. You can only disable it or destroy
         # the balancer.
-        uri = "/loadbalancers/%s/nodes/%s" % (balancer.id, member.id)
+        uri = "/loadbalancers/{}/nodes/{}".format(balancer.id, member.id)
         resp = self.connection.request(uri, method="DELETE")
 
         return resp.status == httplib.ACCEPTED
@@ -685,7 +681,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         :rtype: ``bool``
         """
         resp = self.connection.request(
-            action="/loadbalancers/%s/nodes/%s" % (balancer.id, member.id),
+            action="/loadbalancers/{}/nodes/{}".format(balancer.id, member.id),
             method="PUT",
             data=json.dumps(self._kwargs_to_mutable_member_attrs(**kwargs)),
         )
@@ -1285,7 +1281,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         :return: Returns whether the destroy request was accepted.
         :rtype: ``bool``
         """
-        uri = "/loadbalancers/%s/accesslist/%s" % (balancer.id, rule.id)
+        uri = "/loadbalancers/{}/accesslist/{}".format(balancer.id, rule.id)
         resp = self.connection.request(uri, method="DELETE")
 
         return resp.status == httplib.ACCEPTED

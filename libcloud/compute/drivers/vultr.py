@@ -651,7 +651,7 @@ class VultrResponse(JsonResponse):
             raise LibcloudError(self.body)
 
 
-class SSHKey(object):
+class SSHKey:
     def __init__(self, id, name, pub_key):
         self.id = id
         self.name = name
@@ -720,7 +720,7 @@ class VultrConnection(ConnectionKey):
             return True
 
 
-class VultrNodeDriverHelper(object):
+class VultrNodeDriverHelper:
     """
     VultrNode helper class.
     """
@@ -1994,7 +1994,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
     def _to_network(self, data: Dict[str, Any]) -> VultrNetwork:
         id_ = data["id"]
-        cidr_block = "%s/%s" % (data["v4_subnet"], data["v4_subnet_mask"])
+        cidr_block = "{}/{}".format(data["v4_subnet"], data["v4_subnet_mask"])
         location = data["region"]
         extra = {
             "description": data["description"],

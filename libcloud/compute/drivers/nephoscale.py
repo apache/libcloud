@@ -53,7 +53,7 @@ VALID_RESPONSE_CODES = [
 CONNECT_ATTEMPTS = 10
 
 
-class NodeKey(object):
+class NodeKey:
     def __init__(self, id, name, public_key=None, key_group=None, password=None):
         self.id = id
         self.name = name
@@ -98,7 +98,7 @@ class NephoscaleConnection(ConnectionUserAndKey):
         """
         Add parameters that are necessary for every request
         """
-        user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 

@@ -35,7 +35,7 @@ class GridspotResponse(JsonResponse):
     """
 
     def parse_body(self):
-        body = super(GridspotResponse, self).parse_body()
+        body = super().parse_body()
 
         if "exception_name" in body and body["exception_name"]:
             raise GridspotAPIException(body["exception_name"])

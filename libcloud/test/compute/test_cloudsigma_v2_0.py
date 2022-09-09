@@ -32,7 +32,7 @@ except Exception:
     import json
 
 
-class CloudSigmaAPI20BaseTestCase(object):
+class CloudSigmaAPI20BaseTestCase:
     def setUp(self):
         self.driver_klass.connectionCls.conn_class = CloudSigmaMockHttp
 

@@ -34,7 +34,7 @@ API_VERSION = "2012-02-29"
 API_HOST = "route53.amazonaws.com"
 API_ROOT = "/%s/" % (API_VERSION)
 
-NAMESPACE = "https://%s/doc%s" % (API_HOST, API_ROOT)
+NAMESPACE = "https://{}/doc{}".format(API_HOST, API_ROOT)
 
 
 class InvalidChangeBatch(LibcloudError):
@@ -72,7 +72,7 @@ class BaseRoute53Connection(ConnectionUserAndKey):
         }
 
         for k, v in auth.items():
-            tmp.append("%s=%s" % (k, v))
+            tmp.append("{}={}".format(k, v))
 
         headers["X-Amzn-Authorization"] = "AWS3-HTTPS " + ",".join(tmp)
 
@@ -111,7 +111,7 @@ class Route53DNSDriver(DNSDriver):
 
     def __init__(self, *args, **kwargs):
         self.token = kwargs.pop("token", None)
-        super(Route53DNSDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def iterate_zones(self):
         return self._get_more("zones")
@@ -401,7 +401,7 @@ class Route53DNSDriver(DNSDriver):
             rrecs = ET.SubElement(rrs, "ResourceRecords")
             rrec = ET.SubElement(rrecs, "ResourceRecord")
             if "priority" in extra:
-                data = "%s %s" % (extra["priority"], data)
+                data = "{} {}".format(extra["priority"], data)
             ET.SubElement(rrec, "Value").text = data
 
         uri = API_ROOT + "hostedzone/" + zone.id + "/rrset"
@@ -529,8 +529,7 @@ class Route53DNSDriver(DNSDriver):
         last_key = None
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
-            for item in items:
-                yield item
+            yield from items
 
     def _get_data(self, rtype, last_key, **kwargs):
         params = {}
@@ -562,11 +561,11 @@ class Route53DNSDriver(DNSDriver):
             return [], None, True
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(Route53DNSDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["token"] = self.token
         return kwargs
 
     def _quote_data(self, data):
         if data[0] == '"' and data[-1] == '"':
             return data
-        return '"{0}"'.format(data.replace('"', '"'))
+        return '"{}"'.format(data.replace('"', '"'))

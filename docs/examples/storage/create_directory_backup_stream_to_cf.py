@@ -28,4 +28,4 @@ while return_code is None:
     obj = container.upload_object_via_stream(iterator=pipe.stdout, object_name=object_name)
     return_code = pipe.poll()
 
-print("Upload complete, transferred: %s KB" % ((obj.size / 1024)))
+print("Upload complete, transferred: %s KB" % (obj.size / 1024))

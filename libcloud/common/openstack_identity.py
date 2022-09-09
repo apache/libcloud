@@ -153,7 +153,7 @@ class OpenStackAuthenticationContext:
         self.urls = urls
 
 
-class OpenStackIdentityEndpointType(object):
+class OpenStackIdentityEndpointType:
     """
     Enum class for openstack identity endpoint type.
     """
@@ -163,7 +163,7 @@ class OpenStackIdentityEndpointType(object):
     ADMIN = "admin"
 
 
-class OpenStackIdentityTokenScope(object):
+class OpenStackIdentityTokenScope:
     """
     Enum class for openstack identity token scope.
     """
@@ -173,7 +173,7 @@ class OpenStackIdentityTokenScope(object):
     UNSCOPED = "unscoped"
 
 
-class OpenStackIdentityVersion(object):
+class OpenStackIdentityVersion:
     def __init__(self, version, status, updated, url):
         self.version = version
         self.status = status
@@ -189,21 +189,21 @@ class OpenStackIdentityVersion(object):
         )
 
 
-class OpenStackIdentityDomain(object):
+class OpenStackIdentityDomain:
     def __init__(self, id, name, enabled):
         self.id = id
         self.name = name
         self.enabled = enabled
 
     def __repr__(self):
-        return "<OpenStackIdentityDomain id=%s, name=%s, enabled=%s>" % (
+        return "<OpenStackIdentityDomain id={}, name={}, enabled={}>".format(
             self.id,
             self.name,
             self.enabled,
         )
 
 
-class OpenStackIdentityProject(object):
+class OpenStackIdentityProject:
     def __init__(self, id, name, description, enabled, domain_id=None):
         self.id = id
         self.name = name
@@ -220,7 +220,7 @@ class OpenStackIdentityProject(object):
         )
 
 
-class OpenStackIdentityRole(object):
+class OpenStackIdentityRole:
     def __init__(self, id, name, description, enabled):
         self.id = id
         self.name = name
@@ -236,7 +236,7 @@ class OpenStackIdentityRole(object):
         )
 
 
-class OpenStackIdentityUser(object):
+class OpenStackIdentityUser:
     def __init__(self, id, domain_id, name, email, description, enabled):
         self.id = id
         self.domain_id = domain_id
@@ -255,7 +255,7 @@ class OpenStackIdentityUser(object):
         )
 
 
-class OpenStackServiceCatalog(object):
+class OpenStackServiceCatalog:
     """
     http://docs.openstack.org/api/openstack-identity-service/2.0/content/
 
@@ -558,7 +558,7 @@ class OpenStackServiceCatalog(object):
         return entries
 
 
-class OpenStackServiceCatalogEntry(object):
+class OpenStackServiceCatalogEntry:
     def __init__(self, service_type, endpoints=None, service_name=None):
         """
         :param service_type: Service type.
@@ -595,7 +595,7 @@ class OpenStackServiceCatalogEntry(object):
         )
 
 
-class OpenStackServiceCatalogEntryEndpoint(object):
+class OpenStackServiceCatalogEntryEndpoint:
     VALID_ENDPOINT_TYPES = [
         OpenStackIdentityEndpointType.INTERNAL,
         OpenStackIdentityEndpointType.EXTERNAL,
@@ -705,7 +705,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         parent_conn=None,
         auth_cache=None,
     ):
-        super(OpenStackIdentityConnection, self).__init__(
+        super().__init__(
             user_id=user_id, key=key, url=auth_url, timeout=timeout, proxy_url=proxy_url
         )
 
@@ -765,7 +765,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
             # method.
             return action
 
-        return super(OpenStackIdentityConnection, self).morph_action_hook(action=action)
+        return super().morph_action_hook(action=action)
 
     def add_default_headers(self, headers):
         headers["Accept"] = "application/json"
@@ -979,7 +979,7 @@ class OpenStackIdentity_1_0_Connection(OpenStackIdentityConnection):
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status not in [httplib.NO_CONTENT, httplib.OK]:
-            body = "code: %s body:%s headers:%s" % (
+            body = "code: {} body:{} headers:{}".format(
                 resp.status,
                 resp.body,
                 resp.headers,
@@ -1023,7 +1023,7 @@ class OpenStackIdentity_1_1_Connection(OpenStackIdentityConnection):
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status != httplib.OK:
-            body = "code: %s body:%s" % (resp.status, resp.body)
+            body = "code: {} body:{}".format(resp.status, resp.body)
             raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             try:
@@ -1107,7 +1107,7 @@ class OpenStackIdentity_2_0_Connection(OpenStackIdentityConnection):
         if resp.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
         elif resp.status not in [httplib.OK, httplib.NON_AUTHORITATIVE_INFORMATION]:
-            body = "code: %s body: %s" % (resp.status, resp.body)
+            body = "code: {} body: {}".format(resp.status, resp.body)
             raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             body = resp.object
@@ -1188,7 +1188,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :param auth_cache: Where to cache authentication tokens.
         :type auth_cache: :class:`OpenStackAuthenticationCache`
         """
-        super(OpenStackIdentity_3_0_Connection, self).__init__(
+        super().__init__(
             auth_url=auth_url,
             user_id=user_id,
             key=key,
@@ -1319,7 +1319,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         """
         # TODO: Also add "get users roles" and "get assginements" which are
         # available in 3.1 and 3.3
-        path = "/v3/domains/%s/users/%s/roles" % (domain.id, user.id)
+        path = "/v3/domains/{}/users/{}/roles".format(domain.id, user.id)
         response = self.authenticated_request(path, method="GET")
         result = self._to_roles(data=response.object["roles"])
         return result
@@ -1342,7 +1342,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :return: ``True`` on success.
         :rtype: ``bool``
         """
-        path = "/v3/domains/%s/users/%s/roles/%s" % (domain.id, user.id, role.id)
+        path = "/v3/domains/{}/users/{}/roles/{}".format(domain.id, user.id, role.id)
         response = self.authenticated_request(path, method="PUT")
         return response.status == httplib.NO_CONTENT
 
@@ -1362,7 +1362,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :return: ``True`` on success.
         :rtype: ``bool``
         """
-        path = "/v3/domains/%s/users/%s/roles/%s" % (domain.id, user.id, role.id)
+        path = "/v3/domains/{}/users/{}/roles/{}".format(domain.id, user.id, role.id)
         response = self.authenticated_request(path, method="DELETE")
         return response.status == httplib.NO_CONTENT
 
@@ -1384,7 +1384,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :return: ``True`` on success.
         :rtype: ``bool``
         """
-        path = "/v3/projects/%s/users/%s/roles/%s" % (project.id, user.id, role.id)
+        path = "/v3/projects/{}/users/{}/roles/{}".format(project.id, user.id, role.id)
         response = self.authenticated_request(path, method="PUT")
         return response.status == httplib.NO_CONTENT
 
@@ -1404,7 +1404,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :return: ``True`` on success.
         :rtype: ``bool``
         """
-        path = "/v3/projects/%s/users/%s/roles/%s" % (project.id, user.id, role.id)
+        path = "/v3/projects/{}/users/{}/roles/{}".format(project.id, user.id, role.id)
         response = self.authenticated_request(path, method="DELETE")
         return response.status == httplib.NO_CONTENT
 
@@ -1611,7 +1611,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 " e.g. identity/v3/auth/tokens"
             )
         else:
-            body = "code: %s body:%s" % (response.status, response.body)
+            body = "code: {} body:{}".format(response.status, response.body)
             raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
 
     def _fetch_auth_token(self):
@@ -1700,7 +1700,7 @@ class OpenStackIdentity_3_0_Connection_AppCred(OpenStackIdentity_3_0_Connection)
         Tenant, domain and scope options are ignored as they are contained
         within the app credential itself and can't be changed.
         """
-        super(OpenStackIdentity_3_0_Connection_AppCred, self).__init__(
+        super().__init__(
             auth_url=auth_url,
             user_id=user_id,
             key=key,
@@ -1783,7 +1783,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(OpenStackIdentity_3_0_C
         """
         Get unscoped token from OIDC access token
         """
-        path = "/v3/OS-FEDERATION/identity_providers/%s/protocols/%s/auth" % (
+        path = "/v3/OS-FEDERATION/identity_providers/{}/protocols/{}/auth".format(
             self.user_id,
             self.tenant_name,
         )
@@ -1985,7 +1985,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection, Certifi
         if resp.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
         elif resp.status not in [httplib.OK, httplib.NON_AUTHORITATIVE_INFORMATION]:
-            body = "code: %s body: %s" % (resp.status, resp.body)
+            body = "code: {} body: {}".format(resp.status, resp.body)
             raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             body = resp.object

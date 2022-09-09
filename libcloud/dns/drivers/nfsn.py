@@ -155,7 +155,7 @@ class NFSNDNSDriver(DNSDriver):
         except BaseHTTPError as e:
             exists_re = re.compile(r"That RR already exists on the domain")
             if e.code == httplib.BAD_REQUEST and re.search(exists_re, e.message) is not None:
-                value = '"%s" already exists in %s' % (name, zone.domain)
+                value = '"{}" already exists in {}'.format(name, zone.domain)
                 raise RecordAlreadyExistsError(value=value, driver=self, record_id=None)
             raise e
         return self.ex_get_records_by(zone=zone, name=name, type=type)[0]

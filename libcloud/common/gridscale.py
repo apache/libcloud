@@ -83,11 +83,11 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
     def async_request(self, *poargs, **kwargs):
         self.async_request_counter = 0
         self.request_method = "_poll_request_initial"
-        return super(GridscaleConnection, self).async_request(*poargs, **kwargs)
+        return super().async_request(*poargs, **kwargs)
 
     def _poll_request_initial(self, **kwargs):
         if self.async_request_counter == 0:
-            self.poll_response_initial = super(GridscaleConnection, self).request(**kwargs)
+            self.poll_response_initial = super().request(**kwargs)
             r = self.poll_response_initial
             self.async_request_counter += 1
         else:
@@ -116,7 +116,7 @@ class GridscaleBaseDriver(BaseDriver):
     connectionCls = GridscaleConnection
 
     def __init__(self, user_id, key, **kwargs):
-        super(GridscaleBaseDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
     def _sync_request(self, data=None, endpoint=None, method="GET"):
         raw_result = self.connection.request(endpoint, data=data, method=method)

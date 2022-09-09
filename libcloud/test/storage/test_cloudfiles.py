@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -29,7 +28,7 @@ from unittest.mock import Mock, PropertyMock
 import libcloud.utils.files
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import unittest, make_response, generate_random_data
-from libcloud.utils.py3 import PY3, StringIO, b, httplib, urlquote
+from libcloud.utils.py3 import StringIO, b, httplib, urlquote
 from libcloud.utils.files import exhaust_iterator
 from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import CHUNK_SIZE, Object, Container
@@ -371,7 +370,7 @@ class CloudFilesTests(unittest.TestCase):
         )
         self.assertTrue(result)
 
-        with open(destination_path, "r") as fp:
+        with open(destination_path) as fp:
             content = fp.read()
 
         self.assertEqual(content, "56")
@@ -425,9 +424,7 @@ class CloudFilesTests(unittest.TestCase):
         )
         result = self.driver.download_object_as_stream(obj=obj)
         result = exhaust_iterator(result)
-
-        if PY3:
-            result = result.decode("utf-8")
+        result = result.decode("utf-8")
 
         self.assertEqual(result, "a" * 1000)
 
@@ -864,7 +861,7 @@ class CloudFilesTests(unittest.TestCase):
 
         class InterceptResponse(MockHttp):
             def __init__(self, connection, response=None):
-                super(InterceptResponse, self).__init__(connection=connection, response=response)
+                super().__init__(connection=connection, response=response)
                 old_send = self.connection.connection.send
 
                 def intercept_send(data):
@@ -1003,7 +1000,7 @@ class CloudFilesTests(unittest.TestCase):
             meta_data=None,
             driver=self,
         )
-        hmac_body = "%s\n%s\n%s" % (
+        hmac_body = "{}\n{}\n{}".format(
             "GET",
             60,
             "/v1/MossoCloudFS/foo_bar_container/foo_bar_object",

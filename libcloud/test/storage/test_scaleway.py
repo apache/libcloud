@@ -33,7 +33,7 @@ class ScalewayStorageDriverTestCase(S3Tests, unittest.TestCase):
         return self.driver_type(*self.driver_args, host=self.default_host)
 
     def setUp(self):
-        super(ScalewayStorageDriverTestCase, self).setUp()
+        super().setUp()
 
         ScalewayStorageDriver.connectionCls.conn_class = S3MockHttp
         S3MockHttp.type = None

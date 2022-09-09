@@ -66,7 +66,7 @@ class ScalewayResponse(JsonResponse):
     ]
 
     def parse_error(self):
-        return super(ScalewayResponse, self).parse_error()["message"]
+        return super().parse_error()["message"]
 
     def success(self):
         return self.status in self.valid_response_codes
@@ -100,9 +100,7 @@ class ScalewayConnection(ConnectionUserAndKey):
             if not self.host == old_host:
                 self.connect()
 
-        return super(ScalewayConnection, self).request(
-            action, params, data, headers, method, raw, stream
-        )
+        return super().request(action, params, data, headers, method, raw, stream)
 
     def _request_paged(
         self,
@@ -207,7 +205,7 @@ class ScalewayNodeDriver(NodeDriver):
         availability = response["servers"]
 
         return sorted(
-            [self._to_size(name, sizes[name], availability[name]) for name in sizes],
+            (self._to_size(name, sizes[name], availability[name]) for name in sizes),
             key=lambda x: x.name,
         )
 
@@ -695,7 +693,9 @@ class ScalewayNodeDriver(NodeDriver):
         return response.object["token"]["user_id"]
 
     def _save_keys(self, keys):
-        data = {"ssh_public_keys": [{"key": "%s %s" % (key.public_key, key.name)} for key in keys]}
+        data = {
+            "ssh_public_keys": [{"key": "{} {}".format(key.public_key, key.name)} for key in keys]
+        }
         response = self.connection.request(
             "/users/%s" % (self._get_user_id()),
             region="account",

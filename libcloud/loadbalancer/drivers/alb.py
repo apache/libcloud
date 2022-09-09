@@ -23,7 +23,7 @@ from libcloud.loadbalancer.types import State
 VERSION = "2015-12-01"
 HOST = "elasticloadbalancing.%s.amazonaws.com"
 ROOT = "/%s/" % (VERSION)
-NS = "http://elasticloadbalancing.amazonaws.com/doc/%s/" % (VERSION,)
+NS = "http://elasticloadbalancing.amazonaws.com/doc/{}/".format(VERSION)
 
 
 class ALBResponse(AWSGenericResponse):
@@ -43,7 +43,7 @@ class ALBConnection(SignedAWSConnection):
     service_name = "elasticloadbalancing"
 
 
-class ALBTargetGroup(object):
+class ALBTargetGroup:
     """
     AWS ALB target group class
     http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html
@@ -117,7 +117,7 @@ class ALBTargetGroup(object):
         self._members_ids = [mb.id for mb in val] if val else []
 
 
-class ALBListener(object):
+class ALBListener:
     """
     AWS ALB listener class
     http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html
@@ -170,7 +170,7 @@ class ALBListener(object):
         self._rules = val
 
 
-class ALBRule(object):
+class ALBRule:
     """
     AWS ALB listener rule class
     http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#listener-rules
@@ -231,9 +231,7 @@ class ApplicationLBDriver(Driver):
         self.token = token
         self.region = region
         self.region_name = region
-        super(ApplicationLBDriver, self).__init__(
-            access_id, secret, token=token, host=HOST % region, region=region
-        )
+        super().__init__(access_id, secret, token=token, host=HOST % region, region=region)
 
     def list_protocols(self):
         """
@@ -1004,7 +1002,7 @@ class ApplicationLBDriver(Driver):
         return self._to_tags(data)
 
     def _ex_connection_class_kwargs(self):
-        pdriver = super(ApplicationLBDriver, self)
+        pdriver = super()
         kwargs = pdriver._ex_connection_class_kwargs()
         if hasattr(self, "token") and self.token is not None:
             kwargs["token"] = self.token

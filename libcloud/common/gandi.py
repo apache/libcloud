@@ -36,11 +36,11 @@ class GandiException(Exception):
 
     def __str__(self):
         # pylint: disable=unsubscriptable-object
-        return "(%s) %s" % (self.args[0], self.args[1])
+        return "({}) {}".format(self.args[0], self.args[1])
 
     def __repr__(self):
         # pylint: disable=unsubscriptable-object
-        return '<GandiException code %s "%s">' % (self.args[0], self.args[1])
+        return '<GandiException code {} "{}">'.format(self.args[0], self.args[1])
 
 
 class GandiResponse(XMLRPCResponse):
@@ -71,7 +71,7 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
         # XMLRPCConnection -> Connection and Connection doesn't take key as the
         # first argument so we specify a keyword argument instead.
         # Previously it was GandiConnection -> ConnectionKey so it worked fine.
-        super(GandiConnection, self).__init__(
+        super().__init__(
             key=key,
             secure=secure,
             timeout=timeout,
@@ -83,10 +83,10 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
 
     def request(self, method, *args):
         args = (self.key,) + args
-        return super(GandiConnection, self).request(method, *args)
+        return super().request(method, *args)
 
 
-class BaseGandiDriver(object):
+class BaseGandiDriver:
     """
     Gandi base driver
 
@@ -117,7 +117,7 @@ class BaseGandiDriver(object):
         return False
 
 
-class BaseObject(object):
+class BaseObject:
     """Base class for objects not conventional"""
 
     uuid_prefix = ""
@@ -146,7 +146,7 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        hashstring = "%s:%s:%s" % (self.uuid_prefix, self.id, self.driver.type)
+        hashstring = "{}:{}:{}".format(self.uuid_prefix, self.id, self.driver.type)
         return hashlib.sha1(b(hashstring)).hexdigest()
 
 
@@ -158,7 +158,7 @@ class IPAddress(BaseObject):
     uuid_prefix = "inet:"
 
     def __init__(self, id, state, inet, driver, version=4, extra=None):
-        super(IPAddress, self).__init__(id, state, driver)
+        super().__init__(id, state, driver)
         self.inet = inet
         self.version = version
         self.extra = extra or {}
@@ -180,7 +180,7 @@ class NetworkInterface(BaseObject):
     uuid_prefix = "if:"
 
     def __init__(self, id, state, mac_address, driver, ips=None, node_id=None, extra=None):
-        super(NetworkInterface, self).__init__(id, state, driver)
+        super().__init__(id, state, driver)
         self.mac = mac_address
         self.ips = ips or {}
         self.node_id = node_id
@@ -201,7 +201,7 @@ class Disk(BaseObject):
     """
 
     def __init__(self, id, state, name, driver, size, extra=None):
-        super(Disk, self).__init__(id, state, driver)
+        super().__init__(id, state, driver)
         self.name = name
         self.size = size
         self.extra = extra or {}

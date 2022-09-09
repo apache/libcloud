@@ -40,7 +40,7 @@ class PowerDNSResponse(JsonResponse):
         try:
             body = self.parse_body()
         except MalformedResponseError as e:
-            body = "%s: %s" % (e.value, e.body)
+            body = "{}: {}".format(e.value, e.body)
         try:
             errors = [body["error"]]
         except TypeError:
@@ -144,7 +144,7 @@ class PowerDNSDriver(DNSDriver):
         else:
             raise NotImplementedError("Unsupported API version: %s" % api_version)
 
-        super(PowerDNSDriver, self).__init__(key=key, secure=secure, host=host, port=port, **kwargs)
+        super().__init__(key=key, secure=secure, host=host, port=port, **kwargs)
 
     def create_record(self, name, zone, type, data, extra=None):
         """
@@ -181,7 +181,7 @@ class PowerDNSDriver(DNSDriver):
         """
         extra = extra or {}
 
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone.id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone.id)
         if extra is None or extra.get("ttl", None) is None:
             raise ValueError("PowerDNS requires a ttl value for every record")
 
@@ -274,7 +274,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = "%s/servers/%s/zones" % (self.api_root, self.ex_server)
+        action = "{}/servers/{}/zones".format(self.api_root, self.ex_server)
         if extra is None or extra.get("nameservers", None) is None:
             msg = "PowerDNS requires a list of nameservers for every new zone"
             raise ValueError(msg)
@@ -300,7 +300,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = "%s/servers/%s/zones/%s" % (
+        action = "{}/servers/{}/zones/{}".format(
             self.api_root,
             self.ex_server,
             record.zone.id,
@@ -329,7 +329,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone.id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone.id)
         try:
             self.connection.request(action=action, method="DELETE")
         except BaseHTTPError:
@@ -358,7 +358,7 @@ class PowerDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         :raises: ZoneDoesNotExistError: If no zone could be found.
         """
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone_id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone_id)
         try:
             response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
@@ -376,7 +376,7 @@ class PowerDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone.id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone.id)
         try:
             response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
@@ -393,7 +393,7 @@ class PowerDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        action = "%s/servers/%s/zones" % (self.api_root, self.ex_server)
+        action = "{}/servers/{}/zones".format(self.api_root, self.ex_server)
         response = self.connection.request(action=action, method="GET")
         return self._to_zones(response)
 
@@ -418,7 +418,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = "%s/servers/%s/zones/%s" % (
+        action = "{}/servers/{}/zones/{}".format(
             self.api_root,
             self.ex_server,
             record.zone.id,

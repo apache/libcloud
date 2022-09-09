@@ -25,5 +25,5 @@ class BaseGandiMockHttp(MockHttp):
         params, methodName = xmlrpclib.loads(body)
         meth_name = "_xmlrpc__" + methodName.replace(".", "_")
         if self.type:
-            meth_name = "%s_%s" % (meth_name, self.type)
+            meth_name = "{}_{}".format(meth_name, self.type)
         return getattr(self, meth_name)(method, url, body, headers)

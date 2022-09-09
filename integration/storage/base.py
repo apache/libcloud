@@ -235,7 +235,7 @@ class Integration:
                 else:
                     expected_content = content[start_bytes:]
 
-                msg = 'Expected "%s", got "%s" for values: %s' % (
+                msg = 'Expected "{}", got "{}" for values: {}'.format(
                     expected_content,
                     downloaded_content,
                     str(value),

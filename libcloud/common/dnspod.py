@@ -28,13 +28,13 @@ class DNSPodResponse(JsonResponse):
     objects = []  # type: List[Dict]
 
     def __init__(self, response, connection):
-        super(DNSPodResponse, self).__init__(response=response, connection=connection)
+        super().__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
             raise DNSPodException(code=self.status, message=self.errors.pop()["status"]["message"])
 
     def parse_body_and_errors(self):
-        js = super(DNSPodResponse, self).parse_body()
+        js = super().parse_body()
         if "status" in js and js["status"]["code"] != "1":
             self.errors.append(js)
         else:
@@ -64,7 +64,7 @@ class DNSPodException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "DNSPodException %s %s" % (self.code, self.message)
+        return "DNSPodException {} {}".format(self.code, self.message)

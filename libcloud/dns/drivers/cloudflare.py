@@ -151,7 +151,7 @@ class CloudFlareDNSResponse(JsonResponse):
             raise exception_class(**kwargs)
 
 
-class BaseDNSConnection(object):
+class BaseDNSConnection:
     host = API_HOST
     secure = True
     responseCls = CloudFlareDNSResponse
@@ -204,9 +204,7 @@ class CloudFlareDNSDriver(DNSDriver):
         if secret is None:
             self.connectionCls = TokenDNSConnection
 
-        super(CloudFlareDNSDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def iterate_zones(self):
         def _iterate_zones(params):
@@ -546,8 +544,7 @@ class CloudFlareDNSDriver(DNSDriver):
 
             response, items = get_page(params)
 
-            for item in items:
-                yield item
+            yield from items
 
             if self._is_last_page(response):
                 break

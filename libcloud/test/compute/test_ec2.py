@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import sys
@@ -760,7 +759,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_import_key_pair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             key_material = fp.read()
 
         key = self.driver.import_key_pair_from_string(name="keypair", key_material=key_material)

@@ -56,12 +56,12 @@ RETRY_FAILED_HTTP_REQUESTS = False
 ALLOW_PATH_DOUBLE_SLASHES = False
 
 
-class LazyObject(object):
+class LazyObject:
     """An object that doesn't get initialized until accessed."""
 
     @classmethod
     def _proxy(cls, *lazy_init_args, **lazy_init_kwargs):
-        class Proxy(cls, object):
+        class Proxy(cls):
             _lazy_obj = None
 
             def __init__(self):
@@ -108,7 +108,7 @@ class HTTPResponse(httplib.HTTPResponse):
         return httplib.HTTPResponse.read(self, amt)
 
 
-class Response(object):
+class Response:
     """
     A base Response class to derive from.
     """
@@ -312,7 +312,7 @@ class RawResponse(Response):
         return self._reason
 
 
-class Connection(object):
+class Connection:
     """
     A Base Connection class to derive from.
     """
@@ -413,7 +413,7 @@ class Connection(object):
         (scheme, netloc, request_path, param, query, fragment) = urlparse.urlparse(url)
 
         if scheme not in ["http", "https"]:
-            raise LibcloudError("Invalid scheme: %s in url %s" % (scheme, url))
+            raise LibcloudError("Invalid scheme: {} in url {}".format(scheme, url))
 
         if scheme == "http":
             secure = 0
@@ -494,13 +494,13 @@ class Connection(object):
         user_agent_suffix = " ".join(["(%s)" % x for x in self.ua])
 
         if self.driver:
-            user_agent = "libcloud/%s (%s) %s" % (
+            user_agent = "libcloud/{} ({}) {}".format(
                 libcloud.__version__,
                 self.driver.name,
                 user_agent_suffix,
             )
         else:
-            user_agent = "libcloud/%s %s" % (libcloud.__version__, user_agent_suffix)
+            user_agent = "libcloud/{} {}".format(libcloud.__version__, user_agent_suffix)
 
         return user_agent
 
@@ -943,7 +943,7 @@ class ConnectionKey(Connection):
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(ConnectionKey, self).__init__(
+        super().__init__(
             secure=secure,
             host=host,
             port=port,
@@ -977,7 +977,7 @@ class CertificateConnection(Connection):
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(CertificateConnection, self).__init__(
+        super().__init__(
             secure=secure,
             host=host,
             port=port,
@@ -1017,7 +1017,7 @@ class KeyCertificateConnection(CertificateConnection):
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(KeyCertificateConnection, self).__init__(
+        super().__init__(
             cert_file,
             secure=secure,
             host=host,
@@ -1052,7 +1052,7 @@ class ConnectionUserAndKey(ConnectionKey):
         backoff=None,
         retry_delay=None,
     ):
-        super(ConnectionUserAndKey, self).__init__(
+        super().__init__(
             key,
             secure=secure,
             host=host,
@@ -1066,7 +1066,7 @@ class ConnectionUserAndKey(ConnectionKey):
         self.user_id = user_id
 
 
-class BaseDriver(object):
+class BaseDriver:
     """
     Base driver class from which other classes can inherit from.
     """

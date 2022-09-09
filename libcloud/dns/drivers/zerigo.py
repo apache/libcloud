@@ -47,7 +47,7 @@ class ZerigoError(LibcloudError):
         return "Errors: %s" % (", ".join(self.errors))
 
     def __repr__(self):
-        return "<ZerigoError response code=%s, errors count=%s>" % (
+        return "<ZerigoError response code={}, errors count={}>".format(
             self.code,
             len(self.errors),
         )
@@ -92,7 +92,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
     responseCls = ZerigoDNSResponse
 
     def add_default_headers(self, headers):
-        auth_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        auth_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (auth_b64.decode("utf-8"))
         return headers
 
@@ -104,7 +104,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
 
         if method in ("POST", "PUT"):
             headers = {"Content-Type": "application/xml; charset=UTF-8"}
-        return super(ZerigoDNSConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
@@ -447,8 +447,7 @@ class ZerigoDNSDriver(DNSDriver):
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
 
-            for item in items:
-                yield item
+            yield from items
 
     def _get_data(self, rtype, last_key, **kwargs):
         # Note: last_key in this case really is a "last_page".

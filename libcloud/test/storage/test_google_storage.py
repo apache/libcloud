@@ -133,7 +133,7 @@ class GoogleStorageJSONMockHttp(StorageMockHttp):
 
         joined_groups = "_".join([g for g in match.groups() if g])
         if type:
-            meth_name = "_%s_%s" % (joined_groups, type)
+            meth_name = "_{}_{}".format(joined_groups, type)
         else:
             meth_name = "_%s" % joined_groups
         # Return sanitized method name.
@@ -297,7 +297,7 @@ class GoogleStorageConnectionTest(GoogleTestCase):
         conn.action = "GET"
         conn.method = "/foo"
         expected_headers = dict(starting_headers)
-        expected_headers["Authorization"] = "%s %s:%s" % (
+        expected_headers["Authorization"] = "{} {}:{}".format(
             google_storage.SIGNATURE_IDENTIFIER,
             "foo_user",
             "fake signature!",
@@ -315,7 +315,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
     mock_response_klass = GoogleStorageMockHttp
 
     def setUp(self):
-        super(GoogleStorageTests, self).setUp()
+        super().setUp()
         self.driver_type.jsonConnectionCls.conn_class = GoogleStorageJSONMockHttp
 
     def tearDown(self):

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import with_statement
 
 import os
 import re
@@ -240,7 +239,7 @@ class LibvirtNodeDriver(NodeDriver):
         else:
             extension = ".png"
 
-        name = "screenshot-%s%s" % (int(time.time()), extension)
+        name = "screenshot-{}{}".format(int(time.time()), extension)
         file_path = pjoin(directory, name)
 
         with open(file_path, "wb") as fp:

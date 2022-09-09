@@ -63,7 +63,7 @@ class EquinixMetalResponse(JsonResponse):
         else:
             body = self.parse_body()
             if "message" in body:
-                error = "%s (code: %s)" % (body.get("message"), self.status)
+                error = "{} (code: {})".format(body.get("message"), self.status)
             elif "errors" in body:
                 error = body.get("errors")
             else:
@@ -126,7 +126,7 @@ class EquinixMetalNodeDriver(NodeDriver):
         If project name is specified we validate it lazily and populate
         self.project_id during the first access of self.projects variable
         """
-        super(EquinixMetalNodeDriver, self).__init__(key=key)
+        super().__init__(key=key)
 
         self.project_name = project
         self.project_id = None
@@ -512,7 +512,7 @@ def _list_async(driver):
                 if "TB" in disk_size:
                     disk_size = float(disks["size"].replace("TB", "")) * 1000
                 disk += disks["count"] * int(disk_size)
-        name = "%s - %s RAM" % (data.get("name"), ram)
+        name = "{} - {} RAM".format(data.get("name"), ram)
         price = data["pricing"].get("hour")
         return NodeSize(
             id=data["slug"],
@@ -863,7 +863,7 @@ def _list_async(driver):
         :rtype: ``bool``
         """
         volume_id = snapshot.extra["volume"]["href"].split("/")[-1]
-        path = "/metal/v1/storage/%s/snapshots/%s" % (volume_id, snapshot.id)
+        path = "/metal/v1/storage/{}/snapshots/{}".format(volume_id, snapshot.id)
         res = self.connection.request(path, method="DELETE")
         return res.status == httplib.NO_CONTENT
 
@@ -920,7 +920,7 @@ def _list_async(driver):
     def ex_restore_volume(self, snapshot):
         volume_id = snapshot.extra["volume"]["href"].split("/")[-1]
         ts = snapshot.extra["timestamp"]
-        path = "/metal/v1/storage/%s/restore?restore_point=%s" % (volume_id, ts)
+        path = "/metal/v1/storage/{}/restore?restore_point={}".format(volume_id, ts)
         res = self.connection.request(path, method="POST")
         return res.status == httplib.NO_CONTENT
 
@@ -942,7 +942,7 @@ def _list_async(driver):
         return data
 
 
-class Project(object):
+class Project:
     def __init__(self, project):
         self.id = project.get("id")
         self.name = project.get("name")

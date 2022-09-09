@@ -86,9 +86,7 @@ class WorldWideDNSDriver(DNSDriver):
 
         :return: ``None``
         """
-        super(WorldWideDNSDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
         self.reseller_id = reseller_id
 
     def list_zones(self):
@@ -121,8 +119,7 @@ class WorldWideDNSDriver(DNSDriver):
         :rtype: ``generator`` of :class:`Record`
         """
         records = self._to_records(zone)
-        for record in records:
-            yield record
+        yield from records
 
     def get_zone(self, zone_id):
         """

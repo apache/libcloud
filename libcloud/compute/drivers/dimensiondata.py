@@ -129,7 +129,7 @@ class DimensionDataNodeDriver(NodeDriver):
         if api_version is not None:
             self.api_version = api_version
 
-        super(DimensionDataNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -145,7 +145,7 @@ class DimensionDataNodeDriver(NodeDriver):
         Add the region to the kwargs before the connection is instantiated
         """
 
-        kwargs = super(DimensionDataNodeDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["region"] = self.selected_region
         kwargs["api_version"] = self.api_version
         return kwargs
@@ -2398,7 +2398,7 @@ class DimensionDataNodeDriver(NodeDriver):
         create_node = ET.Element("ChangeDiskSpeed", {"xmlns": SERVER_NS})
         ET.SubElement(create_node, "speed").text = speed
         result = self.connection.request_with_orgId_api_1(
-            "server/%s/disk/%s/changeSpeed" % (node.id, disk_id),
+            "server/{}/disk/{}/changeSpeed".format(node.id, disk_id),
             method="POST",
             data=ET.tostring(create_node),
         ).object
@@ -2423,7 +2423,7 @@ class DimensionDataNodeDriver(NodeDriver):
         create_node = ET.Element("ChangeDiskSize", {"xmlns": SERVER_NS})
         ET.SubElement(create_node, "newSizeGb").text = str(size)
         result = self.connection.request_with_orgId_api_1(
-            "server/%s/disk/%s/changeSize" % (node.id, disk_id),
+            "server/{}/disk/{}/changeSize".format(node.id, disk_id),
             method="POST",
             data=ET.tostring(create_node),
         ).object
@@ -2499,7 +2499,7 @@ class DimensionDataNodeDriver(NodeDriver):
         # Version 2.3 and lower
         if LooseVersion(self.connection.active_api_version) < LooseVersion("2.4"):
             response = self.connection.request_with_orgId_api_1(
-                "server/%s?clone=%s&desc=%s" % (node_id, image_name, image_description)
+                "server/{}?clone={}&desc={}".format(node_id, image_name, image_description)
             ).object
 
         # Version 2.4 and higher
@@ -2928,7 +2928,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
-            "report/usage?startDate=%s&endDate=%s" % (start_date, end_date)
+            "report/usage?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -2945,7 +2945,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
-            "report/usageDetailed?startDate=%s&endDate=%s" % (start_date, end_date)
+            "report/usageDetailed?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -2962,7 +2962,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
-            "report/usageSoftwareUnits?startDate=%s&endDate=%s" % (start_date, end_date)
+            "report/usageSoftwareUnits?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -2979,7 +2979,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``list`` of ``list``
         """
         result = self.connection.raw_request_with_orgId_api_1(
-            "auditlog?startDate=%s&endDate=%s" % (start_date, end_date)
+            "auditlog?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -4049,7 +4049,7 @@ class DimensionDataNodeDriver(NodeDriver):
         #
         # We therefore need to filter out those images (since we can't
         # get a NodeLocation for them)
-        location_ids = set(location.id for location in locations)
+        location_ids = {location.id for location in locations}
 
         for element in object.findall(fixxpath(el_name, TYPES_URN)):
             location_id = element.get("datacenterId")

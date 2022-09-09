@@ -27,7 +27,7 @@ SALT_CHARACTERS = string.ascii_letters + string.digits
 class NFSNException(ProviderError):
     def __init__(self, value, http_code, code, driver=None):
         self.code = code
-        super(NFSNException, self).__init__(value, http_code, driver)
+        super().__init__(value, http_code, driver)
 
 
 class NFSNResponse(JsonResponse):

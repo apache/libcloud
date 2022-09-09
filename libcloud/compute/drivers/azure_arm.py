@@ -74,9 +74,9 @@ class AzureImage(NodeImage):
         self.sku = sku
         self.version = version
         self.location = location
-        urn = "%s:%s:%s:%s" % (self.publisher, self.offer, self.sku, self.version)
-        name = "%s %s %s %s" % (self.publisher, self.offer, self.sku, self.version)
-        super(AzureImage, self).__init__(urn, name, driver)
+        urn = "{}:{}:{}:{}".format(self.publisher, self.offer, self.sku, self.version)
+        name = "{} {} {} {}".format(self.publisher, self.offer, self.sku, self.version)
+        super().__init__(urn, name, driver)
 
     def __repr__(self):
         return ("<AzureImage: id=%s, name=%s, location=%s>") % (
@@ -90,13 +90,13 @@ class AzureVhdImage(NodeImage):
     """Represents a VHD node image that an Azure VM can boot from."""
 
     def __init__(self, storage_account, blob_container, name, driver):
-        urn = "https://%s.blob%s/%s/%s" % (
+        urn = "https://{}.blob{}/{}/{}".format(
             storage_account,
             driver.connection.storage_suffix,
             blob_container,
             name,
         )
-        super(AzureVhdImage, self).__init__(urn, name, driver)
+        super().__init__(urn, name, driver)
 
     def __repr__(self):
         return ("<AzureVhdImage: id=%s, name=%s>") % (self.id, self.name)
@@ -116,13 +116,13 @@ class AzureComputeGalleryImage(NodeImage):
                 name,
             )
         )
-        super(AzureComputeGalleryImage, self).__init__(id, name, driver)
+        super().__init__(id, name, driver)
 
     def __repr__(self):
         return ("<AzureComputeGalleryImage: id=%s, name=%s>") % (self.id, self.name)
 
 
-class AzureResourceGroup(object):
+class AzureResourceGroup:
     """Represent an Azure resource group."""
 
     def __init__(self, id, name, location, extra):
@@ -139,7 +139,7 @@ class AzureResourceGroup(object):
         )
 
 
-class AzureNetworkSecurityGroup(object):
+class AzureNetworkSecurityGroup:
     """Represent an Azure network security group."""
 
     def __init__(self, id, name, location, extra):
@@ -156,7 +156,7 @@ class AzureNetworkSecurityGroup(object):
         )
 
 
-class AzureNetwork(object):
+class AzureNetwork:
     """Represent an Azure virtual network."""
 
     def __init__(self, id, name, location, extra):
@@ -173,7 +173,7 @@ class AzureNetwork(object):
         )
 
 
-class AzureSubnet(object):
+class AzureSubnet:
     """Represents a subnet of an Azure virtual network."""
 
     def __init__(self, id, name, extra):
@@ -185,7 +185,7 @@ class AzureSubnet(object):
         return ("<AzureSubnet: id=%s, name=%s ...>") % (self.id, self.name)
 
 
-class AzureNic(object):
+class AzureNic:
     """Represents an Azure virtual network interface controller (NIC)."""
 
     def __init__(self, id, name, location, extra):
@@ -198,7 +198,7 @@ class AzureNic(object):
         return ("<AzureNic: id=%s, name=%s ...>") % (self.id, self.name)
 
 
-class AzureIPAddress(object):
+class AzureIPAddress:
     """Represents an Azure public IP address resource."""
 
     def __init__(self, id, name, extra):
@@ -264,7 +264,7 @@ class AzureNodeDriver(NodeDriver):
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
         self.cloud_environment = kwargs.get("cloud_environment")
-        super(AzureNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -380,7 +380,7 @@ class AzureNodeDriver(NodeDriver):
                 else:
                     offers = [
                         (
-                            "%s/artifacttypes/vmimage/offers/%s" % (pub[0], ex_offer),
+                            "{}/artifacttypes/vmimage/offers/{}".format(pub[0], ex_offer),
                             ex_offer,
                         )
                     ]
@@ -389,13 +389,13 @@ class AzureNodeDriver(NodeDriver):
                     if not ex_sku:
                         skus = self.ex_list_skus(off[0])
                     else:
-                        skus = [("%s/skus/%s" % (off[0], ex_sku), ex_sku)]
+                        skus = [("{}/skus/{}".format(off[0], ex_sku), ex_sku)]
 
                     for sku in skus:
                         if not ex_version:
                             versions = self.ex_list_image_versions(sku[0])
                         else:
-                            versions = [("%s/versions/%s" % (sku[0], ex_version), ex_version)]
+                            versions = [("{}/versions/{}".format(sku[0], ex_version), ex_version)]
 
                         for v in versions:
                             images.append(
@@ -2186,14 +2186,14 @@ class AzureNodeDriver(NodeDriver):
             blobdriver = AzureBlobsStorageDriver(
                 storageAccount,
                 keys["key1"],
-                host="%s.blob%s" % (storageAccount, self.connection.storage_suffix),
+                host="{}.blob{}".format(storageAccount, self.connection.storage_suffix),
             )
             return blobdriver.delete_object(blobdriver.get_object(blobContainer, blob))
         except ObjectDoesNotExistError:
             return True
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["tenant_id"] = self.tenant_id
         kwargs["subscription_id"] = self.subscription_id
         kwargs["cloud_environment"] = self.cloud_environment

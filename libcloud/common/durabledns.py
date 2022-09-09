@@ -39,10 +39,10 @@ def _schema_builder(urn_nid, method, attributes):
     rtype: :class:`Element`
     """
     soap = ET.Element("soap:Body", {"xmlns:m": "https://durabledns.com/services/dns/%s" % method})
-    urn = ET.SubElement(soap, "urn:%s:%s" % (urn_nid, method))
+    urn = ET.SubElement(soap, "urn:{}:{}".format(urn_nid, method))
     # Attributes specification
     for attribute in attributes:
-        ET.SubElement(urn, "urn:%s:%s" % (urn_nid, attribute))
+        ET.SubElement(urn, "urn:{}:{}".format(urn_nid, attribute))
     return soap
 
 
@@ -153,10 +153,10 @@ class DurableDNSException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "DurableDNSException %s %s" % (self.code, self.message)
+        return "DurableDNSException {} {}".format(self.code, self.message)
 
 
 class DurableResponse(XmlResponse):
@@ -165,7 +165,7 @@ class DurableResponse(XmlResponse):
     objects = []  # type: List[Dict]
 
     def __init__(self, response, connection):
-        super(DurableResponse, self).__init__(response=response, connection=connection)
+        super().__init__(response=response, connection=connection)
 
         self.objects, self.errors = self.parse_body_and_error()
         if self.errors:
@@ -280,7 +280,7 @@ class DurableResponse(XmlResponse):
         # _fix_response method to clean up since we won't always have lxml
         # library.
         self._fix_response()
-        body = super(DurableResponse, self).parse_body()
+        body = super().parse_body()
         return body
 
     def success(self):

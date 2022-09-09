@@ -79,7 +79,7 @@ class VCLMockHttp(MockHttp):
     def _xmlrpc(self, method, url, body, headers):
         params, meth_name = xmlrpclib.loads(body)
         if self.type:
-            meth_name = "%s_%s" % (meth_name, self.type)
+            meth_name = "{}_{}".format(meth_name, self.type)
         return getattr(self, meth_name)(method, url, body, headers)
 
     def XMLRPCgetImages(self, method, url, body, headers):

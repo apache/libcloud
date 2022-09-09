@@ -78,7 +78,7 @@ class OvhException(Exception):
 
 class OvhResponse(JsonResponse):
     def parse_error(self):
-        response = super(OvhResponse, self).parse_body()
+        response = super().parse_body()
         response = response or {}
 
         if response.get("errorCode", None) == "INVALID_SIGNATURE":
@@ -110,7 +110,7 @@ class OvhConnection(ConnectionUserAndKey):
     def __init__(self, user_id, *args, **kwargs):
         region = kwargs.pop("region", "")
         if region:
-            self.host = ("%s.%s" % (region, API_HOST)).lstrip(".")
+            self.host = ("{}.{}".format(region, API_HOST)).lstrip(".")
         else:
             self.host = API_HOST
         self.consumer_key = kwargs.pop("ex_consumer_key", None)
@@ -122,7 +122,7 @@ class OvhConnection(ConnectionUserAndKey):
                 "your driver with \"ex_consumer_key='%(consumerKey)s'\"." % consumer_key_json
             )
             raise OvhException(msg)
-        super(OvhConnection, self).__init__(user_id, *args, **kwargs)
+        super().__init__(user_id, *args, **kwargs)
 
     def request_consumer_key(self, user_id):
         action = self.request_path + "/auth/credential"
@@ -149,7 +149,7 @@ class OvhConnection(ConnectionUserAndKey):
 
     def get_timestamp(self):
         if not self._timedelta:
-            url = "https://%s%s/auth/time" % (self.host, API_ROOT)
+            url = "https://{}{}/auth/time".format(self.host, API_ROOT)
             response = get_response_object(url=url, method="GET", headers={})
             if not response or not response.body:
                 raise Exception("Failed to get current time from Ovh API")
@@ -159,11 +159,11 @@ class OvhConnection(ConnectionUserAndKey):
         return int(time.time()) + self._timedelta
 
     def make_signature(self, method, action, params, data, timestamp):
-        full_url = "https://%s%s" % (self.host, action)
+        full_url = "https://{}{}".format(self.host, action)
         if params:
             full_url += "?"
             for key, value in params.items():
-                full_url += "%s=%s&" % (key, value)
+                full_url += "{}={}&".format(key, value)
             full_url = full_url[:-1]
         sha1 = hashlib.sha1()
         base_signature = "+".join(
@@ -201,7 +201,7 @@ class OvhConnection(ConnectionUserAndKey):
         headers.update({"X-Ovh-Timestamp": timestamp, "X-Ovh-Signature": signature})
 
         try:
-            return super(OvhConnection, self).request(
+            return super().request(
                 action,
                 params=params,
                 data=data,

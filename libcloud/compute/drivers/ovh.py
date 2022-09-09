@@ -77,7 +77,7 @@ class OvhNodeDriver(NodeDriver):
         NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key, region=region)
 
     def _get_project_action(self, suffix):
-        base_url = "%s/cloud/project/%s/" % (API_ROOT, self.project_id)
+        base_url = "{}/cloud/project/{}/".format(API_ROOT, self.project_id)
         return base_url + suffix
 
     @classmethod

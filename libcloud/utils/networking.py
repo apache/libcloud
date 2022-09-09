@@ -78,7 +78,7 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     """
     try:
         socket.inet_pton(family, address)
-    except socket.error:
+    except OSError:
         return False
 
     return True

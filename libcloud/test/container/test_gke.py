@@ -73,7 +73,7 @@ class GKEMockHttp(MockHttp):
         # '/project' path instead
         if not path:
             path = "/project"
-        method_name = super(GKEMockHttp, self)._get_method_name(type, use_param, qs, path)
+        method_name = super()._get_method_name(type, use_param, qs, path)
         return method_name
 
     def _zones_us_central1_a_serverconfig(self, method, url, body, headers):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -83,7 +82,7 @@ class CloudSigmaNodeDriver(NodeDriver):
                 cls = CloudSigma_2_0_NodeDriver
             else:
                 raise NotImplementedError("Unsupported API version: %s" % (api_version))
-        return super(CloudSigmaNodeDriver, cls).__new__(cls)
+        return super().__new__(cls)
 
 
 class CloudSigmaException(Exception):
@@ -156,7 +155,7 @@ class CloudSigma_1_0_Connection(ConnectionUserAndKey):
         headers["Content-Type"] = "application/json"
 
         headers["Authorization"] = "Basic %s" % (
-            base64.b64encode(b("%s:%s" % (self.user_id, self.key))).decode("utf-8")
+            base64.b64encode(b("{}:{}".format(self.user_id, self.key))).decode("utf-8")
         )
         return headers
 
@@ -192,7 +191,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
 
         self._host_argument_set = host is not None
         self.api_name = "cloudsigma_%s" % (region)
-        super(CloudSigma_1_0_NodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -743,13 +742,13 @@ class CloudSigmaError(ProviderError):
         :param error_point: Point at which the error occurred. Can be None.
         :type error_point: ``str`` or ``None``
         """
-        super(CloudSigmaError, self).__init__(http_code=http_code, value=error_msg, driver=driver)
+        super().__init__(http_code=http_code, value=error_msg, driver=driver)
         self.error_type = error_type
         self.error_msg = error_msg
         self.error_point = error_point
 
 
-class CloudSigmaSubscription(object):
+class CloudSigmaSubscription:
     """
     Represents CloudSigma subscription.
     """
@@ -817,7 +816,7 @@ class CloudSigmaSubscription(object):
         )
 
 
-class CloudSigmaTag(object):
+class CloudSigmaTag:
     """
     Represents a CloudSigma tag object.
     """
@@ -841,7 +840,7 @@ class CloudSigmaTag(object):
         return self.__repr__()
 
     def __repr__(self):
-        return "<CloudSigmaTag id=%s, name=%s, resources=%s>" % (
+        return "<CloudSigmaTag id={}, name={}, resources={}>".format(
             self.id,
             self.name,
             repr(self.resources),
@@ -870,7 +869,7 @@ class CloudSigmaDrive(NodeImage):
         :param status: Drive status (unmounted / mounted).
         :type status: ``str``
         """
-        super(CloudSigmaDrive, self).__init__(id=id, name=name, driver=driver, extra=extra)
+        super().__init__(id=id, name=name, driver=driver, extra=extra)
         self.size = size
         self.media = media
         self.status = status
@@ -888,7 +887,7 @@ class CloudSigmaDrive(NodeImage):
         )
 
 
-class CloudSigmaFirewallPolicy(object):
+class CloudSigmaFirewallPolicy:
     """
     Represents a CloudSigma firewall policy.
     """
@@ -919,7 +918,7 @@ class CloudSigmaFirewallPolicy(object):
         )
 
 
-class CloudSigmaFirewallPolicyRule(object):
+class CloudSigmaFirewallPolicyRule:
     """
     Represents a CloudSigma firewall policy rule.
     """
@@ -1042,7 +1041,7 @@ class CloudSigma_2_0_Connection(ConnectionUserAndKey):
         headers["Content-Type"] = "application/json"
 
         headers["Authorization"] = "Basic %s" % (
-            base64.b64encode(b("%s:%s" % (self.user_id, self.key))).decode("utf-8")
+            base64.b64encode(b("{}:{}".format(self.user_id, self.key))).decode("utf-8")
         )
         return headers
 
@@ -1057,7 +1056,7 @@ class CloudSigma_2_0_Connection(ConnectionUserAndKey):
         if method == "GET":
             params["limit"] = 0  # we want all the items back
 
-        return super(CloudSigma_2_0_Connection, self).request(
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -1113,7 +1112,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             raise ValueError("CloudSigma driver only supports a " "secure connection")
 
         self._host_argument_set = host is not None
-        super(CloudSigma_2_0_NodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

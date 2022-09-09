@@ -37,7 +37,7 @@ try:
 
     have_paramiko = True
 
-    PARAMIKO_VERSION_TUPLE = tuple([int(x) for x in paramiko.__version__.split(".")])
+    PARAMIKO_VERSION_TUPLE = tuple(int(x) for x in paramiko.__version__.split("."))
 except ImportError:
     PARAMIKO_VERSION_TUPLE = ()
 
@@ -92,10 +92,10 @@ class SSHCommandTimeoutError(Exception):
         self.stderr = stderr
 
         self.message = "Command didn't finish in %s seconds" % (timeout)
-        super(SSHCommandTimeoutError, self).__init__(self.message)
+        super().__init__(self.message)
 
     def __repr__(self):
-        return '<SSHCommandTimeoutError: cmd="%s",timeout=%s)>' % (
+        return '<SSHCommandTimeoutError: cmd="{}",timeout={})>'.format(
             self.cmd,
             self.timeout,
         )
@@ -104,7 +104,7 @@ class SSHCommandTimeoutError(Exception):
         return self.__repr__()
 
 
-class BaseSSHClient(object):
+class BaseSSHClient:
     """
     Base class representing a connection over SSH/SCP to a remote node.
     """
@@ -301,9 +301,9 @@ class ParamikoSSHClient(BaseSSHClient):
         :type use_compression: ``bool``
         """
         if key_files and key_material:
-            raise ValueError(("key_files and key_material arguments are " "mutually exclusive"))
+            raise ValueError("key_files and key_material arguments are " "mutually exclusive")
 
-        super(ParamikoSSHClient, self).__init__(
+        super().__init__(
             hostname=hostname,
             port=port,
             username=username,
@@ -359,7 +359,7 @@ class ParamikoSSHClient(BaseSSHClient):
             and not isinstance(self.key_files, (list, tuple))
             and os.path.isfile(self.key_files)
         ):
-            with open(self.key_files, "r") as fp:
+            with open(self.key_files) as fp:
                 key_material = fp.read()
 
             try:
@@ -433,7 +433,7 @@ class ParamikoSSHClient(BaseSSHClient):
             if part != "":
                 try:
                     sftp.mkdir(part)
-                except IOError:
+                except OSError:
                     # so, there doesn't seem to be a way to
                     # catch EEXIST consistently *sigh*
                     pass
@@ -477,7 +477,7 @@ class ParamikoSSHClient(BaseSSHClient):
             if part != "":
                 try:
                     sftp.mkdir(part)
-                except IOError:
+                except OSError:
                     # so, there doesn't seem to be a way to
                     # catch EEXIST consistently *sigh*
                     pass
@@ -663,7 +663,7 @@ class ParamikoSSHClient(BaseSSHClient):
         ]
 
         paramiko_version = getattr(paramiko, "__version__", "0.0.0")
-        paramiko_version = tuple([int(c) for c in paramiko_version.split(".")])
+        paramiko_version = tuple(int(c) for c in paramiko_version.split("."))
 
         if paramiko_version >= (2, 2, 0):
             # Ed25519 is only supported in paramiko >= 2.2.0
@@ -808,7 +808,7 @@ class ShellOutSSHClient(BaseSSHClient):
         key_files=None,  # type: Optional[str]
         timeout=None,  # type: Optional[float]
     ):
-        super(ShellOutSSHClient, self).__init__(
+        super().__init__(
             hostname=hostname,
             port=port,
             username=username,
@@ -846,7 +846,7 @@ class ShellOutSSHClient(BaseSSHClient):
         else:
             raise ValueError("Invalid mode: " + mode)
 
-        cmd = ['echo "%s" %s %s' % (contents, redirect, path)]
+        cmd = ['echo "{}" {} {}'.format(contents, redirect, path)]
         self._run_remote_shell_command(cmd)
         return path
 
@@ -873,7 +873,7 @@ class ShellOutSSHClient(BaseSSHClient):
         if self.timeout:
             cmd += ["-oConnectTimeout=%s" % (self.timeout)]
 
-        cmd += ["%s@%s" % (self.username, self.hostname)]
+        cmd += ["{}@{}".format(self.username, self.hostname)]
 
         return cmd
 

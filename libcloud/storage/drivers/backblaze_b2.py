@@ -65,7 +65,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
     responseCls = BackblazeB2Response
 
     def __init__(self, *args, **kwargs):
-        super(BackblazeB2AuthConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Those attributes are populated after authentication
         self.account_id = None
@@ -86,7 +86,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
 
         headers = {}
         action = "b2_authorize_account"
-        auth_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        auth_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (auth_b64.decode("utf-8"))
 
         action = API_PATH + "b2_authorize_account"
@@ -128,7 +128,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
     authCls = BackblazeB2AuthConnection
 
     def __init__(self, *args, **kwargs):
-        super(BackblazeB2Connection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Stores info retrieved after authentication (auth token, api url,
         # dowload url).
@@ -236,7 +236,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
 
         # Include auth token
         headers["Authorization"] = "%s" % (auth_token)
-        response = super(BackblazeB2Connection, self).request(
+        response = super().request(
             action=action,
             params=params,
             data=data,
@@ -601,6 +601,6 @@ class BackblazeB2StorageDriver(StorageDriver):
         else:
             body = response.response.read()
             raise LibcloudError(
-                "Upload failed. status_code=%s, body=%s" % (response.status, body),
+                "Upload failed. status_code={}, body={}".format(response.status, body),
                 driver=self,
             )

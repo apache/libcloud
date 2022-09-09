@@ -60,11 +60,11 @@ Content-Type: application/xml
 
 class TestLoggingConnection(unittest.TestCase):
     def setUp(self):
-        super(TestLoggingConnection, self).setUp()
+        super().setUp()
         self._reset_environ()
 
     def tearDown(self):
-        super(TestLoggingConnection, self).tearDown()
+        super().tearDown()
         Connection.conn_class = LibcloudConnection
 
     def test_debug_method_uses_log_class(self):

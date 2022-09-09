@@ -73,7 +73,7 @@ class SLBConnection(SignedAliyunConnection):
     service_name = "slb"
 
 
-class SLBLoadBalancerAttribute(object):
+class SLBLoadBalancerAttribute:
     """
     This class used to get listeners and backend servers related to a balancer
     listeners is a ``list`` of ``dict``, each element contains
@@ -101,14 +101,14 @@ class SLBLoadBalancerAttribute(object):
         return False
 
     def __repr__(self):
-        return "<SLBLoadBalancerAttribute id=%s, ports=%s, servers=%s ...>" % (
+        return "<SLBLoadBalancerAttribute id={}, ports={}, servers={} ...>".format(
             self.balancer.id,
             self.listeners,
             self.backend_servers,
         )
 
 
-class SLBLoadBalancerListener(ReprMixin, object):
+class SLBLoadBalancerListener(ReprMixin):
     """
     Base SLB load balancer listener class
     """
@@ -183,14 +183,12 @@ class SLBLoadBalancerHttpListener(SLBLoadBalancerListener):
         health_check,
         extra=None,
     ):
-        super(SLBLoadBalancerHttpListener, self).__init__(
-            port, backend_port, algorithm, bandwidth, extra=extra
-        )
+        super().__init__(port, backend_port, algorithm, bandwidth, extra=extra)
         self.sticky_session = sticky_session
         self.health_check = health_check
 
     def get_required_params(self):
-        params = super(SLBLoadBalancerHttpListener, self).get_required_params()
+        params = super().get_required_params()
         params["StickySession"] = self.sticky_session
         params["HealthCheck"] = self.health_check
         return params
@@ -246,15 +244,13 @@ class SLBLoadBalancerHttpsListener(SLBLoadBalancerListener):
         certificate_id,
         extra=None,
     ):
-        super(SLBLoadBalancerHttpsListener, self).__init__(
-            port, backend_port, algorithm, bandwidth, extra=extra
-        )
+        super().__init__(port, backend_port, algorithm, bandwidth, extra=extra)
         self.sticky_session = sticky_session
         self.health_check = health_check
         self.certificate_id = certificate_id
 
     def get_required_params(self):
-        params = super(SLBLoadBalancerHttpsListener, self).get_required_params()
+        params = super().get_required_params()
         params["StickySession"] = self.sticky_session
         params["HealthCheck"] = self.health_check
         params["ServerCertificateId"] = self.certificate_id
@@ -319,7 +315,7 @@ class SLBLoadBalancerUdpListener(SLBLoadBalancerTcpListener):
     ]
 
 
-class SLBServerCertificate(ReprMixin, object):
+class SLBServerCertificate(ReprMixin):
     _repr_attributes = ["id", "name", "fingerprint"]
 
     def __init__(self, id, name, fingerprint):
@@ -352,7 +348,7 @@ class SLBDriver(Driver):
     _ALGORITHM_TO_VALUE_MAP = ALGORITHM_TO_SLB_SCHEDULER
 
     def __init__(self, access_id, secret, region):
-        super(SLBDriver, self).__init__(access_id, secret)
+        super().__init__(access_id, secret)
         self.region = region
 
     def list_protocols(self):

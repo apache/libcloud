@@ -128,7 +128,7 @@ class AWSGenericResponse(AWSBaseResponse):
             exceptionCls = self.exceptions.get(code, None)
 
             if exceptionCls is None:
-                msgs.append("%s: %s" % (code, message))
+                msgs.append("{}: {}".format(code, message))
                 continue
 
             # Custom exception class is defined, immediately throw an exception
@@ -159,7 +159,7 @@ class AWSTokenConnection(ConnectionUserAndKey):
         backoff=None,
     ):
         self.token = token
-        super(AWSTokenConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -177,15 +177,15 @@ class AWSTokenConnection(ConnectionUserAndKey):
         # so that the token is added to the signature.
         if self.token:
             params["x-amz-security-token"] = self.token
-        return super(AWSTokenConnection, self).add_default_params(params)
+        return super().add_default_params(params)
 
     def add_default_headers(self, headers):
         if self.token:
             headers["x-amz-security-token"] = self.token
-        return super(AWSTokenConnection, self).add_default_headers(headers)
+        return super().add_default_headers(headers)
 
 
-class AWSRequestSigner(object):
+class AWSRequestSigner:
     """
     Class which handles signing the outgoing AWS requests.
     """
@@ -374,7 +374,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         # For self.method == GET
         return "&".join(
             [
-                "%s=%s" % (urlquote(k, safe=""), urlquote(str(v), safe="~"))
+                "{}={}".format(urlquote(k, safe=""), urlquote(str(v), safe="~"))
                 for k, v in sorted(params.items())
             ]
         )
@@ -414,7 +414,7 @@ class SignedAWSConnection(AWSTokenConnection):
         backoff=None,
         signature_version=DEFAULT_SIGNATURE_VERSION,
     ):
-        super(SignedAWSConnection, self).__init__(
+        super().__init__(
             user_id=user_id,
             key=key,
             secure=secure,
@@ -477,7 +477,7 @@ class AWSJsonResponse(JsonResponse):
         response = json.loads(self.body)
         code = response["__type"]
         message = response.get("Message", response["message"])
-        return "%s: %s" % (code, message)
+        return "{}: {}".format(code, message)
 
 
 def _sign(key, msg, hex=False):
@@ -505,7 +505,7 @@ class AWSDriver(BaseDriver):
         **kwargs,
     ):
         self.token = token
-        super(AWSDriver, self).__init__(
+        super().__init__(
             key,
             secret=secret,
             secure=secure,
@@ -518,6 +518,6 @@ class AWSDriver(BaseDriver):
         )
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(AWSDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["token"] = self.token
         return kwargs

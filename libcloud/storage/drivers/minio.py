@@ -40,7 +40,7 @@ class MinIOConnectionAWS4(SignedAWSConnection, BaseS3Connection):
         **kwargs,
     ):
 
-        super(MinIOConnectionAWS4, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure,
@@ -68,6 +68,4 @@ class MinIOStorageDriver(BaseS3StorageDriver):
 
         self.connectionCls.host = host
 
-        super(MinIOStorageDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port)

@@ -215,7 +215,7 @@ class VSphereNodeDriver(NodeDriver):
                     "parent": str(data.parent),
                 }
         except AttributeError as exc:
-            logger.error("Cannot convert location %s: %r" % (data.name, exc))
+            logger.error("Cannot convert location {}: {!r}".format(data.name, exc))
             extra = {}
         return NodeLocation(id=data.name, name=data.name, country=None, extra=extra, driver=self)
 
@@ -1119,7 +1119,7 @@ class VSphereNodeDriver(NodeDriver):
         return content.about.version
 
 
-class VSphereNetwork(object):
+class VSphereNetwork:
     """
     Represents information about a VPC (Virtual Private Cloud) network
 
@@ -1203,7 +1203,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         if not key or not secret:
             raise InvalidCredsError("Please provide both username " "(key) and password (secret).")
-        super(VSphere_REST_NodeDriver, self).__init__(key=key, secure=secure, host=host, port=port)
+        super().__init__(key=key, secure=secure, host=host, port=port)
         prefixes = ["http://", "https://"]
         for prefix in prefixes:
             if host.startswith(prefix):

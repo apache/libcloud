@@ -37,7 +37,7 @@ class LibcloudTestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         self._visited_urls = []
         self._executed_mock_methods = []
-        super(LibcloudTestCase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setUp(self):
         self._visited_urls = []
@@ -58,7 +58,7 @@ class LibcloudTestCase(unittest.TestCase):
         )
 
 
-class multipleresponse(object):
+class multipleresponse:
     """
     A decorator that allows MockHttp objects to return multi responses
     """
@@ -108,7 +108,7 @@ class MockHttp(LibcloudConnection):
         # within a response
         if isinstance(self, unittest.TestCase):
             unittest.TestCase.__init__(self, "__init__")
-        super(MockHttp, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _get_request(self, method, url, body=None, headers=None):
         # Find a method we can use for this request
@@ -145,7 +145,7 @@ class MockHttp(LibcloudConnection):
                 status_code=r_status,
             )
             try:
-                super(MockHttp, self).request(
+                super().request(
                     method=method,
                     url=url,
                     body=body,
@@ -154,9 +154,7 @@ class MockHttp(LibcloudConnection):
                     stream=stream,
                 )
             except requests_mock.exceptions.NoMockAddress as nma:
-                raise AttributeError(
-                    "Failed to mock out URL {0} - {1}".format(url, nma.request.url)
-                )
+                raise AttributeError("Failed to mock out URL {} - {}".format(url, nma.request.url))
 
     def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):
         headers = self._normalize_headers(headers=headers)
@@ -171,7 +169,7 @@ class MockHttp(LibcloudConnection):
                 headers=r_headers,
                 status_code=r_status,
             )
-            super(MockHttp, self).prepared_request(
+            super().prepared_request(
                 method=method,
                 url=url,
                 body=body,
@@ -207,11 +205,11 @@ class MockHttp(LibcloudConnection):
         )  # Python 3.7 no longer quotes ~
 
         if type:
-            meth_name = "%s_%s" % (meth_name, self.type)
+            meth_name = "{}_{}".format(meth_name, self.type)
 
         if use_param and use_param in qs:
             param = qs[use_param][0].replace(".", "_").replace("-", "_")
-            meth_name = "%s_%s" % (meth_name, param)
+            meth_name = "{}_{}".format(meth_name, param)
 
         if meth_name == "":
             meth_name = "root"
@@ -247,7 +245,7 @@ class MockHttp(LibcloudConnection):
                 assert params[key] == value
 
 
-class MockConnection(object):
+class MockConnection:
     def __init__(self, action):
         self.action = action
 

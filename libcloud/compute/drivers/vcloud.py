@@ -56,7 +56,7 @@ IP_MODE_VALS_1_5 = ["POOL", "DHCP", "MANUAL", "NONE"]
 def fixxpath(root, xpath):
     """ElementTree wants namespaces in its xpaths, so here we add them."""
     namespace, root_tag = root.tag[1:].split("}", 1)
-    fixed_xpath = "/".join(["{%s}%s" % (namespace, e) for e in xpath.split("/")])
+    fixed_xpath = "/".join(["{{{}}}{}".format(namespace, e) for e in xpath.split("/")])
     return fixed_xpath
 
 
@@ -64,7 +64,7 @@ def get_url_path(url):
     return urlparse(url.strip()).path
 
 
-class Vdc(object):
+class Vdc:
     """
     Virtual datacenter (vDC) representation
     """
@@ -88,14 +88,14 @@ class Vdc(object):
         self.storage = storage
 
     def __repr__(self):
-        return "<Vdc: id=%s, name=%s, driver=%s  ...>" % (
+        return "<Vdc: id={}, name={}, driver={}  ...>".format(
             self.id,
             self.name,
             self.driver.name,
         )
 
 
-class Capacity(object):
+class Capacity:
     """
     Represents CPU, Memory or Storage capacity of vDC.
     """
@@ -106,19 +106,19 @@ class Capacity(object):
         self.units = units
 
     def __repr__(self):
-        return "<Capacity: limit=%s, used=%s, units=%s>" % (
+        return "<Capacity: limit={}, used={}, units={}>".format(
             self.limit,
             self.used,
             self.units,
         )
 
 
-class ControlAccess(object):
+class ControlAccess:
     """
     Represents control access settings of a node
     """
 
-    class AccessLevel(object):
+    class AccessLevel:
         READ_ONLY = "ReadOnly"
         CHANGE = "Change"
         FULL_CONTROL = "FullControl"
@@ -138,7 +138,7 @@ class ControlAccess(object):
         )
 
 
-class Subject(object):
+class Subject:
     """
     User or group subject
     """
@@ -150,14 +150,14 @@ class Subject(object):
         self.id = id
 
     def __repr__(self):
-        return "<Subject: type=%s, name=%s, access_level=%s>" % (
+        return "<Subject: type={}, name={}, access_level={}>".format(
             self.type,
             self.name,
             self.access_level,
         )
 
 
-class Lease(object):
+class Lease:
     """
     Lease information for vApps.
 
@@ -280,7 +280,7 @@ class Lease(object):
         return not self == other
 
 
-class InstantiateVAppXML(object):
+class InstantiateVAppXML:
     def __init__(
         self,
         name,
@@ -461,7 +461,7 @@ class VCloudConnection(ConnectionUserAndKey):
 
     def request(self, *args, **kwargs):
         self._get_auth_token()
-        return super(VCloudConnection, self).request(*args, **kwargs)
+        return super().request(*args, **kwargs)
 
     def check_org(self):
         # the only way to get our org is by logging in.
@@ -471,7 +471,7 @@ class VCloudConnection(ConnectionUserAndKey):
         """Some providers need different headers than others"""
         return {
             "Authorization": "Basic %s"
-            % base64.b64encode(b("%s:%s" % (self.user_id, self.key))).decode("utf-8"),
+            % base64.b64encode(b("{}:{}".format(self.user_id, self.key))).decode("utf-8"),
             "Content-Length": "0",
             "Accept": "application/*+xml",
         }
@@ -545,7 +545,7 @@ class VCloudNodeDriver(NodeDriver):
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" % (api_version)
                 )
-        return super(VCloudNodeDriver, cls).__new__(cls)
+        return super().__new__(cls)
 
     @property
     def vdcs(self):
@@ -656,12 +656,14 @@ class VCloudNodeDriver(NodeDriver):
                 error_msg = "Unknown error"
                 if error_elem is not None:
                     error_msg = error_elem.get("message")
-                raise Exception("Error status returned by task %s.: %s" % (task_href, error_msg))
+                raise Exception(
+                    "Error status returned by task {}.: {}".format(task_href, error_msg)
+                )
             if status == "canceled":
                 raise Exception("Canceled status returned by task %s." % task_href)
             if time.time() - start_time >= timeout:
                 raise Exception(
-                    "Timeout (%s sec) while waiting for task %s." % (timeout, task_href)
+                    "Timeout ({} sec) while waiting for task {}.".format(timeout, task_href)
                 )
             time.sleep(5)
             res = self.connection.request(get_url_path(task_href))
@@ -918,7 +920,7 @@ class HostingComConnection(VCloudConnection):
     def _get_auth_headers(self):
         """hosting.com doesn't follow the standard vCloud authentication API"""
         return {
-            "Authentication": base64.b64encode(b("%s:%s" % (self.user_id, self.key))),
+            "Authentication": base64.b64encode(b("{}:{}".format(self.user_id, self.key))),
             "Content-Length": "0",
         }
 
@@ -958,7 +960,7 @@ class VCloud_1_5_Connection(VCloudConnection):
         """Compatibility for using v1.5 API under vCloud Director 5.1"""
         return {
             "Authorization": "Basic %s"
-            % base64.b64encode(b("%s:%s" % (self.user_id, self.key))).decode("utf-8"),
+            % base64.b64encode(b("{}:{}".format(self.user_id, self.key))).decode("utf-8"),
             "Content-Length": "0",
             "Accept": "application/*+xml;version=1.5",
         }
@@ -986,11 +988,9 @@ class VCloud_1_5_Connection(VCloudConnection):
             # pylint: disable=no-member
             org_list_url = get_url_path(
                 next(
-                    (
-                        link
-                        for link in body.findall(fixxpath(body, "Link"))
-                        if link.get("type") == "application/vnd.vmware.vcloud.orgList+xml"
-                    )
+                    link
+                    for link in body.findall(fixxpath(body, "Link"))
+                    if link.get("type") == "application/vnd.vmware.vcloud.orgList+xml"
                 ).get("href")
             )
 
@@ -1004,11 +1004,9 @@ class VCloud_1_5_Connection(VCloudConnection):
             # pylint: disable=no-member
             self.driver.org = get_url_path(
                 next(
-                    (
-                        org
-                        for org in body.findall(fixxpath(body, "Org"))
-                        if org.get("name") == self.org_name
-                    )
+                    org
+                    for org in body.findall(fixxpath(body, "Org"))
+                    if org.get("name") == self.org_name
                 ).get("href")
             )
 
@@ -1021,7 +1019,7 @@ class VCloud_1_5_Connection(VCloudConnection):
 class VCloud_5_5_Connection(VCloud_1_5_Connection):
     def _get_auth_headers(self):
         """Compatibility for using v5.5 of the API"""
-        auth_headers = super(VCloud_5_5_Connection, self)._get_auth_headers()
+        auth_headers = super()._get_auth_headers()
         auth_headers["Accept"] = "application/*+xml;version=5.5"
         return auth_headers
 
@@ -1031,7 +1029,7 @@ class VCloud_5_5_Connection(VCloud_1_5_Connection):
         return headers
 
 
-class Instantiate_1_5_VAppXML(object):
+class Instantiate_1_5_VAppXML:
     def __init__(self, name, template, network, vm_network=None, vm_fence=None, description=None):
         self.name = name
         self.template = template
@@ -1332,7 +1330,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
     def _perform_power_operation(self, node, operation):
         res = self.connection.request(
-            "%s/power/action/%s" % (get_url_path(node.id), operation), method="POST"
+            "{}/power/action/{}".format(get_url_path(node.id), operation), method="POST"
         )
         self._wait_for_task_completion(res.object.get("href"))
         res = self.connection.request(get_url_path(node.id))
@@ -1411,7 +1409,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 res = self.ex_query(type=subject.type, filter="name==" + subject.name)
                 if not res:
                     raise LibcloudError(
-                        'Specified subject "%s %s" not found ' % (subject.type, subject.name)
+                        'Specified subject "{} {}" not found '.format(subject.type, subject.name)
                     )
                 href = res[0]["href"]
             ET.SubElement(setting, "Subject", {"href": href})
@@ -2107,7 +2105,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             script = vm_script_text
         else:
             try:
-                with open(vm_script, "r") as fp:
+                with open(vm_script) as fp:
                     script = fp.read()
             except Exception:
                 return
@@ -2515,7 +2513,7 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
 
     def _perform_snapshot_operation(self, node, operation, xml_data, headers):
         res = self.connection.request(
-            "%s/action/%s" % (get_url_path(node.id), operation),
+            "{}/action/{}".format(get_url_path(node.id), operation),
             data=ET.tostring(xml_data) if xml_data is not None else None,
             method="POST",
             headers=headers,

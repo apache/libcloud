@@ -54,7 +54,7 @@ class NimbusConnection(ConnectionUserAndKey):
 
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop("id")
-        super(NimbusConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def pre_connect_hook(self, params, headers):
         timestamp = str(int(time.time()))
@@ -67,7 +67,7 @@ class NimbusConnection(ConnectionUserAndKey):
             key=self.key,
         )
         headers["X-NIMBUS-IO-Timestamp"] = timestamp
-        headers["Authorization"] = "NIMBUS.IO %s:%s" % (self.id, signature)
+        headers["Authorization"] = "NIMBUS.IO {}:{}".format(self.id, signature)
         return params, headers
 
     def _calculate_signature(self, user_id, method, params, path, timestamp, key):
@@ -90,7 +90,7 @@ class NimbusStorageDriver(StorageDriver):
 
     def __init__(self, *args, **kwargs):
         self.user_id = kwargs["user_id"]
-        super(NimbusStorageDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def iterate_containers(self):
         response = self.connection.request("/customers/%s/collections" % (self.user_id))

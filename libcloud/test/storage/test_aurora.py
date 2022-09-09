@@ -25,7 +25,7 @@ class AuroraObjectsTests(S3Tests, unittest.TestCase):
     driver_type = AuroraObjectsStorageDriver
 
     def setUp(self):
-        super(AuroraObjectsTests, self).setUp()
+        super().setUp()
 
         AuroraObjectsStorageDriver.connectionCls.conn_class = S3MockHttp
         S3MockHttp.type = None

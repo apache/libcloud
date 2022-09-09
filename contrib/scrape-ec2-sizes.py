@@ -240,7 +240,7 @@ FILE_HEADER = """
 def download_json():
     if os.path.isfile(FILEPATH):
         print("Using data from existing cached file %s" % (FILEPATH))
-        return open(FILEPATH, "r")
+        return open(FILEPATH)
 
     def remove_partial_cached_file():
         if os.path.isfile(FILEPATH):
@@ -267,7 +267,7 @@ def download_json():
         progress_bar.close()
         atexit.unregister(remove_partial_cached_file)
 
-    return open(FILEPATH, "r")
+    return open(FILEPATH)
 
 
 def get_json():
@@ -275,7 +275,7 @@ def get_json():
         return download_json(), False
 
     print("Using data from existing cached file %s" % (FILEPATH))
-    return open(FILEPATH, "r"), True
+    return open(FILEPATH), True
 
 
 def filter_extras(extras):

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import sys
 import json
@@ -99,19 +98,17 @@ class KamateraNodeDriverTests(LibcloudTestCase):
     def test_ex_list_capabilities(self):
         capabilities = self.driver.ex_list_capabilities(self.eu_node_location)
         self.assertEqual(
-            set(
-                [
-                    "cpuTypes",
-                    "defaultMonthlyTrafficPackage",
-                    "diskSizeGB",
-                    "monthlyTrafficPackage",
-                ]
-            ),
+            {
+                "cpuTypes",
+                "defaultMonthlyTrafficPackage",
+                "diskSizeGB",
+                "monthlyTrafficPackage",
+            },
             set(capabilities.keys()),
         )
         self.assertTrue(len(capabilities["cpuTypes"]), 4)
         self.assertEqual(
-            set(["id", "description", "name", "ramMB", "cpuCores"]),
+            {"id", "description", "name", "ramMB", "cpuCores"},
             set(capabilities["cpuTypes"][0]),
         )
 
@@ -175,7 +172,7 @@ class KamateraNodeDriverTests(LibcloudTestCase):
         same_data = any([self.objects_equals(expected_object, obj) for obj in objects])
         self.assertTrue(
             same_data,
-            "Objects does not match (%s, %s)" % (expected_object, objects[:2]),
+            "Objects does not match ({}, {})".format(expected_object, objects[:2]),
         )
 
     def objects_equals(self, expected_obj, obj):

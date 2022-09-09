@@ -97,12 +97,12 @@ class LinodeDNSDriver(DNSDriver):
                 raise NotImplementedError(
                     "No Linode driver found for API version: %s" % (api_version)
                 )
-        return super(LinodeDNSDriver, cls).__new__(cls)
+        return super().__new__(cls)
 
 
 class LinodeDNSResponse(LinodeResponse):
     def _make_excp(self, error):
-        result = super(LinodeDNSResponse, self)._make_excp(error)
+        result = super()._make_excp(error)
         if isinstance(result, LinodeException) and result.code == 5:
             context = self.connection.context
 
@@ -443,7 +443,9 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
 
         :rtype: :class:`Record`
         """
-        data = self.connection.request("/v4/domains/%s/records/%s" % (zone_id, record_id)).object
+        data = self.connection.request(
+            "/v4/domains/{}/records/{}".format(zone_id, record_id)
+        ).object
 
         return self._to_record(data, self.get_zone(zone_id))
 
@@ -603,7 +605,7 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
         merge_valid_keys(params=attr, valid_keys=VALID_RECORD_EXTRA_PARAMS_V4, extra=extra)
 
         data = self.connection.request(
-            "/v4/domains/%s/records/%s" % (zone.id, record.id),
+            "/v4/domains/{}/records/{}".format(zone.id, record.id),
             data=json.dumps(attr),
             method="PUT",
         ).object
@@ -642,7 +644,7 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
         zone = record.zone
 
         response = self.connection.request(
-            "/v4/domains/%s/records/%s" % (zone.id, record.id), method="DELETE"
+            "/v4/domains/{}/records/{}".format(zone.id, record.id), method="DELETE"
         )
         return response.status == httplib.OK
 

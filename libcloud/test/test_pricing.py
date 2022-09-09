@@ -24,7 +24,7 @@ PRICING_FILE_PATH = os.path.join(os.path.dirname(__file__), "pricing_test.json")
 
 class PricingTestCase(unittest.TestCase):
     def setUp(self):
-        super(PricingTestCase, self).setUp()
+        super().setUp()
 
         libcloud.pricing.PRICING_DATA = {"compute": {}, "storage": {}}
 
@@ -49,7 +49,7 @@ class PricingTestCase(unittest.TestCase):
                 driver_name="bar",
                 pricing_file_path="inexistent.json",
             )
-        except IOError:
+        except OSError:
             pass
         else:
             self.fail("Invalid pricing file path provided, but an exception was not" " thrown")
