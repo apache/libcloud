@@ -81,8 +81,8 @@ Storage
   (GITHUB-1712)
   [Tomaz Muraus - @Kami]
 
-Other
-~~~~~
+Other / Development
+~~~~~--------------
 
 - All the imports in the code have been re-organized / sorted using the ``isort``
   library.
@@ -102,6 +102,12 @@ Other
   Also re-format code with this fixed / updated config option.
 
   (GITHUB-1761)
+  [Tomaz Muraus - @Kami]
+
+- Code has been reformatted using pyupgrade and Python 3.6 higher compatible
+  syntax.
+
+  (GITHUB-1765)
   [Tomaz Muraus - @Kami]
 
 Changes in Apache Libcloud 3.6.0
