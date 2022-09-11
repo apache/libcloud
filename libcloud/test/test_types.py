@@ -21,11 +21,11 @@ from libcloud.common.types import LazyList
 
 class TestLazyList(unittest.TestCase):
     def setUp(self):
-        super(TestLazyList, self).setUp
+        super().setUp
         self._get_more_counter = 0
 
     def tearDown(self):
-        super(TestLazyList, self).tearDown
+        super().tearDown
 
     def test_init(self):
         data = [1, 2, 3, 4, 5]

@@ -19,7 +19,7 @@ from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 __all__ = ["AuroraComputeRegion", "AuroraComputeNodeDriver"]
 
 
-class AuroraComputeRegion(object):
+class AuroraComputeRegion:
     AMS = "Amsterdam"
     RTD = "Rotterdam"
     MIA = "Miami"
@@ -50,6 +50,4 @@ class AuroraComputeNodeDriver(CloudStackNodeDriver):
         if path is None:
             path = REGION_ENDPOINT_MAP.get(region, "/ams")
 
-        super(AuroraComputeNodeDriver, self).__init__(
-            key=key, secret=secret, host=host, path=path, secure=True
-        )
+        super().__init__(key=key, secret=secret, host=host, path=path, secure=True)

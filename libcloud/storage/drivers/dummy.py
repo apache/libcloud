@@ -16,8 +16,9 @@
 import random
 import hashlib
 import os.path
+from io import FileIO as file
 
-from libcloud.utils.py3 import PY3, b
+from libcloud.utils.py3 import b
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import (
@@ -26,9 +27,6 @@ from libcloud.storage.types import (
     ContainerDoesNotExistError,
     ContainerAlreadyExistsError,
 )
-
-if PY3:
-    from io import FileIO as file
 
 
 class DummyFileObject(file):
@@ -51,7 +49,7 @@ class DummyFileObject(file):
         return self._yield_count * self._chunk_len
 
 
-class DummyIterator(object):
+class DummyIterator:
     def __init__(self, data=None):
         self.hash = hashlib.md5()
         self._data = data or []
@@ -135,7 +133,7 @@ class DummyStorageDriver(StorageDriver):
 
         container_count = len(self._containers)
         object_count = sum(
-            [len(self._containers[container]["objects"]) for container in self._containers]
+            len(self._containers[container]["objects"]) for container in self._containers
         )
 
         bytes_used = 0

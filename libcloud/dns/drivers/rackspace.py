@@ -48,7 +48,7 @@ class RackspaceDNSResponse(OpenStack_1_1_Response):
                 raise RecordDoesNotExistError(value="", driver=self, record_id=context["id"])
         if body:
             if "code" and "message" in body:
-                err = "%s - %s (%s)" % (body["code"], body["message"], body["details"])
+                err = "{} - {} ({})".format(body["code"], body["message"], body["details"])
                 return err
             elif "validationErrors" in body:
                 errors = [m for m in body["validationErrors"]["messages"]]
@@ -73,7 +73,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
-        super(RackspaceDNSConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response.object["jobId"]
@@ -86,7 +86,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
             data = response.object["error"]
 
             if "code" and "message" in data:
-                message = "%s - %s (%s)" % (
+                message = "{} - {} ({})".format(
                     data["code"],
                     data["message"],
                     data["details"],
@@ -120,7 +120,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
         return public_url
 
 
-class RackspacePTRRecord(object):
+class RackspacePTRRecord:
     def __init__(self, id, ip, domain, driver, extra=None):
         self.id = str(id) if id else None
         self.ip = ip
@@ -136,7 +136,7 @@ class RackspacePTRRecord(object):
         return self.driver.ex_delete_ptr_record(record=self)
 
     def __repr__(self):
-        return "<%s: ip=%s, domain=%s, provider=%s ...>" % (
+        return "<{}: ip={}, domain={}, provider={} ...>".format(
             self.__class__.__name__,
             self.ip,
             self.domain,
@@ -156,9 +156,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
             raise ValueError("Invalid region: %s" % (region))
 
         OpenStackDriverMixin.__init__(self, **kwargs)
-        super(RackspaceDNSDriver, self).__init__(
-            key=key, secret=secret, host=host, port=port, region=region
-        )
+        super().__init__(key=key, secret=secret, host=host, port=port, region=region)
 
     RECORD_TYPE_MAP = {
         RecordType.A: "A",
@@ -227,7 +225,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         zone = self.get_zone(zone_id=zone_id)
         self.connection.set_context({"resource": "record", "id": record_id})
         response = self.connection.request(
-            action="/domains/%s/records/%s" % (zone_id, record_id)
+            action="/domains/{}/records/{}".format(zone_id, record_id)
         ).object
         record = self._to_record(data=response, zone=zone)
         return record
@@ -333,7 +331,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         self.connection.set_context({"resource": "record", "id": record.id})
         self.connection.async_request(
-            action="/domains/%s/records/%s" % (record.zone.id, record.id),
+            action="/domains/{}/records/{}".format(record.zone.id, record.id),
             method="PUT",
             data=payload,
         )
@@ -358,7 +356,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
     def delete_record(self, record):
         self.connection.set_context({"resource": "record", "id": record.id})
         self.connection.async_request(
-            action="/domains/%s/records/%s" % (record.zone.id, record.id),
+            action="/domains/{}/records/{}".format(record.zone.id, record.id),
             method="DELETE",
         )
         return True
@@ -426,7 +424,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         :rtype: instance of :class:`RackspacePTRRecord`
         """
         self.connection.set_context({"resource": "record", "id": record_id})
-        response = self.connection.request(action="/rdns/%s/%s" % (service_name, record_id)).object
+        response = self.connection.request(
+            action="/rdns/{}/{}".format(service_name, record_id)
+        ).object
         item = next(iter(response["recordsList"]["records"]))
         return self._to_ptr_record(data=item, link=response["link"])
 
@@ -597,7 +597,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         :type name: ``str``
         """
         if name:
-            name = "%s.%s" % (name, domain)
+            name = "{}.{}".format(name, domain)
         else:
             name = domain
 

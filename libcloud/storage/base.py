@@ -18,7 +18,6 @@ Provides base classes for working with storage
 """
 
 # Backward compatibility for Python 2.5
-from __future__ import with_statement
 
 import errno
 import hashlib
@@ -42,7 +41,7 @@ CHUNK_SIZE = 8096
 DEFAULT_CONTENT_TYPE = "application/octet-stream"
 
 
-class Object(object):
+class Object:
     """
     Represents an object (BLOB).
     """
@@ -141,7 +140,7 @@ class Object(object):
         return self.driver.delete_object(self)
 
     def __repr__(self):
-        return "<Object: name=%s, size=%s, hash=%s, provider=%s ...>" % (
+        return "<Object: name={}, size={}, hash={}, provider={} ...>".format(
             self.name,
             self.size,
             self.hash,
@@ -149,7 +148,7 @@ class Object(object):
         )
 
 
-class Container(object):
+class Container:
     """
     Represents a container (bucket) which can hold multiple objects.
     """
@@ -265,7 +264,7 @@ class Container(object):
         return self.driver.delete_container(self)
 
     def __repr__(self):
-        return "<Container: name=%s, provider=%s>" % (self.name, self.driver.name)
+        return "<Container: name={}, provider={}>".format(self.name, self.driver.name)
 
 
 class StorageDriver(BaseDriver):

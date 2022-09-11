@@ -29,12 +29,12 @@ class BrightboxResponse(JsonResponse):
 
     def parse_body(self):
         if self.headers["content-type"].split(";")[0] == "application/json":
-            return super(BrightboxResponse, self).parse_body()
+            return super().parse_body()
         else:
             return self.body
 
     def parse_error(self):
-        response = super(BrightboxResponse, self).parse_body()
+        response = super().parse_body()
 
         if "error" in response:
             if response["error"] in ["invalid_client", "unauthorized_client"]:
@@ -42,7 +42,7 @@ class BrightboxResponse(JsonResponse):
 
             return response["error"]
         elif "error_name" in response:
-            return "%s: %s" % (response["error_name"], response["errors"][0])
+            return "{}: {}".format(response["error_name"], response["errors"][0])
 
         return self.body
 
@@ -59,7 +59,7 @@ class BrightboxConnection(ConnectionUserAndKey):
         body = json.dumps({"client_id": self.user_id, "grant_type": "none"})
 
         authorization = (
-            "Basic " + str(base64_encode_string(b("%s:%s" % (self.user_id, self.key)))).rstrip()
+            "Basic " + str(base64_encode_string(b("{}:{}".format(self.user_id, self.key)))).rstrip()
         )
 
         self.connect()

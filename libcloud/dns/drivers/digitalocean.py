@@ -91,9 +91,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Record`
         """
-        data = self.connection.request("/v2/domains/%s/records/%s" % (zone_id, record_id)).object[
-            "domain_record"
-        ]
+        data = self.connection.request(
+            "/v2/domains/{}/records/{}".format(zone_id, record_id)
+        ).object["domain_record"]
 
         # TODO: Any way of not using get_zone which polls the API again
         #       without breaking the DNSDriver.get_record parameters?
@@ -239,7 +239,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                 params["ttl"] = extra["ttl"]
 
         res = self.connection.request(
-            "/v2/domains/%s/records/%s" % (record.zone.id, record.id),
+            "/v2/domains/{}/records/{}".format(record.zone.id, record.id),
             data=json.dumps(params),
             method="PUT",
         )
@@ -284,7 +284,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         params = {}
 
         res = self.connection.request(
-            "/v2/domains/%s/records/%s" % (record.zone.id, record.id),
+            "/v2/domains/{}/records/{}".format(record.zone.id, record.id),
             params=params,
             method="DELETE",
         )

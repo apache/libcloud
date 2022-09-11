@@ -69,7 +69,7 @@ class DimensionDataBackupDriver(BackupDriver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
-        super(DimensionDataBackupDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -85,7 +85,7 @@ class DimensionDataBackupDriver(BackupDriver):
         Add the region to the kwargs before the connection is instantiated
         """
 
-        kwargs = super(DimensionDataBackupDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["region"] = self.selected_region
         return kwargs
 
@@ -387,7 +387,7 @@ class DimensionDataBackupDriver(BackupDriver):
             client_id = job.extra["clientId"]
 
         response = self.connection.request_with_orgId_api_1(
-            "server/%s/backup/client/%s?cancelJob" % (server_id, client_id),
+            "server/{}/backup/client/{}?cancelJob".format(server_id, client_id),
             method="GET",
         ).object
         response_code = findtext(response, "result", GENERAL_NS)
@@ -481,7 +481,7 @@ class DimensionDataBackupDriver(BackupDriver):
         server_id = self._target_to_target_address(target)
         client_id = self._client_to_client_id(backup_client)
         response = self.connection.request_with_orgId_api_1(
-            "server/%s/backup/client/%s?disable" % (server_id, client_id), method="GET"
+            "server/{}/backup/client/{}?disable".format(server_id, client_id), method="GET"
         ).object
         response_code = findtext(response, "result", GENERAL_NS)
         return response_code in ["IN_PROGRESS", "SUCCESS"]

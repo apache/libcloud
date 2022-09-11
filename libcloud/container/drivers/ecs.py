@@ -59,7 +59,7 @@ class ElasticContainerDriver(ContainerDriver):
     status_map = {"RUNNING": ContainerState.RUNNING}
 
     def __init__(self, access_id, secret, region):
-        super(ElasticContainerDriver, self).__init__(access_id, secret)
+        super().__init__(access_id, secret)
         self.region = region
         self.region_name = region
         self.connection.host = ECS_HOST % (region)
@@ -534,7 +534,7 @@ class ElasticContainerDriver(ContainerDriver):
         Get the default headers for a request to the ECS API
         """
         return {
-            "x-amz-target": "%s.%s" % (ECS_TARGET_BASE, action),
+            "x-amz-target": "{}.{}".format(ECS_TARGET_BASE, action),
             "Content-Type": "application/x-amz-json-1.1",
         }
 
@@ -543,7 +543,7 @@ class ElasticContainerDriver(ContainerDriver):
         Get the default headers for a request to the ECR API
         """
         return {
-            "x-amz-target": "%s.%s" % (ECR_TARGET_BASE, action),
+            "x-amz-target": "{}.{}".format(ECR_TARGET_BASE, action),
             "Content-Type": "application/x-amz-json-1.1",
         }
 
@@ -593,7 +593,7 @@ class ElasticContainerDriver(ContainerDriver):
         return images
 
     def _to_image(self, data, host, repository_name):
-        path = "%s/%s:%s" % (host, repository_name, data["imageTag"])
+        path = "{}/{}:{}".format(host, repository_name, data["imageTag"])
         return ContainerImage(
             id=None,
             name=path,

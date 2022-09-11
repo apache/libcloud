@@ -48,7 +48,7 @@ class GKEConnection(GoogleBaseConnection):
         project=None,
         **kwargs,
     ):
-        super(GKEConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -56,7 +56,7 @@ class GKEConnection(GoogleBaseConnection):
             credential_file=credential_file,
             **kwargs,
         )
-        self.request_path = "/%s/projects/%s" % (API_VERSION, project)
+        self.request_path = "/{}/projects/{}".format(API_VERSION, project)
         self.gke_params = {}
 
     def pre_connect_hook(self, params, headers):
@@ -65,7 +65,7 @@ class GKEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
-        params, headers = super(GKEConnection, self).pre_connect_hook(params, headers)
+        params, headers = super().pre_connect_hook(params, headers)
         if self.gke_params:
             params.update(self.gke_params)
         return params, headers
@@ -76,7 +76,7 @@ class GKEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
-        response = super(GKEConnection, self).request(*args, **kwargs)
+        response = super().request(*args, **kwargs)
 
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
@@ -173,11 +173,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
             credential_file or GoogleOAuth2Credential.default_credential_file + "." + self.project
         )
 
-        super(GKEContainerDriver, self).__init__(
-            user_id, key, secure=True, host=None, port=None, **kwargs
-        )
+        super().__init__(user_id, key, secure=True, host=None, port=None, **kwargs)
 
-        self.base_path = "/%s/projects/%s" % (API_VERSION, self.project)
+        self.base_path = "/{}/projects/{}".format(API_VERSION, self.project)
         self.website = GKEContainerDriver.website
 
     def _ex_connection_class_kwargs(self):

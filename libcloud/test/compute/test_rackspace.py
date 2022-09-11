@@ -79,7 +79,7 @@ class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
 
 class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
     def __init__(self, *args, **kwargs):
-        super(RackspaceNovaMockHttp, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         methods1 = OpenStack_1_1_MockHttp.__dict__
 
@@ -135,7 +135,7 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
 
 
 # Does not derive from TestCase because it should not be used by setup.py test
-class BaseRackspaceNovaTestCase(object):
+class BaseRackspaceNovaTestCase:
     conn_class = RackspaceNovaMockHttp
     auth_url = "https://auth.api.example.com"
 

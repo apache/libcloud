@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 from libcloud.dns.base import Zone, Record, DNSDriver
 from libcloud.dns.types import (
@@ -32,7 +31,7 @@ TTL_MIN = 30
 TTL_MAX = 2592000  # 30 days
 
 
-class NewZoneVersion(object):
+class NewZoneVersion:
     """
     Changes to a zone in the Gandi DNS service need to be wrapped in a new
     version object. The changes are made to the new version, then that
@@ -158,7 +157,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             extra["priority"] = int(split[0])
             value = split[1]
         return Record(
-            id="%s:%s" % (record["type"], record["name"]),
+            id="{}:{}".format(record["type"], record["name"]),
             name=record["name"],
             type=self._string_to_record_type(record["type"]),
             data=value,

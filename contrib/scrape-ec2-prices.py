@@ -58,8 +58,8 @@ INSTANCE_SIZES = [
 def download_json():
     if os.path.isfile(FILEPATH):
         mtime_str = time.strftime("%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH)))
-        print("Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str))
-        return open(FILEPATH, "r"), True
+        print("Using data from existing cached file {} (mtime={})".format(FILEPATH, mtime_str))
+        return open(FILEPATH), True
 
     def remove_partial_cached_file():
         if os.path.isfile(FILEPATH):
@@ -94,7 +94,7 @@ def get_json():
         return download_json()[0], False
 
     mtime_str = time.strftime("%Y-%m-%d %H:%I:%S UTC", time.gmtime(os.path.getmtime(FILEPATH)))
-    print("Using data from existing cached file %s (mtime=%s)" % (FILEPATH, mtime_str))
+    print("Using data from existing cached file {} (mtime={})".format(FILEPATH, mtime_str))
     return FILEPATH, True
 
 
@@ -107,7 +107,7 @@ def get_all_prices():
     current_rate_code = ""
     amazonEC2_offer_code = "JRTCKXETXF"
     json_file, from_file = get_json()
-    with open(json_file, "r") as f:
+    with open(json_file) as f:
         print("Starting to parse pricing data, this could take up to 15 minutes...")
         parser = ijson.parse(f, buf_size=IJSON_BUF_SIZE)
         # use parser because file is very large
@@ -143,7 +143,7 @@ def scrape_ec2_pricing():
     skus = {}
     prices = get_all_prices()
     json_file, from_file = get_json()
-    with open(json_file, "r") as f:
+    with open(json_file) as f:
         print("Starting to parse pricing data, this could take up to 15 minutes...")
         # use parser because file is very large
         parser = ijson.parse(f, buf_size=IJSON_BUF_SIZE)
@@ -257,7 +257,7 @@ def scrape_ec2_pricing():
 
 
 def update_pricing_file(pricing_file_path, pricing_data):
-    with open(pricing_file_path, "r") as fp:
+    with open(pricing_file_path) as fp:
         content = fp.read()
 
     data = json.loads(content)

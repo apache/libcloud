@@ -5,6 +5,7 @@ pylint==2.15.2; python_version >= '3.8'
 bandit==1.7.4; python_version >= '3.7'
 black==22.8.0; python_version >= '3.6' and implementation_name == "cpython"
 isort[pyproject]==5.10.1; python_version >= '3.8'
+pyupgrade==2.37.3
 rstcheck==6.1.0; python_version >= '3.7'
 
 requests>=2.27.1

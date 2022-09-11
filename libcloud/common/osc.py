@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-class OSCRequestSigner(object):
+class OSCRequestSigner:
     """
     Class which handles signing the outgoing AWS requests.
     """
@@ -69,7 +69,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
     def _get_request_params(params: dict):
         return "&".join(
             [
-                "%s=%s" % (urlquote(k, safe=""), urlquote(str(v), safe="~"))
+                "{}={}".format(urlquote(k, safe=""), urlquote(str(v), safe="~"))
                 for k, v in sorted(params.items())
             ]
         )

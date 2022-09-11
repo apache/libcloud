@@ -665,7 +665,7 @@ class RackspaceLBTests(unittest.TestCase):
 
         self.assertEqual(len(members), 3)
         self.assertEqual(members[0].balancer, balancer)
-        self.assertEqual(expected, set(["%s:%s" % (member.ip, member.port) for member in members]))
+        self.assertEqual(expected, {"{}:{}".format(member.ip, member.port) for member in members})
 
     def test_balancer_members_extra_weight(self):
         balancer = self.driver.get_balancer(balancer_id="8290")

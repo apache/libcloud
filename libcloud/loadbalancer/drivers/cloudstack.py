@@ -66,9 +66,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
                 + "you also need to provide host and path argument"
             )
 
-        super(CloudStackLBDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port)
 
     def list_protocols(self):
         """

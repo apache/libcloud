@@ -16,7 +16,6 @@
 Provider related utilities
 """
 
-from __future__ import absolute_import
 
 from types import ModuleType
 from typing import TYPE_CHECKING, Type, Union

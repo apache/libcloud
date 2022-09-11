@@ -106,7 +106,7 @@ class ProfitBricksConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers["Authorization"] = "Basic %s" % (
-            base64.b64encode(b("%s:%s" % (self.user_id, self.key))).decode("utf-8")
+            base64.b64encode(b("{}:{}".format(self.user_id, self.key))).decode("utf-8")
         )
 
         return headers
@@ -149,7 +149,7 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         else:
             action = action.replace("https://{host}".format(host=self.host), "")
 
-        return super(ProfitBricksConnection, self).request(
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -204,7 +204,7 @@ class Datacenter(UuidMixin):
         )
 
 
-class ProfitBricksNetworkInterface(object):
+class ProfitBricksNetworkInterface:
     """
     Class which stores information about ProfitBricks network
     interfaces.
@@ -242,7 +242,7 @@ class ProfitBricksNetworkInterface(object):
         )
 
 
-class ProfitBricksFirewallRule(object):
+class ProfitBricksFirewallRule:
     """
     Extension class which stores information about a ProfitBricks
     firewall rule.
@@ -281,7 +281,7 @@ class ProfitBricksFirewallRule(object):
         )
 
 
-class ProfitBricksLan(object):
+class ProfitBricksLan:
     """
     Extension class which stores information about a
     ProfitBricks LAN
@@ -325,7 +325,7 @@ class ProfitBricksLan(object):
         )
 
 
-class ProfitBricksIPFailover(object):
+class ProfitBricksIPFailover:
     """
     Extension class which stores information about a
     ProfitBricks LAN's failover
@@ -351,7 +351,7 @@ class ProfitBricksIPFailover(object):
         )
 
 
-class ProfitBricksLoadBalancer(object):
+class ProfitBricksLoadBalancer:
     """
     Extention class which stores information about a
     ProfitBricks load balancer
@@ -391,7 +391,7 @@ class ProfitBricksLoadBalancer(object):
         )
 
 
-class ProfitBricksAvailabilityZone(object):
+class ProfitBricksAvailabilityZone:
     """
     Extension class which stores information about a ProfitBricks
     availability zone.
@@ -409,7 +409,7 @@ class ProfitBricksAvailabilityZone(object):
         return ("<ProfitBricksAvailabilityZone: name=%s>") % (self.name)
 
 
-class ProfitBricksIPBlock(object):
+class ProfitBricksIPBlock:
     """
     Extension class which stores information about a ProfitBricks
     IP block.
@@ -777,11 +777,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         if not volume and image is not None:
             if ex_password is None and ex_ssh_keys is None:
                 raise ValueError(
-                    (
-                        "When creating a server without a "
-                        "volume, you need to specify either an "
-                        "array of SSH keys or a volume password."
-                    )
+                    "When creating a server without a "
+                    "volume, you need to specify either an "
+                    "array of SSH keys or a volume password."
                 )
 
             if not size:
@@ -2723,7 +2721,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if ex_href is None:
             if ex_datacenter_id is None or ex_load_balancer_id is None:
-                raise ValueError(("IDs for the data center and " "load balancer are required."))
+                raise ValueError("IDs for the data center and " "load balancer are required.")
             else:
                 use_full_url = False
                 ex_href = (

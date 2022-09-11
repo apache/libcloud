@@ -497,7 +497,7 @@ class AtmosTests(unittest.TestCase):
             ),
         ]
 
-        class FakeDriver(object):
+        class FakeDriver:
             path = ""
 
         for method, action, api_path, headers, expected in test_values:
@@ -536,7 +536,7 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             parsed[2] = parsed[2] + "/" + parsed[4]
             parsed[4] = ""
             url = urlparse.urlunparse(parsed)
-        return super(AtmosMockHttp, self).request(method, url, body, headers, raw)
+        return super().request(method, url, body, headers, raw)
 
     def _rest_namespace_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load("empty_directory_listing.xml")

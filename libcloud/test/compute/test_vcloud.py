@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
 
 import re
 import sys
@@ -1086,7 +1085,7 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
                 url,
             ),
         )
-        super(VCloud_1_5_MockHttp, self).request(method, url, body, headers, raw)
+        super().request(method, url, body, headers, raw)
 
     def _api_sessions(self, method, url, body, headers):
         headers["x-vcloud-authorization"] = "testtoken"

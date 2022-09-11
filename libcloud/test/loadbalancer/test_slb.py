@@ -504,7 +504,7 @@ class SLBMockHttp(MockHttp, unittest.TestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-class AssertDictMixin(object):
+class AssertDictMixin:
     def assert_dict_equals(self, expected, actual):
         expected_keys = set(expected.keys())
         actual_keys = set(actual.keys())

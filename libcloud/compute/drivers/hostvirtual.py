@@ -76,7 +76,7 @@ class HostVirtualNodeDriver(NodeDriver):
 
     def __init__(self, key, secure=True, host=None, port=None):
         self.location = None
-        super(HostVirtualNodeDriver, self).__init__(key=key, secure=secure, host=host, port=port)
+        super().__init__(key=key, secure=secure, host=host, port=port)
 
     def list_nodes(self):
         try:

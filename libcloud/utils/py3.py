@@ -20,7 +20,6 @@
 
 # pylint: skip-file
 
-from __future__ import absolute_import
 
 import sys
 import types
@@ -49,8 +48,7 @@ if (2, 0) <= sys.version_info < (3, 0):
 if (2, 7) <= sys.version_info < (2, 8):
     PY27 = True
 
-if sys.version_info >= (3, 0):
-    PY3 = True
+PY3 = True
 
 if PY3:
     import base64
@@ -90,7 +88,7 @@ if PY3:
         elif isinstance(s, int):
             return bytes([s])
         else:
-            raise TypeError("Invalid argument %r for b()" % (s,))
+            raise TypeError("Invalid argument {!r} for b()".format(s))
 
     def ensure_string(s):
         if isinstance(s, str):
@@ -98,7 +96,7 @@ if PY3:
         elif isinstance(s, bytes):
             return s.decode("utf-8")
         else:
-            raise TypeError("Invalid argument %r for ensure_string()" % (s,))
+            raise TypeError("Invalid argument {!r} for ensure_string()".format(s))
 
     def byte(n):
         # assume n is a Latin-1 string of length 1

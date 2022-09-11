@@ -33,7 +33,7 @@ class MaxihostResponse(JsonResponse):
         else:
             body = self.parse_body()
             if "message" in body:
-                error = "%s (code: %s)" % (body["message"], self.status)
+                error = "{} (code: {})".format(body["message"], self.status)
             else:
                 error = body
             return error

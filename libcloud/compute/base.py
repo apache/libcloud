@@ -17,7 +17,6 @@
 Provides base classes for working with drivers
 """
 
-from __future__ import with_statement
 
 import os
 import re
@@ -114,7 +113,7 @@ __all__ = [
 ]
 
 
-class UuidMixin(object):
+class UuidMixin:
     """
     Mixin class for get_uuid function.
     """
@@ -146,7 +145,7 @@ class UuidMixin(object):
         :rtype: ``str``
         """
         if not self._uuid:
-            self._uuid = hashlib.sha1(b("%s:%s" % (self.id, self.driver.type))).hexdigest()
+            self._uuid = hashlib.sha1(b("{}:{}".format(self.id, self.driver.type))).hexdigest()
 
         return self._uuid
 
@@ -543,7 +542,7 @@ class NodeImageMember(UuidMixin):
         )
 
 
-class NodeLocation(object):
+class NodeLocation:
     """
     A physical location where nodes can be.
 
@@ -594,7 +593,7 @@ class NodeLocation(object):
         )
 
 
-class NodeAuthSSHKey(object):
+class NodeAuthSSHKey:
     """
     An SSH key to be installed for authentication to a node.
 
@@ -620,7 +619,7 @@ class NodeAuthSSHKey(object):
         return "<NodeAuthSSHKey>"
 
 
-class NodeAuthPassword(object):
+class NodeAuthPassword:
     """
     A password to be used for authentication to a node.
     """
@@ -740,14 +739,14 @@ class StorageVolume(UuidMixin):
         return self.driver.destroy_volume(volume=self)
 
     def __repr__(self):
-        return "<StorageVolume id=%s size=%s driver=%s>" % (
+        return "<StorageVolume id={} size={} driver={}>".format(
             self.id,
             self.size,
             self.driver.name,
         )
 
 
-class VolumeSnapshot(object):
+class VolumeSnapshot:
     """
     A base VolumeSnapshot class to derive from.
     """
@@ -808,7 +807,7 @@ class VolumeSnapshot(object):
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
     def __repr__(self):
-        return '<VolumeSnapshot "%s" id=%s size=%s driver=%s state=%s>' % (
+        return '<VolumeSnapshot "{}" id={} size={} driver={} state={}>'.format(
             self.name,
             self.id,
             self.size,
@@ -817,7 +816,7 @@ class VolumeSnapshot(object):
         )
 
 
-class KeyPair(object):
+class KeyPair:
     """
     Represents a SSH key pair.
     """
@@ -859,7 +858,7 @@ class KeyPair(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<KeyPair name=%s fingerprint=%s driver=%s>" % (
+        return "<KeyPair name={} fingerprint={} driver={}>".format(
             self.name,
             self.fingerprint,
             self.driver.name,
@@ -1607,7 +1606,7 @@ class NodeDriver(BaseDriver):
         """
         key_file_path = os.path.expanduser(key_file_path)
 
-        with open(key_file_path, "r") as fp:
+        with open(key_file_path) as fp:
             key_material = fp.read().strip()
 
         return self.import_key_pair_from_string(name=name, key_material=key_material)
@@ -1692,11 +1691,11 @@ class NodeDriver(BaseDriver):
         start = time.time()
         end = start + timeout
 
-        uuids = set([node.uuid for node in nodes])
+        uuids = {node.uuid for node in nodes}
 
         while time.time() < end:
             all_nodes = self.list_nodes(**ex_list_nodes_kwargs)
-            matching_nodes = list([node for node in all_nodes if node.uuid in uuids])
+            matching_nodes = list(node for node in all_nodes if node.uuid in uuids)
 
             if len(matching_nodes) > len(uuids):
                 found_uuids = [node.uuid for node in matching_nodes]

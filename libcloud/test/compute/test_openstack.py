@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import sys
@@ -520,7 +519,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         if self.driver.api_name != "openstack":
             return
 
-        pricing = dict((str(i), i) for i in range(1, 8))
+        pricing = {str(i): i for i in range(1, 8)}
 
         set_pricing(driver_type="compute", driver_name="openstack", pricing=pricing)
 
@@ -1104,7 +1103,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes_with_specified_pricing(self):
 
-        pricing = dict((str(i), i * 5.0) for i in range(1, 9))
+        pricing = {str(i): i * 5.0 for i in range(1, 9)}
 
         set_pricing(driver_type="compute", driver_name=self.driver.api_name, pricing=pricing)
 
@@ -1605,7 +1604,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = "key3"
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             pub_key = fp.read()
 
         keypair = self.driver.import_key_pair_from_file(name=name, key_file_path=path)
@@ -1618,7 +1617,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = "key3"
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.pub")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             pub_key = fp.read()
 
         keypair = self.driver.import_key_pair_from_string(name=name, key_material=pub_key)
@@ -1949,7 +1948,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     }
 
     def setUp(self):
-        super(OpenStack_2_Tests, self).setUp()
+        super().setUp()
         self.driver_klass.image_connectionCls.conn_class = OpenStack_2_0_MockHttp
         self.driver_klass.image_connectionCls.auth_url = "https://auth.api.example.com"
         # normally authentication happens lazily, but we force it here
@@ -3841,7 +3840,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
 class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
     def __init__(self, *args, **kwargs):
-        super(OpenStack_2_0_MockHttp, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         methods1 = OpenStack_1_1_MockHttp.__dict__
 
@@ -3858,7 +3857,7 @@ class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
 
 class OpenStack_AllAuthVersions_MockHttp(MockHttp):
     def __init__(self, *args, **kwargs):
-        super(OpenStack_AllAuthVersions_MockHttp, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Lazy import to avoid cyclic depedency issue
         from libcloud.test.common.test_openstack_identity import (

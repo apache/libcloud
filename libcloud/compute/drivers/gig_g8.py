@@ -146,7 +146,7 @@ class G8NodeDriver(NodeDriver):
         :rtype: ``None``
         """
         self._apiurl = api_url.rstrip("/")
-        super(G8NodeDriver, self).__init__(key=key)
+        super().__init__(key=key)
         self._account_id = user_id
         self._location_data = None
 

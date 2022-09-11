@@ -112,7 +112,7 @@ class GoGridTests(unittest.TestCase):
         self.assertEqual(len(members2), 3)
         self.assertEqual(
             expected_members,
-            set(["%s:%s" % (member.ip, member.port) for member in members1]),
+            {"{}:{}".format(member.ip, member.port) for member in members1},
         )
         self.assertEqual(members1[0].balancer, balancer)
 

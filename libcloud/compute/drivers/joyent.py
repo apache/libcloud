@@ -92,7 +92,7 @@ class JoyentConnection(ConnectionUserAndKey):
         headers["Content-Type"] = "application/json; charset=UTF-8"
         headers["X-Api-Version"] = API_VERSION
 
-        user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
@@ -126,7 +126,7 @@ class JoyentNodeDriver(NodeDriver):
             msg = 'Invalid region: "%s". Valid region: %s'
             raise LibcloudError(msg % (region, ", ".join(VALID_REGIONS)), driver=self)
 
-        super(JoyentNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

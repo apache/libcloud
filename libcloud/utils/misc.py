@@ -203,7 +203,7 @@ def dict2str(data):
     result = ""
     for k in data:
         if data[k] is not None:
-            result += "%s %s\n" % (str(k), str(data[k]))
+            result += "{} {}\n".format(str(k), str(data[k]))
         else:
             result += "%s\n" % str(k)
 
@@ -211,11 +211,11 @@ def dict2str(data):
 
 
 def reverse_dict(dictionary):
-    return dict([(value, key) for key, value in list(dictionary.items())])
+    return {value: key for key, value in list(dictionary.items())}
 
 
 def lowercase_keys(dictionary):
-    return dict(((k.lower(), v) for k, v in dictionary.items()))
+    return {k.lower(): v for k, v in dictionary.items()}
 
 
 def get_secure_random_string(size):
@@ -235,7 +235,7 @@ def get_secure_random_string(size):
     return value
 
 
-class ReprMixin(object):
+class ReprMixin:
     """
     Mixin class which adds __repr__ and __str__ methods for the attributes
     specified on the class.
@@ -247,7 +247,7 @@ class ReprMixin(object):
         attributes = []
         for attribute in self._repr_attributes:
             value = getattr(self, attribute, None)
-            attributes.append("%s=%s" % (attribute, value))
+            attributes.append("{}={}".format(attribute, value))
 
         values = (self.__class__.__name__, ", ".join(attributes))
         result = "<%s %s>" % values

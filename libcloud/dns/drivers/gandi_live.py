@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import copy
 
@@ -100,7 +99,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return self._to_zones(zones.object)
 
     def get_zone(self, zone_id):
-        action = "%s/domains/%s" % (API_BASE, zone_id)
+        action = "{}/domains/{}".format(API_BASE, zone_id)
         try:
             zone = self.connection.request(action=action, method="GET")
         except ResourceNotFoundError:
@@ -136,7 +135,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return self._to_zone({"fqdn": domain, "zone_uuid": new_zone_uuid})
 
     def list_records(self, zone):
-        action = "%s/domains/%s/records" % (API_BASE, zone.id)
+        action = "{}/domains/{}/records".format(API_BASE, zone.id)
         records = self.connection.request(action=action, method="GET")
         return self._to_records(records.object, zone)
 
@@ -148,7 +147,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     def get_record(self, zone_id, record_id):
         record_type, name = record_id.split(":", 1)
-        action = "%s/domains/%s/records/%s/%s" % (API_BASE, zone_id, name, record_type)
+        action = "{}/domains/{}/records/{}/{}".format(API_BASE, zone_id, name, record_type)
         try:
             record = self.connection.request(action=action, method="GET")
         except ResourceNotFoundError:
@@ -160,10 +159,10 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def create_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
-        action = "%s/domains/%s/records" % (API_BASE, zone.id)
+        action = "{}/domains/{}/records".format(API_BASE, zone.id)
 
         if type == "MX":
-            data = "%s %s" % (extra["priority"], data)
+            data = "{} {}".format(extra["priority"], data)
 
         record_data = {
             "rrset_name": name,
@@ -180,7 +179,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             raise RecordAlreadyExistsError(
                 value="",
                 driver=self.connection.driver,
-                record_id="%s:%s" % (self.RECORD_TYPE_MAP[type], name),
+                record_id="{}:{}".format(self.RECORD_TYPE_MAP[type], name),
             )
 
         return self._to_record_sub(record_data, zone, data)
@@ -206,7 +205,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def update_record(self, record, name, type, data, extra):
         self._validate_record(record.id, record.name, record.type, data, extra)
 
-        action = "%s/domains/%s/records/%s/%s" % (
+        action = "{}/domains/{}/records/{}/{}".format(
             API_BASE,
             record.zone.id,
             record.name,
@@ -217,14 +216,14 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         other_records = record.extra.get("_other_records", [])
 
         if record.type == RecordType.MX:
-            data = "%s %s" % (extra["priority"], data)
+            data = "{} {}".format(extra["priority"], data)
 
         if multiple_value_record and len(other_records) > 0:
             rvalue = [data]
             for other_record in other_records:
                 if record.type == RecordType.MX:
                     rvalue.append(
-                        "%s %s" % (other_record["extra"]["priority"], other_record["data"])
+                        "{} {}".format(other_record["extra"]["priority"], other_record["data"])
                     )
                 else:
                     rvalue.append(other_record["data"])
@@ -254,7 +253,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
 
     def delete_record(self, record):
-        action = "%s/domains/%s/records/%s/%s" % (
+        action = "{}/domains/{}/records/{}/{}".format(
             API_BASE,
             record.zone.id,
             record.name,
@@ -271,7 +270,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return True
 
     def export_zone_to_bind_format(self, zone):
-        action = "%s/domains/%s/records" % (API_BASE, zone.id)
+        action = "{}/domains/{}/records".format(API_BASE, zone.id)
         headers = {"Accept": "text/plain"}
         resp = self.connection.request(action=action, method="GET", headers=headers, raw=True)
         return resp.body
@@ -301,7 +300,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
 
     def ex_update_gandi_zone_name(self, zone_uuid, name):
-        action = "%s/zones/%s" % (API_BASE, zone_uuid)
+        action = "{}/zones/{}".format(API_BASE, zone_uuid)
         data = {
             "name": name,
         }
@@ -321,7 +320,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
 
     def ex_delete_gandi_zone(self, zone_uuid):
-        self.connection.request(action="%s/zones/%s" % (API_BASE, zone_uuid), method="DELETE")
+        self.connection.request(action="{}/zones/{}".format(API_BASE, zone_uuid), method="DELETE")
         return True
 
     """
@@ -341,7 +340,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             "zone_uuid": zone_uuid,
         }
         self.connection.request(
-            action="%s/domains/%s" % (API_BASE, domain),
+            action="{}/domains/{}".format(API_BASE, domain),
             method="PATCH",
             data=domain_data,
         )
@@ -359,7 +358,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
-        action = "%s/domains/%s/records" % (API_BASE, zone.id)
+        action = "{}/domains/{}/records".format(API_BASE, zone.id)
 
         record_data = {
             "rrset_name": name,
@@ -376,7 +375,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             raise RecordAlreadyExistsError(
                 value="",
                 driver=self.connection.driver,
-                record_id="%s:%s" % (self.RECORD_TYPE_MAP[type], name),
+                record_id="{}:{}".format(self.RECORD_TYPE_MAP[type], name),
             )
         return self._to_record(record_data, zone)
 
@@ -421,7 +420,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             priority, value = value.split()
             extra["priority"] = priority
         return Record(
-            id="%s:%s" % (data["rrset_type"], data["rrset_name"]),
+            id="{}:{}".format(data["rrset_type"], data["rrset_name"]),
             name=data["rrset_name"],
             type=self._string_to_record_type(data["rrset_type"]),
             data=value,

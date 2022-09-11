@@ -45,7 +45,7 @@ class RcodeZeroResponse(JsonResponse):
         try:
             body = self.parse_body()
         except MalformedResponseError as e:
-            body = "%s: %s" % (e.value, e.body)
+            body = "{}: {}".format(e.value, e.body)
         try:
             errors = [body["message"]]
         except TypeError:
@@ -142,9 +142,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         else:
             raise NotImplementedError("Unsupported API version: %s" % api_version)
 
-        super(RcodeZeroDNSDriver, self).__init__(
-            key=key, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secure=secure, host=host, port=port, **kwargs)
 
     def create_record(self, name, zone, type, data, extra=None):
         """
@@ -168,7 +166,7 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = "%s/zones/%s/rrsets" % (self.api_root, zone.id)
+        action = "{}/zones/{}/rrsets".format(self.api_root, zone.id)
 
         payload = self._to_patchrequest(zone.id, None, name, type, data, extra, "add")
 
@@ -255,7 +253,7 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = "%s/zones/%s" % (self.api_root, domain)
+        action = "{}/zones/{}".format(self.api_root, domain)
         if type is None:
             type = zone.type
 
@@ -285,7 +283,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
 
-        action = "%s/zones/%s/rrsets" % (self.api_root, record.zone.id)
+        action = "{}/zones/{}/rrsets".format(self.api_root, record.zone.id)
 
         payload = self._to_patchrequest(
             record.zone.id,
@@ -318,7 +316,7 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = "%s/zones/%s" % (self.api_root, zone.id)
+        action = "{}/zones/{}".format(self.api_root, zone.id)
         try:
             self.connection.request(action=action, method="DELETE")
         except BaseHTTPError:
@@ -336,7 +334,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         :raises: ZoneDoesNotExistError: if zone could not be found.
         """
-        action = "%s/zones/%s" % (self.api_root, zone_id)
+        action = "{}/zones/{}".format(self.api_root, zone_id)
         try:
             response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
@@ -378,7 +376,7 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = "%s/zones/%s/rrsets?page_size=-1" % (self.api_root, zone.id)
+        action = "{}/zones/{}/rrsets?page_size=-1".format(self.api_root, zone.id)
         try:
             response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
@@ -421,7 +419,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
 
-        action = "%s/zones/%s/rrsets" % (self.api_root, record.zone.id)
+        action = "{}/zones/{}/rrsets".format(self.api_root, record.zone.id)
 
         payload = self._to_patchrequest(
             record.zone.id, record, name, type, data, record.extra, "update"

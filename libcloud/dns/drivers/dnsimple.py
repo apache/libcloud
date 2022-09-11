@@ -103,7 +103,7 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request("/v1/domains/%s/records/%s" % (zone_id, record_id))
+        response = self.connection.request("/v1/domains/{}/records/{}".format(zone_id, record_id))
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 
@@ -200,7 +200,7 @@ class DNSimpleDNSDriver(DNSDriver):
             r_json.update(extra)
         r_data = json.dumps({"record": r_json})
         response = self.connection.request(
-            "/v1/domains/%s/records/%s" % (zone.id, record.id),
+            "/v1/domains/{}/records/{}".format(zone.id, record.id),
             method="PUT",
             data=r_data,
         )
@@ -231,7 +231,9 @@ class DNSimpleDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         zone_id = record.zone.id
-        self.connection.request("/v1/domains/%s/records/%s" % (zone_id, record.id), method="DELETE")
+        self.connection.request(
+            "/v1/domains/{}/records/{}".format(zone_id, record.id), method="DELETE"
+        )
         return True
 
     def _to_zones(self, data):

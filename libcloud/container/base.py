@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 from typing import List, Optional
 
@@ -29,7 +28,7 @@ __all__ = [
 ]
 
 
-class Container(object):
+class Container:
     """
     Container.
     """
@@ -101,7 +100,7 @@ class Container(object):
         )
 
 
-class ContainerImage(object):
+class ContainerImage:
     """
     Container Image.
     """
@@ -148,14 +147,14 @@ class ContainerImage(object):
         )
 
     def __repr__(self):
-        return "<ContainerImage: id=%s, name=%s, path=%s ...>" % (
+        return "<ContainerImage: id={}, name={}, path={} ...>".format(
             self.id,
             self.name,
             self.path,
         )
 
 
-class ContainerCluster(object):
+class ContainerCluster:
     """
     A cluster group for containers
     """
@@ -194,14 +193,14 @@ class ContainerCluster(object):
         return self.driver.destroy_cluster(cluster=self)
 
     def __repr__(self):
-        return "<ContainerCluster: id=%s, name=%s, provider=%s ...>" % (
+        return "<ContainerCluster: id={}, name={}, provider={} ...>".format(
             self.id,
             self.name,
             self.driver.name,
         )
 
 
-class ClusterLocation(object):
+class ClusterLocation:
     """
     A physical location where clusters can be.
 
@@ -281,9 +280,7 @@ class ContainerDriver(BaseDriver):
 
         :return: ``None``
         """
-        super(ContainerDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def install_image(self, path):
         # type: (str) -> ContainerImage

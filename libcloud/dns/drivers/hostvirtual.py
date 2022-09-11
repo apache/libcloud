@@ -48,7 +48,7 @@ class HostVirtualDNSResponse(HostVirtualResponse):
                     record_id=context["id"],
                 )
 
-        super(HostVirtualDNSResponse, self).parse_error()
+        super().parse_error()
         return self.body
 
 
@@ -73,7 +73,7 @@ class HostVirtualDNSDriver(DNSDriver):
     }
 
     def __init__(self, key, secure=True, host=None, port=None):
-        super(HostVirtualDNSDriver, self).__init__(key=key, secure=secure, host=host, port=port)
+        super().__init__(key=key, secure=secure, host=host, port=port)
 
     def _to_zones(self, items):
         zones = []

@@ -24,7 +24,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.drivers.cloudsigma import CloudSigmaNodeDriver, CloudSigmaZrhNodeDriver
 
 
-class CloudSigmaAPI10BaseTestCase(object):
+class CloudSigmaAPI10BaseTestCase:
     should_list_locations = False
 
     driver_klass = CloudSigmaZrhNodeDriver

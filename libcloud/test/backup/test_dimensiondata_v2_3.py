@@ -299,7 +299,7 @@ class DimensionData_v2_3_Tests(unittest.TestCase):
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
-        super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
+        super().__init__("Invalid Request - %s" % tag)
 
 
 class DimensionDataMockHttp(MockHttp):
@@ -402,7 +402,7 @@ class DimensionDataMockHttp(MockHttp):
             body = self.fixtures.load("_backup_client_SUCCESS_PUT.xml")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
-            raise ValueError("Unknown Method {0}".format(method))
+            raise ValueError("Unknown Method {}".format(method))
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_NOCLIENT(
         self, method, url, body, headers
@@ -460,7 +460,7 @@ class DimensionDataMockHttp(MockHttp):
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         else:
-            raise ValueError("Unknown Method {0}".format(method))
+            raise ValueError("Unknown Method {}".format(method))
 
     def _caas_2_3_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOBACKUP(
         self, method, url, body, headers
@@ -504,10 +504,10 @@ class DimensionDataMockHttp(MockHttp):
         self, method, url, body, headers
     ):
         if url.endswith("disable"):
-            body = self.fixtures.load(("_remove_backup_client.xml"))
+            body = self.fixtures.load("_remove_backup_client.xml")
         elif url.endswith("cancelJob"):
             body = self.fixtures.load(
-                ("" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob.xml")
+                "" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob.xml"
             )
         else:
             raise ValueError("Unknown URL: %s" % url)
@@ -517,10 +517,10 @@ class DimensionDataMockHttp(MockHttp):
         self, method, url, body, headers
     ):
         if url.endswith("disable"):
-            body = self.fixtures.load(("_remove_backup_client_FAIL.xml"))
+            body = self.fixtures.load("_remove_backup_client_FAIL.xml")
         elif url.endswith("cancelJob"):
             body = self.fixtures.load(
-                ("" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob_FAIL.xml")
+                "" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob_FAIL.xml"
             )
         else:
             raise ValueError("Unknown URL: %s" % url)

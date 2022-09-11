@@ -43,7 +43,7 @@ class GoogleDNSConnection(GoogleBaseConnection):
         project=None,
         **kwargs,
     ):
-        super(GoogleDNSConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -51,7 +51,7 @@ class GoogleDNSConnection(GoogleBaseConnection):
             credential_file=credential_file,
             **kwargs,
         )
-        self.request_path = "/dns/%s/projects/%s" % (API_VERSION, project)
+        self.request_path = "/dns/{}/projects/{}".format(API_VERSION, project)
 
 
 class GoogleDNSDriver(DNSDriver):
@@ -80,7 +80,7 @@ class GoogleDNSDriver(DNSDriver):
         self.scopes = scopes
         if not self.project:
             raise ValueError("Project name must be specified using " '"project" keyword.')
-        super(GoogleDNSDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
     def iterate_zones(self):
         """
@@ -298,8 +298,7 @@ class GoogleDNSDriver(DNSDriver):
         exhausted = False
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
-            for item in items:
-                yield item
+            yield from items
 
     def _get_data(self, rtype, last_key, **kwargs):
         params = {}
@@ -370,7 +369,7 @@ class GoogleDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, r, zone):
-        record_id = "%s:%s" % (r["type"], r["name"])
+        record_id = "{}:{}".format(r["type"], r["name"])
         return Record(
             id=record_id,
             name=r["name"],

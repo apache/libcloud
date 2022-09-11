@@ -53,7 +53,7 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 PEM_KEY = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.pem")
 JSON_KEY = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.json")
 JSON_KEY_INVALID = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey_invalid.json")
-with open(JSON_KEY, "r") as f:
+with open(JSON_KEY) as f:
     KEY_STR = json.loads(f.read())["private_key"]
 
 
@@ -87,10 +87,10 @@ PEM_KEY_FILE_INVALID = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey_inv
 
 JSON_KEY_FILE = os.path.join(SCRIPT_PATH, "fixtures", "google", "pkey.json")
 
-with open(JSON_KEY_FILE, "r") as f:
+with open(JSON_KEY_FILE) as f:
     PEM_KEY_STR = json.loads(f.read())["private_key"]
 
-with open(JSON_KEY_FILE, "r") as f:
+with open(JSON_KEY_FILE) as f:
     JSON_KEY_STR = f.read()
     JSON_KEY = json.loads(JSON_KEY_STR)
 
@@ -140,7 +140,7 @@ STUB_TOKEN_FROM_FILE = {
 }
 
 
-class MockJsonResponse(object):
+class MockJsonResponse:
     def __init__(self, body):
         self.object = body
 
@@ -184,14 +184,14 @@ class GoogleTestCase(LibcloudTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(GoogleTestCase, cls).setUpClass()
+        super().setUpClass()
 
         for patcher in [a for a in dir(cls) if a.endswith(cls.PATCHER_SUFFIX)]:
             getattr(cls, patcher).start()
 
     @classmethod
     def tearDownClass(cls):
-        super(GoogleTestCase, cls).tearDownClass()
+        super().tearDownClass()
 
         for patcher in [a for a in dir(cls) if a.endswith(cls.PATCHER_SUFFIX)]:
             getattr(cls, patcher).stop()
@@ -425,7 +425,7 @@ class GoogleBaseConnectionTest(GoogleTestCase):
     def test_pre_connect_hook(self):
         old_params = {}
         old_headers = {}
-        auth_str = "%s %s" % (
+        auth_str = "{} {}".format(
             STUB_TOKEN_FROM_FILE["token_type"],
             STUB_TOKEN_FROM_FILE["access_token"],
         )

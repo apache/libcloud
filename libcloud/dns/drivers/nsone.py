@@ -168,7 +168,7 @@ class NsOneDNSDriver(DNSDriver):
 
         :return: :class:`Record`
         """
-        action = "/v1/zones/%s/%s/%s" % (zone_id, zone_id, record_id)
+        action = "/v1/zones/{}/{}/{}".format(zone_id, zone_id, record_id)
         try:
             response = self.connection.request(action=action, method="GET")
         except NsOneException as e:
@@ -188,7 +188,7 @@ class NsOneDNSDriver(DNSDriver):
 
         :return: Boolean
         """
-        action = "/v1/zones/%s/%s/%s" % (record.zone.domain, record.name, record.type)
+        action = "/v1/zones/{}/{}/{}".format(record.zone.domain, record.name, record.type)
         try:
             response = self.connection.request(action=action, method="DELETE")
         except NsOneException as e:
@@ -213,9 +213,9 @@ class NsOneDNSDriver(DNSDriver):
         :type extra: ``dict``
         :return: :class:`Record`
         """
-        record_name = "%s.%s" % (name, zone.domain) if name != "" else zone.domain  # noqa
+        record_name = "{}.{}".format(name, zone.domain) if name != "" else zone.domain  # noqa
 
-        action = "/v1/zones/%s/%s/%s" % (zone.domain, record_name, type)
+        action = "/v1/zones/{}/{}/{}".format(zone.domain, record_name, type)
         if type == RecordType.MX:
             answer = [extra.get("priority", 10), data]
         else:
@@ -256,9 +256,9 @@ class NsOneDNSDriver(DNSDriver):
         :return: :class:`Record`
         """
         zone = record.zone
-        action = "/v1/zones/%s/%s/%s" % (
+        action = "/v1/zones/{}/{}/{}".format(
             zone.domain,
-            "%s.%s" % (name, zone.domain),
+            "{}.{}".format(name, zone.domain),
             type,
         )
         raw_data = {"answers": [{"answer": [data]}]}

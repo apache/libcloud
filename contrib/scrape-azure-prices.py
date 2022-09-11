@@ -62,7 +62,7 @@ def get_azure_prices():
 
 
 def write_azure_prices(file_path, prices):
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     data = json.loads(content)

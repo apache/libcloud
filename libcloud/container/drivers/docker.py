@@ -95,10 +95,10 @@ class DockerException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "DockerException %s %s" % (self.code, self.message)
+        return "DockerException {} {}".format(self.code, self.message)
 
 
 class DockerConnection(ConnectionUserAndKey):
@@ -114,7 +114,7 @@ class DockerConnection(ConnectionUserAndKey):
         """
         headers["Content-Type"] = "application/json"
         if self.user_id and self.key:
-            user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+            user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
             headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
@@ -135,7 +135,7 @@ class DockertlsConnection(KeyCertificateConnection):
         **kwargs,
     ):
 
-        super(DockertlsConnection, self).__init__(
+        super().__init__(
             key_file=key_file,
             cert_file=cert_file,
             secure=secure,
@@ -246,7 +246,7 @@ class DockerContainerDriver(ContainerDriver):
             if host.startswith(prefix):
                 host = host.strip(prefix)
 
-        super(DockerContainerDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -294,7 +294,7 @@ class DockerContainerDriver(ContainerDriver):
         data = json.dumps(payload)
 
         result = self.connection.request(
-            "/v%s/images/create?fromImage=%s" % (self.version, path),
+            "/v{}/images/create?fromImage={}".format(self.version, path),
             data=data,
             method="POST",
         )
@@ -373,7 +373,9 @@ class DockerContainerDriver(ContainerDriver):
         else:
             ex = ""
         try:
-            result = self.connection.request("/v%s/containers/json%s" % (self.version, ex)).object
+            result = self.connection.request(
+                "/v{}/containers/json{}".format(self.version, ex)
+            ).object
         except Exception as exc:
             errno = getattr(exc, "errno", None)
             if errno == 111:
@@ -493,11 +495,11 @@ class DockerContainerDriver(ContainerDriver):
         if start:
             if float(self._get_api_version()) > 1.22:
                 result = self.connection.request(
-                    "/v%s/containers/%s/start" % (self.version, id_), method="POST"
+                    "/v{}/containers/{}/start".format(self.version, id_), method="POST"
                 )
             else:
                 result = self.connection.request(
-                    "/v%s/containers/%s/start" % (self.version, id_),
+                    "/v{}/containers/{}/start".format(self.version, id_),
                     data=data,
                     method="POST",
                 )
@@ -513,7 +515,7 @@ class DockerContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("/v%s/containers/%s/json" % (self.version, id)).object
+        result = self.connection.request("/v{}/containers/{}/json".format(self.version, id)).object
 
         return self._to_container(result)
 
@@ -529,7 +531,7 @@ class DockerContainerDriver(ContainerDriver):
         """
         if float(self._get_api_version()) > 1.22:
             result = self.connection.request(
-                "/v%s/containers/%s/start" % (self.version, container.id), method="POST"
+                "/v{}/containers/{}/start".format(self.version, container.id), method="POST"
             )
         else:
             payload = {
@@ -538,7 +540,7 @@ class DockerContainerDriver(ContainerDriver):
             }
             data = json.dumps(payload)
             result = self.connection.request(
-                "/v%s/containers/%s/start" % (self.version, container.id),
+                "/v{}/containers/{}/start".format(self.version, container.id),
                 method="POST",
                 data=data,
             )
@@ -559,7 +561,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request(
-            "/v%s/containers/%s/stop" % (self.version, container.id), method="POST"
+            "/v{}/containers/{}/stop".format(self.version, container.id), method="POST"
         )
         if result.status in VALID_RESPONSE_CODES:
             return self.get_container(container.id)
@@ -579,7 +581,7 @@ class DockerContainerDriver(ContainerDriver):
         data = json.dumps({"t": 10})
         # number of seconds to wait before killing the container
         result = self.connection.request(
-            "/v%s/containers/%s/restart" % (self.version, container.id),
+            "/v{}/containers/{}/restart".format(self.version, container.id),
             data=data,
             method="POST",
         )
@@ -599,7 +601,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "/v%s/containers/%s" % (self.version, container.id), method="DELETE"
+            "/v{}/containers/{}".format(self.version, container.id), method="DELETE"
         )
         return result.status in VALID_RESPONSE_CODES
 
@@ -613,7 +615,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: ``str``
         """
         result = self.connection.request(
-            "/v%s/containers/%s/top" % (self.version, container.id)
+            "/v{}/containers/{}/top".format(self.version, container.id)
         ).object
 
         return result
@@ -631,7 +633,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
         result = self.connection.request(
-            "/v%s/containers/%s/rename?name=%s" % (self.version, container.id, name),
+            "/v{}/containers/{}/rename?name={}".format(self.version, container.id, name),
             method="POST",
         )
         if result.status in VALID_RESPONSE_CODES:
@@ -690,7 +692,9 @@ class DockerContainerDriver(ContainerDriver):
         """
 
         term = term.replace(" ", "+")
-        result = self.connection.request("/v%s/images/search?term=%s" % (self.version, term)).object
+        result = self.connection.request(
+            "/v{}/images/search?term={}".format(self.version, term)
+        ).object
         images = []
         for image in result:
             name = image.get("name")
@@ -722,7 +726,7 @@ class DockerContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            "/v%s/images/%s" % (self.version, image.name), method="DELETE"
+            "/v{}/images/{}".format(self.version, image.name), method="DELETE"
         )
         return result.status in VALID_RESPONSE_CODES
 

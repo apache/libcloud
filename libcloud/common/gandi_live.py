@@ -206,10 +206,10 @@ class GandiLiveResponse(JsonResponse):
         :rtype:   ``str``
         """
         if not json_error and "cause" in body:
-            message = "%s: %s" % (body["cause"], body["message"])
+            message = "{}: {}".format(body["cause"], body["message"])
             if "errors" in body:
                 err = body["errors"][0]
-                message = "%s (%s in %s: %s)" % (
+                message = "{} ({} in {}: {})".format(
                     message,
                     err.get("location"),
                     err.get("name"),
@@ -242,7 +242,7 @@ class GandiLiveConnection(ConnectionKey):
         return json.dumps(data)
 
 
-class BaseGandiLiveDriver(object):
+class BaseGandiLiveDriver:
     """
     Gandi Live base driver
     """

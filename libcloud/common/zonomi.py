@@ -33,10 +33,10 @@ class ZonomiException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "ZonomiException %s %s" % (self.code, self.message)
+        return "ZonomiException {} {}".format(self.code, self.message)
 
 
 class ZonomiResponse(XmlResponse):
@@ -45,7 +45,7 @@ class ZonomiResponse(XmlResponse):
 
     def __init__(self, response, connection):
         self.errors = []
-        super(ZonomiResponse, self).__init__(response=response, connection=connection)
+        super().__init__(response=response, connection=connection)
         self.objects, self.errors = self.parse_body_and_errors()
         if self.errors:
             raise self._make_excp(self.errors[0])
@@ -57,7 +57,7 @@ class ZonomiResponse(XmlResponse):
         action_childrens = None
         data = []
         errors = []
-        xml_body = super(ZonomiResponse, self).parse_body()
+        xml_body = super().parse_body()
 
         # pylint: disable=no-member
         # Error handling

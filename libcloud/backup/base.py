@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-class BackupTarget(object):
+class BackupTarget:
     """
     A backup target
     """
@@ -80,7 +80,7 @@ class BackupTarget(object):
         )
 
 
-class BackupTargetJob(object):
+class BackupTargetJob:
     """
     A backup target job
     """
@@ -131,7 +131,7 @@ class BackupTargetJob(object):
         )
 
 
-class BackupTargetRecoveryPoint(object):
+class BackupTargetRecoveryPoint:
     """
     A backup target recovery point
     """
@@ -229,9 +229,7 @@ class BackupDriver(BaseDriver):
 
         :return: ``None``
         """
-        super(BackupDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def get_supported_target_types(self):
         """

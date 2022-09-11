@@ -15,8 +15,6 @@
 
 import sys
 
-from six import assertRegex
-
 from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
@@ -269,9 +267,7 @@ class ProfitBricksTests(unittest.TestCase):
     """
 
     def test_create_volume_snapshot(self):
-        volume = self.driver.ex_describe_volume(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "volumes/vol-2")
-        )
+        volume = self.driver.ex_describe_volume("/cloudapi/v4/datacenters/" "dc-1/" "volumes/vol-2")
         snapshot = self.driver.create_volume_snapshot(volume=volume)
 
         """
@@ -1148,7 +1144,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_ex_create_network_interface(self):
 
-        node = self.driver.ex_describe_node(("/cloudapi/v4/datacenters/" "dc-1/" "servers/srv-1"))
+        node = self.driver.ex_describe_node("/cloudapi/v4/datacenters/" "dc-1/" "servers/srv-1")
         network_interface = self.driver.ex_create_network_interface(
             node=node, lan_id=1, dhcp_active=True, nic_name="libcloud Test"
         )
@@ -1194,7 +1190,7 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_update_network_interface(self):
 
         network_interface = self.driver.ex_describe_network_interface(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2")
+            "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2"
         )
         updated = self.driver.ex_update_network_interface(
             network_interface=network_interface, name="libcloud Test - RENAME"
@@ -1220,7 +1216,7 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_destroy_network_interface(self):
 
         network_interface = self.driver.ex_describe_network_interface(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2")
+            "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2"
         )
         destroyed = self.driver.ex_destroy_network_interface(network_interface=network_interface)
 
@@ -1228,7 +1224,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_ex_set_inet_access(self):
         network_interface = self.driver.ex_describe_network_interface(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2")
+            "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2"
         )
         updated = self.driver.ex_set_inet_access(
             network_interface=network_interface, internet_access=False
@@ -1817,7 +1813,7 @@ class ProfitBricksTests(unittest.TestCase):
         Extra properties
         """
         self.assertEqual(extra["name"], "libcloud Test")
-        assertRegex(self, extra["mac"], "^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$")
+        self.assertRegex(extra["mac"], "^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$")
         self.assertTrue(len(extra["ips"]) > 0)
         self.assertEqual(extra["dhcp"], True)
         self.assertIsInstance(extra["lan"], int)
@@ -1838,7 +1834,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_ex_remove_nic_from_load_balancer(self):
         network_interface = self.driver.ex_describe_network_interface(
-            ex_href=(("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3/" "nics/nic-2"))
+            ex_href=("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3/" "nics/nic-2")
         )
         load_balancer = self.driver.ex_describe_load_balancer(
             ex_href=("/cloudapi/v4/datacenters/" "dc-2/" "loadbalancers/bal-1")

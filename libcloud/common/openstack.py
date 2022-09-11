@@ -177,7 +177,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         retry_delay=None,
         backoff=None,
     ):
-        super(OpenStackBaseConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -346,7 +346,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 raise LibcloudError("Invalid microversion format: servicename X.XX")
 
             if self.service_type and self.service_type.startswith(service_type):
-                headers["OpenStack-API-Version"] = "%s %s" % (
+                headers["OpenStack-API-Version"] = "{} {}".format(
                     service_type,
                     microversion,
                 )
@@ -354,7 +354,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     def morph_action_hook(self, action):
         self._populate_hosts_and_request_paths()
-        return super(OpenStackBaseConnection, self).morph_action_hook(action)
+        return super().morph_action_hook(action)
 
     def _set_up_connection_info(self, url):
         result = self._tuple_from_url(url)
@@ -471,10 +471,10 @@ class OpenStackResponse(Response):
             # it along as the whole response body in the text variable.
             text = body
 
-        return "%s %s %s" % (self.status, self.error, text)
+        return "{} {} {}".format(self.status, self.error, text)
 
 
-class OpenStackDriverMixin(object):
+class OpenStackDriverMixin:
     def __init__(
         self,
         ex_force_base_url=None,

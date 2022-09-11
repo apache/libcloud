@@ -31,7 +31,7 @@ from libcloud.common.gridscale import GridscaleBaseDriver, GridscaleConnection
 from libcloud.compute.providers import Provider
 
 
-class GridscaleIp(object):
+class GridscaleIp:
     """
     Ip Object
 
@@ -61,7 +61,7 @@ class GridscaleIp(object):
         )
 
 
-class GridscaleNetwork(object):
+class GridscaleNetwork:
     """
     Network Object
 
@@ -103,7 +103,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
     features = {"create_node": ["ssh_key"]}
 
     def __init__(self, user_id, key, **kwargs):
-        super(GridscaleNodeDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
     def list_nodes(self):
         """

@@ -16,7 +16,7 @@
 from libcloud.container.base import ContainerImage
 
 
-class TestCaseMixin(object):
+class TestCaseMixin:
     def test_list_images_response(self):
         images = self.driver.list_images()
         self.assertTrue(isinstance(images, list))

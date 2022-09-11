@@ -206,7 +206,7 @@ class KamateraNodeDriver(NodeDriver):
             "ssh-key": pubkey or "",
             "datacenter": location.id,
             "image": image.id,
-            "cpu": "%s%s" % (size.extra["cpuCores"], size.extra["cpuType"]),
+            "cpu": "{}{}".format(size.extra["cpuCores"], size.extra["cpuType"]),
             "ram": size.ram,
             "disk": " ".join(
                 ["size=%d" % disksize for disksize in [size.disk] + size.extra["extraDiskSizesGB"]]
@@ -215,7 +215,7 @@ class KamateraNodeDriver(NodeDriver):
             "managed": "yes" if ex_managed else "no",
             "network": " ".join(
                 [
-                    ",".join(["%s=%s" % (k, v) for k, v in network.items()])
+                    ",".join(["{}={}".format(k, v) for k, v in network.items()])
                     for network in ex_networks
                 ]
             ),

@@ -895,7 +895,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         backend = self.driver.ex_create_backend(ig)
 
         self.assertTrue(isinstance(backend, GCEBackend))
-        self.assertEqual(backend.name, "%s/instanceGroups/%s" % (ig.zone.name, ig.name))
+        self.assertEqual(backend.name, "{}/instanceGroups/{}".format(ig.zone.name, ig.name))
         self.assertEqual(backend.instance_group.name, ig.name)
         self.assertEqual(backend.balancing_mode, "UTILIZATION")
 
@@ -2506,7 +2506,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         # '/project' path instead
         if not path:
             path = "/project"
-        method_name = super(GCEMockHttp, self)._get_method_name(type, use_param, qs, path)
+        method_name = super()._get_method_name(type, use_param, qs, path)
         return method_name
 
     def _setUsageExportBucket(self, method, url, body, headers):

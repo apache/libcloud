@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import re
 import sys
@@ -49,7 +48,7 @@ class UpcloudPersistResponse(UpcloudResponse):
         if not os.path.exists(filename):
             with open(filename, "w+") as f:
                 f.write(self.body)
-        return super(UpcloudPersistResponse, self).parse_body()
+        return super().parse_body()
 
 
 class UpcloudAuthenticationTests(LibcloudTestCase):

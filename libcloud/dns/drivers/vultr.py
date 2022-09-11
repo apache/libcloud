@@ -541,7 +541,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :rtype: :class:`Record`
         """
-        resp = self.connection.request("/v2/domains/%s/records/%s" % (zone_id, record_id))
+        resp = self.connection.request("/v2/domains/{}/records/{}".format(zone_id, record_id))
 
         # Avoid making an extra API call, as zone_id is enough for
         # standard fields
@@ -646,7 +646,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
             body["priority"] = int(extra["priority"])
 
         resp = self.connection.request(
-            "/v2/domains/%s/records/%s" % (record.zone.domain, record.id),
+            "/v2/domains/{}/records/{}".format(record.zone.domain, record.id),
             data=json.dumps(body),
             method="PATCH",
         )
@@ -662,7 +662,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :rtype: ``bool``
         """
         resp = self.connection.request(
-            "/v2/domains/%s/records/%s" % (record.zone.domain, record.id),
+            "/v2/domains/{}/records/{}".format(record.zone.domain, record.id),
             method="DELETE",
         )
 

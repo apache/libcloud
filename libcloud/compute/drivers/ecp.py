@@ -83,7 +83,7 @@ class ECPConnection(ConnectionUserAndKey):
         # Authentication
         username = self.user_id
         password = self.key
-        base64string = base64_encode_string(b("%s:%s" % (username, password)))[:-1]
+        base64string = base64_encode_string(b("{}:{}".format(username, password)))[:-1]
         authheader = "Basic %s" % base64string
         headers["Authorization"] = authheader
 
@@ -162,7 +162,7 @@ class ECPNodeDriver(NodeDriver):
         for ip in iplist:
             try:
                 socket.inet_aton(ip)
-            except socket.error:
+            except OSError:
                 # not a valid ip
                 continue
             if is_private_subnet(ip):
@@ -266,7 +266,7 @@ class ECPNodeDriver(NodeDriver):
             images.append(
                 NodeImage(
                     id=ptemplate["uuid"],
-                    name="%s: %s" % (ptemplate["name"], ptemplate["description"]),
+                    name="{}: {}".format(ptemplate["name"], ptemplate["description"]),
                     driver=self,
                 )
             )

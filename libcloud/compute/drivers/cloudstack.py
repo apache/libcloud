@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import base64
 import warnings
@@ -404,7 +403,7 @@ class CloudStackNode(Node):
         return self.driver.ex_stop(node=self)
 
 
-class CloudStackAddress(object):
+class CloudStackAddress:
     """
     A public IP address.
 
@@ -452,7 +451,7 @@ class CloudStackAddress(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackFirewallRule(object):
+class CloudStackFirewallRule:
     """
     A firewall rule.
     """
@@ -515,7 +514,7 @@ class CloudStackFirewallRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackEgressFirewallRule(object):
+class CloudStackEgressFirewallRule:
     """
     A egress firewall rule.
     """
@@ -579,7 +578,7 @@ class CloudStackEgressFirewallRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackIPForwardingRule(object):
+class CloudStackIPForwardingRule:
     """
     A NAT/firewall forwarding rule.
     """
@@ -625,7 +624,7 @@ class CloudStackIPForwardingRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackPortForwardingRule(object):
+class CloudStackPortForwardingRule:
     """
     A Port forwarding rule for Source NAT.
     """
@@ -697,7 +696,7 @@ class CloudStackPortForwardingRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackNetworkACLList(object):
+class CloudStackNetworkACLList:
     """
     a Network ACL for the given VPC
     """
@@ -736,7 +735,7 @@ class CloudStackNetworkACLList(object):
         ) % (self.id, self.name, self.vpc_id, self.driver.name, self.description)
 
 
-class CloudStackNetworkACL(object):
+class CloudStackNetworkACL:
     """
     a ACL rule in the given network (the network has to belong to VPC)
     """
@@ -802,7 +801,7 @@ class CloudStackNetworkACL(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackDiskOffering(object):
+class CloudStackDiskOffering:
     """
     A disk offering within CloudStack.
     """
@@ -817,7 +816,7 @@ class CloudStackDiskOffering(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackNetwork(object):
+class CloudStackNetwork:
     """
     Class representing a CloudStack Network.
     """
@@ -846,7 +845,7 @@ class CloudStackNetwork(object):
         )
 
 
-class CloudStackNetworkOffering(object):
+class CloudStackNetworkOffering:
     """
     Class representing a CloudStack Network Offering.
     """
@@ -887,7 +886,7 @@ class CloudStackNetworkOffering(object):
         )
 
 
-class CloudStackNic(object):
+class CloudStackNic:
     """
     Class representing a CloudStack Network Interface.
     """
@@ -934,7 +933,7 @@ class CloudStackNic(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
-class CloudStackVPC(object):
+class CloudStackVPC:
     """
     Class representing a CloudStack VPC.
     """
@@ -974,7 +973,7 @@ class CloudStackVPC(object):
         )
 
 
-class CloudStackVPCOffering(object):
+class CloudStackVPCOffering:
     """
     Class representing a CloudStack VPC Offering.
     """
@@ -995,7 +994,7 @@ class CloudStackVPCOffering(object):
         )
 
 
-class CloudStackVpnGateway(object):
+class CloudStackVpnGateway:
     """
     Class representing a CloudStack VPN Gateway.
     """
@@ -1037,7 +1036,7 @@ class CloudStackVpnGateway(object):
         )
 
 
-class CloudStackVpnCustomerGateway(object):
+class CloudStackVpnCustomerGateway:
     """
     Class representing a CloudStack VPN Customer Gateway.
     """
@@ -1081,7 +1080,7 @@ class CloudStackVpnCustomerGateway(object):
         )
 
 
-class CloudStackVpnConnection(object):
+class CloudStackVpnConnection:
     """
     Class representing a CloudStack VPN Connection.
     """
@@ -1138,7 +1137,7 @@ class CloudStackVpnConnection(object):
         )
 
 
-class CloudStackRouter(object):
+class CloudStackRouter:
     """
     Class representing a CloudStack Router.
     """
@@ -1164,7 +1163,7 @@ class CloudStackRouter(object):
         )
 
 
-class CloudStackProject(object):
+class CloudStackProject:
     """
     Class representing a CloudStack Project.
     """
@@ -1185,7 +1184,7 @@ class CloudStackProject(object):
         )
 
 
-class CloudStackAffinityGroup(object):
+class CloudStackAffinityGroup:
     """
     Class representing a CloudStack AffinityGroup.
     """
@@ -1253,7 +1252,7 @@ class CloudStackAffinityGroup(object):
         )
 
 
-class CloudStackAffinityGroupType(object):
+class CloudStackAffinityGroupType:
     """
     Class representing a CloudStack AffinityGroupType.
     """
@@ -1374,9 +1373,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 "argument"
             )
 
-        super(CloudStackNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port)
 
     def list_images(self, location=None):
         args = {"templatefilter": "executable"}

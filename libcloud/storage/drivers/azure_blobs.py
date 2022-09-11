@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import hmac
@@ -74,11 +73,11 @@ AZURE_STORAGE_CDN_URL_EXPIRY_HOURS = float(
 )
 
 
-class AuthType(object):
+class AuthType:
     AZURE_AD = "azureAD"
 
 
-class AzureBlobLease(object):
+class AzureBlobLease:
     """
     A class to help in leasing an azure blob and renewing the lease
     """
@@ -182,13 +181,13 @@ class AzureBlobsConnection(AzureConnection):
 
     def __init__(self, *args, **kwargs):
         self.account_prefix = kwargs.pop("account_prefix", None)
-        super(AzureBlobsConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def morph_action_hook(self, action):
-        action = super(AzureBlobsConnection, self).morph_action_hook(action)
+        action = super().morph_action_hook(action)
 
         if self.account_prefix is not None:
-            action = "/%s%s" % (self.account_prefix, action)
+            action = "/{}{}".format(self.account_prefix, action)
 
         return action
 
@@ -222,13 +221,13 @@ class AzureBlobsActiveDirectoryConnection(AzureActiveDirectoryConnection):
 
     def __init__(self, *args, **kwargs):
         self.account_prefix = kwargs.pop("account_prefix", None)
-        super(AzureBlobsActiveDirectoryConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def morph_action_hook(self, action):
-        action = super(AzureBlobsActiveDirectoryConnection, self).morph_action_hook(action)
+        action = super().morph_action_hook(action)
 
         if self.account_prefix is not None:
-            action = "/%s%s" % (self.account_prefix, action)
+            action = "/{}{}".format(self.account_prefix, action)
 
         return action
 
@@ -268,9 +267,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             # so for every request. Minor performance improvement
             secret = base64.b64decode(b(secret))
 
-        super(AzureBlobsStorageDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
@@ -283,7 +280,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         # if the user didn't provide a custom host value, assume we're
         # targeting the default Azure Storage endpoints
         if self._host is None:
-            kwargs["host"] = "%s.%s" % (self.key, AZURE_STORAGE_HOST_SUFFIX)
+            kwargs["host"] = "{}.{}".format(self.key, AZURE_STORAGE_HOST_SUFFIX)
             return kwargs
 
         # connecting to a special storage region like Azure Government or
@@ -303,7 +300,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         except StopIteration:
             pass
         else:
-            kwargs["host"] = "%s.%s" % (self.key, host_suffix)
+            kwargs["host"] = "{}.{}".format(self.key, host_suffix)
             return kwargs
 
         # if the host isn't targeting one of the special storage regions, it
@@ -369,7 +366,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         scheme = "https" if self.secure else "http"
 
         extra = {
-            "url": "%s://%s%s" % (scheme, response.connection.host, response.connection.action),
+            "url": "{}://{}{}".format(scheme, response.connection.host, response.connection.action),
             "etag": headers["etag"],
             "last_modified": headers["last-modified"],
             "lease": {
@@ -467,7 +464,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         scheme = "https" if self.secure else "http"
 
         extra = {
-            "url": "%s://%s%s" % (scheme, response.connection.host, response.connection.action),
+            "url": "{}://{}{}".format(scheme, response.connection.host, response.connection.action),
             "etag": etag,
             "md5_hash": headers.get("content-md5", None),
             "content_type": headers.get("content-type", None),
@@ -694,7 +691,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         container_url = self._get_container_path(container)
         object_name_cleaned = urlquote(object_name)
-        object_path = "%s/%s" % (container_url, object_name_cleaned)
+        object_path = "{}/{}".format(container_url, object_name_cleaned)
         return object_path
 
     def create_container(self, container_name):

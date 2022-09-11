@@ -17,7 +17,6 @@
 Module for Google Compute Engine Driver.
 """
 
-from __future__ import with_statement
 
 import sys
 import time
@@ -115,7 +114,7 @@ class GCEConnection(GoogleBaseConnection):
         project=None,
         **kwargs,
     ):
-        super(GCEConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -123,7 +122,7 @@ class GCEConnection(GoogleBaseConnection):
             credential_file=credential_file,
             **kwargs,
         )
-        self.request_path = "/compute/%s/projects/%s" % (API_VERSION, project)
+        self.request_path = "/compute/{}/projects/{}".format(API_VERSION, project)
         self.gce_params = None
 
     def pre_connect_hook(self, params, headers):
@@ -132,7 +131,7 @@ class GCEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
-        params, headers = super(GCEConnection, self).pre_connect_hook(params, headers)
+        params, headers = super().pre_connect_hook(params, headers)
         if self.gce_params:
             params.update(self.gce_params)
         return params, headers
@@ -162,7 +161,7 @@ class GCEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
-        response = super(GCEConnection, self).request(*args, **kwargs)
+        response = super().request(*args, **kwargs)
 
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
@@ -196,7 +195,7 @@ class GCEConnection(GoogleBaseConnection):
         :rtype:   ``dict``
         """
         if zone:
-            request_path = "/zones/%s/%s" % (zone.name, api_name)
+            request_path = "/zones/{}/{}".format(zone.name, api_name)
         else:
             request_path = "/aggregated/%s" % (api_name)
 
@@ -260,7 +259,7 @@ class GCEConnection(GoogleBaseConnection):
         return {"items": merged_items}
 
 
-class GCEList(object):
+class GCEList:
     """
     An Iterator that wraps list functions to provide additional features.
 
@@ -301,7 +300,7 @@ class GCEList(object):
             more_results = "pageToken" in self.params
 
     def __repr__(self):
-        return '<GCEList list="%s" params="%s">' % (
+        return '<GCEList list="{}" params="{}">'.format(
             self.list_fn.__name__,
             repr(self.params),
         )
@@ -403,7 +402,7 @@ class GCELicense(UuidMixin, LazyObject):
         raise LibcloudError("Can not destroy a License resource.")
 
     def __repr__(self):
-        return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
+        return '<GCELicense id="{}" name="{}" charges_use_fee="{}">'.format(
             self.id,
             self.name,
             self.charges_use_fee,
@@ -425,7 +424,7 @@ class GCEDiskType(UuidMixin):
         raise LibcloudError("Can not destroy a DiskType resource.")
 
     def __repr__(self):
-        return '<GCEDiskType id="%s" name="%s" zone="%s">' % (
+        return '<GCEDiskType id="{}" name="{}" zone="{}">'.format(
             self.id,
             self.name,
             self.zone,
@@ -447,7 +446,7 @@ class GCEAcceleratorType(UuidMixin):
         raise LibcloudError("Can not destroy an AcceleratorType resource.")
 
     def __repr__(self):
-        return '<GCEAcceleratorType id="%s" name="%s" zone="%s">' % (
+        return '<GCEAcceleratorType id="{}" name="{}" zone="{}">'.format(
             self.id,
             self.name,
             self.zone,
@@ -476,7 +475,7 @@ class GCEAddress(UuidMixin):
         return self.driver.ex_destroy_address(address=self)
 
     def __repr__(self):
-        return '<GCEAddress id="%s" name="%s" address="%s" region="%s">' % (
+        return '<GCEAddress id="{}" name="{}" address="{}" region="{}">'.format(
             self.id,
             self.name,
             self.address,
@@ -533,7 +532,7 @@ class GCEBackend(UuidMixin):
         :rtype:  ``str``
         """
         zone_name = self.instance_group.zone.name
-        return "%s/instanceGroups/%s" % (zone_name, self.instance_group.name)
+        return "{}/instanceGroups/{}".format(zone_name, self.instance_group.name)
 
     def to_backend_dict(self):
         """
@@ -559,7 +558,7 @@ class GCEBackend(UuidMixin):
         return d
 
     def __repr__(self):
-        return '<GCEBackend instancegroup="%s" balancing_mode="%s">' % (
+        return '<GCEBackend instancegroup="{}" balancing_mode="{}">'.format(
             self.id,
             self.balancing_mode,
         )
@@ -594,7 +593,7 @@ class GCEBackendService(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return '<GCEBackendService id="%s" name="%s">' % (self.id, self.name)
+        return '<GCEBackendService id="{}" name="{}">'.format(self.id, self.name)
 
     def destroy(self):
         """
@@ -606,7 +605,7 @@ class GCEBackendService(UuidMixin):
         return self.driver.ex_destroy_backendservice(backendservice=self)
 
 
-class GCEFailedDisk(object):
+class GCEFailedDisk:
     """Dummy Node object for disks that are not created."""
 
     def __init__(self, name, error, code):
@@ -615,10 +614,10 @@ class GCEFailedDisk(object):
         self.code = code
 
     def __repr__(self):
-        return '<GCEFailedDisk name="%s" error_code="%s">' % (self.name, self.code)
+        return '<GCEFailedDisk name="{}" error_code="{}">'.format(self.name, self.code)
 
 
-class GCEFailedNode(object):
+class GCEFailedNode:
     """Dummy Node object for nodes that are not created."""
 
     def __init__(self, name, error, code):
@@ -627,7 +626,7 @@ class GCEFailedNode(object):
         self.code = code
 
     def __repr__(self):
-        return '<GCEFailedNode name="%s" error_code="%s">' % (self.name, self.code)
+        return '<GCEFailedNode name="{}" error_code="{}">'.format(self.name, self.code)
 
 
 class GCEHealthCheck(UuidMixin):
@@ -677,7 +676,7 @@ class GCEHealthCheck(UuidMixin):
         return self.driver.ex_update_healthcheck(healthcheck=self)
 
     def __repr__(self):
-        return '<GCEHealthCheck id="%s" name="%s" path="%s" port="%s">' % (
+        return '<GCEHealthCheck id="{}" name="{}" path="{}" port="{}">'.format(
             self.id,
             self.name,
             self.path,
@@ -742,7 +741,7 @@ class GCEFirewall(UuidMixin):
         return self.driver.ex_update_firewall(firewall=self)
 
     def __repr__(self):
-        return '<GCEFirewall id="%s" name="%s" network="%s">' % (
+        return '<GCEFirewall id="{}" name="{}" network="{}">'.format(
             self.id,
             self.name,
             self.network.name,
@@ -773,7 +772,7 @@ class GCEForwardingRule(UuidMixin):
         return self.driver.ex_destroy_forwarding_rule(forwarding_rule=self)
 
     def __repr__(self):
-        return '<GCEForwardingRule id="%s" name="%s" address="%s">' % (
+        return '<GCEForwardingRule id="{}" name="{}" address="{}">'.format(
             self.id,
             self.name,
             self.address,
@@ -784,7 +783,7 @@ class GCENodeImage(NodeImage):
     """A GCE Node Image class."""
 
     def __init__(self, id, name, driver, extra=None):
-        super(GCENodeImage, self).__init__(id, name, driver, extra=extra)
+        super().__init__(id, name, driver, extra=extra)
 
     def delete(self):
         """
@@ -941,7 +940,7 @@ class GCENetwork(UuidMixin):
         return self.driver.ex_destroy_network(network=self)
 
     def __repr__(self):
-        return '<GCENetwork id="%s" name="%s" cidr="%s" mode="%s">' % (
+        return '<GCENetwork id="{}" name="{}" cidr="{}" mode="{}">'.format(
             self.id,
             self.name,
             self.cidr,
@@ -984,7 +983,7 @@ class GCERoute(UuidMixin):
 
     def __repr__(self):
         network_name = getattr(self.network, "name", self.network)
-        return '<GCERoute id="%s" name="%s" dest_range="%s" network="%s">' % (
+        return '<GCERoute id="{}" name="{}" dest_range="{}" network="{}">'.format(
             self.id,
             self.name,
             self.dest_range,
@@ -997,9 +996,7 @@ class GCENodeSize(NodeSize):
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver, extra=None):
         self.extra = extra
-        super(GCENodeSize, self).__init__(
-            id, name, ram, disk, bandwidth, price, driver, extra=extra
-        )
+        super().__init__(id, name, ram, disk, bandwidth, price, driver, extra=extra)
 
 
 class GCEProject(UuidMixin):
@@ -1063,7 +1060,7 @@ class GCEProject(UuidMixin):
         return self.driver.ex_set_usage_export_bucket(bucket=bucket, prefix=prefix)
 
     def __repr__(self):
-        return '<GCEProject id="%s" name="%s">' % (self.id, self.name)
+        return '<GCEProject id="{}" name="{}">'.format(self.id, self.name)
 
 
 class GCERegion(UuidMixin):
@@ -1079,7 +1076,7 @@ class GCERegion(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return '<GCERegion id="%s" name="%s", status="%s">' % (
+        return '<GCERegion id="{}" name="{}", status="{}">'.format(
             self.id,
             self.name,
             self.status,
@@ -1089,7 +1086,7 @@ class GCERegion(UuidMixin):
 class GCESnapshot(VolumeSnapshot):
     def __init__(self, id, name, size, status, driver, extra=None, created=None):
         self.status = status
-        super(GCESnapshot, self).__init__(id, driver, size, extra, created, name=name)
+        super().__init__(id, driver, size, extra, created, name=name)
 
 
 class GCETargetHttpProxy(UuidMixin):
@@ -1102,7 +1099,7 @@ class GCETargetHttpProxy(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return '<GCETargetHttpProxy id="%s" name="%s">' % (self.id, self.name)
+        return '<GCETargetHttpProxy id="{}" name="{}">'.format(self.id, self.name)
 
     def destroy(self):
         """
@@ -1245,7 +1242,7 @@ class GCETargetInstance(UuidMixin):
         return self.driver.ex_destroy_targetinstance(targetinstance=self)
 
     def __repr__(self):
-        return '<GCETargetInstance id="%s" name="%s" zone="%s" node="%s">' % (
+        return '<GCETargetInstance id="{}" name="{}" zone="{}" node="{}">'.format(
             self.id,
             self.name,
             self.zone.name,
@@ -1276,7 +1273,7 @@ class GCEAutoscaler(UuidMixin):
         return self.driver.ex_destroy_autoscaler(autoscaler=self)
 
     def __repr__(self):
-        return '<GCEAutoScaler id="%s" name="%s" zone="%s" target="%s">' % (
+        return '<GCEAutoScaler id="{}" name="{}" zone="{}" target="{}">'.format(
             self.id,
             self.name,
             self.zone.name,
@@ -1295,7 +1292,7 @@ class GCEInstanceTemplate(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return '<GCEInstanceTemplate id="%s" name="%s" machineType="%s">' % (
+        return '<GCEInstanceTemplate id="{}" name="{}" machineType="{}">'.format(
             self.id,
             self.name,
             self.extra["properties"].get("machineType", "UNKNOWN"),
@@ -1364,7 +1361,7 @@ class GCEInstanceGroup(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return '<GCEInstanceGroup name="%s" zone="%s">' % (self.name, self.zone.name)
+        return '<GCEInstanceGroup name="{}" zone="{}">'.format(self.name, self.zone.name)
 
     def destroy(self):
         """
@@ -1753,7 +1750,7 @@ class GCETargetPool(UuidMixin):
         return self.driver.ex_destroy_targetpool(targetpool=self)
 
     def __repr__(self):
-        return '<GCETargetPool id="%s" name="%s" region="%s">' % (
+        return '<GCETargetPool id="{}" name="{}" region="{}">'.format(
             self.id,
             self.name,
             self.region.name,
@@ -1785,7 +1782,7 @@ class GCEUrlMap(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return '<GCEUrlMap id="%s" name="%s">' % (self.id, self.name)
+        return '<GCEUrlMap id="{}" name="{}">'.format(self.id, self.name)
 
     def destroy(self):
         """
@@ -1806,9 +1803,7 @@ class GCEZone(NodeLocation):
         self.deprecated = deprecated
         self.extra = extra
         country = name.split("-")[0]
-        super(GCEZone, self).__init__(
-            id=str(id), name=name, country=country, driver=driver, extra=extra
-        )
+        super().__init__(id=str(id), name=name, country=country, driver=driver, extra=extra)
 
     @property
     def time_until_mw(self):
@@ -1891,7 +1886,7 @@ class GCEZone(NodeLocation):
         return next_end - next_begin
 
     def __repr__(self):
-        return '<GCEZone id="%s" name="%s" status="%s">' % (
+        return '<GCEZone id="{}" name="{}" status="{}">'.format(
             self.id,
             self.name,
             self.status,
@@ -2089,11 +2084,11 @@ class GCENodeDriver(NodeDriver):
             credential_file or GoogleOAuth2Credential.default_credential_file + "." + self.project
         )
 
-        super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
         # Cache Zone and Region information to reduce API calls and
         # increase speed
-        self.base_path = "/compute/%s/projects/%s" % (API_VERSION, self.project)
+        self.base_path = "/compute/{}/projects/{}".format(API_VERSION, self.project)
 
         self._zone_dict = None
         self._zone_list = None
@@ -2177,7 +2172,7 @@ class GCENodeDriver(NodeDriver):
         if nat_ip is not None:
             config["natIP"] = nat_ip
         params = {"networkInterface": nic}
-        request = "/zones/%s/instances/%s/addAccessConfig" % (zone_name, node_name)
+        request = "/zones/{}/instances/{}/addAccessConfig".format(zone_name, node_name)
         self.connection.async_request(request, method="POST", data=config, params=params)
         return True
 
@@ -2203,7 +2198,7 @@ class GCENodeDriver(NodeDriver):
         zone_name = node.extra["zone"].name
 
         params = {"accessConfig": name, "networkInterface": nic}
-        request = "/zones/%s/instances/%s/deleteAccessConfig" % (zone_name, node_name)
+        request = "/zones/{}/instances/{}/deleteAccessConfig".format(zone_name, node_name)
         self.connection.async_request(request, method="POST", params=params)
         return True
 
@@ -2230,7 +2225,7 @@ class GCENodeDriver(NodeDriver):
         else:
             current_fp = "absent"
         body = self._format_metadata(current_fp, metadata)
-        request = "/zones/%s/instances/%s/setMetadata" % (zone_name, node_name)
+        request = "/zones/{}/instances/{}/setMetadata".format(zone_name, node_name)
         self.connection.async_request(request, method="POST", data=body)
         return True
 
@@ -2253,7 +2248,7 @@ class GCENodeDriver(NodeDriver):
         zone_name = node.extra["zone"].name
         current_fp = node.extra["labelFingerprint"]
         body = {"labels": labels, "labelFingerprint": current_fp}
-        request = "/zones/%s/instances/%s/setLabels" % (zone_name, node_name)
+        request = "/zones/{}/instances/{}/setLabels".format(zone_name, node_name)
         self.connection.async_request(request, method="POST", data=body)
         return True
 
@@ -2299,7 +2294,7 @@ class GCENodeDriver(NodeDriver):
         zone_name = volume.extra["zone"].name
         current_fp = volume.extra["labelFingerprint"]
         body = {"labels": labels, "labelFingerprint": current_fp}
-        request = "/zones/%s/disks/%s/setLabels" % (zone_name, volume_name)
+        request = "/zones/{}/disks/{}/setLabels".format(zone_name, volume_name)
         self.connection.async_request(request, method="POST", data=body)
         return True
 
@@ -2317,7 +2312,7 @@ class GCENodeDriver(NodeDriver):
             raise ValueError("Must specify a valid libcloud node object.")
         node_name = node.name
         zone_name = node.extra["zone"].name
-        request = "/zones/%s/instances/%s/serialPort" % (zone_name, node_name)
+        request = "/zones/{}/instances/{}/serialPort".format(zone_name, node_name)
         response = self.connection.request(request, method="GET").object
         return response["contents"]
 
@@ -4008,7 +4003,7 @@ class GCENodeDriver(NodeDriver):
         route_data["network"] = network_uri
         route_data["tags"] = tags
         if next_hop is None:
-            url = "https://www.googleapis.com/compute/%s/projects/%s/%s" % (
+            url = "https://www.googleapis.com/compute/{}/projects/{}/{}".format(
                 API_VERSION,
                 self.project,
                 "global/gateways/default-internet-gateway",
@@ -5288,7 +5283,7 @@ class GCENodeDriver(NodeDriver):
             if isinstance(on_host_maintenance, str) and on_host_maintenance in maint_opts:
                 if preemptible is True and on_host_maintenance == "MIGRATE":
                     raise ValueError(
-                        ("host maintenance cannot be 'MIGRATE' " "if instance is preemptible.")
+                        "host maintenance cannot be 'MIGRATE' " "if instance is preemptible."
                     )
                 scheduling["onHostMaintenance"] = on_host_maintenance
             else:
@@ -5865,7 +5860,7 @@ class GCENodeDriver(NodeDriver):
         """
         snapshot_data = {}
         snapshot_data["name"] = name
-        request = "/zones/%s/disks/%s/createSnapshot" % (
+        request = "/zones/{}/disks/{}/createSnapshot".format(
             volume.extra["zone"].name,
             volume.name,
         )
@@ -6057,7 +6052,7 @@ class GCENodeDriver(NodeDriver):
         """
         health = []
         region_name = targetpool.region.name
-        request = "/regions/%s/targetPools/%s/getHealth" % (
+        request = "/regions/{}/targetPools/{}/getHealth".format(
             region_name,
             targetpool.name,
         )
@@ -6109,7 +6104,7 @@ class GCENodeDriver(NodeDriver):
         req_data = {"target": backup_targetpool.extra["selfLink"]}
         params = {"failoverRatio": failover_ratio}
 
-        request = "/regions/%s/targetPools/%s/setBackup" % (region, name)
+        request = "/regions/{}/targetPools/{}/setBackup".format(region, name)
         self.connection.async_request(request, method="POST", data=req_data, params=params)
         return True
 
@@ -6139,7 +6134,7 @@ class GCENodeDriver(NodeDriver):
 
         targetpool_data = {"instances": [{"instance": node_uri}]}
 
-        request = "/regions/%s/targetPools/%s/addInstance" % (
+        request = "/regions/{}/targetPools/{}/addInstance".format(
             targetpool.region.name,
             targetpool.name,
         )
@@ -6171,7 +6166,7 @@ class GCENodeDriver(NodeDriver):
 
         targetpool_data = {"healthChecks": [{"healthCheck": healthcheck.extra["selfLink"]}]}
 
-        request = "/regions/%s/targetPools/%s/addHealthCheck" % (
+        request = "/regions/{}/targetPools/{}/addHealthCheck".format(
             targetpool.region.name,
             targetpool.name,
         )
@@ -6206,7 +6201,7 @@ class GCENodeDriver(NodeDriver):
 
         targetpool_data = {"instances": [{"instance": node_uri}]}
 
-        request = "/regions/%s/targetPools/%s/removeInstance" % (
+        request = "/regions/{}/targetPools/{}/removeInstance".format(
             targetpool.region.name,
             targetpool.name,
         )
@@ -6241,7 +6236,7 @@ class GCENodeDriver(NodeDriver):
 
         targetpool_data = {"healthChecks": [{"healthCheck": healthcheck.extra["selfLink"]}]}
 
-        request = "/regions/%s/targetPools/%s/removeHealthCheck" % (
+        request = "/regions/{}/targetPools/{}/removeHealthCheck".format(
             targetpool.region.name,
             targetpool.name,
         )
@@ -6276,7 +6271,7 @@ class GCENodeDriver(NodeDriver):
         :return:  Return True if successful.
         :rtype: ``bool``
         """
-        request = "/zones/%s/instanceGroups/%s/addInstances" % (
+        request = "/zones/{}/instanceGroups/{}/addInstances".format(
             instancegroup.zone.name,
             instancegroup.name,
         )
@@ -6304,7 +6299,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful.
         :rtype: ``bool``
         """
-        request = "/zones/%s/instanceGroups/%s/removeInstances" % (
+        request = "/zones/{}/instanceGroups/{}/removeInstances".format(
             instancegroup.zone.name,
             instancegroup.name,
         )
@@ -6329,7 +6324,7 @@ class GCENodeDriver(NodeDriver):
         :return:  List of :class:`GCENode` objects.
         :rtype: ``list`` of :class:`GCENode` objects.
         """
-        request = "/zones/%s/instanceGroups/%s/listInstances" % (
+        request = "/zones/{}/instanceGroups/{}/listInstances".format(
             instancegroup.zone.name,
             instancegroup.name,
         )
@@ -6373,7 +6368,7 @@ class GCENodeDriver(NodeDriver):
         if not isinstance(named_ports, list):
             raise ValueError("'named_ports' must be a list of name/port" " dictionaries.")
 
-        request = "/zones/%s/instanceGroups/%s/setNamedPorts" % (
+        request = "/zones/{}/instanceGroups/{}/setNamedPorts".format(
             instancegroup.zone.name,
             instancegroup.name,
         )
@@ -6401,7 +6396,7 @@ class GCENodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        request = "/zones/%s/instanceGroups/%s" % (
+        request = "/zones/{}/instanceGroups/{}".format(
             instancegroup.zone.name,
             instancegroup.name,
         )
@@ -6438,7 +6433,7 @@ class GCENodeDriver(NodeDriver):
                  'currentAction', 'instance' and 'instanceStatus'.
         :rtype: ``list``
         """
-        request = "/zones/%s/instanceGroupManagers/%s/listManagedInstances" % (
+        request = "/zones/{}/instanceGroupManagers/{}/listManagedInstances".format(
             manager.zone.name,
             manager.name,
         )
@@ -6477,7 +6472,7 @@ class GCENodeDriver(NodeDriver):
             {"healthCheck": healthcheck.path, "initialDelaySec": initialdelaysec}
         ]
 
-        request = "/zones/%s/instanceGroupManagers/%s/" % (
+        request = "/zones/{}/instanceGroupManagers/{}/".format(
             manager.zone.name,
             manager.name,
         )
@@ -6563,7 +6558,7 @@ class GCENodeDriver(NodeDriver):
                 "Node objects"
             )
 
-        request = "/zones/%s/instanceGroupManagers/%s/recreateInstances" % (
+        request = "/zones/{}/instanceGroupManagers/{}/recreateInstances".format(
             manager.zone.name,
             manager.name,
         )
@@ -6593,7 +6588,7 @@ class GCENodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        request = "/zones/%s/instanceGroupManagers/%s/deleteInstances" % (
+        request = "/zones/{}/instanceGroupManagers/{}/deleteInstances".format(
             manager.zone.name,
             manager.name,
         )
@@ -6617,7 +6612,7 @@ class GCENodeDriver(NodeDriver):
         """
         req_params = {"size": size}
 
-        request = "/zones/%s/instanceGroupManagers/%s/resize" % (
+        request = "/zones/{}/instanceGroupManagers/{}/resize".format(
             manager.zone.name,
             manager.name,
         )
@@ -6634,7 +6629,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful, False if not
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instances/%s/reset" % (node.extra["zone"].name, node.name)
+        request = "/zones/{}/instances/{}/reset".format(node.extra["zone"].name, node.name)
         self.connection.async_request(request, method="POST", data="ignored")
         return True
 
@@ -6653,7 +6648,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instances/%s/setTags" % (
+        request = "/zones/{}/instances/{}/setTags".format(
             node.extra["zone"].name,
             node.name,
         )
@@ -6703,7 +6698,7 @@ class GCENodeDriver(NodeDriver):
             if on_host_maintenance not in ohm_values:
                 raise ValueError("on_host_maintenance must be one of %s" % ",".join(ohm_values))
 
-        request = "/zones/%s/instances/%s/setScheduling" % (
+        request = "/zones/{}/instances/{}/setScheduling".format(
             node.extra["zone"].name,
             node.name,
         )
@@ -6823,7 +6818,7 @@ class GCENodeDriver(NodeDriver):
 
         volume_data["boot"] = ex_boot
 
-        request = "/zones/%s/instances/%s/attachDisk" % (
+        request = "/zones/{}/instances/{}/attachDisk".format(
             node.extra["zone"].name,
             node.name,
         )
@@ -6843,7 +6838,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/disks/%s/resize" % (volume.extra["zone"].name, volume.name)
+        request = "/zones/{}/disks/{}/resize".format(volume.extra["zone"].name, volume.name)
         request_data = {"sizeGb": int(size)}
 
         self.connection.async_request(request, method="POST", data=request_data)
@@ -6864,7 +6859,7 @@ class GCENodeDriver(NodeDriver):
         """
         if not ex_node:
             return False
-        request = "/zones/%s/instances/%s/detachDisk?deviceName=%s" % (
+        request = "/zones/{}/instances/{}/detachDisk?deviceName={}".format(
             ex_node.extra["zone"].name,
             ex_node.name,
             volume.name,
@@ -6889,7 +6884,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instances/%s/setDiskAutoDelete" % (
+        request = "/zones/{}/instances/{}/setDiskAutoDelete".format(
             node.extra["zone"].name,
             node.name,
         )
@@ -6914,7 +6909,7 @@ class GCENodeDriver(NodeDriver):
             address = self.ex_get_address(address)
 
         if hasattr(address.region, "name"):
-            request = "/regions/%s/addresses/%s" % (address.region.name, address.name)
+            request = "/regions/{}/addresses/{}".format(address.region.name, address.name)
         else:
             request = "/global/addresses/%s" % (address.name)
 
@@ -7066,7 +7061,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``bool``
         """
         if forwarding_rule.region:
-            request = "/regions/%s/forwardingRules/%s" % (
+            request = "/regions/{}/forwardingRules/{}".format(
                 forwarding_rule.region.name,
                 forwarding_rule.name,
             )
@@ -7120,9 +7115,9 @@ class GCENodeDriver(NodeDriver):
         request = mt_url = "/zones/%s" % node.extra["zone"].name
 
         mt = machine_type.split("/")[-1]
-        mt_url = "%s/machineTypes/%s" % (mt_url, mt)
+        mt_url = "{}/machineTypes/{}".format(mt_url, mt)
 
-        request = "%s/instances/%s/setMachineType" % (request, node.name)
+        request = "{}/instances/{}/setMachineType".format(request, node.name)
         body = {"machineType": mt_url}
         self.connection.async_request(request, method="POST", data=body)
         return True
@@ -7140,7 +7135,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instances/%s/start" % (node.extra["zone"].name, node.name)
+        request = "/zones/{}/instances/{}/start".format(node.extra["zone"].name, node.name)
 
         if ex_sync:
             self.connection.async_request(request, method="POST")
@@ -7162,7 +7157,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instances/%s/stop" % (node.extra["zone"].name, node.name)
+        request = "/zones/{}/instances/{}/stop".format(node.extra["zone"].name, node.name)
         if ex_sync:
             self.connection.async_request(request, method="POST")
         else:
@@ -7193,7 +7188,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instanceGroupManagers/%s" % (
+        request = "/zones/{}/instanceGroupManagers/{}".format(
             manager.zone.name,
             manager.name,
         )
@@ -7237,7 +7232,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/autoscalers/%s" % (autoscaler.zone.name, autoscaler.name)
+        request = "/zones/{}/autoscalers/{}".format(autoscaler.zone.name, autoscaler.name)
 
         self.connection.async_request(request, method="DELETE")
         return True
@@ -7261,7 +7256,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/instances/%s" % (node.extra["zone"].name, node.name)
+        request = "/zones/{}/instances/{}".format(node.extra["zone"].name, node.name)
         if ex_sync:
             self.connection.async_request(request, method="DELETE")
         else:
@@ -7308,7 +7303,7 @@ class GCENodeDriver(NodeDriver):
         complete = False
         start_time = time.time()
         for node in node_list:
-            request = "/zones/%s/instances/%s" % (node.extra["zone"].name, node.name)
+            request = "/zones/{}/instances/{}".format(node.extra["zone"].name, node.name)
             try:
                 response = self.connection.request(request, method="DELETE").object
             except GoogleBaseError:
@@ -7356,7 +7351,7 @@ class GCENodeDriver(NodeDriver):
                 if delete_disk and destroy_boot_disk:
                     boot_disk = status["node"].extra["boot_disk"]
                     if boot_disk:
-                        request = "/zones/%s/disks/%s" % (
+                        request = "/zones/{}/disks/{}".format(
                             boot_disk.extra["zone"].name,
                             boot_disk.name,
                         )
@@ -7426,7 +7421,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/targetInstances/%s" % (
+        request = "/zones/{}/targetInstances/{}".format(
             targetinstance.zone.name,
             targetinstance.name,
         )
@@ -7443,7 +7438,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/regions/%s/targetPools/%s" % (
+        request = "/regions/{}/targetPools/{}".format(
             targetpool.region.name,
             targetpool.name,
         )
@@ -7476,7 +7471,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = "/zones/%s/disks/%s" % (volume.extra["zone"].name, volume.name)
+        request = "/zones/{}/disks/{}".format(volume.extra["zone"].name, volume.name)
         self.connection.async_request(request, method="DELETE")
         return True
 
@@ -7526,7 +7521,7 @@ class GCENodeDriver(NodeDriver):
         zone = self._set_zone(zone)
 
         if zone:
-            request_path = "/zones/%s/diskTypes/%s" % (zone.name, name)
+            request_path = "/zones/{}/diskTypes/{}".format(zone.name, name)
         else:
             request_path = "/aggregated/diskTypes"
 
@@ -7563,7 +7558,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCEAcceleratorType`
         """
         zone = self._set_zone(zone)
-        request = "/zones/%s/acceleratorTypes/%s" % (zone.name, name)
+        request = "/zones/{}/acceleratorTypes/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_accelerator_type(response)
 
@@ -7587,7 +7582,7 @@ class GCENodeDriver(NodeDriver):
             region = self._set_region(region) or self._find_zone_or_region(
                 name, "addresses", region=True, res_name="Address"
             )
-            request = "/regions/%s/addresses/%s" % (region.name, name)
+            request = "/regions/{}/addresses/{}".format(region.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_address(response)
 
@@ -7657,7 +7652,7 @@ class GCENodeDriver(NodeDriver):
             region = self._set_region(region) or self._find_zone_or_region(
                 name, "forwardingRules", region=True, res_name="ForwardingRule"
             )
-            request = "/regions/%s/forwardingRules/%s" % (region.name, name)
+            request = "/regions/{}/forwardingRules/{}".format(region.name, name)
 
         response = self.connection.request(request, method="GET").object
         return self._to_forwarding_rule(response)
@@ -7841,7 +7836,7 @@ class GCENodeDriver(NodeDriver):
             else:
                 region_name = region.name
 
-        request = "/regions/%s/subnetworks/%s" % (region_name, subnet_name)
+        request = "/regions/{}/subnetworks/{}".format(region_name, subnet_name)
         self.connection.async_request(request, method="DELETE").object
         return True
 
@@ -7877,7 +7872,7 @@ class GCENodeDriver(NodeDriver):
                 else:
                     region_name = region.name
 
-            request = "/regions/%s/subnetworks/%s" % (region_name, name)
+            request = "/regions/{}/subnetworks/{}".format(region_name, name)
 
         response = self.connection.request(request, method="GET").object
         return self._to_subnetwork(response)
@@ -7915,7 +7910,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`Node`
         """
         zone = self._set_zone(zone) or self._find_zone_or_region(name, "instances", res_name="Node")
-        request = "/zones/%s/instances/%s" % (zone.name, name)
+        request = "/zones/{}/instances/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_node(response)
 
@@ -7946,7 +7941,7 @@ class GCENodeDriver(NodeDriver):
         zone = zone or self.zone
         if not hasattr(zone, "name"):
             zone = self.ex_get_zone(zone)
-        request = "/zones/%s/machineTypes/%s" % (zone.name, name)
+        request = "/zones/{}/machineTypes/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
         instance_prices = get_pricing(driver_type="compute", driver_name="gce_instances")
         return self._to_node_size(response, instance_prices)
@@ -8102,7 +8097,7 @@ class GCENodeDriver(NodeDriver):
         zone = self._set_zone(zone) or self._find_zone_or_region(
             name, "targetInstances", res_name="TargetInstance"
         )
-        request = "/zones/%s/targetInstances/%s" % (zone.name, name)
+        request = "/zones/{}/targetInstances/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_targetinstance(response)
 
@@ -8123,7 +8118,7 @@ class GCENodeDriver(NodeDriver):
         region = self._set_region(region) or self._find_zone_or_region(
             name, "targetPools", region=True, res_name="TargetPool"
         )
-        request = "/regions/%s/targetPools/%s" % (region.name, name)
+        request = "/regions/{}/targetPools/{}".format(region.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_targetpool(response)
 
@@ -8164,7 +8159,7 @@ class GCENodeDriver(NodeDriver):
         zone = self._set_zone(zone) or self._find_zone_or_region(
             name, "instanceGroups", region=False, res_name="Instancegroup"
         )
-        request = "/zones/%s/instanceGroups/%s" % (zone.name, name)
+        request = "/zones/{}/instanceGroups/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
 
         return self._to_instancegroup(response)
@@ -8186,7 +8181,7 @@ class GCENodeDriver(NodeDriver):
         zone = self._set_zone(zone) or self._find_zone_or_region(
             name, "instanceGroupManagers", region=False, res_name="Instancegroupmanager"
         )
-        request = "/zones/%s/instanceGroupManagers/%s" % (zone.name, name)
+        request = "/zones/{}/instanceGroupManagers/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_instancegroupmanager(response)
 
@@ -8221,7 +8216,7 @@ class GCENodeDriver(NodeDriver):
         zone = self._set_zone(zone) or self._find_zone_or_region(
             name, "Autoscalers", region=False, res_name="Autoscalers"
         )
-        request = "/zones/%s/autoscalers/%s" % (zone.name, name)
+        request = "/zones/{}/autoscalers/{}".format(zone.name, name)
         response = self.connection.request(request, method="GET").object
         return self._to_autoscaler(response)
 
@@ -8305,7 +8300,7 @@ class GCENodeDriver(NodeDriver):
             self._ex_populate_volume_dict()
             if volume_name not in self._ex_volume_dict:
                 raise ResourceNotFoundError(
-                    "Volume name: '%s' not found. Zone: %s" % (volume_name, zone),
+                    "Volume name: '{}' not found. Zone: {}".format(volume_name, zone),
                     None,
                     None,
                 )
@@ -8318,7 +8313,7 @@ class GCENodeDriver(NodeDriver):
         volume = self._ex_volume_dict[volume_name].get(zone, None)
         if not volume:
             raise ResourceNotFoundError(
-                "Volume '%s' not found for zone %s." % (volume_name, zone), None, None
+                "Volume '{}' not found for zone {}.".format(volume_name, zone), None, None
             )
         return self._to_storage_volume(volume)
 
@@ -8450,7 +8445,7 @@ class GCENodeDriver(NodeDriver):
                     break
         if not rz_name:
             raise ResourceNotFoundError(
-                "%s '%s' not found in any %s." % (res_name, name, rz), None, None
+                "{} '{}' not found in any {}.".format(res_name, name, rz), None, None
             )
         else:
             getrz = getattr(self, "ex_get_%s" % (rz))
@@ -8961,7 +8956,7 @@ class GCENodeDriver(NodeDriver):
             volume_data["type"] = ex_disk_type
         else:
             volume_data["type"] = "https://www.googleapis.com/compute/"
-            volume_data["type"] += "%s/projects/%s/zones/%s/diskTypes/%s" % (
+            volume_data["type"] += "{}/projects/{}/zones/{}/diskTypes/{}".format(
                 API_VERSION,
                 self.project,
                 location.name,
@@ -8990,7 +8985,7 @@ class GCENodeDriver(NodeDriver):
         extra["description"] = disktype.get("description")
         extra["valid_disk_size"] = disktype.get("validDiskSize")
         extra["default_disk_size_gb"] = disktype.get("defaultDiskSizeGb")
-        type_id = "%s:%s" % (zone.name, disktype["name"])
+        type_id = "{}:{}".format(zone.name, disktype["name"])
 
         return GCEDiskType(id=type_id, name=disktype["name"], zone=zone, driver=self, extra=extra)
 
@@ -9014,7 +9009,7 @@ class GCENodeDriver(NodeDriver):
         extra["description"] = accelerator_type.get("description")
         extra["maximumCardsPerInstance"] = accelerator_type.get("maximumCardsPerInstance")
         extra["default_disk_size_gb"] = accelerator_type.get("defaultDiskSizeGb")
-        type_id = "%s:%s" % (zone.name, accelerator_type["name"])
+        type_id = "{}:{}".format(zone.name, accelerator_type["name"])
 
         return GCEAcceleratorType(
             id=type_id,
@@ -9679,9 +9674,9 @@ class GCENodeDriver(NodeDriver):
         :return: Target HTTP Proxy object
         :rtype:  :class:`GCETargetHttpProxy`
         """
-        extra = dict(
-            [(k, targethttpproxy.get(k)) for k in ("creationTimestamp", "description", "selfLink")]
-        )
+        extra = {
+            k: targethttpproxy.get(k) for k in ("creationTimestamp", "description", "selfLink")
+        }
 
         urlmap = self._get_object_by_kind(targethttpproxy.get("urlMap"))
 
@@ -10046,12 +10041,10 @@ class GCENodeDriver(NodeDriver):
         :return: UrlMap object
         :rtype: :class:`GCEUrlMap`
         """
-        extra = dict(
-            [
-                (k, urlmap.get(k))
-                for k in ("creationTimestamp", "description", "fingerprint", "selfLink")
-            ]
-        )
+        extra = {
+            k: urlmap.get(k)
+            for k in ("creationTimestamp", "description", "fingerprint", "selfLink")
+        }
 
         default_service = self._get_object_by_kind(urlmap.get("defaultService"))
 

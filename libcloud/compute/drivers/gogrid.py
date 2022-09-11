@@ -72,7 +72,7 @@ class GoGridNode(Node):
     # Used public ip since it is not mutable and specified at create time,
     # so uuid of node should not change after add is completed
     def get_uuid(self):
-        return hashlib.sha1(b("%s:%s" % (self.public_ips, self.driver.type))).hexdigest()
+        return hashlib.sha1(b("{}:{}".format(self.public_ips, self.driver.type))).hexdigest()
 
 
 class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
@@ -93,7 +93,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         """
         @inherits: :class:`NodeDriver.__init__`
         """
-        super(GoGridNodeDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _get_state(self, element):
         try:

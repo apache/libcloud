@@ -42,7 +42,7 @@ class CloudwattAuthConnection(OpenStackIdentityConnection):
 
     def __init__(self, *args, **kwargs):
         self._ex_tenant_id = kwargs.pop("ex_tenant_id")
-        super(CloudwattAuthConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def morph_action_hook(self, action):
         (_, _, _, request_path) = self._tuple_from_url(self.auth_url)
@@ -72,7 +72,7 @@ class CloudwattAuthConnection(OpenStackIdentityConnection):
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status != httplib.OK:
-            body = "code: %s body:%s" % (resp.status, resp.body)
+            body = "code: {} body:{}".format(resp.status, resp.body)
             raise MalformedResponseError("Malformed response", body=body, driver=self.driver)
         else:
             try:
@@ -108,7 +108,7 @@ class CloudwattConnection(OpenStack_1_1_Connection):
 
     def __init__(self, *args, **kwargs):
         self.ex_tenant_id = kwargs.pop("ex_tenant_id")
-        super(CloudwattConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         osa = CloudwattAuthConnection(
             auth_url=AUTH_URL,
             user_id=self.user_id,
@@ -151,12 +151,10 @@ class CloudwattNodeDriver(OpenStack_1_1_NodeDriver):
         """
         self.ex_tenant_id = tenant_id
         self.extra = {}
-        super(CloudwattNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def attach_volume(self, node, volume, device=None):
-        return super(CloudwattNodeDriver, self).attach_volume(node, volume, device)
+        return super().attach_volume(node, volume, device)
 
     def _ex_connection_class_kwargs(self):
         """

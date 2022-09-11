@@ -26,7 +26,7 @@ from libcloud.compute.drivers.elastichosts import ElasticHostsNodeDriver as Elas
 from libcloud.compute.drivers.elasticstack import ElasticStackException
 
 
-class ElasticStackTestCase(object):
+class ElasticStackTestCase:
     def setUp(self):
         # Re-use ElasticHosts fixtures for the base ElasticStack platform tests
         self.mockHttp = ElasticStackMockHttp
@@ -145,7 +145,7 @@ class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
         self.driver = ElasticHosts("foo", "bar")
         images = self.driver.list_images()
         self.image = [i for i in images if i.id == "38df0986-4d85-4b76-b502-3878ffc80161"][0]
-        super(ElasticHostsTestCase, self).setUp()
+        super().setUp()
 
     def test_multiple_drivers_with_different_regions(self):
         driver1 = ElasticHosts("foo", "bar", region="lon-p")
@@ -176,7 +176,7 @@ class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
 
         images = self.driver.list_images()
         self.image = [i for i in images if i.id == "90aa51f2-15c0-4cff-81ee-e93aa20b9468"][0]
-        super(SkaliCloudTestCase, self).setUp()
+        super().setUp()
 
 
 class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
@@ -187,7 +187,7 @@ class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
 
         images = self.driver.list_images()
         self.image = [i for i in images if i.id == "679f5f44-0be7-4745-a658-cccd4334c1aa"][0]
-        super(ServerLoveTestCase, self).setUp()
+        super().setUp()
 
 
 class ElasticStackMockHttp(MockHttp):

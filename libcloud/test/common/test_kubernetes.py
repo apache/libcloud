@@ -37,7 +37,7 @@ CA_CERT_FILE = os.path.abspath(
 )
 
 
-class KubernetesAuthTestCaseMixin(object):
+class KubernetesAuthTestCaseMixin:
     """
     Test class mixin which tests different type of Kubernetes authentication
     mechanisms (client cert, token, basic auth).
@@ -51,7 +51,7 @@ class KubernetesAuthTestCaseMixin(object):
         self.assertEqual(driver.connection.user_id, "username")
         self.assertEqual(driver.connection.key, "password")
 
-        auth_string = base64.b64encode(b("%s:%s" % ("username", "password"))).decode("utf-8")
+        auth_string = base64.b64encode(b("{}:{}".format("username", "password"))).decode("utf-8")
 
         headers = driver.connection.add_default_headers({})
         self.assertEqual(headers["Content-Type"], "application/json")

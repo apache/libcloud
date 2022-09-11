@@ -29,7 +29,7 @@ from libcloud.loadbalancer.providers import Provider as LoadBalancerProvider
 from libcloud.loadbalancer.providers import get_driver as get_loadbalancer_driver
 
 
-class DriverType(object):
+class DriverType:
     """Backup-as-a-service driver"""
 
     BACKUP = BackupProvider

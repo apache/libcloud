@@ -39,7 +39,7 @@ GOOGLE_CLOUD_PRICES = "https://cloudpricingcalculator.appspot.com/static/data/pr
 def main(argv):
     # Read the current pricing data.
     libcloud_data = {}
-    with open(PRICING_FILE_PATH, "r") as libcloud_in:
+    with open(PRICING_FILE_PATH) as libcloud_in:
         libcloud_data = json.loads(libcloud_in.read())
 
     # Download the current Google Cloud Platform pricing.

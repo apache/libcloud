@@ -37,7 +37,6 @@
 #                                         --include-tickets
 #                                         --versions 0.11.0 0.12.0
 
-from __future__ import with_statement
 
 import re
 import argparse
@@ -61,7 +60,7 @@ def parse_changes_file(file_path, versions=None):
     active_version = None
     active_tickets = []
 
-    with open(file_path, "r") as fp:
+    with open(file_path) as fp:
         for line in fp:
             line = line.strip()
 
@@ -142,9 +141,9 @@ def convert_to_markdown(contributors_map, include_tickets=False):
         tickets_string = ", ".join(tickets_string)
 
         if include_tickets:
-            line = "* %(name)s: %(tickets)s" % {"name": name, "tickets": tickets_string}
+            line = "* {name}: {tickets}".format(name=name, tickets=tickets_string)
         else:
-            line = "* %(name)s" % {"name": name}
+            line = "* {name}".format(name=name)
 
         result.append(line.strip())
 

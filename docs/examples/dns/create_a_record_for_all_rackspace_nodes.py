@@ -31,7 +31,7 @@ for node in nodes:
     if not ip:
         continue
 
-    print("Creating %s record (data=%s) for node %s" % ("A", ip, name))
+    print("Creating {} record (data={}) for node {}".format("A", ip, name))
     record = zone.create_record(name=name, type=RecordType.A, data=ip)
     created.append(record)
 

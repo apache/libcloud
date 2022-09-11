@@ -50,7 +50,7 @@ def _clean_object_name(name):
     return urlquote(name, safe="") if name else None
 
 
-class ContainerPermissions(object):
+class ContainerPermissions:
     values = ["NONE", "READER", "WRITER", "OWNER"]
     NONE = 0
     READER = 1
@@ -58,7 +58,7 @@ class ContainerPermissions(object):
     OWNER = 3
 
 
-class ObjectPermissions(object):
+class ObjectPermissions:
     values = ["NONE", "READER", "OWNER"]
     NONE = 0
     READER = 1
@@ -86,7 +86,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             )
         else:
             self.oauth2_credential = None
-        super(GoogleStorageConnection, self).__init__(user_id, key, secure, **kwargs)
+        super().__init__(user_id, key, secure, **kwargs)
 
     def add_default_headers(self, headers):
         date = email.utils.formatdate(usegmt=True)
@@ -102,7 +102,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
     def pre_connect_hook(self, params, headers):
         if self.auth_type == GoogleAuthType.GCS_S3:
             signature = self._get_s3_auth_signature(params, headers)
-            headers["Authorization"] = "%s %s:%s" % (
+            headers["Authorization"] = "{} {}:{}".format(
                 SIGNATURE_IDENTIFIER,
                 self.user_id,
                 signature,
@@ -158,7 +158,7 @@ class GoogleStorageJSONConnection(GoogleStorageConnection):
     rawResponseCls = None
 
     def add_default_headers(self, headers):
-        headers = super(GoogleStorageJSONConnection, self).add_default_headers(headers)
+        headers = super().add_default_headers(headers)
         headers["Content-Type"] = "application/json"
         return headers
 
@@ -204,7 +204,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
     http_vendor_prefix = "x-goog"
 
     def __init__(self, key, secret=None, project=None, **kwargs):
-        super(GoogleStorageDriver, self).__init__(key, secret, **kwargs)
+        super().__init__(key, secret, **kwargs)
         self.project = project
 
         self.json_connection = GoogleStorageJSONConnection(key, secret, **kwargs)
@@ -285,7 +285,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         # Try OWNER permissions first: try listing the object ACL.
         try:
             self.json_connection.request(
-                "/storage/v1/b/%s/o/%s/acl" % (container_name, object_name)
+                "/storage/v1/b/{}/o/{}/acl".format(container_name, object_name)
             )
             return ObjectPermissions.OWNER
         except ProviderError as e:
@@ -294,7 +294,9 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
         # Try READER permissions: try getting the object.
         try:
-            self.json_connection.request("/storage/v1/b/%s/o/%s" % (container_name, object_name))
+            self.json_connection.request(
+                "/storage/v1/b/{}/o/{}".format(container_name, object_name)
+            )
             return ObjectPermissions.READER
         except ProviderError as e:
             if e.http_code not in [httplib.FORBIDDEN, httplib.NOT_FOUND]:
@@ -329,9 +331,9 @@ class GoogleStorageDriver(BaseS3StorageDriver):
                 entity = "user-%s" % user_id
 
         if object_name:
-            url = "/storage/v1/b/%s/o/%s/acl/%s" % (container_name, object_name, entity)
+            url = "/storage/v1/b/{}/o/{}/acl/{}".format(container_name, object_name, entity)
         else:
-            url = "/storage/v1/b/%s/acl/%s" % (container_name, entity)
+            url = "/storage/v1/b/{}/acl/{}".format(container_name, entity)
 
         self.json_connection.request(url, method="DELETE")
 
@@ -402,7 +404,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
                 entity = "user-%s" % user_id
 
         if object_name:
-            url = "/storage/v1/b/%s/o/%s/acl" % (container_name, object_name)
+            url = "/storage/v1/b/{}/o/{}/acl".format(container_name, object_name)
         else:
             url = "/storage/v1/b/%s/acl" % container_name
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more§
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, absolute_import
 
 import os
 import sys
@@ -32,7 +30,7 @@ if not have_paramiko:
 else:
     import paramiko
 
-    paramiko_version = tuple([int(x) for x in paramiko.__version__.split(".")])
+    paramiko_version = tuple(int(x) for x in paramiko.__version__.split("."))
 
 
 @unittest.skipIf(not have_paramiko, "Skipping because paramiko is not available")
@@ -115,7 +113,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
     def test_key_material_argument(self):
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.key")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         conn_params = {
@@ -162,7 +160,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         )
 
         # Supplied as key_material
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         conn_params = {
@@ -186,7 +184,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         )
 
         # Supplied as key_material
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         conn_params = {
@@ -231,7 +229,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         )
 
         # Supplied as key_material
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         conn_params = {
@@ -256,7 +254,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         )
 
         # Supplied as key_material
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         conn_params = {
@@ -284,7 +282,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_ed25519.key")
 
         # Supplied as key_material
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         conn_params = {
@@ -311,7 +309,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
             "test_rsa_non_paramiko_recognized_header.key",
         )
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         pkey = client._get_pkey_object(key=private_key)
@@ -326,7 +324,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
             "test_dsa_non_paramiko_recognized_header.key",
         )
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         pkey = client._get_pkey_object(key=private_key)
@@ -341,7 +339,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
             "test_ecdsa_non_paramiko_recognized_header.key",
         )
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         pkey = client._get_pkey_object(key=private_key)
@@ -355,7 +353,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         # 1. RSA key type with header which is not supported by paramiko
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_rsa.key")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         pkey = client._get_pkey_object(key=private_key)
@@ -365,7 +363,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         # 2. DSA key type with header which is not supported by paramiko
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_dsa.key")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         pkey = client._get_pkey_object(key=private_key)
@@ -375,7 +373,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         # 3. ECDSA key type with header which is not supported by paramiko
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_ecdsa.key")
 
-        with open(path, "r") as fp:
+        with open(path) as fp:
             private_key = fp.read()
 
         pkey = client._get_pkey_object(key=private_key)
@@ -505,7 +503,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         self.assertLogMsg("Closing server connection")
 
     def assertLogMsg(self, expected_msg):
-        with open(self.tmp_file, "r") as fp:
+        with open(self.tmp_file) as fp:
             content = fp.read()
 
         self.assertTrue(content.find(expected_msg) != -1)
@@ -845,7 +843,7 @@ class ShellOutSSHClientTests(LibcloudTestCase):
             self.fail("Exception was not thrown")
 
     def test_ssh_executable_not_available(self):
-        class MockChild(object):
+        class MockChild:
             returncode = 127
 
             def communicate(*args, **kwargs):

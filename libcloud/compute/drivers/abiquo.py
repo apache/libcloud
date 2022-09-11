@@ -73,9 +73,7 @@ class AbiquoNodeDriver(NodeDriver):
         :type        endpoint: ``str`` that can be parsed as URL
         """
         self.endpoint = endpoint
-        super(AbiquoNodeDriver, self).__init__(
-            key=user_id, secret=secret, secure=False, host=None, port=None, **kwargs
-        )
+        super().__init__(key=user_id, secret=secret, secure=False, host=None, port=None, **kwargs)
         self.ex_populate_cache()
 
     def create_node(self, image, name=None, size=None, location=None, ex_group_name=None):
@@ -656,8 +654,7 @@ class AbiquoNodeDriver(NodeDriver):
         if location is not None:
             yield location
         else:
-            for loc in self.list_locations():
-                yield loc
+            yield from self.list_locations()
 
     def _get_enterprise_id(self):
         """
@@ -762,7 +759,7 @@ class AbiquoNodeDriver(NodeDriver):
         return self.connection.request(edit_vm, headers=headers).object
 
 
-class NodeGroup(object):
+class NodeGroup:
     """
     Group of virtual machines that can be managed together
 

@@ -60,7 +60,7 @@ API_PLAIN_AUTH = False
 DEFAULT_API_VERSION = "3.2"
 
 
-class ACTION(object):
+class ACTION:
     """
     All actions, except RESUME, only apply when the VM is in the "Running"
     state.
@@ -164,7 +164,7 @@ class OpenNebulaConnection(ConnectionUserAndKey):
     def __init__(self, *args, **kwargs):
         if "plain_auth" in kwargs:
             self.plain_auth = kwargs.pop("plain_auth")
-        super(OpenNebulaConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def add_default_headers(self, headers):
         """
@@ -184,7 +184,7 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         else:
             passwd = hashlib.sha1(b(self.key)).hexdigest()
         headers["Authorization"] = "Basic %s" % b64encode(
-            b("%s:%s" % (self.user_id, passwd))
+            b("{}:{}".format(self.user_id, passwd))
         ).decode("utf-8")
         return headers
 
@@ -195,7 +195,7 @@ class OpenNebulaNodeSize(NodeSize):
     """
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver, cpu=None, vcpu=None):
-        super(OpenNebulaNodeSize, self).__init__(
+        super().__init__(
             id=id,
             name=name,
             ram=ram,
@@ -224,7 +224,7 @@ class OpenNebulaNodeSize(NodeSize):
         )
 
 
-class OpenNebulaNetwork(object):
+class OpenNebulaNetwork:
     """
     Provide a common interface for handling networks of all types.
 
@@ -278,7 +278,7 @@ class OpenNebulaNetwork(object):
         :rtype:  ``str``
         :return: Unique identifier for this instance.
         """
-        return hashlib.sha1(b("%s:%s" % (self.id, self.driver.type))).hexdigest()
+        return hashlib.sha1(b("{}:{}".format(self.id, self.driver.type))).hexdigest()
 
     def __repr__(self):
         return (
@@ -329,7 +329,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                 raise NotImplementedError(
                     "No OpenNebulaNodeDriver found for API version %s" % (api_version)
                 )
-            return super(OpenNebulaNodeDriver, cls).__new__(cls)
+            return super().__new__(cls)
 
     def create_node(self, name, size, image, networks=None):
         """
@@ -494,7 +494,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         images = []
         for element in object.findall("DISK"):
             image_id = element.attrib["href"].partition("/storage/")[2]
-            image = self.connection.request(("/storage/%s" % (image_id))).object
+            image = self.connection.request("/storage/%s" % (image_id)).object
             images.append(self._to_image(image))
 
         return images
@@ -532,7 +532,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         networks = []
         for element in object.findall("NETWORK"):
             network_id = element.attrib["href"].partition("/network/")[2]
-            network_element = self.connection.request(("/network/%s" % (network_id))).object
+            network_element = self.connection.request("/network/%s" % (network_id)).object
             networks.append(self._to_network(network_element))
 
         return networks
@@ -571,7 +571,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         computes = []
         for element in object.findall("COMPUTE"):
             compute_id = element.attrib["href"].partition("/compute/")[2]
-            compute = self.connection.request(("/compute/%s" % (compute_id))).object
+            compute = self.connection.request("/compute/%s" % (compute_id)).object
             computes.append(self._to_node(compute))
 
         return computes
@@ -809,7 +809,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         images = []
         for element in object.findall("STORAGE"):
             image_id = element.attrib["href"].partition("/storage/")[2]
-            image = self.connection.request(("/storage/%s" % (image_id))).object
+            image = self.connection.request("/storage/%s" % (image_id)).object
             images.append(self._to_image(image))
 
         return images
@@ -963,11 +963,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
         try:
             return next(
-                (
-                    node_size
-                    for node_size in self.list_sizes()
-                    if node_size.name == instance_type.text
-                )
+                node_size for node_size in self.list_sizes() if node_size.name == instance_type.text
             )
         except StopIteration:
             return None

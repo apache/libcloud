@@ -34,7 +34,7 @@ import itertools
 from copy import copy
 from datetime import datetime
 
-from libcloud.utils.py3 import PY3, httplib
+from libcloud.utils.py3 import httplib
 from libcloud.compute.base import (
     Node,
     NodeSize,
@@ -92,7 +92,7 @@ class LinodeNodeDriver(NodeDriver):
                 raise NotImplementedError(
                     "No Linode driver found for API version: %s" % (api_version)
                 )
-        return super(LinodeNodeDriver, cls).__new__(cls)
+        return super().__new__(cls)
 
 
 class LinodeNodeDriverV3(LinodeNodeDriver):
@@ -403,7 +403,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         # are limited to 48 chars
         label = {
             "lconfig": "[%s] Configuration Profile" % linode["id"],
-            "lroot": "[%s] %s Disk Image" % (linode["id"], image.name),
+            "lroot": "[{}] {} Disk Image".format(linode["id"], image.name),
             "lswap": "[%s] Swap Space" % linode["id"],
         }
 
@@ -445,7 +445,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         linode["swapimage"] = data["DiskID"]
 
         # Step 4: linode.config.create for main profile
-        disks = "%s,%s,,,,,,," % (linode["rootimage"], linode["swapimage"])
+        disks = "{},{},,,,,,,".format(linode["rootimage"], linode["swapimage"])
         params = {
             "api_action": "linode.config.create",
             "LinodeID": linode["id"],
@@ -778,12 +778,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
         ip_answers = []
         args = [iter(batch)] * 25
 
-        if PY3:
-            izip_longest = itertools.zip_longest  # pylint: disable=no-member
-        else:
-            izip_longest = getattr(itertools, "izip_longest", _izip_longest)
-
-        for twenty_five in izip_longest(*args):
+        for twenty_five in itertools.zip_longest(*args):
             twenty_five = [q for q in twenty_five if q]
             params = {
                 "api_action": "batch",
@@ -1180,7 +1175,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             raise LinodeExceptionV4("Node needs to be stopped" " before disk is destroyed")
 
         response = self.connection.request(
-            "/v4/linode/instances/%s/disks/%s" % (node.id, disk.id), method="DELETE"
+            "/v4/linode/instances/{}/disks/{}".format(node.id, disk.id), method="DELETE"
         )
         return response.status == httplib.OK
 
@@ -1720,23 +1715,3 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             data = list(ret.get(obj, []))
             objects.extend(data)
         return objects
-
-
-def _izip_longest(*args, **kwds):
-    """Taken from Python docs
-
-    http://docs.python.org/library/itertools.html#itertools.izip
-    """
-
-    fillvalue = kwds.get("fillvalue")
-
-    def sentinel(counter=([fillvalue] * (len(args) - 1)).pop):
-        yield counter()  # yields the fillvalue, or raises IndexError
-
-    fillers = itertools.repeat(fillvalue)
-    iters = [itertools.chain(it, sentinel(), fillers) for it in args]
-    try:
-        for tup in itertools.izip(*iters):  # pylint: disable=no-member
-            yield tup
-    except IndexError:
-        pass

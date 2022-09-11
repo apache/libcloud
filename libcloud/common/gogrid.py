@@ -36,7 +36,7 @@ __all__ = [
 class GoGridResponse(JsonResponse):
     def __init__(self, *args, **kwargs):
         self.driver = BaseGoGridDriver
-        super(GoGridResponse, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def success(self):
         if self.status == 403:
@@ -79,10 +79,10 @@ class GoGridConnection(ConnectionUserAndKey):
         return m.hexdigest()
 
     def request(self, action, params=None, data="", headers=None, method="GET", raw=False):
-        return super(GoGridConnection, self).request(action, params, data, headers, method, raw)
+        return super().request(action, params, data, headers, method, raw)
 
 
-class GoGridIpAddress(object):
+class GoGridIpAddress:
     """
     IP Address
     """
@@ -95,7 +95,7 @@ class GoGridIpAddress(object):
         self.subnet = subnet
 
 
-class BaseGoGridDriver(object):
+class BaseGoGridDriver:
     """GoGrid has common object model for services they
     provide, like locations and IP, so keep handling of
     these things in a single place."""

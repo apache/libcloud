@@ -91,9 +91,7 @@ class VCLNodeDriver(NodeDriver):
                 "When instantiating VCL driver directly " + "you also need to provide host"
             )
 
-        super(VCLNodeDriver, self).__init__(
-            key, secret, secure=True, host=None, port=None, *args, **kwargs
-        )
+        super().__init__(key, secret, secure=True, host=None, port=None, *args, **kwargs)
 
     def _vcl_request(self, method, *args):
         res = self.connection.request(method, *args).object

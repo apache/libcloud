@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more§
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,7 +14,6 @@
 # limitations under the License.
 
 import sys
-import codecs
 import socket
 import os.path
 import platform
@@ -26,7 +24,7 @@ from itertools import chain
 import pytest
 
 import libcloud.utils.files
-from libcloud.utils.py3 import PY3, StringIO, b, bchr, urlquote, hexadigits
+from libcloud.utils.py3 import StringIO, b, bchr, urlquote, hexadigits
 from libcloud.utils.misc import get_driver, set_driver, get_secure_random_string
 from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
@@ -49,8 +47,7 @@ warnings.simplefilter("default")
 
 WARNINGS_BUFFER = []
 
-if PY3:
-    from io import FileIO as file
+from io import FileIO as file
 
 
 def show_warning(msg, cat, fname, lno, file=None, line=None):
@@ -269,11 +266,8 @@ class TestUtils(unittest.TestCase):
 
     def test_unicode_urlquote(self):
         # Regression tests for LIBCLOUD-429
-        if PY3:
-            # Note: this is a unicode literal
-            val = "\xe9"
-        else:
-            val = codecs.unicode_escape_decode("\xe9")[0]
+        # Note: this is a unicode literal
+        val = "\xe9"
 
         uri = urlquote(val)
         self.assertEqual(b(uri), b("%C3%A9"))
@@ -297,12 +291,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(hexadigits(b("AZaz09-")), ["41", "5a", "61", "7a", "30", "39", "2d"])
 
     def test_bchr(self):
-        if PY3:
-            self.assertEqual(bchr(0), b"\x00")
-            self.assertEqual(bchr(97), b"a")
-        else:
-            self.assertEqual(bchr(0), "\x00")
-            self.assertEqual(bchr(97), "a")
+        self.assertEqual(bchr(0), b"\x00")
+        self.assertEqual(bchr(97), b"a")
 
 
 class NetworkingUtilsTestCase(unittest.TestCase):

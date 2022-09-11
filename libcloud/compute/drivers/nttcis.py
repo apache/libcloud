@@ -132,7 +132,7 @@ class NttCisNodeDriver(NodeDriver):
         if api_version is not None:
             self.api_version = api_version
 
-        super(NttCisNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -148,7 +148,7 @@ class NttCisNodeDriver(NodeDriver):
         Add the region to the kwargs before the connection is instantiated
         """
 
-        kwargs = super(NttCisNodeDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["region"] = self.selected_region
         kwargs["api_version"] = self.api_version
         return kwargs
@@ -3467,7 +3467,7 @@ class NttCisNodeDriver(NodeDriver):
         """
 
         result = self.connection.raw_request_with_orgId_api_1(
-            "report/usage?startDate=%s&endDate=%s" % (start_date, end_date)
+            "report/usage?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -3485,7 +3485,7 @@ class NttCisNodeDriver(NodeDriver):
         """
 
         result = self.connection.raw_request_with_orgId_api_1(
-            "report/usageDetailed?startDate=%s&endDate=%s" % (start_date, end_date)
+            "report/usageDetailed?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -3503,7 +3503,7 @@ class NttCisNodeDriver(NodeDriver):
         """
 
         result = self.connection.raw_request_with_orgId_api_1(
-            "report/usageSoftwareUnits?startDate=%s&endDate=%s" % (start_date, end_date)
+            "report/usageSoftwareUnits?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -3521,7 +3521,7 @@ class NttCisNodeDriver(NodeDriver):
         """
 
         result = self.connection.raw_request_with_orgId_api_1(
-            "auditlog?startDate=%s&endDate=%s" % (start_date, end_date)
+            "auditlog?startDate={}&endDate={}".format(start_date, end_date)
         )
         return self._format_csv(result.response)
 
@@ -4887,7 +4887,7 @@ class NttCisNodeDriver(NodeDriver):
         #
         # We therefore need to filter out those images (since we can't
         # get a NodeLocation for them)
-        location_ids = set(location.id for location in locations)
+        location_ids = {location.id for location in locations}
 
         for element in object.findall(fixxpath(el_name, TYPES_URN)):
             location_id = element.get("datacenterId")

@@ -258,7 +258,7 @@ class OnAppNodeDriver(NodeDriver):
         :rtype: :class:`.KeyPair` object
         """
         user_id = self.connection.request("/profile.json").object["user"]["id"]
-        response = self.connection.request("/users/%s/ssh_keys/%s.json" % (user_id, name))
+        response = self.connection.request("/users/{}/ssh_keys/{}.json".format(user_id, name))
         return self._to_key_pair(response.object["ssh_key"])
 
     def import_key_pair_from_string(self, name, key_material):

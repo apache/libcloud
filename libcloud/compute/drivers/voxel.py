@@ -32,13 +32,13 @@ VOXEL_API_HOST = "api.voxel.net"
 class VoxelResponse(XmlResponse):
     def __init__(self, response, connection):
         self.parsed = None
-        super(VoxelResponse, self).__init__(response=response, connection=connection)
+        super().__init__(response=response, connection=connection)
 
     def parse_body(self):
         if not self.body:
             return None
         if self.parsed is None:
-            self.parsed = super(VoxelResponse, self).parse_body()
+            self.parsed = super().parse_body()
         return self.parsed
 
     def parse_error(self):
@@ -46,10 +46,10 @@ class VoxelResponse(XmlResponse):
         if not self.body:
             return None
         if self.parsed is None:
-            self.parsed = super(VoxelResponse, self).parse_body()
+            self.parsed = super().parse_body()
         for err in self.parsed.findall("err"):
             code = err.get("code")
-            err_list.append("(%s) %s" % (code, err.get("msg")))
+            err_list.append("({}) {}".format(code, err.get("msg")))
             # From voxel docs:
             # 1: Invalid login or password
             # 9: Permission denied: user lacks access rights for this method
@@ -61,7 +61,7 @@ class VoxelResponse(XmlResponse):
 
     def success(self):
         if not self.parsed:
-            self.parsed = super(VoxelResponse, self).parse_body()
+            self.parsed = super().parse_body()
         stat = self.parsed.get("stat")
         if stat != "ok":
             return False
@@ -77,7 +77,7 @@ class VoxelConnection(ConnectionUserAndKey):
     responseCls = VoxelResponse
 
     def add_default_params(self, params):
-        params = dict([(k, v) for k, v in list(params.items()) if v is not None])
+        params = {k: v for k, v in list(params.items()) if v is not None}
         params["key"] = self.user_id
         params["timestamp"] = datetime.datetime.utcnow().isoformat() + "+0000"
 
@@ -89,7 +89,7 @@ class VoxelConnection(ConnectionUserAndKey):
         for key in keys:
             if params[key]:
                 if not params[key] is None:
-                    md5.update(b("%s%s" % (key, params[key])))
+                    md5.update(b("{}{}".format(key, params[key])))
                 else:
                     md5.update(b(key))
         params["api_sig"] = md5.hexdigest()

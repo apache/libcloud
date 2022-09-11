@@ -149,14 +149,14 @@ class KubernetesDeployment:
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<KubernetesDeployment name=%s namespace=%s replicas=%s>" % (
+        return "<KubernetesDeployment name={} namespace={} replicas={}>".format(
             self.name,
             self.namespace,
             self.replicas,
         )
 
 
-class KubernetesPod(object):
+class KubernetesPod:
     def __init__(
         self,
         id: str,
@@ -183,7 +183,7 @@ class KubernetesPod(object):
         self.extra = extra
 
     def __repr__(self):
-        return "<KubernetesPod name=%s namespace=%s state=%s>" % (
+        return "<KubernetesPod name={} namespace={} state={}>".format(
             self.name,
             self.namespace,
             self.state,
@@ -196,7 +196,7 @@ class KubernetesNamespace(ContainerCluster):
     """
 
     def __repr__(self):
-        return "<KubernetesNamespace name=%s>" % (self.name,)
+        return "<KubernetesNamespace name={}>".format(self.name)
 
 
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
@@ -404,7 +404,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``bool``
         """
         self.connection.request(
-            ROOT_URL + "v1/namespaces/%s/pods/%s" % (namespace, pod_name),
+            ROOT_URL + "v1/namespaces/{}/pods/{}".format(namespace, pod_name),
             method="DELETE",
         ).object
         return True

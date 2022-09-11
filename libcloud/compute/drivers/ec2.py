@@ -829,7 +829,7 @@ VALID_VOLUME_TYPES = ["standard", "io1", "io2", "gp2", "gp3", "st1", "sc1"]
 
 class EC2NodeLocation(NodeLocation):
     def __init__(self, id, name, country, driver, availability_zone):
-        super(EC2NodeLocation, self).__init__(id, name, country, driver)
+        super().__init__(id, name, country, driver)
         self.availability_zone = availability_zone
 
     def __repr__(self):
@@ -860,7 +860,7 @@ class EC2Response(AWSBaseResponse):
 
         for err in body.findall("Errors/Error"):
             code, message = list(err)
-            err_list.append("%s: %s" % (code.text, message.text))
+            err_list.append("{}: {}".format(code.text, message.text))
             if code.text == "InvalidClientTokenId":
                 raise InvalidCredsError(err_list[-1])
             if code.text == "SignatureDoesNotMatch":
@@ -895,7 +895,7 @@ class EC2Connection(SignedAWSConnection):
     service_name = "ec2"
 
 
-class ExEC2AvailabilityZone(object):
+class ExEC2AvailabilityZone:
     """
     Extension class which stores information about an EC2 availability zone.
 
@@ -924,7 +924,7 @@ class EC2ReservedNode(Node):
     """
 
     def __init__(self, id, state, driver, size=None, image=None, extra=None):
-        super(EC2ReservedNode, self).__init__(
+        super().__init__(
             id=id,
             name=None,
             state=state,
@@ -938,7 +938,7 @@ class EC2ReservedNode(Node):
         return ("<EC2ReservedNode: id=%s>") % (self.id)
 
 
-class EC2SecurityGroup(object):
+class EC2SecurityGroup:
     """
     Represents information about a Security group
 
@@ -956,7 +956,7 @@ class EC2SecurityGroup(object):
         return ("<EC2SecurityGroup: id=%s, name=%s") % (self.id, self.name)
 
 
-class EC2ImportSnapshotTask(object):
+class EC2ImportSnapshotTask:
     """
     Represents information about a describe_import_snapshot_task.
 
@@ -974,7 +974,7 @@ class EC2ImportSnapshotTask(object):
         )
 
 
-class EC2PlacementGroup(object):
+class EC2PlacementGroup:
     """
     Represents information about a Placement Grous
 
@@ -987,10 +987,10 @@ class EC2PlacementGroup(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<EC2PlacementGroup: name=%s, state=%s>" % (self.name, self.strategy)
+        return "<EC2PlacementGroup: name={}, state={}>".format(self.name, self.strategy)
 
 
-class EC2Network(object):
+class EC2Network:
     """
     Represents information about a VPC (Virtual Private Cloud) network
 
@@ -1007,7 +1007,7 @@ class EC2Network(object):
         return ("<EC2Network: id=%s, name=%s") % (self.id, self.name)
 
 
-class EC2NetworkSubnet(object):
+class EC2NetworkSubnet:
     """
     Represents information about a VPC (Virtual Private Cloud) subnet
 
@@ -1024,7 +1024,7 @@ class EC2NetworkSubnet(object):
         return ("<EC2NetworkSubnet: id=%s, name=%s") % (self.id, self.name)
 
 
-class EC2NetworkInterface(object):
+class EC2NetworkInterface:
     """
     Represents information about a VPC network interface
 
@@ -1043,7 +1043,7 @@ class EC2NetworkInterface(object):
         return ("<EC2NetworkInterface: id=%s, name=%s") % (self.id, self.name)
 
 
-class ElasticIP(object):
+class ElasticIP:
     """
     Represents information about an elastic IP address
 
@@ -1078,7 +1078,7 @@ class ElasticIP(object):
         )
 
 
-class VPCInternetGateway(object):
+class VPCInternetGateway:
     """
     Class which stores information about VPC Internet Gateways.
 
@@ -1096,7 +1096,7 @@ class VPCInternetGateway(object):
         return ("<VPCInternetGateway: id=%s>") % (self.id)
 
 
-class EC2RouteTable(object):
+class EC2RouteTable:
     """
     Class which stores information about VPC Route Tables.
 
@@ -1136,7 +1136,7 @@ class EC2RouteTable(object):
         return ("<EC2RouteTable: id=%s>") % (self.id)
 
 
-class EC2Route(object):
+class EC2Route:
     """
     Class which stores information about a Route.
 
@@ -1194,7 +1194,7 @@ class EC2Route(object):
         return ("<EC2Route: cidr=%s>") % (self.cidr)
 
 
-class EC2SubnetAssociation(object):
+class EC2SubnetAssociation:
     """
     Class which stores information about Route Table associated with
     a given Subnet in a VPC
@@ -1226,7 +1226,7 @@ class EC2SubnetAssociation(object):
         return ("<EC2SubnetAssociation: id=%s>") % (self.id)
 
 
-class EC2VolumeModification(object):
+class EC2VolumeModification:
     """
     Describes the modification status of an EBS volume.
 
@@ -3844,7 +3844,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_comment = get_pubkey_comment(pubkey, default="unnamed")
-        key_name = "%s-%s" % (key_comment, key_fingerprint)
+        key_name = "{}-{}".format(key_comment, key_fingerprint)
 
         key_pairs = self.list_key_pairs()
         key_pairs = [key_pair for key_pair in key_pairs if key_pair.fingerprint == key_fingerprint]
@@ -4325,7 +4325,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return self._to_volume_modifications(response)
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         # pylint: disable=no-member
         if hasattr(self, "token") and self.token is not None:
             kwargs["token"] = self.token
@@ -5031,16 +5031,16 @@ class BaseEC2NodeDriver(NodeDriver):
 
         for value in arr:
             i += 1
-            params["%s.%s" % (key, i)] = value
+            params["{}.{}".format(key, i)] = value
 
         return params
 
     def _get_boolean(self, element):
-        tag = "{%s}%s" % (NAMESPACE, "return")
+        tag = "{{{}}}{}".format(NAMESPACE, "return")
         return element.findtext(tag) == "true"
 
     def _get_terminate_boolean(self, element):
-        status = element.findtext(".//{%s}%s" % (NAMESPACE, "name"))
+        status = element.findtext(".//{{{}}}{}".format(NAMESPACE, "name"))
         return any([term_status == status for term_status in ("shutting-down", "terminated")])
 
     def _add_instance_filter(self, params, node):
@@ -5189,7 +5189,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
                 else:
                     for key, value in v.items():
-                        params["DiskContainer.%s.%s" % (k, key)] = str(value)
+                        params["DiskContainer.{}.{}".format(k, key)] = str(value)
 
         return params
 
@@ -5320,7 +5320,7 @@ class BaseEC2NodeDriver(NodeDriver):
             if isinstance(filter_values, list):
                 for value_idx, value in enumerate(filter_values):
                     value_idx += 1  # We want 1-based indexes
-                    value_key = "Filter.%s.Value.%s" % (filter_idx, value_idx)
+                    value_key = "Filter.{}.Value.{}".format(filter_idx, value_idx)
                     filter_entries[value_key] = value
             else:
                 value_key = "Filter.%s.Value.1" % (filter_idx)
@@ -5385,9 +5385,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
 
         host = host or details["endpoint"]
 
-        super(EC2NodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     @classmethod
     def list_regions(cls):
@@ -5444,7 +5442,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
                                Eucalyptus proprietary API calls
         :type     api_version: ``str``
         """
-        super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
+        super().__init__(key, secret, secure, host, port)
 
         if path is None:
             path = "/services/Eucalyptus"
@@ -5617,9 +5615,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         self._not_implemented_msg = "This method is not supported in the Outscale driver"
 
-        super(OutscaleNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def create_node(self, **kwargs):
         """
@@ -5660,7 +5656,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         """
         if "ex_iamprofile" in kwargs:
             raise NotImplementedError("ex_iamprofile not implemented")
-        return super(OutscaleNodeDriver, self).create_node(**kwargs)
+        return super().create_node(**kwargs)
 
     def ex_create_network(self, cidr_block, name=None):
         """
@@ -5675,7 +5671,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         :return:    Dictionary of network properties
         :rtype:     ``dict``
         """
-        return super(OutscaleNodeDriver, self).ex_create_network(cidr_block, name=name)
+        return super().ex_create_network(cidr_block, name=name)
 
     def ex_modify_instance_attribute(
         self,
@@ -5719,7 +5715,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if instance_type is not None:
             attributes["InstanceType.Value"] = instance_type
 
-        return super(OutscaleNodeDriver, self).ex_modify_instance_attribute(node, attributes)
+        return super().ex_modify_instance_attribute(node, attributes)
 
     def ex_register_image(
         self,
@@ -5755,7 +5751,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         :rtype:     :class:`NodeImage`
         """
-        return super(OutscaleNodeDriver, self).ex_register_image(
+        return super().ex_register_image(
             name,
             description=description,
             architecture=architecture,
@@ -6136,7 +6132,7 @@ class OutscaleSASNodeDriver(OutscaleNodeDriver):
         region_details=None,
         **kwargs,
     ):
-        super(OutscaleSASNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -6167,7 +6163,7 @@ class OutscaleINCNodeDriver(OutscaleNodeDriver):
         region_details=None,
         **kwargs,
     ):
-        super(OutscaleINCNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

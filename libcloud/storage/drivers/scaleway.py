@@ -70,7 +70,7 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
         else:
             self.connectionCls.host = host
 
-        super(ScalewayStorageDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

@@ -57,7 +57,7 @@ class VultrResponse(JsonResponse):
     def __init__(self, response, connection):
 
         self.errors = []
-        super(VultrResponse, self).__init__(response=response, connection=connection)
+        super().__init__(response=response, connection=connection)
         self.objects, self.errors = self.parse_body_and_errors()
         if not self.success():
             raise self._make_excp(self.errors[0])
@@ -74,7 +74,7 @@ class VultrResponse(JsonResponse):
             self.error_dict["ERRORMESSAGE"] = self.ERROR_CODE_MAP[self.status]
             errors.append(self.error_dict)
 
-        js = super(VultrResponse, self).parse_body()
+        js = super().parse_body()
         if isinstance(js, dict):
             js = [js]
 
@@ -206,7 +206,7 @@ class VultrNetwork:
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<Vultrnetwork: id=%s cidr_block=%s location=%s>" % (
+        return "<Vultrnetwork: id={} cidr_block={} location={}>".format(
             self.id,
             self.cidr_block,
             self.location,
@@ -215,7 +215,7 @@ class VultrNetwork:
 
 class VultrNodeSnapshot(VolumeSnapshot):
     def __repr__(self):
-        return "<VultrNodeSnapshot id=%s size=%s driver=%s state=%s>" % (
+        return "<VultrNodeSnapshot id={} size={} driver={} state={}>".format(
             self.id,
             self.size,
             self.driver.name,

@@ -45,7 +45,7 @@ class DigitalOcean_v1_Error(LibcloudError):
         ),  # noqa: E501
         driver=None,
     ):
-        super(DigitalOcean_v1_Error, self).__init__(value, driver=driver)
+        super().__init__(value, driver=driver)
 
 
 class DigitalOcean_v2_Response(JsonResponse):
@@ -63,7 +63,7 @@ class DigitalOcean_v2_Response(JsonResponse):
         else:
             body = self.parse_body()
             if "message" in body:
-                error = "%s (code: %s)" % (body["message"], self.status)
+                error = "{} (code: {})".format(body["message"], self.status)
             else:
                 error = body
             return error
@@ -130,7 +130,7 @@ class DigitalOceanBaseDriver(BaseDriver):
                 cls = DigitalOcean_v2_BaseDriver
             else:
                 raise NotImplementedError("Unsupported API version: %s" % (api_version))
-        return super(DigitalOceanBaseDriver, cls).__new__(cls, **kwargs)
+        return super().__new__(cls, **kwargs)
 
     def ex_account_info(self):
         raise NotImplementedError("ex_account_info not implemented for this driver")
@@ -168,7 +168,7 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         **kwargs,
     ):
         self.ex_per_page = ex_per_page
-        super(DigitalOcean_v2_BaseDriver, self).__init__(key, **kwargs)
+        super().__init__(key, **kwargs)
 
     def ex_account_info(self):
         return self.connection.request("/v2/account").object["account"]

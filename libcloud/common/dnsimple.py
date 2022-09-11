@@ -45,7 +45,7 @@ class DNSimpleDNSConnection(ConnectionUserAndKey):
         """
         # TODO: fijarse sobre que info se paso como parametro y en base
         # a esto, fijar el header
-        headers["X-DNSimple-Token"] = "%s:%s" % (self.user_id, self.key)
+        headers["X-DNSimple-Token"] = "{}:{}".format(self.user_id, self.key)
         headers["Accept"] = "application/json"
         headers["Content-Type"] = "application/json"
         return headers

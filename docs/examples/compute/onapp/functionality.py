@@ -52,7 +52,7 @@ for node in driver.list_nodes():
 #
 identifier = "nodesidentifier"
 
-(node,) = [n for n in driver.list_nodes() if n.id == identifier]
+(node,) = (n for n in driver.list_nodes() if n.id == identifier)
 
 driver.destroy_node(node)
 

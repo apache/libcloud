@@ -34,7 +34,7 @@ class KiliCloudConnection(OpenStack_1_1_Connection):
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
         self.get_endpoint_args = kwargs.pop("get_endpoint_args", None)
-        super(KiliCloudConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._auth_version = KiliCloudConnection._auth_version
 
     def get_endpoint(self):
@@ -65,9 +65,7 @@ class KiliCloudNodeDriver(OpenStack_1_1_NodeDriver):
         Note: tenant_name argument is required for Kili cloud.
         """
         self.tenant_name = tenant_name
-        super(KiliCloudNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()

@@ -19,7 +19,7 @@ from libcloud.common.types import LibcloudError
 __all__ = ["Member", "LoadBalancer", "Algorithm", "Driver", "DEFAULT_ALGORITHM"]
 
 
-class Member(object):
+class Member:
     """
     Represents a load balancer member.
     """
@@ -48,10 +48,10 @@ class Member(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<Member: id=%s, address=%s:%s>" % (self.id, self.ip, self.port)
+        return "<Member: id={}, address={}:{}>".format(self.id, self.ip, self.port)
 
 
-class LoadBalancer(object):
+class LoadBalancer:
     """
     Provide a common interface for handling Load Balancers.
     """
@@ -112,7 +112,7 @@ class LoadBalancer(object):
         )
 
 
-class Algorithm(object):
+class Algorithm:
     """
     Represents a load balancing algorithm.
     """
@@ -150,9 +150,7 @@ class Driver(BaseDriver):
     _VALUE_TO_ALGORITHM_MAP = {}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
-        super(Driver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def list_protocols(self):
         """
