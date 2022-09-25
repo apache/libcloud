@@ -789,12 +789,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
         node = self.driver.list_nodes()[0]
         self.driver.ex_create_additional_capabilities(node, add_cap, "000000")
-        self.assertTrue(
-            node.extra["properties"]["additionalCapabilities"]["ultraSSDEnabled"]
-        )
-        self.assertTrue(
-            node.extra["properties"]["additionalCapabilities"]["hibernationEnabled"]
-        )
+        self.assertTrue(node.extra["properties"]["additionalCapabilities"]["ultraSSDEnabled"])
+        self.assertTrue(node.extra["properties"]["additionalCapabilities"]["hibernationEnabled"])
 
 
 class AzureMockHttp(MockHttp):

@@ -2037,7 +2037,10 @@ class AzureNodeDriver(NodeDriver):
         )
 
     def ex_create_additional_capabilities(
-        self, node, additional_capabilities, resource_group,
+        self,
+        node,
+        additional_capabilities,
+        resource_group,
     ):
         """
         Set the additional capabilities on a stopped node.
@@ -2064,9 +2067,7 @@ class AzureNodeDriver(NodeDriver):
 
         data = {
             "location": node.extra["location"],
-            "properties": {
-                "additionalCapabilities": additional_capabilities
-            }
+            "properties": {"additionalCapabilities": additional_capabilities},
         }
 
         r = self.connection.request(
