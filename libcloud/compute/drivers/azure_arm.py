@@ -2046,7 +2046,7 @@ class AzureNodeDriver(NodeDriver):
         Set the additional capabilities on a stopped node.
 
         :param node: The node to be updated
-        :type node: ``str``
+        :type node: :class:`.Node`
 
         :param ex_additional_capabilities: Optional additional capabilities
             allowing Ultra SSD and hibernation on this node.
