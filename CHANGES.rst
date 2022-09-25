@@ -64,6 +64,16 @@ Compute
   (GITHUB-1699)
   [Eis D. Zaster - @Eis-D-Z]
 
+- [Azure ARM] Add new ``ex_create_additional_capabilities()`` method which allows
+  user to set capabilities on a stopped node. This allows users to utilize ultra
+  SSDs and similar.
+
+  Also add support for new ``ex_iops`` and ``ex_throughput`` argument to the
+  ``create_volume()`` method.
+
+  (GITHUB-1744)
+  [John Wren Kennedy - @jwk404]
+
 Storage
 ~~~~~~~
 
