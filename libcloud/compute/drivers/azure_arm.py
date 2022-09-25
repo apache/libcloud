@@ -898,6 +898,8 @@ class AzureNodeDriver(NodeDriver):
         ex_sku_name=None,
         ex_tags=None,
         ex_zones=None,
+        ex_iops=None,
+        ex_throughput=None,
     ):
         """
         Create a new managed volume.
@@ -928,6 +930,12 @@ class AzureNodeDriver(NodeDriver):
         :param ex_zones: The list of availability zones to create the volume
             in. Options are any or all of ["1", "2", "3"]. (optional)
         :type ex_zones: ``list`` of ``str``
+
+        :param ex_iops: The max IOPS this volume is capable of.
+        :type ex_iops: ``int``
+
+        :param ex_throughput: The max throughput of this volume in MBps.
+        :type ex_throughput: ``int``
 
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
@@ -963,6 +971,12 @@ class AzureNodeDriver(NodeDriver):
 
         if ex_zones is not None:
             data["zones"] = ex_zones
+
+        if ex_iops is not None:
+            data["properties"]["diskIopsReadWrite"] = ex_iops
+
+        if ex_throughput is not None:
+            data["properties"]["diskMBpsReadWrite"] = ex_throughput
 
         response = self.connection.request(
             action,
@@ -2021,6 +2035,49 @@ class AzureNodeDriver(NodeDriver):
             params={"api-version": TAG_API_VERSION},
             method="PATCH",
         )
+
+    def ex_create_additional_capabilities(
+        self,
+        node,
+        additional_capabilities,
+        resource_group,
+    ):
+        """
+        Set the additional capabilities on a stopped node.
+
+        :param node: The node to be updated
+        :type node: :class:`.Node`
+
+        :param ex_additional_capabilities: Optional additional capabilities
+            allowing Ultra SSD and hibernation on this node.
+        :type ex_additional_capabilities: ``dict``
+
+        :param resource_group: The resource group of the node to be updated
+        :type resource_group: ``str``
+
+        :return: True if the update was successful, otherwise False
+        :rtype: ``bool``
+        """
+
+        target = (
+            "/subscriptions/%s/resourceGroups/%s/providers"
+            "/Microsoft.Compute/virtualMachines/%s"
+            % (self.subscription_id, resource_group, node.name)
+        )
+
+        data = {
+            "location": node.extra["location"],
+            "properties": {"additionalCapabilities": additional_capabilities},
+        }
+
+        r = self.connection.request(
+            target,
+            data=data,
+            params={"api-version": VM_API_VERSION},
+            method="PUT",
+        )
+
+        return r.status in [200, 202, 204]
 
     def start_node(self, node):
         """

@@ -479,6 +479,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
             ex_resource_group="000000",
             ex_tags={"description": "MyVolume"},
             ex_zones=["1", "2", "3"],
+            ex_iops=12345,
+            ex_throughput=6789,
         )
 
         self.assertEqual(volume.size, 2)
@@ -492,6 +494,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(volume.extra["properties"]["diskState"], "Attached")
         self.assertEqual(volume.state, StorageVolumeState.INUSE)
         self.assertEqual(volume.extra["zones"], ["1", "2", "3"])
+        self.assertEqual(volume.extra["properties"]["diskIopsReadWrite"], 12345)
+        self.assertEqual(volume.extra["properties"]["diskMBpsReadWrite"], 6789)
 
     def test_create_volume__with_snapshot(self):
         location = self.driver.list_locations()[0]
@@ -776,6 +780,17 @@ class AzureNodeDriverTests(LibcloudTestCase):
                 self.driver._get_instance_vhd(
                     name="test1", ex_resource_group="000000", ex_storage_account="sga1"
                 )
+
+    def test_ex_create_additional_capabilities(self):
+        add_cap = {
+            "ultraSSDEnabled": True,
+            "hibernationEnabled": True,
+        }
+
+        node = self.driver.list_nodes()[0]
+        self.driver.ex_create_additional_capabilities(node, add_cap, "000000")
+        self.assertTrue(node.extra["properties"]["additionalCapabilities"]["ultraSSDEnabled"])
+        self.assertTrue(node.extra["properties"]["additionalCapabilities"]["hibernationEnabled"])
 
 
 class AzureMockHttp(MockHttp):
