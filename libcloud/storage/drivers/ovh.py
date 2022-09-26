@@ -14,11 +14,11 @@
 # limitations under the License.
 
 from libcloud.storage.drivers.s3 import (
-    S3SignatureV4Connection,
-    S3StorageDriver,
     S3_CDN_URL_EXPIRY_HOURS,
+    S3StorageDriver,
+    BaseS3StorageDriver,
+    S3SignatureV4Connection,
 )
-from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 
 __all__ = ["OvhStorageDriver"]
 
@@ -68,7 +68,7 @@ class OvhStorageDriver(BaseS3StorageDriver):
         else:
             self.connectionCls.host = host
 
-        super(OvhStorageDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

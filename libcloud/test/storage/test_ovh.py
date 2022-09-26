@@ -17,14 +17,10 @@
 import sys
 import unittest
 
-from libcloud.storage.drivers.s3 import S3SignatureV4Connection
-from libcloud.storage.drivers.ovh import (
-    OvhStorageDriver,
-    OVH_FR_SBG_HOST,
-)
-from libcloud.test.storage.test_s3 import S3MockHttp, S3Tests
-
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.drivers.s3 import S3SignatureV4Connection
+from libcloud.storage.drivers.ovh import OVH_FR_SBG_HOST, OvhStorageDriver
+from libcloud.test.storage.test_s3 import S3Tests, S3MockHttp
 
 
 class OvhStorageDriverTestCase(S3Tests, unittest.TestCase):
@@ -37,7 +33,7 @@ class OvhStorageDriverTestCase(S3Tests, unittest.TestCase):
         return self.driver_type(*self.driver_args, host=self.default_host)
 
     def setUp(self):
-        super(OvhStorageDriverTestCase, self).setUp()
+        super().setUp()
 
         OvhStorageDriver.connectionCls.conn_class = S3MockHttp
         S3MockHttp.type = None
