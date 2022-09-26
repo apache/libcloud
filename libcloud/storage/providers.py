@@ -96,6 +96,7 @@ DRIVERS = {
     Provider.OVH: ("libcloud.storage.drivers.ovh", "OvhStorageDriver"),
 }
 
+
 def get_driver(provider):
     # type: (Union[Provider, str]) -> Type[StorageDriver]
     deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
