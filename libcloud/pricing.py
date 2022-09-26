@@ -17,13 +17,10 @@
 A class which handles loading the pricing files.
 """
 
-from __future__ import with_statement
 
-from typing import Dict
-from typing import Optional
-from typing import Union
-
+import re
 import os.path
+from typing import Dict, Union, Optional
 from os.path import join as pjoin
 
 try:
@@ -42,6 +39,7 @@ except ImportError:
 __all__ = [
     "get_pricing",
     "get_size_price",
+    "get_image_price",
     "set_pricing",
     "clear_pricing_data",
     "download_pricing_file",
@@ -50,9 +48,7 @@ __all__ = [
 # Default URL to the pricing file in a git repo
 DEFAULT_FILE_URL_GIT = "https://git.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json"  # NOQA
 
-DEFAULT_FILE_URL_S3_BUCKET = (
-    "https://libcloud-pricing-data.s3.amazonaws.com/pricing.json"  # NOQA
-)
+DEFAULT_FILE_URL_S3_BUCKET = "https://libcloud-pricing-data.s3.amazonaws.com/pricing.json"  # NOQA
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, "data/pricing.json")
@@ -70,9 +66,7 @@ CACHE_ALL_PRICING_DATA = False
 
 def get_pricing_file_path(file_path=None):
     # type: (Optional[str]) -> str
-    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and os.path.isfile(
-        CUSTOM_PRICING_FILE_PATH
-    ):
+    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and os.path.isfile(CUSTOM_PRICING_FILE_PATH):
         # Custom pricing file is available, use it
         return CUSTOM_PRICING_FILE_PATH
 
@@ -120,7 +114,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=Fals
     if not pricing_file_path:
         pricing_file_path = get_pricing_file_path(file_path=pricing_file_path)
 
-    with open(pricing_file_path, "r") as fp:
+    with open(pricing_file_path) as fp:
         content = fp.read()
 
     pricing_data = json.loads(content)
@@ -140,9 +134,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=Fals
 
             PRICING_DATA[driver_type] = pricing
     else:
-        set_pricing(
-            driver_type=driver_type, driver_name=driver_name, pricing=driver_pricing
-        )
+        set_pricing(driver_type=driver_type, driver_name=driver_name, pricing=driver_pricing)
 
     return driver_pricing
 
@@ -200,6 +192,98 @@ def get_size_price(driver_type, driver_name, size_id, region=None):
     return price
 
 
+def get_image_price(driver_name, image_name, size_name=None, cores=1):
+
+    # for now only images of GCE have pricing data
+    if driver_name == "gce_images":
+        return _get_gce_image_price(image_name=image_name, size_name=size_name, cores=cores)
+
+    return 0
+
+
+def _get_gce_image_price(image_name, size_name, cores=1):
+    """
+    Return price per hour for an gce image.
+    Price depends on the size of the VM.
+
+    :type image_name: ``str``
+    :param image_name: GCE image full name.
+                       Can be found from GCENodeImage.name
+
+    :type size_name: ``str``
+    :param size_name: Size name of the machine running the image.
+                      Can be found from GCENodeSize.name
+
+    :type cores: ``int``
+    :param cores: The number of the CPUs the machine running the image has.
+                  Can be found from GCENodeSize.extra['guestCpus']
+
+    :rtype: ``float``
+    :return: Image price
+    """
+    # helper function to get image family for gce images
+    def _get_gce_image_family(image_name):
+        image_family = None
+
+        # Decide if the image is a premium image
+        if "sql" in image_name:
+            image_family = "SQL Server"
+        elif "windows" in image_name:
+            image_family = "Windows Server"
+        elif "rhel" in image_name and "sap" in image_name:
+            image_family = "RHEL with Update Services"
+        elif "sles" in image_name and "sap" in image_name:
+            image_family = "SLES for SAP"
+        elif "rhel" in image_name:
+            image_family = "RHEL"
+        elif "sles" in image_name:
+            image_family = "SLES"
+        return image_family
+
+    image_family = _get_gce_image_family(image_name)
+    # if there is no premium image return 0
+    if not image_family:
+        return 0
+
+    pricing = get_pricing(driver_type="compute", driver_name="gce_images")
+    try:
+        price_dict = pricing[image_family]
+    except KeyError:
+        # Price not available
+        return 0
+
+    size_type = "any"
+    if "f1" in size_name:
+        size_type = "f1"
+    elif "g1" in size_name:
+        size_type = "g1"
+
+    price_dict_keys = price_dict.keys()
+
+    # search keys to find the one we want
+    for key in price_dict_keys:
+        if key == "description":
+            continue
+        # eg. 4vcpu or less
+        if re.search(".{1}vcpu or less", key) and cores <= int(key[0]):
+            return float(price_dict[key]["price"])
+        # eg. 1-2vcpu
+        if re.search(".{1}-.{1}vcpu", key) and str(cores) in key:
+            return float(price_dict[key]["price"])
+        # eg 6vcpu or more
+        if re.search(".{1}vcpu or more", key) and cores >= int(key[0]):
+            return float(price_dict[key]["price"])
+        if key in {"standard", "enterprise", "web"} and key in image_name:
+            return float(price_dict[key]["price"])
+        if key in {"f1", "g1"} and size_type == key:
+            return float(price_dict[key]["price"])
+        elif key == "any":
+            price = float(price_dict[key]["price"])
+            return price * cores if "sles" not in image_name else price
+    # fallback
+    return 0
+
+
 def invalidate_pricing_cache():
     # type: () -> None
     """
@@ -235,9 +319,7 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
         del PRICING_DATA[driver_type][driver_name]
 
 
-def download_pricing_file(
-    file_url=DEFAULT_FILE_URL_S3_BUCKET, file_path=CUSTOM_PRICING_FILE_PATH
-):
+def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET, file_path=CUSTOM_PRICING_FILE_PATH):
     # type: (str, str) -> None
     """
     Download pricing file from the file_url and save it to file_path.
@@ -254,7 +336,7 @@ def download_pricing_file(
 
     if not os.path.exists(dir_name):
         # Verify a valid path is provided
-        msg = "Can't write to %s, directory %s, doesn't exist" % (file_path, dir_name)
+        msg = "Can't write to {}, directory {}, doesn't exist".format(file_path, dir_name)
         raise ValueError(msg)
 
     if os.path.exists(file_path) and os.path.isdir(file_path):

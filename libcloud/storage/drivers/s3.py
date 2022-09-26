@@ -13,17 +13,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
-from typing import Optional
-
-import base64
+import os
 import hmac
 import time
+import base64
+from typing import Dict, Optional
 from hashlib import sha1
-import os
 from datetime import datetime
 
 import libcloud.utils.py3
+from libcloud.utils.py3 import b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.xml import findtext, fixxpath
+from libcloud.common.aws import (
+    AWSDriver,
+    AWSBaseResponse,
+    AWSTokenConnection,
+    SignedAWSConnection,
+    UnsignedPayloadSentinel,
+)
+from libcloud.common.base import RawResponse, ConnectionUserAndKey
+from libcloud.utils.files import read_in_chunks
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import (
+    ContainerError,
+    ObjectDoesNotExistError,
+    ObjectHashMismatchError,
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+    ContainerAlreadyExistsError,
+)
 
 try:
     if libcloud.utils.py3.DEFAULT_LXML:
@@ -33,32 +53,6 @@ try:
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import tostring
-from libcloud.utils.py3 import urlencode
-
-from libcloud.utils.xml import fixxpath, findtext
-from libcloud.utils.files import read_in_chunks
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import (
-    AWSBaseResponse,
-    AWSDriver,
-    AWSTokenConnection,
-    SignedAWSConnection,
-    UnsignedPayloadSentinel,
-)
-
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
 
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60
@@ -171,9 +165,7 @@ class BaseS3Connection(ConnectionUserAndKey):
     rawResponseCls = S3RawResponse
 
     @staticmethod
-    def get_auth_signature(
-        method, headers, params, expires, secret_key, path, vendor_prefix
-    ):
+    def get_auth_signature(method, headers, params, expires, secret_key, path, vendor_prefix):
         """
         Signature = URL-Encode( Base64( HMAC-SHA1( YourSecretAccessKeyID,
                                     UTF-8-Encoding-Of( StringToSign ) ) ) );
@@ -205,7 +197,7 @@ class BaseS3Connection(ConnectionUserAndKey):
 
         buf = []
         for key, value in sorted(vendor_headers.items()):
-            buf.append("%s:%s" % (key, value))
+            buf.append("{}:{}".format(key, value))
         header_string = "\n".join(buf)
 
         values_to_sign = []
@@ -266,7 +258,7 @@ class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
         retry_delay=None,
         backoff=None,
     ):
-        super(S3SignatureV4Connection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure,
@@ -282,7 +274,7 @@ class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
         )  # force version 4
 
 
-class S3MultipartUpload(object):
+class S3MultipartUpload:
     """
     Class representing an amazon s3 multipart upload
     """
@@ -330,14 +322,10 @@ class BaseS3StorageDriver(StorageDriver):
     def iterate_containers(self):
         response = self.connection.request("/")
         if response.status == httplib.OK:
-            containers = self._to_containers(
-                obj=response.object, xpath="Buckets/Bucket"
-            )
+            containers = self._to_containers(obj=response.object, xpath="Buckets/Bucket")
             return containers
 
-        raise LibcloudError(
-            "Unexpected status code: %s" % (response.status), driver=self
-        )
+        raise LibcloudError("Unexpected status code: %s" % (response.status), driver=self)
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
@@ -373,13 +361,9 @@ class BaseS3StorageDriver(StorageDriver):
             response = self.connection.request(container_path, params=params)
 
             if response.status != httplib.OK:
-                raise LibcloudError(
-                    "Unexpected status code: %s" % (response.status), driver=self
-                )
+                raise LibcloudError("Unexpected status code: %s" % (response.status), driver=self)
 
-            objects = self._to_objs(
-                obj=response.object, xpath="Contents", container=container
-            )
+            objects = self._to_objs(obj=response.object, xpath="Contents", container=container)
             is_truncated = response.object.findtext(
                 fixxpath(xpath="IsTruncated", namespace=self.namespace)
             ).lower()
@@ -443,7 +427,7 @@ class BaseS3StorageDriver(StorageDriver):
         """
         container_url = self._get_container_path(container)
         object_name_cleaned = self._clean_object_name(object_name)
-        object_path = "%s/%s" % (container_url, object_name_cleaned)
+        object_path = "{}/{}".format(container_url, object_name_cleaned)
         return object_path
 
     def create_container(self, container_name):
@@ -456,9 +440,7 @@ class BaseS3StorageDriver(StorageDriver):
         else:
             data = ""
 
-        response = self.connection.request(
-            "/%s" % (container_name), data=data, method="PUT"
-        )
+        response = self.connection.request("/%s" % (container_name), data=data, method="PUT")
 
         if response.status == httplib.OK:
             container = Container(name=container_name, extra=None, driver=self)
@@ -485,9 +467,7 @@ class BaseS3StorageDriver(StorageDriver):
                 driver=self,
             )
 
-        raise LibcloudError(
-            "Unexpected status code: %s" % (response.status), driver=self
-        )
+        raise LibcloudError("Unexpected status code: %s" % (response.status), driver=self)
 
     def delete_container(self, container):
         # Note: All the objects in the container must be deleted first
@@ -501,9 +481,7 @@ class BaseS3StorageDriver(StorageDriver):
                 driver=self,
             )
         elif response.status == httplib.NOT_FOUND:
-            raise ContainerDoesNotExistError(
-                value=None, driver=self, container_name=container.name
-            )
+            raise ContainerDoesNotExistError(value=None, driver=self, container_name=container.name)
 
         return False
 
@@ -530,9 +508,7 @@ class BaseS3StorageDriver(StorageDriver):
 
     def download_object_as_stream(self, obj, chunk_size=None):
         obj_path = self._get_object_path(obj.container, obj.name)
-        response = self.connection.request(
-            obj_path, method="GET", stream=True, raw=True
-        )
+        response = self.connection.request(obj_path, method="GET", stream=True, raw=True)
 
         return self._get_object(
             obj=obj,
@@ -559,9 +535,7 @@ class BaseS3StorageDriver(StorageDriver):
         obj_path = self._get_object_path(obj.container, obj.name)
 
         headers = {"Range": self._get_standard_range_str(start_bytes, end_bytes)}
-        response = self.connection.request(
-            obj_path, method="GET", headers=headers, raw=True
-        )
+        response = self.connection.request(obj_path, method="GET", headers=headers, raw=True)
 
         return self._get_object(
             obj=obj,
@@ -578,9 +552,7 @@ class BaseS3StorageDriver(StorageDriver):
             success_status_code=httplib.PARTIAL_CONTENT,
         )
 
-    def download_object_range_as_stream(
-        self, obj, start_bytes, end_bytes=None, chunk_size=None
-    ):
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None, chunk_size=None):
         self._validate_start_and_end_bytes(start_bytes=start_bytes, end_bytes=end_bytes)
 
         obj_path = self._get_object_path(obj.container, obj.name)
@@ -655,9 +627,7 @@ class BaseS3StorageDriver(StorageDriver):
         if response.status != httplib.OK:
             raise LibcloudError("Error initiating multipart upload", driver=self)
 
-        return findtext(
-            element=response.object, xpath="UploadId", namespace=self.namespace
-        )
+        return findtext(element=response.object, xpath="UploadId", namespace=self.namespace)
 
     def _upload_multipart_chunks(
         self, container, object_name, upload_id, stream, calculate_hash=True
@@ -695,9 +665,7 @@ class BaseS3StorageDriver(StorageDriver):
         request_path = self._get_object_path(container, object_name)
 
         # Read the input data in chunk sizes suitable for AWS
-        for data in read_in_chunks(
-            stream, chunk_size=CHUNK_SIZE, fill_size=True, yield_empty=True
-        ):
+        for data in read_in_chunks(stream, chunk_size=CHUNK_SIZE, fill_size=True, yield_empty=True):
             bytes_transferred += len(data)
 
             if calculate_hash:
@@ -776,7 +744,7 @@ class BaseS3StorageDriver(StorageDriver):
             element = response.object
             # pylint: disable=maybe-no-member
             code, message = response._parse_error_details(element=element)
-            msg = "Error in multipart commit: %s (%s)" % (message, code)
+            msg = "Error in multipart commit: {} ({})".format(message, code)
             raise LibcloudError(msg, driver=self)
 
         # Get the server's etag to be passed back to the caller
@@ -904,19 +872,14 @@ class BaseS3StorageDriver(StorageDriver):
 
             if response.status != httplib.OK:
                 raise LibcloudError(
-                    "Error fetching multipart uploads. "
-                    "Got code: %s" % response.status,
+                    "Error fetching multipart uploads. " "Got code: %s" % response.status,
                     driver=self,
                 )
 
             body = response.parse_body()
             # pylint: disable=maybe-no-member
-            for node in body.findall(
-                fixxpath(xpath="Upload", namespace=self.namespace)
-            ):
-                initiator = node.find(
-                    fixxpath(xpath="Initiator", namespace=self.namespace)
-                )
+            for node in body.findall(fixxpath(xpath="Upload", namespace=self.namespace)):
+                initiator = node.find(fixxpath(xpath="Initiator", namespace=self.namespace))
                 owner = node.find(fixxpath(xpath="Owner", namespace=self.namespace))
 
                 key = finder(node, "Key")
@@ -929,9 +892,7 @@ class BaseS3StorageDriver(StorageDriver):
 
             # Check if this is the last entry in the listing
             # pylint: disable=maybe-no-member
-            is_truncated = body.findtext(
-                fixxpath(xpath="IsTruncated", namespace=self.namespace)
-            )
+            is_truncated = body.findtext(fixxpath(xpath="IsTruncated", namespace=self.namespace))
 
             if is_truncated.lower() == "false":
                 break
@@ -940,9 +901,7 @@ class BaseS3StorageDriver(StorageDriver):
             upload_marker = body.findtext(
                 fixxpath(xpath="NextUploadIdMarker", namespace=self.namespace)
             )
-            key_marker = body.findtext(
-                fixxpath(xpath="NextKeyMarker", namespace=self.namespace)
-            )
+            key_marker = body.findtext(fixxpath(xpath="NextKeyMarker", namespace=self.namespace))
 
             params["key-marker"] = key_marker
             params["upload-id-marker"] = upload_marker
@@ -960,9 +919,7 @@ class BaseS3StorageDriver(StorageDriver):
         """
 
         # Iterate through the container and delete the upload ids
-        for upload in self.ex_iterate_multipart_uploads(
-            container, prefix, delimiter=None
-        ):
+        for upload in self.ex_iterate_multipart_uploads(container, prefix, delimiter=None):
             self._abort_multipart(container, upload.key, upload.id)
 
     def _clean_object_name(self, name):
@@ -1031,7 +988,7 @@ class BaseS3StorageDriver(StorageDriver):
         # for details
         if verify_hash and not aws_kms_encryption and not hash_matches:
             raise ObjectHashMismatchError(
-                value="MD5 hash {0} checksum does not match {1}".format(
+                value="MD5 hash {} checksum does not match {}".format(
                     server_hash, result_dict["data_hash"]
                 ),
                 object_name=object_name,
@@ -1101,9 +1058,7 @@ class BaseS3StorageDriver(StorageDriver):
         meta_data = extra.get("meta_data", None)
         acl = extra.get("acl", None)
 
-        headers["Content-Type"] = self._determine_content_type(
-            content_type, object_name
-        )
+        headers["Content-Type"] = self._determine_content_type(content_type, object_name)
 
         if meta_data:
             for key, value in list(meta_data.items()):
@@ -1182,9 +1137,7 @@ class BaseS3StorageDriver(StorageDriver):
 
         return container
 
-    def _get_content_length_from_headers(
-        self, headers: Dict[str, str]
-    ) -> Optional[int]:
+    def _get_content_length_from_headers(self, headers: Dict[str, str]) -> Optional[int]:
         """
         Prase object size from the provided response headers.
         """
@@ -1225,8 +1178,7 @@ class BaseS3StorageDriver(StorageDriver):
 
         if content_length is None:
             raise KeyError(
-                "Can not deduce object size from headers for "
-                "object %s" % (object_name)
+                "Can not deduce object size from headers for " "object %s" % (object_name)
             )
 
         obj = Object(
@@ -1246,17 +1198,13 @@ class BaseS3StorageDriver(StorageDriver):
             element=element, xpath="Owner/DisplayName", namespace=self.namespace
         )
         meta_data = {"owner": {"id": owner_id, "display_name": owner_display_name}}
-        last_modified = findtext(
-            element=element, xpath="LastModified", namespace=self.namespace
-        )
+        last_modified = findtext(element=element, xpath="LastModified", namespace=self.namespace)
         extra = {"last_modified": last_modified}
 
         obj = Object(
             name=findtext(element=element, xpath="Key", namespace=self.namespace),
             size=int(findtext(element=element, xpath="Size", namespace=self.namespace)),
-            hash=findtext(
-                element=element, xpath="ETag", namespace=self.namespace
-            ).replace('"', ""),
+            hash=findtext(element=element, xpath="ETag", namespace=self.namespace).replace('"', ""),
             extra=extra,
             meta_data=meta_data,
             container=container,
@@ -1297,7 +1245,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         if host is None:
             host = REGION_TO_HOST_MAP[region]
 
-        super(S3StorageDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

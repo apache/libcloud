@@ -19,8 +19,7 @@ OpenStack driver.
 """
 
 from libcloud.compute.types import Provider, LibcloudError
-from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
-from libcloud.compute.drivers.openstack import OpenStack_1_1_NodeDriver
+from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection, OpenStack_1_1_NodeDriver
 
 __all__ = ["KiliCloudNodeDriver"]
 
@@ -35,7 +34,7 @@ class KiliCloudConnection(OpenStack_1_1_Connection):
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
         self.get_endpoint_args = kwargs.pop("get_endpoint_args", None)
-        super(KiliCloudConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._auth_version = KiliCloudConnection._auth_version
 
     def get_endpoint(self):
@@ -45,9 +44,7 @@ class KiliCloudConnection(OpenStack_1_1_Connection):
         if "2.0_password" in self._auth_version:
             ep = self.service_catalog.get_endpoint(**self.get_endpoint_args)
         else:
-            raise LibcloudError(
-                'Auth version "%s" not supported' % (self._auth_version)
-            )
+            raise LibcloudError('Auth version "%s" not supported' % (self._auth_version))
 
         public_url = ep.url
 
@@ -63,16 +60,12 @@ class KiliCloudNodeDriver(OpenStack_1_1_NodeDriver):
     connectionCls = KiliCloudConnection
     type = Provider.HPCLOUD
 
-    def __init__(
-        self, key, secret, tenant_name, secure=True, host=None, port=None, **kwargs
-    ):
+    def __init__(self, key, secret, tenant_name, secure=True, host=None, port=None, **kwargs):
         """
         Note: tenant_name argument is required for Kili cloud.
         """
         self.tenant_name = tenant_name
-        super(KiliCloudNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()

@@ -15,16 +15,13 @@
 
 import sys
 
-from libcloud.test import unittest
-
-from libcloud.container.base import ContainerCluster, ContainerImage, Container
-from libcloud.container.drivers.ecs import ElasticContainerDriver
-from libcloud.container.utils.docker import RegistryClient
-
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import CONTAINER_PARAMS_ECS
+from libcloud.container.base import Container, ContainerImage, ContainerCluster
 from libcloud.test.file_fixtures import ContainerFileFixtures
-from libcloud.test import MockHttp
+from libcloud.container.drivers.ecs import ElasticContainerDriver
+from libcloud.container.utils.docker import RegistryClient
 
 
 class ElasticContainerDriverTestCase(unittest.TestCase):
@@ -39,9 +36,7 @@ class ElasticContainerDriverTestCase(unittest.TestCase):
     def test_list_clusters(self):
         clusters = self.driver.list_clusters()
         self.assertEqual(len(clusters), 1)
-        self.assertEqual(
-            clusters[0].id, "arn:aws:ecs:us-east-1:012345678910:cluster/default"
-        )
+        self.assertEqual(clusters[0].id, "arn:aws:ecs:us-east-1:012345678910:cluster/default")
         self.assertEqual(clusters[0].name, "default")
 
     def test_create_cluster(self):

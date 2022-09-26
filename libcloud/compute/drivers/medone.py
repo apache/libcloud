@@ -17,7 +17,7 @@ Med-1 Driver
 """
 
 from libcloud.compute.providers import Provider
-from libcloud.common.dimensiondata import DimensionDataConnection, API_ENDPOINTS
+from libcloud.common.dimensiondata import API_ENDPOINTS, DimensionDataConnection
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver
 
 DEFAULT_REGION = "med1-il"
@@ -53,7 +53,7 @@ class MedOneNodeDriver(DimensionDataNodeDriver):
 
         self.selected_region = API_ENDPOINTS[region]
 
-        super(MedOneNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

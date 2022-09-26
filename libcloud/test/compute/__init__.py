@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.compute.base import Node, NodeImage, NodeLocation, StorageVolume
 from libcloud.pricing import get_pricing
+from libcloud.compute.base import Node, NodeImage, NodeLocation, StorageVolume
 
 
 class TestCaseMixin:
@@ -38,9 +38,7 @@ class TestCaseMixin:
         self.assertTrue(size.bandwidth is None or isinstance(size.bandwidth, int))
         # Check that price values are ints, floats, or None.
         self.assertTrue(
-            size.price is None
-            or isinstance(size.price, float)
-            or isinstance(size.price, int)
+            size.price is None or isinstance(size.price, float) or isinstance(size.price, int)
         )
 
     def test_list_images_response(self):

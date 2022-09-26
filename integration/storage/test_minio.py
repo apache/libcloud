@@ -16,32 +16,32 @@
 import sys
 import unittest
 
-from integration.storage.base import Integration
 from libcloud.storage import types
+from integration.storage.base import Integration
 
 
 class MinioTest(Integration.ContainerTestBase):
-    provider = 'minio'
+    provider = "minio"
 
-    account = 'minioaccount'
-    secret = 'miniopassword'
+    account = "minioaccount"
+    secret = "miniopassword"
 
-    image = 'minio/minio'
+    image = "minio/minio"
     port = 9000
-    environment = {'MINIO_ROOT_USER': account, 'MINIO_ROOT_PASSWORD': secret}
-    command = ['server', '/data']
+    environment = {"MINIO_ROOT_USER": account, "MINIO_ROOT_PASSWORD": secret}
+    command = ["server", "/data"]
     # Output seemed to have changed recently, see
     # https://github.com/apache/libcloud/runs/7481114211?check_suite_focus=true
     # ready_message = b'Console endpoint is listening on a dynamic port'
-    ready_message = b'1 Online'
+    ready_message = b"1 Online"
 
     def test_cdn_url(self):
-        self.skipTest('Not implemented in driver')
+        self.skipTest("Not implemented in driver")
 
     def assert_file_is_missing(self, container, obj):
         with self.assertRaises(types.ObjectDoesNotExistError):
             self.driver.get_object(container.name, obj.name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

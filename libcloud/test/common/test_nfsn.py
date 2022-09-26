@@ -13,16 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import string
 import sys
+import string
 import unittest
-
 from unittest.mock import Mock, patch
 
-from libcloud.common.nfsn import NFSNConnection
-from libcloud.test import LibcloudTestCase, MockHttp
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.utils.py3 import httplib
-
+from libcloud.common.nfsn import NFSNConnection
 
 mock_time = Mock()
 mock_time.return_value = 1000000

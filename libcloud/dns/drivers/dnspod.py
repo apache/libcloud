@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.dns.base import Zone, Record, DNSDriver, RecordType
 from libcloud.dns.types import (
     Provider,
     ZoneDoesNotExistError,
@@ -20,9 +21,8 @@ from libcloud.dns.types import (
     RecordDoesNotExistError,
     RecordAlreadyExistsError,
 )
-from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
-from libcloud.common.dnspod import DNSPodConnection, DNSPodResponse, DNSPodException
 from libcloud.utils.py3 import urlencode
+from libcloud.common.dnspod import DNSPodResponse, DNSPodException, DNSPodConnection
 
 __all__ = ["DNSPodDNSDriver"]
 
@@ -98,9 +98,7 @@ class DNSPodDNSDriver(DNSDriver):
             self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(
-                    value=e.message, driver=self, zone_id=zone.id
-                )
+                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone.id)
             else:
                 raise e
 
@@ -117,9 +115,7 @@ class DNSPodDNSDriver(DNSDriver):
             response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(
-                    value=e.message, driver=self, zone_id=zone_id
-                )
+                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone_id)
             else:
                 raise e
         zone = self._to_zone(response.object["domain"])
@@ -152,9 +148,7 @@ class DNSPodDNSDriver(DNSDriver):
             response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in ZONE_ALREADY_EXISTS_ERROR_MSGS:
-                raise ZoneAlreadyExistsError(
-                    value=e.message, driver=self, zone_id=domain
-                )
+                raise ZoneAlreadyExistsError(value=e.message, driver=self, zone_id=domain)
             else:
                 raise e
 
@@ -199,13 +193,9 @@ class DNSPodDNSDriver(DNSDriver):
             self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in RECORD_DOES_NOT_EXIST_ERRORS_MSGS:
-                raise RecordDoesNotExistError(
-                    record_id=record.id, driver=self, value=""
-                )
+                raise RecordDoesNotExistError(record_id=record.id, driver=self, value="")
             elif e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(
-                    zone_id=record.zone.id, driver=self, value=""
-                )
+                raise ZoneDoesNotExistError(zone_id=record.zone.id, driver=self, value="")
             else:
                 raise e
 
@@ -230,9 +220,7 @@ class DNSPodDNSDriver(DNSDriver):
             response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in RECORD_DOES_NOT_EXIST_ERRORS_MSGS:
-                raise RecordDoesNotExistError(
-                    record_id=record_id, driver=self, value=""
-                )
+                raise RecordDoesNotExistError(record_id=record_id, driver=self, value="")
             elif e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
                 raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value="")
             else:
@@ -286,9 +274,7 @@ class DNSPodDNSDriver(DNSDriver):
         try:
             response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
-            if e.message == (
-                "Record impacted, same record exists " "or CNAME/URL impacted"
-            ):
+            if e.message == ("Record impacted, same record exists " "or CNAME/URL impacted"):
                 raise RecordAlreadyExistsError(record_id="", driver=self, value=name)
             raise e
 

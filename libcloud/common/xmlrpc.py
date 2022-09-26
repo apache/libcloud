@@ -17,13 +17,10 @@
 Base classes for working with xmlrpc APIs
 """
 
-from typing import Dict
-from typing import Type
+from typing import Dict, Type
 
-from libcloud.utils.py3 import xmlrpclib
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, xmlrpclib
 from libcloud.common.base import Response, Connection
-
 from libcloud.common.types import LibcloudError
 
 
@@ -31,7 +28,7 @@ class ProtocolError(Exception):
     pass
 
 
-class ErrorCodeMixin(object):
+class ErrorCodeMixin:
     """
     This is a helper for API's that have a well defined collection of error
     codes that are easily parsed out of error messages. It acts as a factory:
@@ -70,7 +67,7 @@ class XMLRPCResponse(ErrorCodeMixin, Response):
             return params
         except xmlrpclib.Fault as e:
             self.raise_exception_for_error(e.faultCode, e.faultString)
-            error_string = "%s: %s" % (e.faultCode, e.faultString)
+            error_string = "{}: {}".format(e.faultCode, e.faultString)
             raise self.defaultExceptionCls(error_string)
 
     def parse_error(self):
@@ -107,4 +104,4 @@ class XMLRPCConnection(Connection):
         """
         endpoint = kwargs.get("endpoint", self.endpoint)
         data = xmlrpclib.dumps(args, methodname=method_name, allow_none=True)
-        return super(XMLRPCConnection, self).request(endpoint, data=data, method="POST")
+        return super().request(endpoint, data=data, method="POST")

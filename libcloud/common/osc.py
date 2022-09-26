@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import hashlib
 import hmac
+import hashlib
+from datetime import datetime
 
 from libcloud.utils.py3 import urlquote
 
@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-class OSCRequestSigner(object):
+class OSCRequestSigner:
     """
     Class which handles signing the outgoing AWS requests.
     """
@@ -61,12 +61,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
     @staticmethod
     def _get_canonical_headers(headers: dict):
         return (
-            "\n".join(
-                [
-                    ":".join([k.lower(), str(v).strip()])
-                    for k, v in sorted(headers.items())
-                ]
-            )
+            "\n".join([":".join([k.lower(), str(v).strip()]) for k, v in sorted(headers.items())])
             + "\n"
         )
 
@@ -74,14 +69,12 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
     def _get_request_params(params: dict):
         return "&".join(
             [
-                "%s=%s" % (urlquote(k, safe=""), urlquote(str(v), safe="~"))
+                "{}={}".format(urlquote(k, safe=""), urlquote(str(v), safe="~"))
                 for k, v in sorted(params.items())
             ]
         )
 
-    def get_request_headers(
-        self, service_name: str, region: str, action: str, data: str
-    ):
+    def get_request_headers(self, service_name: str, region: str, action: str, data: str):
         date = datetime.utcnow()
         host = "{}.{}.outscale.com".format(service_name, region)
         headers = {
@@ -106,9 +99,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
     ):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
-        signature = self._get_signature(
-            headers=headers, dt=dt, method=method, path=path, data=data
-        )
+        signature = self._get_signature(headers=headers, dt=dt, method=method, path=path, data=data)
         return (
             "OSC4-HMAC-SHA256 Credential=%(u)s/%(c)s, "
             "SignedHeaders=%(sh)s, Signature=%(s)s"
@@ -120,18 +111,12 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
             }
         )
 
-    def _get_signature(
-        self, headers: dict, dt: datetime, method: str, path: str, data: str
-    ):
+    def _get_signature(self, headers: dict, dt: datetime, method: str, path: str, data: str):
         string_to_sign = self._get_string_to_sign(
             headers=headers, dt=dt, method=method, path=path, data=data
         )
-        signing_key = self._get_key_to_sign_with(
-            self.access_secret, dt.strftime("%Y%m%d")
-        )
-        return hmac.new(
-            signing_key, string_to_sign.encode("utf-8"), hashlib.sha256
-        ).hexdigest()
+        signing_key = self._get_key_to_sign_with(self.access_secret, dt.strftime("%Y%m%d"))
+        return hmac.new(signing_key, string_to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
 
     def _get_key_to_sign_with(self, key: str, dt: str):
         k_date = self.sign(("OSC4" + key).encode("utf-8"), dt)
@@ -139,9 +124,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
         k_service = self.sign(k_region, self.connection.service_name)
         return self.sign(k_service, "osc4_request")
 
-    def _get_string_to_sign(
-        self, headers: dict, dt: datetime, method: str, path: str, data: str
-    ):
+    def _get_string_to_sign(self, headers: dict, dt: datetime, method: str, path: str, data: str):
         canonical_request = self._get_canonical_request(
             headers=headers, method=method, path=path, data=data
         )

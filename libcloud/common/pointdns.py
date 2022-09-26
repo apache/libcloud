@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import base64
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
 
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 
 class PointDNSDNSResponse(JsonResponse):
@@ -46,7 +44,7 @@ class PointDNSConnection(ConnectionUserAndKey):
 
         This method adds ``token`` to the request.
         """
-        b64string = b("%s:%s" % (self.user_id, self.key))
+        b64string = b("{}:{}".format(self.user_id, self.key))
         token = base64.b64encode(b64string)
         headers["Authorization"] = "Basic %s" % token
         headers["Accept"] = "application/json"

@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 
-class Provider(object):
+class Provider:
     """
     Defines for each of the supported providers
 
@@ -128,10 +128,10 @@ class ContainerError(LibcloudError):
 
     def __init__(self, value, driver, container_name):
         self.container_name = container_name
-        super(ContainerError, self).__init__(value=value, driver=driver)
+        super().__init__(value=value, driver=driver)
 
     def __str__(self):
-        return "<%s in %s, container=%s, value=%s>" % (
+        return "<{} in {}, container={}, value={}>".format(
             self.error_type,
             repr(self.driver),
             self.container_name,
@@ -144,13 +144,13 @@ class ObjectError(LibcloudError):
 
     def __init__(self, value, driver, object_name):
         self.object_name = object_name
-        super(ObjectError, self).__init__(value=value, driver=driver)
+        super().__init__(value=value, driver=driver)
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return "<%s in %s, value=%s, object = %s>" % (
+        return "<{} in {}, value={}, object = {}>".format(
             self.error_type,
             repr(self.driver),
             self.value,

@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bottle import request
 from functools import wraps
+
+from bottle import request
 
 from integration.compute.config import EXPECTED_AUTH
 
@@ -22,12 +23,13 @@ from integration.compute.config import EXPECTED_AUTH
 def secure(f):
     @wraps(f)
     def secure_route(*args, **kwargs):
-        if 'Authorization' not in request.headers:
-            raise Exception('Argghhhh')
+        if "Authorization" not in request.headers:
+            raise Exception("Argghhhh")
         else:
-            auth = request.headers['Authorization']
+            auth = request.headers["Authorization"]
 
             if auth != EXPECTED_AUTH:
-                raise Exception('Bad authentication')
+                raise Exception("Bad authentication")
             return f(*args, **kwargs)
+
     return secure_route

@@ -14,17 +14,13 @@
 # limitations under the License.
 
 import sys
-from libcloud.test import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.drivers.softlayer import SoftLayerDNSDriver
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.test import MockHttp, unittest
+from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import httplib, xmlrpclib
 from libcloud.test.secrets import SOFTLAYER_PARAMS
-from libcloud.utils.py3 import xmlrpclib
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.softlayer import SoftLayerDNSDriver
 
 
 class SoftLayerTests(unittest.TestCase):
@@ -181,16 +177,14 @@ class SoftLayerDNSMockHttp(MockHttp):
     def _xmlrpc(self, method, url, body, headers):
         params, meth_name = xmlrpclib.loads(body)
         url = url.replace("/", "_")
-        meth_name = "%s_%s" % (url, meth_name)
+        meth_name = "{}_{}".format(url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
     def _xmlrpc_v3_SoftLayer_Dns_Domain_createObject(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Dns_Domain_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_getByDomainName(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_getByDomainName(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Dns_Domain_getByDomainName.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -210,15 +204,11 @@ class SoftLayerDNSMockHttp(MockHttp):
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_getResourceRecords(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_getResourceRecords(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Dns_Domain_getResourceRecords.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_getObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_getObject(self, method, url, body, headers):
         fixture = {
             None: "v3_SoftLayer_Dns_Domain_ResourceRecord_getObject.xml",
             "RECORD_DOES_NOT_EXIST": "not_found.xml",
@@ -240,17 +230,11 @@ class SoftLayerDNSMockHttp(MockHttp):
     def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_createObject(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "v3_SoftLayer_Dns_Domain_ResourceRecord_createObject.xml"
-        )
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_ResourceRecord_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_editObject(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "v3_SoftLayer_Dns_Domain_ResourceRecord_editObject.xml"
-        )
+    def _xmlrpc_v3_SoftLayer_Dns_Domain_ResourceRecord_editObject(self, method, url, body, headers):
+        body = self.fixtures.load("v3_SoftLayer_Dns_Domain_ResourceRecord_editObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

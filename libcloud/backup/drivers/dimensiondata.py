@@ -14,21 +14,24 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import ET
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.backup.base import BackupDriver, BackupTarget, BackupTargetJob
-from libcloud.backup.types import BackupTargetType
-from libcloud.backup.types import Provider
-from libcloud.common.dimensiondata import dd_object_to_id
-from libcloud.common.dimensiondata import DimensionDataConnection
-from libcloud.common.dimensiondata import DimensionDataBackupClient
-from libcloud.common.dimensiondata import DimensionDataBackupClientAlert
-from libcloud.common.dimensiondata import DimensionDataBackupClientType
-from libcloud.common.dimensiondata import DimensionDataBackupDetails
-from libcloud.common.dimensiondata import DimensionDataBackupSchedulePolicy
-from libcloud.common.dimensiondata import DimensionDataBackupStoragePolicy
-from libcloud.common.dimensiondata import API_ENDPOINTS, DEFAULT_REGION
-from libcloud.common.dimensiondata import TYPES_URN
-from libcloud.common.dimensiondata import GENERAL_NS, BACKUP_NS
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.backup.types import Provider, BackupTargetType
+from libcloud.common.dimensiondata import (
+    BACKUP_NS,
+    TYPES_URN,
+    GENERAL_NS,
+    API_ENDPOINTS,
+    DEFAULT_REGION,
+    DimensionDataConnection,
+    DimensionDataBackupClient,
+    DimensionDataBackupDetails,
+    DimensionDataBackupClientType,
+    DimensionDataBackupClientAlert,
+    DimensionDataBackupStoragePolicy,
+    DimensionDataBackupSchedulePolicy,
+    dd_object_to_id,
+)
 
 # pylint: disable=no-member
 
@@ -66,7 +69,7 @@ class DimensionDataBackupDriver(BackupDriver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
-        super(DimensionDataBackupDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -82,7 +85,7 @@ class DimensionDataBackupDriver(BackupDriver):
         Add the region to the kwargs before the connection is instantiated
         """
 
-        kwargs = super(DimensionDataBackupDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["region"] = self.selected_region
         return kwargs
 
@@ -100,9 +103,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`BackupTarget`
         """
-        targets = self._to_targets(
-            self.connection.request_with_orgId_api_2("server/server").object
-        )
+        targets = self._to_targets(self.connection.request_with_orgId_api_2("server/server").object)
         return targets
 
     def create_target(self, name, address, type=BackupTargetType.VIRTUAL, extra=None):
@@ -164,9 +165,7 @@ class DimensionDataBackupDriver(BackupDriver):
             name=node.name, address=node.id, type=BackupTargetType.VIRTUAL, extra=extra
         )
 
-    def create_target_from_container(
-        self, container, type=BackupTargetType.OBJECT, extra=None
-    ):
+    def create_target_from_container(self, container, type=BackupTargetType.OBJECT, extra=None):
         """
         Creates a new backup target from an existing storage container
 
@@ -181,9 +180,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        return NotImplementedError(
-            "create_target_from_container not supported for this driver"
-        )
+        return NotImplementedError("create_target_from_container not supported for this driver")
 
     def update_target(self, target, name=None, address=None, extra=None):
         """
@@ -253,9 +250,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`BackupTargetRecoveryPoint`
         """
-        raise NotImplementedError(
-            "list_recovery_points not implemented for this driver"
-        )
+        raise NotImplementedError("list_recovery_points not implemented for this driver")
 
     def recover_target(self, target, recovery_point, path=None):
         """
@@ -274,9 +269,7 @@ class DimensionDataBackupDriver(BackupDriver):
         """
         raise NotImplementedError("recover_target not implemented for this driver")
 
-    def recover_target_out_of_place(
-        self, target, recovery_point, recovery_target, path=None
-    ):
+    def recover_target_out_of_place(self, target, recovery_point, recovery_target, path=None):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -294,9 +287,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            "recover_target_out_of_place not implemented for this driver"
-        )
+        raise NotImplementedError("recover_target_out_of_place not implemented for this driver")
 
     def get_target_job(self, target, id):
         """
@@ -388,9 +379,7 @@ class DimensionDataBackupDriver(BackupDriver):
         """
         if job is None:
             if ex_client is None or ex_target is None:
-                raise ValueError(
-                    "Either job or ex_client and " "ex_target have to be set"
-                )
+                raise ValueError("Either job or ex_client and " "ex_target have to be set")
             server_id = self._target_to_target_address(ex_target)
             client_id = self._client_to_client_id(ex_client)
         else:
@@ -398,7 +387,7 @@ class DimensionDataBackupDriver(BackupDriver):
             client_id = job.extra["clientId"]
 
         response = self.connection.request_with_orgId_api_1(
-            "server/%s/backup/client/%s?cancelJob" % (server_id, client_id),
+            "server/{}/backup/client/{}?cancelJob".format(server_id, client_id),
             method="GET",
         ).object
         response_code = findtext(response, "result", GENERAL_NS)
@@ -492,7 +481,7 @@ class DimensionDataBackupDriver(BackupDriver):
         server_id = self._target_to_target_address(target)
         client_id = self._client_to_client_id(backup_client)
         response = self.connection.request_with_orgId_api_1(
-            "server/%s/backup/client/%s?disable" % (server_id, client_id), method="GET"
+            "server/{}/backup/client/{}?disable".format(server_id, client_id), method="GET"
         ).object
         response_code = findtext(response, "result", GENERAL_NS)
         return response_code in ["IN_PROGRESS", "SUCCESS"]
@@ -627,8 +616,7 @@ class DimensionDataBackupDriver(BackupDriver):
         alert = element.find(fixxpath("alerting", BACKUP_NS))
         if alert is not None:
             notify_list = [
-                email_addr.text
-                for email_addr in alert.findall(fixxpath("emailAddress", BACKUP_NS))
+                email_addr.text for email_addr in alert.findall(fixxpath("emailAddress", BACKUP_NS))
             ]
             return DimensionDataBackupClientAlert(
                 trigger=element.get("trigger"), notify_list=notify_list

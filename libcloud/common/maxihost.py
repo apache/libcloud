@@ -14,9 +14,8 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import JsonResponse
-from libcloud.common.base import ConnectionKey
 
 
 class MaxihostResponse(JsonResponse):
@@ -34,7 +33,7 @@ class MaxihostResponse(JsonResponse):
         else:
             body = self.parse_body()
             if "message" in body:
-                error = "%s (code: %s)" % (body["message"], self.status)
+                error = "{} (code: {})".format(body["message"], self.status)
             else:
                 error = body
             return error

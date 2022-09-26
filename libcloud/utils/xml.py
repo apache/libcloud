@@ -27,7 +27,7 @@ def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
     if not namespace:
         return xpath
-    return "/".join(["{%s}%s" % (namespace, e) for e in xpath.split("/")])
+    return "/".join(["{{{}}}{}".format(namespace, e) for e in xpath.split("/")])
 
 
 def findtext(element, xpath, namespace=None, no_text_value=""):
@@ -56,9 +56,7 @@ def findtext_ignore_namespace(element, xpath, namespace=None, no_text_value=""):
     )
 
     if not result and namespace:
-        result = findtext(
-            element=element, xpath=xpath, namespace=None, no_text_value=no_text_value
-        )
+        result = findtext(element=element, xpath=xpath, namespace=None, no_text_value=no_text_value)
 
     return result
 

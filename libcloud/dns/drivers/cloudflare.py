@@ -15,17 +15,21 @@
 
 __all__ = ["CloudFlareDNSDriver"]
 
-import itertools
 import json
+import itertools
 
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import RecordAlreadyExistsError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError, ZoneDoesNotExistError
-from libcloud.utils.misc import merge_valid_keys, reverse_dict
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
+from libcloud.utils.misc import reverse_dict, merge_valid_keys
+from libcloud.common.base import JsonResponse, ConnectionKey, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
 
 API_HOST = "api.cloudflare.com"
 API_BASE = "/client/v4"
@@ -147,7 +151,7 @@ class CloudFlareDNSResponse(JsonResponse):
             raise exception_class(**kwargs)
 
 
-class BaseDNSConnection(object):
+class BaseDNSConnection:
     host = API_HOST
     secure = True
     responseCls = CloudFlareDNSResponse
@@ -200,9 +204,7 @@ class CloudFlareDNSDriver(DNSDriver):
         if secret is None:
             self.connectionCls = TokenDNSConnection
 
-        super(CloudFlareDNSDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def iterate_zones(self):
         def _iterate_zones(params):
@@ -414,9 +416,7 @@ class CloudFlareDNSDriver(DNSDriver):
             response = self.connection.request(url, params=params)
             return response, response.object["result"]
 
-        return self._paginate(
-            _ex_get_user_account_memberships, self.MEMBERSHIPS_PAGE_SIZE
-        )
+        return self._paginate(_ex_get_user_account_memberships, self.MEMBERSHIPS_PAGE_SIZE)
 
     def ex_get_zone_stats(self, zone, interval=30):
         raise NotImplementedError("not yet implemented in v4 driver")
@@ -544,8 +544,7 @@ class CloudFlareDNSDriver(DNSDriver):
 
             response, items = get_page(params)
 
-            for item in items:
-                yield item
+            yield from items
 
             if self._is_last_page(response):
                 break

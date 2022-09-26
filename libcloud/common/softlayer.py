@@ -17,8 +17,8 @@ Softlayer connection
 """
 
 from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
-from libcloud.common.types import InvalidCredsError, LibcloudError
 
 
 class SoftLayerException(LibcloudError):
@@ -58,10 +58,8 @@ class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
         headers.update(self._get_object_mask(service, kwargs.get("object_mask")))
 
         args = ({"headers": headers},) + args
-        endpoint = "%s/%s" % (self.endpoint, service)
-        return super(SoftLayerConnection, self).request(
-            method, *args, **{"endpoint": endpoint}
-        )
+        endpoint = "{}/{}".format(self.endpoint, service)
+        return super().request(method, *args, **{"endpoint": endpoint})
 
     def _get_auth_headers(self):
         return {"authenticate": {"username": self.user_id, "apiKey": self.key}}

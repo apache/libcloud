@@ -3,10 +3,11 @@ import os.path
 from gevent import monkey  # pylint: disable=import-error
 from gevent.pool import Pool  # pylint: disable=import-error
 
+from libcloud.storage.types import Provider
+from libcloud.storage.providers import get_driver
+
 monkey.patch_all()
 
-from libcloud.storage.providers import get_driver
-from libcloud.storage.types import Provider
 
 USERNAME = "username"
 API_KEY = "api key"
@@ -20,7 +21,7 @@ def download_obj(container, obj):
     obj = driver.get_object(container_name=container.name, object_name=obj.name)
     filename = os.path.basename(obj.name)
     path = os.path.join(os.path.expanduser("~/Downloads"), filename)
-    print("Downloading: %s to %s" % (obj.name, path))
+    print("Downloading: {} to {}".format(obj.name, path))
     obj.download(destination_path=path)
 
 

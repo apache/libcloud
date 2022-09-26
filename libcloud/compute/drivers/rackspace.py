@@ -15,20 +15,17 @@
 """
 Rackspace driver
 """
-from libcloud.compute.types import Provider, LibcloudError, VolumeSnapshotState
 from libcloud.compute.base import NodeLocation, VolumeSnapshot
+from libcloud.compute.types import Provider, LibcloudError, VolumeSnapshotState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.common.rackspace import AUTH_URL
 from libcloud.compute.drivers.openstack import (
+    OpenStack_1_0_Response,
     OpenStack_1_0_Connection,
     OpenStack_1_0_NodeDriver,
-    OpenStack_1_0_Response,
-)
-from libcloud.compute.drivers.openstack import (
     OpenStack_1_1_Connection,
     OpenStack_1_1_NodeDriver,
 )
-
-from libcloud.common.rackspace import AUTH_URL
-from libcloud.utils.iso8601 import parse_date
 
 SERVICE_TYPE = "compute"
 SERVICE_NAME_GEN1 = "cloudServers"
@@ -56,7 +53,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
-        super(RackspaceFirstGenConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_endpoint(self):
         if "2.0" in self._auth_version:
@@ -64,9 +61,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
                 service_type=SERVICE_TYPE, name=SERVICE_NAME_GEN1
             )
         else:
-            raise LibcloudError(
-                'Auth version "%s" not supported' % (self._auth_version)
-            )
+            raise LibcloudError('Auth version "%s" not supported' % (self._auth_version))
 
         public_url = ep.url
 
@@ -80,14 +75,10 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
         # old UK accounts and US endpoint.
         if self.region == "us":
             # Old UK account, which only have uk endpoint in the catalog
-            public_url = public_url.replace(
-                "https://lon.servers.api", "https://servers.api"
-            )
+            public_url = public_url.replace("https://lon.servers.api", "https://servers.api")
         elif self.region == "uk":
             # Old US account, which only has us endpoints in the catalog
-            public_url = public_url.replace(
-                "https://servers.api", "https://lon.servers.api"
-            )
+            public_url = public_url.replace("https://servers.api", "https://lon.servers.api")
 
         return public_url
 
@@ -102,9 +93,7 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
     type = Provider.RACKSPACE_FIRST_GEN
     api_name = "rackspace"
 
-    def __init__(
-        self, key, secret=None, secure=True, host=None, port=None, region="us", **kwargs
-    ):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, region="us", **kwargs):
         """
         @inherits:  :class:`NodeDriver.__init__`
 
@@ -114,7 +103,7 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         if region not in ["us", "uk"]:
             raise ValueError("Invalid region: %s" % (region))
 
-        super(RackspaceFirstGenNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -157,7 +146,7 @@ class RackspaceConnection(OpenStack_1_1_Connection):
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop("region", None)
         self.get_endpoint_args = kwargs.pop("get_endpoint_args", None)
-        super(RackspaceConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_service_name(self):
         if not self.get_endpoint_args:
@@ -173,9 +162,7 @@ class RackspaceConnection(OpenStack_1_1_Connection):
         if "2.0" in self._auth_version:
             ep = self.service_catalog.get_endpoint(**self.get_endpoint_args)
         else:
-            raise LibcloudError(
-                'Auth version "%s" not supported' % (self._auth_version)
-            )
+            raise LibcloudError('Auth version "%s" not supported' % (self._auth_version))
 
         public_url = ep.url
 
@@ -221,7 +208,7 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         else:
             self.api_name = "rackspacenovaus"
 
-        super(RackspaceNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -243,9 +230,7 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
             "status": api_node["status"],
         }
 
-        state = self.SNAPSHOT_STATE_MAP.get(
-            api_node["status"], VolumeSnapshotState.UNKNOWN
-        )
+        state = self.SNAPSHOT_STATE_MAP.get(api_node["status"], VolumeSnapshotState.UNKNOWN)
 
         try:
             created_td = parse_date(api_node["createdAt"])

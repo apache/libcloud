@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.google import GoogleOAuth2Credential
+from libcloud.common.google import GoogleResponse, GoogleBaseConnection, GoogleOAuth2Credential
 from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
-from libcloud.common.google import GoogleResponse
-from libcloud.common.google import GoogleBaseConnection
 
 API_VERSION = "v1"
 
@@ -50,7 +48,7 @@ class GKEConnection(GoogleBaseConnection):
         project=None,
         **kwargs,
     ):
-        super(GKEConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -58,7 +56,7 @@ class GKEConnection(GoogleBaseConnection):
             credential_file=credential_file,
             **kwargs,
         )
-        self.request_path = "/%s/projects/%s" % (API_VERSION, project)
+        self.request_path = "/{}/projects/{}".format(API_VERSION, project)
         self.gke_params = {}
 
     def pre_connect_hook(self, params, headers):
@@ -67,7 +65,7 @@ class GKEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
-        params, headers = super(GKEConnection, self).pre_connect_hook(params, headers)
+        params, headers = super().pre_connect_hook(params, headers)
         if self.gke_params:
             params.update(self.gke_params)
         return params, headers
@@ -78,7 +76,7 @@ class GKEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
-        response = super(GKEConnection, self).request(*args, **kwargs)
+        response = super().request(*args, **kwargs)
 
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
@@ -162,9 +160,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     credential_file: ``str``
         """
         if not project:
-            raise ValueError(
-                "Project name must be specified using " '"project" keyword.'
-            )
+            raise ValueError("Project name must be specified using " '"project" keyword.')
         if host is None:
             host = GKEContainerDriver.website
         self.auth_type = auth_type
@@ -174,15 +170,12 @@ class GKEContainerDriver(KubernetesContainerDriver):
         if datacenter is not None:
             self.zone = datacenter
         self.credential_file = (
-            credential_file
-            or GoogleOAuth2Credential.default_credential_file + "." + self.project
+            credential_file or GoogleOAuth2Credential.default_credential_file + "." + self.project
         )
 
-        super(GKEContainerDriver, self).__init__(
-            user_id, key, secure=True, host=None, port=None, **kwargs
-        )
+        super().__init__(user_id, key, secure=True, host=None, port=None, **kwargs)
 
-        self.base_path = "/%s/projects/%s" % (API_VERSION, self.project)
+        self.base_path = "/{}/projects/{}".format(API_VERSION, self.project)
         self.website = GKEContainerDriver.website
 
     def _ex_connection_class_kwargs(self):

@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Type, cast
+
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
-
-from typing import Type, cast
 
 ec2_cls = get_driver(Provider.EC2)
 rackspace_cls = get_driver(Provider.RACKSPACE)

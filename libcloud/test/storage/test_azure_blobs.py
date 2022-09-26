@@ -13,41 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
-import json
 import os
 import sys
+import json
 import tempfile
 from io import BytesIO
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import basestring
-
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container, Object
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
+from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
+from libcloud.test import unittest
+from libcloud.utils.py3 import b, httplib, parse_qs, urlparse, basestring
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Object, Container
+from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS, STORAGE_AZURITE_BLOBS_PARAMS
+from libcloud.storage.types import (
+    ObjectDoesNotExistError,
+    ObjectHashMismatchError,
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+    ContainerAlreadyExistsError,
+)
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.storage.drivers.azure_blobs import (
+    AZURE_UPLOAD_CHUNK_SIZE,
     AzureBlobsStorageDriver,
     AzureBlobsActiveDirectoryConnection,
 )
-from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
-
-from libcloud.test import unittest
-from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
-from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
-from libcloud.test.secrets import STORAGE_AZURITE_BLOBS_PARAMS
-from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
 class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
@@ -306,9 +299,7 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
             return (httplib.OK, body, headers, httplib.responses[httplib.CREATED])
 
-    def _foo_bar_container_foo_test_upload_INVALID_HASH(
-        self, method, url, body, headers
-    ):
+    def _foo_bar_container_foo_test_upload_INVALID_HASH(self, method, url, body, headers):
         # test_upload_object_invalid_hash1
         self._assert_content_length_header_is_string(headers=headers)
 
@@ -344,9 +335,7 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             httplib.responses[httplib.PARTIAL_CONTENT],
         )
 
-    def _foo_bar_container_foo_bar_object_range_stream(
-        self, method, url, body, headers
-    ):
+    def _foo_bar_container_foo_bar_object_range_stream(self, method, url, body, headers):
         # test_download_object_range_as_stream_success
         body = "0123456789123456789"
 
@@ -364,9 +353,7 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             httplib.responses[httplib.PARTIAL_CONTENT],
         )
 
-    def _foo_bar_container_foo_bar_object_INVALID_SIZE(
-        self, method, url, body, headers
-    ):
+    def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url, body, headers):
         # test_upload_object_invalid_file_size
         self._assert_content_length_header_is_string(headers=headers)
 
@@ -382,9 +369,7 @@ class AzuriteBlobsMockHttp(AzureBlobsMockHttp):
     fixtures = StorageFileFixtures("azurite_blobs")
 
     def _get_method_name(self, *args, **kwargs):
-        method_name = super(AzuriteBlobsMockHttp, self)._get_method_name(
-            *args, **kwargs
-        )
+        method_name = super()._get_method_name(*args, **kwargs)
 
         if method_name.startswith("_account"):
             method_name = method_name[8:]
@@ -476,9 +461,7 @@ class AzureBlobsTests(unittest.TestCase):
         AzureBlobsStorageDriver.RESPONSES_PER_REQUEST = 2
 
         container = Container(name="test_container", extra={}, driver=self.driver)
-        objects = self.driver.list_container_objects(
-            container=container, prefix="test_prefix"
-        )
+        objects = self.driver.list_container_objects(container=container, prefix="test_prefix")
         self.assertEqual(len(objects), 4)
 
         obj = objects[1]
@@ -508,9 +491,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         self.assertTrue(container.name, "test_container200")
         self.assertTrue(container.extra["etag"], "0x8CFB877BB56A6FB")
-        self.assertTrue(
-            container.extra["last_modified"], "Fri, 04 Jan 2013 09:48:06 GMT"
-        )
+        self.assertTrue(container.extra["last_modified"], "Fri, 04 Jan 2013 09:48:06 GMT")
         self.assertTrue(container.extra["lease"]["status"], "unlocked")
         self.assertTrue(container.extra["lease"]["state"], "available")
         self.assertTrue(container.extra["meta_data"]["meta1"], "value1")
@@ -523,9 +504,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(container.extra["url"], expected_url)
 
     def test_get_object_cdn_url(self):
-        obj = self.driver.get_object(
-            container_name="test_container200", object_name="test"
-        )
+        obj = self.driver.get_object(container_name="test_container200", object_name="test")
 
         url = urlparse.urlparse(self.driver.get_object_cdn_url(obj))
         query = urlparse.parse_qs(url.query)
@@ -538,9 +517,7 @@ class AzureBlobsTests(unittest.TestCase):
         # trickier
         self.mock_response_klass.type = None
         try:
-            self.driver.get_object(
-                container_name="test_container100", object_name="test"
-            )
+            self.driver.get_object(container_name="test_container100", object_name="test")
         except ContainerDoesNotExistError:
             pass
         else:
@@ -550,9 +527,7 @@ class AzureBlobsTests(unittest.TestCase):
         # This method makes two requests which makes mocking the response a bit
         # trickier
         self.mock_response_klass.type = None
-        obj = self.driver.get_object(
-            container_name="test_container200", object_name="test"
-        )
+        obj = self.driver.get_object(container_name="test_container200", object_name="test")
 
         self.assertEqual(obj.name, "test")
         self.assertEqual(obj.container.name, "test_container200")
@@ -736,7 +711,7 @@ class AzureBlobsTests(unittest.TestCase):
         )
         self.assertTrue(result)
 
-        with open(destination_path, "r") as fp:
+        with open(destination_path) as fp:
             content = fp.read()
 
         self.assertEqual(content, "56")
@@ -962,9 +937,7 @@ class AzureBlobsTests(unittest.TestCase):
         # management of the connectionCls.host class attribute
         driver1 = self.driver_type("fakeaccount1", "deadbeafcafebabe==")
         driver2 = self.driver_type("fakeaccount2", "deadbeafcafebabe==")
-        driver3 = self.driver_type(
-            "fakeaccount3", "deadbeafcafebabe==", host="test.foo.bar.com"
-        )
+        driver3 = self.driver_type("fakeaccount3", "deadbeafcafebabe==", host="test.foo.bar.com")
 
         host1 = driver1.connection.host
         host2 = driver2.connection.host
@@ -1060,9 +1033,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         self.assertTrue(container.name, "test_container200")
         self.assertTrue(container.extra["etag"], "0x8CFB877BB56A6FB")
-        self.assertTrue(
-            container.extra["last_modified"], "Fri, 04 Jan 2013 09:48:06 GMT"
-        )
+        self.assertTrue(container.extra["last_modified"], "Fri, 04 Jan 2013 09:48:06 GMT")
         self.assertTrue(container.extra["lease"]["status"], "unlocked")
         self.assertTrue(container.extra["lease"]["state"], "available")
         self.assertTrue(container.extra["meta_data"]["meta1"], "value1")

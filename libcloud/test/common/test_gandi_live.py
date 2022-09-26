@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import re
+
 from libcloud.test import MockHttp
 
 FORMAT_URL = re.compile(r"[./?=-]")
@@ -24,5 +25,5 @@ class BaseGandiLiveMockHttp(MockHttp):
         return "_json"
 
     def _json(self, method, url, body, headers):
-        meth_name = "_json%s_%s" % (FORMAT_URL.sub("_", url), method.lower())
+        meth_name = "_json{}_{}".format(FORMAT_URL.sub("_", url), method.lower())
         return getattr(self, meth_name)(method, url, body, headers)

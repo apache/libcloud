@@ -15,18 +15,16 @@
 """
 GoGrid driver
 """
+import copy
 import time
 import hashlib
-import copy
 
 from libcloud.utils.py3 import b
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
-from libcloud.compute.providers import Provider
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.common.gogrid import BaseGoGridDriver, GoGridConnection
 from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.compute.providers import Provider
 
 STATE = {
     "Starting": NodeState.PENDING,
@@ -74,9 +72,7 @@ class GoGridNode(Node):
     # Used public ip since it is not mutable and specified at create time,
     # so uuid of node should not change after add is completed
     def get_uuid(self):
-        return hashlib.sha1(
-            b("%s:%s" % (self.public_ips, self.driver.type))
-        ).hexdigest()
+        return hashlib.sha1(b("{}:{}".format(self.public_ips, self.driver.type))).hexdigest()
 
 
 class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
@@ -97,7 +93,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         """
         @inherits: :class:`NodeDriver.__init__`
         """
-        super(GoGridNodeDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _get_state(self, element):
         try:
@@ -160,9 +156,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         params = {}
         if location is not None:
             params["datacenter"] = location.id
-        images = self._to_images(
-            self.connection.request("/api/grid/image/list", params).object
-        )
+        images = self._to_images(self.connection.request("/api/grid/image/list", params).object)
         return images
 
     def list_nodes(self):
@@ -184,9 +178,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             # password list.
             pass
 
-        return [
-            self._to_node(el, passwords_map.get(el.get("id"))) for el in res["list"]
-        ]
+        return [self._to_node(el, passwords_map.get(el.get("id"))) for el in res["list"]]
 
     def reboot_node(self, node):
         """
@@ -298,9 +290,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         return node
 
-    def create_node(
-        self, name, size, image, location=None, ex_description=None, ex_ip=None
-    ):
+    def create_node(self, name, size, image, location=None, ex_description=None, ex_ip=None):
         """Create a new GoGird node
 
         @inherits: :class:`NodeDriver.create_node`
@@ -337,9 +327,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             time.sleep(interval)
 
         if id is None:
-            raise Exception(
-                "Wasn't able to wait for id allocation for the node %s" % str(node)
-            )
+            raise Exception("Wasn't able to wait for id allocation for the node %s" % str(node))
 
         return node
 
@@ -452,13 +440,9 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         if "public" in kwargs and kwargs["public"] is not None:
             params["ip.type"] = {True: "Public", False: "Private"}[kwargs["public"]]
         if "assigned" in kwargs and kwargs["assigned"] is not None:
-            params["ip.state"] = {True: "Assigned", False: "Unassigned"}[
-                kwargs["assigned"]
-            ]
+            params["ip.state"] = {True: "Assigned", False: "Unassigned"}[kwargs["assigned"]]
         if "location" in kwargs and kwargs["location"] is not None:
             params["datacenter"] = kwargs["location"].id
 
-        ips = self._to_ips(
-            self.connection.request("/api/grid/ip/list", params=params).object
-        )
+        ips = self._to_ips(self.connection.request("/api/grid/ip/list", params=params).object)
         return ips

@@ -19,11 +19,10 @@
 # Based on
 # https://github.com/ssorj/scripts/blob/master/check-asf-license-headers
 
-from __future__ import print_function
 
-import codecs
 import os
 import sys
+import codecs
 
 root_dir = sys.argv[1]
 
@@ -37,6 +36,7 @@ IGNORED_PATHS = [
     'build',
     'dist',
     'docs',
+    'venv/',
 
     'libcloud/utils/iso8601.py'
 ]

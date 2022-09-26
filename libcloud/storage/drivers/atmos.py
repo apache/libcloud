@@ -13,33 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import hashlib
 import hmac
 import time
+import base64
+import hashlib
+from io import FileIO as file
 
-from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import urlunquote
-
-if PY3:
-    from io import FileIO as file
-
+from libcloud.utils.py3 import b, next, httplib, urlparse, urlquote, urlencode, urlunquote
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.utils.files import read_in_chunks
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError
-
-from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
+from libcloud.storage.base import CHUNK_SIZE, Object, Container, StorageDriver
 from libcloud.storage.types import (
-    ContainerAlreadyExistsError,
-    ContainerDoesNotExistError,
-    ContainerIsNotEmptyError,
     ObjectDoesNotExistError,
+    ContainerIsNotEmptyError,
+    ContainerDoesNotExistError,
+    ContainerAlreadyExistsError,
 )
 
 
@@ -49,7 +38,7 @@ def collapse(s):
 
 class AtmosError(LibcloudError):
     def __init__(self, code, message, driver=None):
-        super(AtmosError, self).__init__(value=message, driver=driver)
+        super().__init__(value=message, driver=driver)
         self.code = code
 
 
@@ -135,7 +124,7 @@ class AtmosDriver(StorageDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
         host = host or self.host
-        super(AtmosDriver, self).__init__(key, secret, secure, host, port)
+        super().__init__(key, secret, secure, host, port)
 
     def iterate_containers(self):
         result = self.connection.request(self._namespace_path(""))
@@ -168,9 +157,7 @@ class AtmosDriver(StorageDriver):
 
     def delete_container(self, container):
         try:
-            self.connection.request(
-                self._namespace_path(container.name) + "/", method="DELETE"
-            )
+            self.connection.request(self._namespace_path(container.name) + "/", method="DELETE")
         except AtmosError as e:
             if e.code == 1003:
                 raise ContainerDoesNotExistError(e, self, container.name)
@@ -271,9 +258,7 @@ class AtmosDriver(StorageDriver):
             self,
         )
 
-    def upload_object_via_stream(
-        self, iterator, container, object_name, extra=None, headers=None
-    ):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None, headers=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
@@ -319,9 +304,7 @@ class AtmosDriver(StorageDriver):
                 headers["Range"] = "Bytes=%d-%d" % (bytes_transferred, end)
                 method = "PUT"
 
-            result = self.connection.request(
-                path, method=method, data=chunk, headers=headers
-            )
+            result = self.connection.request(path, method=method, data=chunk, headers=headers)
             bytes_transferred += len(chunk)
 
             try:
@@ -351,9 +334,7 @@ class AtmosDriver(StorageDriver):
             "meta_data": meta_data,
         }
 
-        return Object(
-            object_name, bytes_transferred, data_hash, extra, meta_data, container, self
-        )
+        return Object(object_name, bytes_transferred, data_hash, extra, meta_data, container, self)
 
     def download_object(
         self, obj, destination_path, overwrite_existing=False, delete_on_failure=True
@@ -388,11 +369,7 @@ class AtmosDriver(StorageDriver):
         )
 
     def delete_object(self, obj):
-        path = (
-            self._namespace_path(obj.container.name)
-            + "/"
-            + self._clean_object_name(obj.name)
-        )
+        path = self._namespace_path(obj.container.name) + "/" + self._clean_object_name(obj.name)
         try:
             self.connection.request(path, method="DELETE")
         except AtmosError as e:

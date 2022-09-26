@@ -20,27 +20,20 @@ Driver for Backblaze B2 service.
 import base64
 import hashlib
 
+from libcloud.utils.py3 import b, next, httplib, urlparse
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.utils.files import read_in_chunks, exhaust_iterator
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.utils.escape import sanitize_object_name
+from libcloud.storage.types import ObjectDoesNotExistError, ContainerDoesNotExistError
+from libcloud.storage.providers import Provider
+
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import next
-from libcloud.utils.files import read_in_chunks
-from libcloud.utils.files import exhaust_iterator
-from libcloud.utils.escape import sanitize_object_name
-
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import JsonResponse
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError
-from libcloud.storage.providers import Provider
-from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
 
 __all__ = [
     "BackblazeB2StorageDriver",
@@ -72,7 +65,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
     responseCls = BackblazeB2Response
 
     def __init__(self, *args, **kwargs):
-        super(BackblazeB2AuthConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Those attributes are populated after authentication
         self.account_id = None
@@ -93,7 +86,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
 
         headers = {}
         action = "b2_authorize_account"
-        auth_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        auth_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (auth_b64.decode("utf-8"))
 
         action = API_PATH + "b2_authorize_account"
@@ -135,7 +128,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
     authCls = BackblazeB2AuthConnection
 
     def __init__(self, *args, **kwargs):
-        super(BackblazeB2Connection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Stores info retrieved after authentication (auth token, api url,
         # dowload url).
@@ -243,7 +236,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
 
         # Include auth token
         headers["Authorization"] = "%s" % (auth_token)
-        response = super(BackblazeB2Connection, self).request(
+        response = super().request(
             action=action,
             params=params,
             data=data,
@@ -303,9 +296,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         # TODO: Support pagination
         params = {"bucketId": container.extra["id"]}
-        resp = self.connection.request(
-            action="b2_list_file_names", method="GET", params=params
-        )
+        resp = self.connection.request(action="b2_list_file_names", method="GET", params=params)
         objects = self._to_objects(data=resp.object, container=container)
         return self._filter_listed_container_objects(objects, prefix)
 
@@ -315,9 +306,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         if container:
             return container
         else:
-            raise ContainerDoesNotExistError(
-                value=None, driver=self, container_name=container_name
-            )
+            raise ContainerDoesNotExistError(value=None, driver=self, container_name=container_name)
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
@@ -328,9 +317,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         if obj is not None:
             return obj
         else:
-            raise ObjectDoesNotExistError(
-                value=None, driver=self, object_name=object_name
-            )
+            raise ObjectDoesNotExistError(value=None, driver=self, object_name=object_name)
 
     def create_container(self, container_name, ex_type="allPrivate"):
         data = {}
@@ -424,9 +411,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         return obj
 
-    def upload_object_via_stream(
-        self, iterator, container, object_name, extra=None, headers=None
-    ):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None, headers=None):
         """
         Upload an object.
 
@@ -452,17 +437,13 @@ class BackblazeB2StorageDriver(StorageDriver):
         data = {}
         data["fileName"] = obj.name
         data["fileId"] = obj.extra["fileId"]
-        resp = self.connection.request(
-            action="b2_delete_file_version", data=data, method="POST"
-        )
+        resp = self.connection.request(action="b2_delete_file_version", data=data, method="POST")
         return resp.status == httplib.OK
 
     def ex_get_object(self, object_id):
         params = {}
         params["fileId"] = object_id
-        resp = self.connection.request(
-            action="b2_get_file_info", method="GET", params=params
-        )
+        resp = self.connection.request(action="b2_get_file_info", method="GET", params=params)
         obj = self._to_object(item=resp.object, container=None)
         return obj
 
@@ -493,9 +474,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         if ex_max_file_count:
             params["maxFileCount"] = ex_max_file_count
 
-        resp = self.connection.request(
-            action="b2_list_file_versions", params=params, method="GET"
-        )
+        resp = self.connection.request(action="b2_list_file_versions", params=params, method="GET")
         objects = self._to_objects(data=resp.object, container=None)
         return objects
 
@@ -509,9 +488,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         # TODO: This is static (AFAIK) so it could be cached
         params = {}
         params["bucketId"] = container_id
-        response = self.connection.request(
-            action="b2_get_upload_url", method="GET", params=params
-        )
+        response = self.connection.request(action="b2_get_upload_url", method="GET", params=params)
         return response.object
 
     def ex_get_upload_url(self, container_id):
@@ -624,6 +601,6 @@ class BackblazeB2StorageDriver(StorageDriver):
         else:
             body = response.response.read()
             raise LibcloudError(
-                "Upload failed. status_code=%s, body=%s" % (response.status, body),
+                "Upload failed. status_code={}, body={}".format(response.status, body),
                 driver=self,
             )

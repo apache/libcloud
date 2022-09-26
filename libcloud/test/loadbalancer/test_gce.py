@@ -18,13 +18,12 @@ Tests for Google Compute Engine Load Balancer Driver
 import sys
 import unittest
 
+from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 from libcloud.common.google import GoogleBaseAuthConnection
 from libcloud.compute.drivers.gce import GCENodeDriver
-from libcloud.loadbalancer.drivers.gce import GCELBDriver
-from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.test.compute.test_gce import GCEMockHttp
-
-from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
+from libcloud.test.common.test_google import GoogleTestCase, GoogleAuthMockHttp
+from libcloud.loadbalancer.drivers.gce import GCELBDriver
 
 
 class GCELoadBalancerTest(GoogleTestCase):
@@ -73,9 +72,7 @@ class GCELoadBalancerTest(GoogleTestCase):
         node0 = self.driver.gce.ex_get_node("libcloud-lb-demo-www-000", "us-central1-b")
         node1 = self.driver.gce.ex_get_node("libcloud-lb-demo-www-001", "us-central1-b")
         members = [node0, node1]
-        balancer = self.driver.create_balancer(
-            balancer_name, port, protocol, algorithm, members
-        )
+        balancer = self.driver.create_balancer(balancer_name, port, protocol, algorithm, members)
         self.assertEqual(balancer.name, balancer_name)
         self.assertEqual(balancer.extra["targetpool"].name, tp_name)
         self.assertEqual(len(balancer.list_members()), 3)
@@ -159,17 +156,13 @@ class GCELoadBalancerTest(GoogleTestCase):
         healthchecks = self.driver.ex_balancer_list_healthchecks(balancer)
         self.assertEqual(len(healthchecks), 1)
         # Detach Healthcheck
-        detach_healthcheck = self.driver.ex_balancer_detach_healthcheck(
-            balancer, healthcheck
-        )
+        detach_healthcheck = self.driver.ex_balancer_detach_healthcheck(balancer, healthcheck)
         self.assertTrue(detach_healthcheck)
         healthchecks = self.driver.ex_balancer_list_healthchecks(balancer)
         self.assertEqual(len(healthchecks), 0)
 
         # Reattach Healthcheck
-        attach_healthcheck = self.driver.ex_balancer_attach_healthcheck(
-            balancer, healthcheck
-        )
+        attach_healthcheck = self.driver.ex_balancer_attach_healthcheck(balancer, healthcheck)
         self.assertTrue(attach_healthcheck)
         healthchecks = self.driver.ex_balancer_list_healthchecks(balancer)
         self.assertEqual(len(healthchecks), 1)

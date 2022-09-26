@@ -2,9 +2,11 @@ name: 'Dependency Review'
 
 on:
   pull_request:
-    branches: [ trunk ]
+    branches:
+      - trunk
 
 permissions:
+  actions: write  # Needed for skip-duplicate-jobs job
   contents: read
 
 jobs:
@@ -27,9 +29,11 @@ jobs:
         # actions
         uses: ./.github/actions/skip-duplicate-actions # v4.0.0
         with:
+          cancel_others: 'true'
           github_token: ${{ github.token }}
 
   dependency-review:
+    name: Dependency Review
     runs-on: ubuntu-latest
 
     needs: pre_job
@@ -38,5 +42,11 @@ jobs:
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
+
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v2
+        # TODO: We really want one check for direct prod dependencies where we
+        # only allows ASF, MIT, BSD and nother one for testing / dev
+        # dependencies where we also allow GPL, etc.
+        #with:
+        #   allow-licenses: MIT, Apache-2.0, BSD-3-Clause

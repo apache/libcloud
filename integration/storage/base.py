@@ -13,30 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gzip
 import io
 import os
-import random
 import re
+import sys
+import gzip
+import time
+import atexit
+import random
 import socket
 import string
-import sys
 import tempfile
-import time
 import unittest
-import atexit
 
 import requests
+
+import libcloud.http
+from libcloud.storage import types, providers
+from libcloud.common.types import LibcloudError
 
 try:
     import docker
 except ImportError:
     docker = None
 
-import libcloud.http
-
-from libcloud.common.types import LibcloudError
-from libcloud.storage import providers, types
 
 libcloud.http.DEFAULT_REQUEST_TIMEOUT = 10
 
@@ -53,7 +53,7 @@ def get_content_iter_with_chunk_size(content, chunk_size=1024):
     """
     # Ensure we still use multiple chunks and iterations
     assert (len(content) / chunk_size) >= 10
-    content = iter([content[i:i + chunk_size] for i in range(0, len(content), chunk_size)])
+    content = iter([content[i : i + chunk_size] for i in range(0, len(content), chunk_size)])
     return content
 
 
@@ -63,18 +63,18 @@ class Integration:
         account = None
         secret = None
 
-        container_name_prefix = 'lcsit'
+        container_name_prefix = "lcsit"
         container_name_max_length = 63
 
         def setUp(self):
-            for required in 'provider', 'account', 'secret':
+            for required in "provider", "account", "secret":
                 value = getattr(self, required, None)
                 if value is None:
-                    raise unittest.SkipTest('config {} not set'.format(required))
+                    raise unittest.SkipTest("config {} not set".format(required))
 
-            kwargs = {'key': self.account, 'secret': self.secret}
+            kwargs = {"key": self.account, "secret": self.secret}
 
-            for optional in 'host', 'port', 'secure':
+            for optional in "host", "port", "secure":
                 value = getattr(self, optional, None)
                 if value is not None:
                     kwargs[optional] = value
@@ -92,20 +92,18 @@ class Integration:
                         obj.delete()
                     except LibcloudError as ex:
                         print(
-                            'Unable to delete object {} in container {}: {}.'
-                            'Delete it manually.'
-                            .format(obj.name, container.name, ex),
-                            file=sys.stderr
+                            "Unable to delete object {} in container {}: {}."
+                            "Delete it manually.".format(obj.name, container.name, ex),
+                            file=sys.stderr,
                         )
 
                 try:
                     container.delete()
                 except LibcloudError as ex:
                     print(
-                        'Unable to delete container {}: {}.'
-                        'Delete it manually.'
-                        .format(container.name, ex),
-                        file=sys.stderr
+                        "Unable to delete container {}: {}."
+                        "Delete it manually.".format(container.name, ex),
+                        file=sys.stderr,
                     )
 
         def test_containers(self):
@@ -135,7 +133,7 @@ class Integration:
 
         def _test_objects(self, do_upload, do_download, size=1 * MB):
             content = os.urandom(size)
-            blob_name = 'testblob'
+            blob_name = "testblob"
             container = self.driver.create_container(self._random_container_name())
 
             # upload a file
@@ -149,9 +147,7 @@ class Integration:
 
             # upload another file and check it's excluded in prefix listing
             do_upload(container, blob_name[::-1], content[::-1])
-            blobs = self.driver.list_container_objects(
-                container, prefix=blob_name[0:3]
-            )
+            blobs = self.driver.list_container_objects(container, prefix=blob_name[0:3])
             self.assertEqual([blob.name for blob in blobs], [blob_name])
 
             # check that the file can be read back
@@ -187,20 +183,18 @@ class Integration:
             def do_download(obj):
                 outfile = self._create_tempfile()
                 self.driver.download_object(obj, outfile, overwrite_existing=True)
-                with open(outfile, 'rb') as fobj:
+                with open(outfile, "rb") as fobj:
                     return fobj.read()
 
             self._test_objects(do_upload, do_download, size)
 
         def test_objects_range_downloads(self):
-            blob_name = 'testblob-range'
-            content = b'0123456789'
+            blob_name = "testblob-range"
+            content = b"0123456789"
             container = self.driver.create_container(self._random_container_name())
 
             obj = self.driver.upload_object(
-                self._create_tempfile(content=content),
-                container,
-                blob_name
+                self._create_tempfile(content=content), container, blob_name
             )
             self.assertEqual(obj.name, blob_name)
             self.assertEqual(obj.size, len(content))
@@ -210,18 +204,18 @@ class Integration:
             self.assertEqual(obj.size, len(content))
 
             values = [
-                {'start_bytes': 0, 'end_bytes': 1, 'expected_content': b'0'},
-                {'start_bytes': 1, 'end_bytes': 5, 'expected_content': b'1234'},
-                {'start_bytes': 5, 'end_bytes': None, 'expected_content': b'56789'},
-                {'start_bytes': 5, 'end_bytes': len(content), 'expected_content': b'56789'},
-                {'start_bytes': 0, 'end_bytes': None, 'expected_content': b'0123456789'},
-                {'start_bytes': 0, 'end_bytes': len(content), 'expected_content': b'0123456789'},
+                {"start_bytes": 0, "end_bytes": 1, "expected_content": b"0"},
+                {"start_bytes": 1, "end_bytes": 5, "expected_content": b"1234"},
+                {"start_bytes": 5, "end_bytes": None, "expected_content": b"56789"},
+                {"start_bytes": 5, "end_bytes": len(content), "expected_content": b"56789"},
+                {"start_bytes": 0, "end_bytes": None, "expected_content": b"0123456789"},
+                {"start_bytes": 0, "end_bytes": len(content), "expected_content": b"0123456789"},
             ]
 
             for value in values:
                 # 1. download_object_range
-                start_bytes = value['start_bytes']
-                end_bytes = value['end_bytes']
+                start_bytes = value["start_bytes"]
+                end_bytes = value["end_bytes"]
                 outfile = self._create_tempfile()
 
                 result = self.driver.download_object_range(
@@ -233,7 +227,7 @@ class Integration:
                 )
                 self.assertTrue(result)
 
-                with open(outfile, 'rb') as fobj:
+                with open(outfile, "rb") as fobj:
                     downloaded_content = fobj.read()
 
                 if end_bytes is not None:
@@ -241,11 +235,13 @@ class Integration:
                 else:
                     expected_content = content[start_bytes:]
 
-                msg = 'Expected "%s", got "%s" for values: %s' % (
-                    expected_content, downloaded_content, str(value)
+                msg = 'Expected "{}", got "{}" for values: {}'.format(
+                    expected_content,
+                    downloaded_content,
+                    str(value),
                 )
                 self.assertEqual(downloaded_content, expected_content, msg)
-                self.assertEqual(downloaded_content, value['expected_content'], msg)
+                self.assertEqual(downloaded_content, value["expected_content"], msg)
 
                 # 2. download_object_range_as_stream
                 downloaded_content = read_stream(
@@ -255,9 +251,9 @@ class Integration:
                 )
                 self.assertEqual(downloaded_content, expected_content)
 
-        @unittest.skipUnless(os.getenv('LARGE_FILE_SIZE_MB'), 'config not set')
+        @unittest.skipUnless(os.getenv("LARGE_FILE_SIZE_MB"), "config not set")
         def test_objects_large(self):
-            size = int(float(os.environ['LARGE_FILE_SIZE_MB']) * MB)
+            size = int(float(os.environ["LARGE_FILE_SIZE_MB"]) * MB)
             self.test_objects(size)
 
         def test_objects_stream_io(self):
@@ -284,32 +280,32 @@ class Integration:
             self._test_objects(do_upload, do_download)
 
         def test_upload_via_stream_with_content_encoding(self):
-            object_name = 'content_encoding.gz'
+            object_name = "content_encoding.gz"
             content = gzip.compress(os.urandom(MB // 100))
             container = self.driver.create_container(self._random_container_name())
             self.driver.upload_object_via_stream(
                 get_content_iter_with_chunk_size(content, 1000),
                 container,
                 object_name,
-                headers={'Content-Encoding': 'gzip'},
+                headers={"Content-Encoding": "gzip"},
             )
 
             obj = self.driver.get_object(container.name, object_name)
 
-            self.assertEqual(obj.extra.get('content_encoding'), 'gzip')
+            self.assertEqual(obj.extra.get("content_encoding"), "gzip")
 
         def test_cdn_url(self):
             content = os.urandom(MB // 100)
             container = self.driver.create_container(self._random_container_name())
             content_iter = get_content_iter_with_chunk_size(content, 1000)
-            obj = self.driver.upload_object_via_stream(content_iter, container, 'cdn')
+            obj = self.driver.upload_object_via_stream(content_iter, container, "cdn")
 
             response = requests.get(self.driver.get_object_cdn_url(obj))
             response.raise_for_status()
 
             self.assertEqual(response.content, content)
 
-        def _create_tempfile(self, prefix='', content=b''):
+        def _create_tempfile(self, prefix="", content=b""):
             fobj, path = tempfile.mkstemp(prefix=prefix, text=False)
 
             try:
@@ -324,20 +320,20 @@ class Integration:
         def _random_container_name(cls):
             suffix = random_string(cls.container_name_max_length)
             name = cls.container_name_prefix + suffix
-            name = re.sub('[^a-z0-9-]', '-', name)
-            name = re.sub('-+', '-', name)
-            name = name[:cls.container_name_max_length]
+            name = re.sub("[^a-z0-9-]", "-", name)
+            name = re.sub("-+", "-", name)
+            name = name[: cls.container_name_max_length]
             name = name.lower()
             return name
 
     class ContainerTestBase(TestBase):
         image = None
-        version = 'latest'
+        version = "latest"
         environment = {}
         command = None
         ready_message = None
 
-        host = 'localhost'
+        host = "localhost"
         port = None
         secure = False
 
@@ -350,20 +346,20 @@ class Integration:
         @classmethod
         def setUpClass(cls):
             if docker is None:
-                raise unittest.SkipTest('missing docker library')
+                raise unittest.SkipTest("missing docker library")
 
             try:
                 cls.client = docker.from_env()
             except docker.errors.DockerException:
-                raise unittest.SkipTest('unable to create docker client')
+                raise unittest.SkipTest("unable to create docker client")
 
-            for required in 'image', 'port':
+            for required in "image", "port":
                 value = getattr(cls, required, None)
                 if value is None:
-                    raise unittest.SkipTest('config {} not set'.format(required))
+                    raise unittest.SkipTest("config {} not set".format(required))
 
             cls.container = cls.client.containers.run(
-                '{}:{}'.format(cls.image, cls.version),
+                "{}:{}".format(cls.image, cls.version),
                 command=cls.command,
                 detach=True,
                 auto_remove=True,
@@ -386,19 +382,23 @@ class Integration:
                 time.sleep(1)
 
                 container_ready = any(
-                    cls.ready_message in line
-                    for line in cls.container.logs().splitlines()
+                    cls.ready_message in line for line in cls.container.logs().splitlines()
                 )
 
                 now_ts = int(time.time())
 
                 if now_ts >= timeout_ts:
-                    raise ValueError("Container %s failed to start and become ready in %s seconds "
-                                     "(did not find \"%s\" message in container logs).\n\n"
-                                     "Container Logs:\n%s" %
-                                     (cls.container.short_id, cls.container_ready_timeout,
-                                      cls.ready_message.decode("utf-8"),
-                                      cls.container.logs().decode("utf-8")))
+                    raise ValueError(
+                        "Container %s failed to start and become ready in %s seconds "
+                        '(did not find "%s" message in container logs).\n\n'
+                        "Container Logs:\n%s"
+                        % (
+                            cls.container.short_id,
+                            cls.container_ready_timeout,
+                            cls.ready_message.decode("utf-8"),
+                            cls.container.logs().decode("utf-8"),
+                        )
+                    )
 
         @classmethod
         def tearDownClass(cls):
@@ -418,14 +418,13 @@ class Integration:
                 cls.container.kill()
             except docker.errors.DockerException as ex:
                 print(
-                    'Unable to terminate docker container {}: {}.'
-                    'Stop it manually.'
-                    .format(cls.container.short_id, ex),
-                    file=sys.stderr
+                    "Unable to terminate docker container {}: {}."
+                    "Stop it manually.".format(cls.container.short_id, ex),
+                    file=sys.stderr,
                 )
 
 
-def wait_for(port, host='localhost', timeout=10):
+def wait_for(port, host="localhost", timeout=10):
     start_time = time.perf_counter()
 
     while True:
@@ -435,15 +434,15 @@ def wait_for(port, host='localhost', timeout=10):
         except OSError as ex:
             if time.perf_counter() - start_time >= timeout:
                 raise TimeoutError(
-                    'Waited too long for the port {} on host {} to start accepting '
-                    'connections.'.format(port, host)
+                    "Waited too long for the port {} on host {} to start accepting "
+                    "connections.".format(port, host)
                 ) from ex
 
             time.sleep(1)
 
 
 def random_string(length, alphabet=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(alphabet) for _ in range(length))
+    return "".join(random.choice(alphabet) for _ in range(length))
 
 
 def read_stream(stream):

@@ -19,11 +19,10 @@ VCL driver
 import time
 
 from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
-from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeSize, NodeImage
 
 
 class VCLResponse(XMLRPCResponse):
@@ -89,13 +88,10 @@ class VCLNodeDriver(NodeDriver):
         """
         if not host:
             raise Exception(
-                "When instantiating VCL driver directly "
-                + "you also need to provide host"
+                "When instantiating VCL driver directly " + "you also need to provide host"
             )
 
-        super(VCLNodeDriver, self).__init__(
-            key, secret, secure=True, host=None, port=None, *args, **kwargs
-        )
+        super().__init__(key, secret, secure=True, host=None, port=None, *args, **kwargs)
 
     def _vcl_request(self, method, *args):
         res = self.connection.request(method, *args).object

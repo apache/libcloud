@@ -1,5 +1,5 @@
-from libcloud.container.providers import get_driver
 from libcloud.container.types import Provider
+from libcloud.container.providers import get_driver
 
 CREDS = ("user", "api key")
 

@@ -12,7 +12,7 @@ load-plugins=
 
 
 [MESSAGES CONTROL]
-disable=redefined-builtin,too-many-arguments,too-few-public-methods,missing-docstring,invalid-name,abstract-method,no-self-use
+disable=redefined-builtin,too-many-arguments,too-few-public-methods,missing-docstring,invalid-name,abstract-method
 
 
 [TYPECHECK]

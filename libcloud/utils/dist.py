@@ -33,11 +33,7 @@ def _filter_names(names):
     # This is needed when building a distro from a working
     # copy (likely a checkout) rather than a pristine export:
     for pattern in EXCLUDE_PATTERNS:
-        names = [
-            n
-            for n in names
-            if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")
-        ]
+        names = [n for n in names if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")]
     return names
 
 
@@ -61,7 +57,7 @@ def relative_to(base, relativee):
         if relative.startswith(os.sep):
             relative = relative[1:]
         return os.path.join(base, relative)
-    raise ValueError("%s is not a subpath of %s" % (relativee, basepath))
+    raise ValueError("{} is not a subpath of {}".format(relativee, basepath))
 
 
 def get_packages(dname, pkgname=None, results=None, ignore=None, parent=None):

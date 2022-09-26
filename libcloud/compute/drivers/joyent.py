@@ -19,20 +19,19 @@ Joyent Cloud (http://www.joyentcloud.com) driver.
 
 import base64
 
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
+from libcloud.compute.types import NodeState, InvalidCredsError
+from libcloud.utils.networking import is_private_subnet
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.types import LibcloudError
-from libcloud.compute.providers import Provider
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.types import NodeState, InvalidCredsError
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize
-from libcloud.utils.networking import is_private_subnet
 
 API_HOST_SUFFIX = ".api.joyentcloud.com"
 API_VERSION = "~6.5"
@@ -93,7 +92,7 @@ class JoyentConnection(ConnectionUserAndKey):
         headers["Content-Type"] = "application/json; charset=UTF-8"
         headers["X-Api-Version"] = API_VERSION
 
-        user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
@@ -127,7 +126,7 @@ class JoyentNodeDriver(NodeDriver):
             msg = 'Invalid region: "%s". Valid region: %s'
             raise LibcloudError(msg % (region, ", ".join(VALID_REGIONS)), driver=self)
 
-        super(JoyentNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -189,9 +188,7 @@ class JoyentNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         data = json.dumps({"action": "reboot"})
-        result = self.connection.request(
-            "/my/machines/%s" % (node.id), data=data, method="POST"
-        )
+        result = self.connection.request("/my/machines/%s" % (node.id), data=data, method="POST")
         return result.status == httplib.ACCEPTED
 
     def destroy_node(self, node):
@@ -213,9 +210,7 @@ class JoyentNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         data = json.dumps({"action": "start"})
-        result = self.connection.request(
-            "/my/machines/%s" % (node.id), data=data, method="POST"
-        )
+        result = self.connection.request("/my/machines/%s" % (node.id), data=data, method="POST")
         return result.status == httplib.ACCEPTED
 
     def stop_node(self, node):
@@ -228,9 +223,7 @@ class JoyentNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         data = json.dumps({"action": "stop"})
-        result = self.connection.request(
-            "/my/machines/%s" % (node.id), data=data, method="POST"
-        )
+        result = self.connection.request("/my/machines/%s" % (node.id), data=data, method="POST")
         return result.status == httplib.ACCEPTED
 
     def ex_start_node(self, node):

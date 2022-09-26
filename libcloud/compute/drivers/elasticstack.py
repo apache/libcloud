@@ -22,21 +22,17 @@ import re
 import time
 import base64
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
+from libcloud.compute.types import NodeState
+from libcloud.compute.deployment import ScriptDeployment, SSHKeyDeployment, MultiStepDeployment
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage
-from libcloud.compute.deployment import ScriptDeployment, SSHKeyDeployment
-from libcloud.compute.deployment import MultiStepDeployment
 
 
 NODE_STATE_MAP = {
@@ -124,7 +120,7 @@ class ElasticStackResponse(JsonResponse):
 
     def parse_error(self):
         error_header = self.headers.get("x-elastic-error", "")
-        return "X-Elastic-Error: %s (%s)" % (error_header, self.body.strip())
+        return "X-Elastic-Error: {} ({})".format(error_header, self.body.strip())
 
 
 class ElasticStackNodeSize(NodeSize):
@@ -166,7 +162,7 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
         headers["Accept"] = "application/json"
         headers["Content-Type"] = "application/json"
         headers["Authorization"] = "Basic %s" % (
-            base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+            base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         ).decode("utf-8")
         return headers
 
@@ -181,16 +177,12 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         # Reboots the node
-        response = self.connection.request(
-            action="/servers/%s/reset" % (node.id), method="POST"
-        )
+        response = self.connection.request(action="/servers/%s/reset" % (node.id), method="POST")
         return response.status == 204
 
     def destroy_node(self, node):
         # Kills the server immediately
-        response = self.connection.request(
-            action="/servers/%s/destroy" % (node.id), method="POST"
-        )
+        response = self.connection.request(action="/servers/%s/destroy" % (node.id), method="POST")
         return response.status == 204
 
     def list_images(self, location=None):
@@ -288,7 +280,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         # Then we image the selected pre-installed system drive onto it
         response = self.connection.request(
-            action="/drives/%s/image/%s/gunzip" % (drive_uuid, image.id), method="POST"
+            action="/drives/{}/image/{}/gunzip".format(drive_uuid, image.id), method="POST"
         )
 
         if response.status not in (200, 204):
@@ -297,15 +289,11 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         # We wait until the drive is imaged and then boot up the node
         # (in most cases, the imaging process shouldn't take longer
         # than a few minutes)
-        response = self.connection.request(
-            action="/drives/%s/info" % (drive_uuid)
-        ).object
+        response = self.connection.request(action="/drives/%s/info" % (drive_uuid)).object
 
         imaging_start = time.time()
         while "imaging" in response:
-            response = self.connection.request(
-                action="/drives/%s/info" % (drive_uuid)
-            ).object
+            response = self.connection.request(action="/drives/%s/info" % (drive_uuid)).object
 
             elapsed_time = time.time() - imaging_start
             if "imaging" in response and elapsed_time >= IMAGING_TIMEOUT:
@@ -412,8 +400,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         if not vnc_password:
             raise ValueError(
-                "You need to provide vnc_password argument "
-                "if you want to use deployment"
+                "You need to provide vnc_password argument " "if you want to use deployment"
             )
 
         if (
@@ -432,9 +419,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             root_enable_script = ScriptDeployment(script=script, delete=True)
             deploy = kwargs.get("deploy", None)
             if deploy:
-                if isinstance(deploy, ScriptDeployment) or isinstance(
-                    deploy, SSHKeyDeployment
-                ):
+                if isinstance(deploy, ScriptDeployment) or isinstance(deploy, SSHKeyDeployment):
                     deployment = MultiStepDeployment([deploy, root_enable_script])
                 elif isinstance(deploy, MultiStepDeployment):
                     deployment = deploy
@@ -447,7 +432,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         if not kwargs.get("ssh_username", None):
             kwargs["ssh_username"] = "toor"
 
-        return super(ElasticStackBaseNodeDriver, self).deploy_node(**kwargs)
+        return super().deploy_node(**kwargs)
 
     def ex_shutdown_node(self, node):
         """
@@ -458,9 +443,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        response = self.connection.request(
-            action="/servers/%s/shutdown" % (node.id), method="POST"
-        )
+        response = self.connection.request(action="/servers/%s/shutdown" % (node.id), method="POST")
         return response.status == 204
 
     def ex_destroy_drive(self, drive_uuid):

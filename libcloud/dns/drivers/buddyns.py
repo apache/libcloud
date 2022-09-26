@@ -21,9 +21,9 @@ try:
 except ImportError:
     import json
 
+from libcloud.dns.base import Zone, DNSDriver
 from libcloud.dns.types import Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.base import DNSDriver, Zone
-from libcloud.common.buddyns import BuddyNSConnection, BuddyNSResponse, BuddyNSException
+from libcloud.common.buddyns import BuddyNSResponse, BuddyNSException, BuddyNSConnection
 
 __all__ = ["BuddyNSDNSDriver"]
 
@@ -59,9 +59,7 @@ class BuddyNSDNSDriver(DNSDriver):
             response = self.connection.request(action=action, method="GET")
         except BuddyNSException as e:
             if e.message == "Not found":
-                raise ZoneDoesNotExistError(
-                    value=e.message, driver=self, zone_id=zone_id
-                )
+                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone_id)
             else:
                 raise e
         zone = self._to_zone(response.parse_body())
@@ -94,14 +92,10 @@ class BuddyNSDNSDriver(DNSDriver):
             data.update(extra)
         post_data = json.dumps(data)
         try:
-            response = self.connection.request(
-                action=action, method="POST", data=post_data
-            )
+            response = self.connection.request(action=action, method="POST", data=post_data)
         except BuddyNSException as e:
             if e.message == "Invalid zone submitted for addition.":
-                raise ZoneAlreadyExistsError(
-                    value=e.message, driver=self, zone_id=domain
-                )
+                raise ZoneAlreadyExistsError(value=e.message, driver=self, zone_id=domain)
             else:
                 raise e
 
@@ -121,9 +115,7 @@ class BuddyNSDNSDriver(DNSDriver):
             self.connection.request(action=action, method="DELETE")
         except BuddyNSException as e:
             if e.message == "Not found":
-                raise ZoneDoesNotExistError(
-                    value=e.message, driver=self, zone_id=zone.id
-                )
+                raise ZoneDoesNotExistError(value=e.message, driver=self, zone_id=zone.id)
             else:
                 raise e
 

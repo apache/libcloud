@@ -5,7 +5,6 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.types import State, Provider
 from libcloud.loadbalancer.providers import get_driver
 
-
 driver = get_driver(Provider.RACKSPACE_US)("username", "api key")
 
 name = "test-lb"

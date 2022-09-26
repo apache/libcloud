@@ -1,4 +1,3 @@
-# -*- coding=utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,37 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import unicode_literals
 
 import os
 import sys
 import unittest
-
 from unittest import mock
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qs
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
+from libcloud.test import make_response, generate_random_data
+from libcloud.utils.py3 import b, httplib, parse_qs, urlparse
 from libcloud.common.types import InvalidCredsError
-from libcloud.storage.base import Container, Object
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.oss import OSSConnection
-from libcloud.storage.drivers.oss import OSSStorageDriver
-from libcloud.storage.drivers.oss import CHUNK_SIZE
-from libcloud.storage.drivers.dummy import DummyIterator
-from libcloud.test import (
-    MockHttp,
-    generate_random_data,
-    make_response,
-)  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
+from libcloud.storage.types import (
+    ContainerError,
+    ObjectDoesNotExistError,
+    ObjectHashMismatchError,
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+)
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.storage.drivers.oss import CHUNK_SIZE, OSSConnection, OSSStorageDriver
+from libcloud.storage.drivers.dummy import DummyIterator
 
 
 class OSSConnectionTestCase(unittest.TestCase):
@@ -318,9 +309,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.mock_response_klass.type = "list_container_objects_prefix"
         container = Container(name="test_container", extra={}, driver=self.driver)
         self.prefix = "test_prefix"
-        objects = self.driver.list_container_objects(
-            container=container, prefix=self.prefix
-        )
+        objects = self.driver.list_container_objects(container=container, prefix=self.prefix)
         self.assertEqual(len(objects), 2)
 
     def test_get_container_doesnt_exist(self):
@@ -347,9 +336,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_get_object_success(self):
         self.mock_response_klass.type = "get_object"
-        obj = self.driver.get_object(
-            container_name="xz02tphky6fjfiuc0", object_name="test"
-        )
+        obj = self.driver.get_object(container_name="xz02tphky6fjfiuc0", object_name="test")
 
         self.assertEqual(obj.name, "test")
         self.assertEqual(obj.container.name, "xz02tphky6fjfiuc0")
@@ -386,9 +373,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.mock_response_klass.type = "create_container_location"
         name = "new_container"
         self.ex_location = "oss-cn-beijing"
-        container = self.driver.create_container(
-            container_name=name, ex_location=self.ex_location
-        )
+        container = self.driver.create_container(container_name=name, ex_location=self.ex_location)
         self.assertEqual(container.name, name)
         self.assertTrue(container.extra["location"], self.ex_location)
 
@@ -709,9 +694,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
         container = Container(name="foo_bar_container", extra={}, driver=self.driver)
 
-        for upload in self.driver.ex_iterate_multipart_uploads(
-            container, max_uploads=2
-        ):
+        for upload in self.driver.ex_iterate_multipart_uploads(container, max_uploads=2):
             self.assertTrue(upload.key is not None)
             self.assertTrue(upload.id is not None)
             self.assertTrue(upload.initiated is not None)

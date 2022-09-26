@@ -16,14 +16,13 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.loadbalancer.base import Member, Algorithm
-from libcloud.loadbalancer.drivers.elb import ElasticLBDriver
-from libcloud.loadbalancer.types import State
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import LB_ELB_PARAMS
+from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.elb import ElasticLBDriver
 
 
 class ElasticLBTests(unittest.TestCase):
@@ -39,9 +38,7 @@ class ElasticLBTests(unittest.TestCase):
         token = "temporary_credentials_token"
         driver = ElasticLBDriver(*LB_ELB_PARAMS, **{"token": token})
         self.assertTrue(hasattr(driver, "token"), "Driver has no attribute token")
-        self.assertEqual(
-            token, driver.token, "Driver token does not match with provided token"
-        )
+        self.assertEqual(token, driver.token, "Driver token does not match with provided token")
 
     def test_driver_with_token_signature_version(self):
         token = "temporary_credentials_token"
@@ -76,9 +73,7 @@ class ElasticLBTests(unittest.TestCase):
         self.assertEqual(len(balancers), 1)
         self.assertEqual(balancers[0].id, "tests")
         self.assertEqual(balancers[0].name, "tests")
-        self.assertTrue(
-            ("tags" in balancers[0].extra), "No tags dict found in balancer.extra"
-        )
+        self.assertTrue(("tags" in balancers[0].extra), "No tags dict found in balancer.extra")
         self.assertEqual(balancers[0].extra["tags"]["project"], "lima")
 
     def test_list_balancer_tags(self):
@@ -99,9 +94,7 @@ class ElasticLBTests(unittest.TestCase):
 
         self.assertEqual(balancer.id, "tests")
         self.assertEqual(balancer.name, "tests")
-        self.assertTrue(
-            ("tags" in balancer.extra), "No tags dict found in balancer.extra"
-        )
+        self.assertTrue(("tags" in balancer.extra), "No tags dict found in balancer.extra")
         self.assertEqual(balancer.extra["tags"]["project"], "lima")
 
     def test_populate_balancer_tags(self):
@@ -110,9 +103,7 @@ class ElasticLBTests(unittest.TestCase):
 
         self.assertEqual(balancer.id, "tests")
         self.assertEqual(balancer.name, "tests")
-        self.assertTrue(
-            ("tags" in balancer.extra), "No tags dict found in balancer.extra"
-        )
+        self.assertTrue(("tags" in balancer.extra), "No tags dict found in balancer.extra")
         self.assertEqual(balancer.extra["tags"]["project"], "lima")
 
     def test_destroy_balancer(self):
@@ -171,9 +162,7 @@ class ElasticLBTests(unittest.TestCase):
 
     def test_ex_delete_balancer_policy(self):
         self.assertTrue(
-            self.driver.ex_delete_balancer_policy(
-                name="tests", policy_name="MyDurationProxyPolicy"
-            )
+            self.driver.ex_delete_balancer_policy(name="tests", policy_name="MyDurationProxyPolicy")
         )
 
     def test_ex_set_balancer_policies_listener(self):
@@ -213,9 +202,7 @@ class ElasticLBMockHttp(MockHttp):
         body = self.fixtures.load("create_load_balancer.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _2012_06_01_DeregisterInstancesFromLoadBalancer(
-        self, method, url, body, headers
-    ):
+    def _2012_06_01_DeregisterInstancesFromLoadBalancer(self, method, url, body, headers):
         body = self.fixtures.load("deregister_instances_from_load_balancer.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -243,9 +230,7 @@ class ElasticLBMockHttp(MockHttp):
         body = self.fixtures.load("set_load_balancer_policies_of_listener.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _2012_06_01_SetLoadBalancerPoliciesForBackendServer(
-        self, method, url, body, headers
-    ):
+    def _2012_06_01_SetLoadBalancerPoliciesForBackendServer(self, method, url, body, headers):
         body = self.fixtures.load("set_load_balancer_policies_for_backend_server.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

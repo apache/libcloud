@@ -16,22 +16,21 @@
 __all__ = ["EBSBackupDriver"]
 
 
-from libcloud.utils.xml import findtext, findall
-from libcloud.utils.iso8601 import parse_date
+from libcloud.utils.xml import findall, findtext
+from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 from libcloud.backup.base import (
     BackupDriver,
-    BackupTargetRecoveryPoint,
-    BackupTargetJob,
     BackupTarget,
+    BackupTargetJob,
+    BackupTargetRecoveryPoint,
 )
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
-from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
-
+from libcloud.utils.iso8601 import parse_date
 
 VERSION = "2015-10-01"
 HOST = "ec2.amazonaws.com"
 ROOT = "/%s/" % (VERSION)
-NS = "http://ec2.amazonaws.com/doc/%s/" % (VERSION,)
+NS = "http://ec2.amazonaws.com/doc/{}/".format(VERSION)
 
 
 class EBSResponse(AWSGenericResponse):
@@ -57,7 +56,7 @@ class EBSBackupDriver(BackupDriver):
     connectionCls = EBSConnection
 
     def __init__(self, access_id, secret, region):
-        super(EBSBackupDriver, self).__init__(access_id, secret)
+        super().__init__(access_id, secret)
         self.region = region
         self.connection.host = HOST % (region)
 
@@ -125,9 +124,7 @@ class EBSBackupDriver(BackupDriver):
         else:
             raise RuntimeError("Node does not have any block devices")
 
-    def create_target_from_container(
-        self, container, type=BackupTargetType.OBJECT, extra=None
-    ):
+    def create_target_from_container(self, container, type=BackupTargetType.OBJECT, extra=None):
         """
         Creates a new backup target from an existing storage container
 
@@ -142,9 +139,7 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            "create_target_from_container not implemented for this driver"
-        )
+        raise NotImplementedError("create_target_from_container not implemented for this driver")
 
     def update_target(self, target, name, address, extra):
         """
@@ -216,9 +211,7 @@ class EBSBackupDriver(BackupDriver):
         """
         raise NotImplementedError("delete_target not implemented for this driver")
 
-    def recover_target_out_of_place(
-        self, target, recovery_point, recovery_target, path=None
-    ):
+    def recover_target_out_of_place(self, target, recovery_point, recovery_target, path=None):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -344,9 +337,7 @@ class EBSBackupDriver(BackupDriver):
 
     def _to_jobs(self, data):
         xpath = "DescribeSnapshotsResponse/snapshotSet/item"
-        return [
-            self._to_job(el) for el in findall(element=data, xpath=xpath, namespace=NS)
-        ]
+        return [self._to_job(el) for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_job(self, el):
         id = findtext(element=el, xpath="snapshotId", namespace=NS)

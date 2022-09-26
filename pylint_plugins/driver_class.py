@@ -23,9 +23,7 @@ At the moment, it supports the following scenarios:
    attribute.
 """
 
-from astroid import MANAGER
-from astroid import scoped_nodes
-from astroid import node_classes
+from astroid import MANAGER, node_classes, scoped_nodes
 
 
 def register(linter):
@@ -44,9 +42,9 @@ def transform(cls):
             return
 
         connection_cls_name = cls.locals["connectionCls"][0].parent.value.name
-        connection_cls_node = MANAGER.ast_from_module_name(module_name).lookup(
-            connection_cls_name
-        )[1]
+        connection_cls_node = MANAGER.ast_from_module_name(module_name).lookup(connection_cls_name)[
+            1
+        ]
 
         if len(connection_cls_node) >= 1:
             if isinstance(connection_cls_node[0], node_classes.ImportFrom):
@@ -56,14 +54,10 @@ def transform(cls):
                     connection_cls_module_name
                 ).lookup(connection_cls_name)[1][0]
 
-                cls.instance_attrs["connection"] = [
-                    connection_cls_node.instantiate_class()
-                ]
+                cls.instance_attrs["connection"] = [connection_cls_node.instantiate_class()]
             else:
                 # Connection class is defined directly in the driver module
-                cls.instance_attrs["connection"] = [
-                    connection_cls_node[0].instantiate_class()
-                ]
+                cls.instance_attrs["connection"] = [connection_cls_node[0].instantiate_class()]
             return
 
 

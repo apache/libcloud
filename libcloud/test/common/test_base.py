@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
-
+import unittest
 from unittest import mock
 
-from libcloud.common.base import LazyObject, Response
-from libcloud.common.exceptions import BaseHTTPError, RateLimitReachedError
 from libcloud.test import LibcloudTestCase
+from libcloud.common.base import Response, LazyObject
+from libcloud.common.exceptions import BaseHTTPError, RateLimitReachedError
 
 
 class LazyObjectTest(LibcloudTestCase):

@@ -15,24 +15,18 @@
 
 import sys
 
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, urlparse, parse_qsl, assertRaisesRegex
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import Provider
+from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.providers import get_driver
+from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
+
 try:
     import simplejson as json
 except ImportError:
     import json
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qsl
-from libcloud.utils.py3 import assertRaisesRegex
-
-from libcloud.loadbalancer.types import Provider
-from libcloud.loadbalancer.providers import get_driver
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
-
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 
 class CloudStackLBTests(unittest.TestCase):

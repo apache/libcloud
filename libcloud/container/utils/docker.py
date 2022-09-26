@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 from base64 import b64encode
 
@@ -39,7 +38,7 @@ class DockerHubConnection(Connection):
         backoff=None,
         retry_delay=None,
     ):
-        super(DockerHubConnection, self).__init__(
+        super().__init__(
             secure=secure,
             host=host,
             port=port,
@@ -56,15 +55,13 @@ class DockerHubConnection(Connection):
         headers["Content-Type"] = "application/json"
         if self.username is not None:
             authstr = "Basic " + str(
-                b64encode(
-                    ("%s:%s" % (self.username, self.password)).encode("latin1")
-                ).strip()
+                b64encode(("{}:{}".format(self.username, self.password)).encode("latin1")).strip()
             )
             headers["Authorization"] = authstr
         return headers
 
 
-class RegistryClient(object):
+class RegistryClient:
     """
     A client for the Docker v2 registry API
     """
@@ -102,7 +99,7 @@ class RegistryClient(object):
         :return: A list of images
         :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
-        path = "/v2/repositories/%s/%s/tags/?page=1&page_size=%s" % (
+        path = "/v2/repositories/{}/{}/tags/?page=1&page_size={}".format(
             namespace,
             repository_name,
             max_count,
@@ -126,7 +123,7 @@ class RegistryClient(object):
         :return: The details of the repository
         :rtype: ``object``
         """
-        path = "/v2/repositories/%s/%s/" % (namespace, repository_name)
+        path = "/v2/repositories/{}/{}/".format(namespace, repository_name)
         response = self.connection.request(path)
         return response.object
 
@@ -146,12 +143,12 @@ class RegistryClient(object):
         :return: A container image
         :rtype: :class:`libcloud.container.base.ContainerImage`
         """
-        path = "/v2/repositories/%s/%s/tags/%s/" % (namespace, repository_name, tag)
+        path = "/v2/repositories/{}/{}/tags/{}/".format(namespace, repository_name, tag)
         response = self.connection.request(path)
         return self._to_image(repository_name, response.object)
 
     def _to_image(self, repository_name, obj):
-        path = "%s/%s:%s" % (self.connection.host, repository_name, obj["name"])
+        path = "{}/{}:{}".format(self.connection.host, repository_name, obj["name"])
         return ContainerImage(
             id=obj["id"],
             path=path,
@@ -181,4 +178,4 @@ class HubClient(RegistryClient):
         :param password: (optional) Your hub account password
         :type  password: ``str``
         """
-        super(HubClient, self).__init__(self.host, username, password, **kwargs)
+        super().__init__(self.host, username, password, **kwargs)

@@ -17,15 +17,15 @@ import sys
 import unittest
 
 from libcloud.common.types import LibcloudError
+from libcloud.test.storage.test_s3 import S3Tests, S3MockHttp
 from libcloud.storage.drivers.auroraobjects import AuroraObjectsStorageDriver
-from libcloud.test.storage.test_s3 import S3MockHttp, S3Tests
 
 
 class AuroraObjectsTests(S3Tests, unittest.TestCase):
     driver_type = AuroraObjectsStorageDriver
 
     def setUp(self):
-        super(AuroraObjectsTests, self).setUp()
+        super().setUp()
 
         AuroraObjectsStorageDriver.connectionCls.conn_class = S3MockHttp
         S3MockHttp.type = None

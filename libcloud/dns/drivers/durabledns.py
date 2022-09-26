@@ -15,19 +15,24 @@
 """
 DurableDNS Driver
 """
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ensure_string
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.base import Record, Zone
-from libcloud.dns.base import DNSDriver
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
 from xml.etree.ElementTree import tostring
-from libcloud.common.durabledns import DurableConnection, DurableResponse
-from libcloud.common.durabledns import DurableDNSException
-from libcloud.common.durabledns import _schema_builder as api_schema_builder
-from libcloud.common.durabledns import SCHEMA_BUILDER_MAP
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
+from libcloud.utils.py3 import httplib, ensure_string
+from libcloud.common.durabledns import (
+    SCHEMA_BUILDER_MAP,
+    DurableResponse,
+    DurableConnection,
+    DurableDNSException,
+)
+from libcloud.common.durabledns import _schema_builder as api_schema_builder
 
 __all__ = [
     "ZONE_EXTRA_PARAMS_DEFAULT_VALUES",
@@ -149,9 +154,7 @@ class DurableDNSDriver(DNSDriver):
             )
         except DurableDNSException as e:
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
 
         # listRecords method doens't return full data in records as getRecord
@@ -197,9 +200,7 @@ class DurableDNSDriver(DNSDriver):
             )
         except DurableDNSException as e:
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone_id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value=e.message)
             raise e
 
         zones = self._to_zones(response.objects)
@@ -248,13 +249,9 @@ class DurableDNSDriver(DNSDriver):
             )
         except DurableDNSException as e:
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone_id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value=e.message)
             if "Record does not exist" in e.message:
-                raise RecordDoesNotExistError(
-                    record_id=record_id, driver=self, value=e.message
-                )
+                raise RecordDoesNotExistError(record_id=record_id, driver=self, value=e.message)
             raise e
 
         zone = self.get_zone(zone_id)
@@ -339,9 +336,7 @@ class DurableDNSDriver(DNSDriver):
             )
         except DurableDNSException as e:
             if "Zone Already Exist" in e.message:
-                raise ZoneAlreadyExistsError(
-                    zone_id=domain, driver=self, value=e.message
-                )
+                raise ZoneAlreadyExistsError(zone_id=domain, driver=self, value=e.message)
             raise e
 
         zone = self.get_zone(domain)
@@ -429,9 +424,7 @@ class DurableDNSDriver(DNSDriver):
             # the RecordAlreadyExist exception. Only ZoneDoesNotExist will
             # be handled.
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
 
         record_item = objects[0]
@@ -516,14 +509,10 @@ class DurableDNSDriver(DNSDriver):
         action = "/services/dns/updateZone.php?"
         headers = {"SOAPAction": "urn:updateZonewsdl#updateZone"}
         try:
-            self.connection.request(
-                action=action, data=req_data, method="POST", headers=headers
-            )
+            self.connection.request(action=action, data=req_data, method="POST", headers=headers)
         except DurableDNSException as e:
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
 
         # After update the zone, serial number change. In order to have it
@@ -604,14 +593,10 @@ class DurableDNSDriver(DNSDriver):
         action = "/services/dns/updateRecord.php?"
         headers = {"SOAPAction": "urn:updateRecordwsdl#updateRecord"}
         try:
-            self.connection.request(
-                action=action, data=req_data, method="POST", headers=headers
-            )
+            self.connection.request(action=action, data=req_data, method="POST", headers=headers)
         except DurableDNSException as e:
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
 
         record_item = {}
@@ -655,9 +640,7 @@ class DurableDNSDriver(DNSDriver):
             )
         except DurableDNSException as e:
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
 
         return response.status in [httplib.OK]
@@ -696,13 +679,9 @@ class DurableDNSDriver(DNSDriver):
             )
         except DurableDNSException as e:
             if "Record does not exists" in e.message:
-                raise RecordDoesNotExistError(
-                    record_id=record.id, driver=self, value=e.message
-                )
+                raise RecordDoesNotExistError(record_id=record.id, driver=self, value=e.message)
             if "Zone does not exist" in e.message:
-                raise ZoneDoesNotExistError(
-                    zone_id=record.zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=record.zone.id, driver=self, value=e.message)
             raise e
 
         return response.status in [httplib.OK]

@@ -14,22 +14,18 @@
 # limitations under the License.
 
 import sys
+
 import pytest
 
-from libcloud.common.types import InvalidCredsError
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
-from libcloud.utils.py3 import next
-
-from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
-from libcloud.compute.drivers.softlayer import SoftLayerException, NODE_STATE_MAP
-from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
-
-from libcloud.test import unittest
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.test import unittest
+from libcloud.utils.py3 import next, httplib, xmlrpclib
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import SOFTLAYER_PARAMS
+from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.softlayer import NODE_STATE_MAP, SoftLayerException
+from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 
 null_fingerprint = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" + "00:00:00:00:00"
 
@@ -186,9 +182,7 @@ class SoftLayerTests(unittest.TestCase):
         self.assertEqual(key_pair.name, "test1")
 
     def test_get_key_pair_does_not_exist(self):
-        self.assertRaises(
-            KeyPairDoesNotExistError, self.driver.get_key_pair, name="test-key-pair"
-        )
+        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair, name="test-key-pair")
 
     @pytest.mark.skip(reason="no way of currently testing this")
     def test_create_key_pair(self):
@@ -213,30 +207,22 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
     def _xmlrpc(self, method, url, body, headers):
         params, meth_name = xmlrpclib.loads(body)
         url = url.replace("/", "_")
-        meth_name = "%s_%s" % (url, meth_name)
+        meth_name = "{}_{}".format(url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
-    def _xmlrpc_v3_SoftLayer_Virtual_Guest_getCreateObjectOptions(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml"
-        )
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_getCreateObjectOptions(self, method, url, body, headers):
+        body = self.fixtures.load("v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Account_getVirtualGuests.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(self, method, url, body, headers):
         body = self.fixtures.load("v3_SoftLayer_Location_Datacenter_getDatacenters.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Virtual_Guest_createObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_createObject(self, method, url, body, headers):
         fixture = {
             None: "v3__SoftLayer_Virtual_Guest_createObject.xml",
             "INVALIDCREDSERROR": "SoftLayer_Account.xml",
@@ -283,9 +269,7 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("empty.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Virtual_Guest_deleteObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_deleteObject(self, method, url, body, headers):
         body = self.fixtures.load("empty.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -293,21 +277,15 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("v3__SoftLayer_Account_getSshKeys.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_getObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_getObject(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Security_Ssh_Key_getObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_createObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_createObject(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Security_Ssh_Key_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_deleteObject(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_deleteObject(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Security_Ssh_Key_deleteObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

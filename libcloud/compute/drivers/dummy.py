@@ -22,9 +22,7 @@ import socket
 import struct
 
 from libcloud.common.base import ConnectionKey
-from libcloud.compute.base import NodeImage, NodeSize, Node
-from libcloud.compute.base import NodeDriver, NodeLocation
-from libcloud.compute.base import KeyPair
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation
 from libcloud.compute.types import Provider, NodeState
 
 
@@ -240,9 +238,7 @@ class DummyNodeDriver(NodeDriver):
         """
 
         return [
-            NodeSize(
-                id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self
-            ),
+            NodeSize(id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self),
             NodeSize(
                 id=2,
                 name="Medium",

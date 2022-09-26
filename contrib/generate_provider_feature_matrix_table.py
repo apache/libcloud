@@ -14,47 +14,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import sys
 import inspect
-from collections import OrderedDict
 from os.path import join as pjoin
+from collections import OrderedDict
 
-this_dir = os.path.abspath(os.path.split(__file__)[0])
-sys.path.insert(0, os.path.join(this_dir, "../"))
+# Add parent dir of this file's dir to sys.path (OS-agnostically)
+BASE_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(BASE_DIR)
 
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.providers import get_driver as get_compute_driver
-from libcloud.compute.providers import DRIVERS as COMPUTE_DRIVERS
-from libcloud.compute.types import Provider as ComputeProvider
-
-from libcloud.loadbalancer.base import Driver as LBDriver
-from libcloud.loadbalancer.providers import get_driver as get_lb_driver
-from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS
-from libcloud.loadbalancer.types import Provider as LBProvider
-
-from libcloud.storage.base import StorageDriver
-from libcloud.storage.providers import get_driver as get_storage_driver
-from libcloud.storage.providers import DRIVERS as STORAGE_DRIVERS
-from libcloud.storage.types import Provider as StorageProvider
-
-from libcloud.dns.base import DNSDriver
-from libcloud.dns.providers import get_driver as get_dns_driver
-from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
-from libcloud.dns.types import Provider as DNSProvider
-
-from libcloud.container.base import ContainerDriver
-from libcloud.container.providers import get_driver as get_container_driver
-from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
-from libcloud.container.types import Provider as ContainerProvider
-
-from libcloud.backup.base import BackupDriver
-from libcloud.backup.providers import get_driver as get_backup_driver
-from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
-from libcloud.backup.types import Provider as BackupProvider
-
+# isort:skip pragma is needed to make sure those imports are not moved above
+# sys.path manipulation code (https://github.com/PyCQA/isort/issues/468)
+from libcloud.dns.base import DNSDriver  # isort:skip
+from libcloud.dns.types import Provider as DNSProvider  # isort:skip
+from libcloud.backup.base import BackupDriver  # isort:skip
+from libcloud.backup.types import Provider as BackupProvider  # isort:skip
+from libcloud.compute.base import NodeDriver  # isort:skip
+from libcloud.storage.base import StorageDriver  # isort:skip
+from libcloud.compute.types import Provider as ComputeProvider  # isort:skip
+from libcloud.dns.providers import DRIVERS as DNS_DRIVERS  # isort:skip
+from libcloud.dns.providers import get_driver as get_dns_driver  # isort:skip
+from libcloud.storage.types import Provider as StorageProvider  # isort:skip
+from libcloud.container.base import ContainerDriver  # isort:skip
+from libcloud.container.types import Provider as ContainerProvider  # isort:skip
+from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS  # isort:skip
+from libcloud.backup.providers import get_driver as get_backup_driver  # isort:skip
+from libcloud.compute.providers import DRIVERS as COMPUTE_DRIVERS  # isort:skip
+from libcloud.compute.providers import get_driver as get_compute_driver  # isort:skip
+from libcloud.loadbalancer.base import Driver as LBDriver  # isort:skip
+from libcloud.storage.providers import DRIVERS as STORAGE_DRIVERS  # isort:skip
+from libcloud.storage.providers import get_driver as get_storage_driver  # isort:skip
+from libcloud.loadbalancer.types import Provider as LBProvider  # isort:skip
+from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS  # isort:skip
+from libcloud.loadbalancer.providers import DRIVERS as LB_DRIVERS  # isort:skip
+from libcloud.loadbalancer.providers import get_driver as get_lb_driver  # isort:skip
+from libcloud.container.providers import get_driver as get_container_driver  # isort:skip
 
 HEADER = (
     ".. NOTE: This file has been generated automatically using "
@@ -289,9 +285,7 @@ IGNORED_PROVIDERS = [
 
 
 def get_provider_api_names(Provider):
-    names = [
-        key for key, value in Provider.__dict__.items() if not key.startswith("__")
-    ]
+    names = [key for key, value in Provider.__dict__.items() if not key.startswith("__")]
     return names
 
 
@@ -346,7 +340,7 @@ def generate_providers_table(api):
             cls = get_driver_method(enum)
         except Exception as e:
             # Deprecated providers throw an exception
-            print('Ignoring deprecated constant "%s": %s' % (enum, str(e)))
+            print('Ignoring deprecated constant "{}": {}'.format(enum, str(e)))
             continue
 
         # Hack for providers which expose multiple classes and support multiple
@@ -385,9 +379,7 @@ def generate_providers_table(api):
             continue
 
         def is_function_or_method(*args, **kwargs):
-            return inspect.isfunction(*args, **kwargs) or inspect.ismethod(
-                *args, **kwargs
-            )
+            return inspect.isfunction(*args, **kwargs) or inspect.ismethod(*args, **kwargs)
 
         driver_methods = dict(inspect.getmembers(cls, predicate=is_function_or_method))
         base_methods = dict(inspect.getmembers(driver, predicate=is_function_or_method))
@@ -432,17 +424,7 @@ def generate_rst_table(data):
 
     header = formatter.format(*["=" * c for c in col_len])
     rows = [formatter.format(*row) for row in data]
-    result = (
-        header
-        + "\n"
-        + rows[0]
-        + "\n"
-        + header
-        + "\n"
-        + "\n".join(rows[1:])
-        + "\n"
-        + header
-    )
+    result = header + "\n" + rows[0] + "\n" + header + "\n" + "\n".join(rows[1:]) + "\n" + header
 
     return result
 
@@ -495,7 +477,7 @@ def generate_supported_methods_table(api, provider_matrix):
 
     result += "\n\n"
     for provider, values in sorted(provider_matrix.items()):
-        result += ".. _`%s`: %s\n" % (values["name"], values["website"])
+        result += ".. _`{}`: {}\n".format(values["name"], values["website"])
     return result
 
 
@@ -521,9 +503,7 @@ def generate_supported_providers_table(api, provider_matrix):
             continue
 
         params = {"api": api, "provider": provider.lower()}
-        driver_docs_path = pjoin(
-            this_dir, "../docs/%(api)s/drivers/%(provider)s.rst" % params
-        )
+        driver_docs_path = pjoin(BASE_DIR, "docs/%(api)s/drivers/%(provider)s.rst" % params)
 
         if os.path.exists(driver_docs_path):
             docs_link = ":doc:`Click </%(api)s/drivers/%(provider)s>`" % params
@@ -554,7 +534,7 @@ def generate_supported_providers_table(api, provider_matrix):
 
     result += "\n\n"
     for provider, values in sorted(provider_matrix.items()):
-        result += ".. _`%s`: %s\n" % (values["name"], values["website"])
+        result += ".. _`{}`: {}\n".format(values["name"], values["website"])
     return result
 
 

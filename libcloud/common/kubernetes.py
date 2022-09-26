@@ -17,17 +17,18 @@
 Module which contains common Kubernetes related code.
 """
 
-from typing import Optional
-
 import os
 import base64
 import warnings
+from typing import Optional
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.base import KeyCertificateConnection, ConnectionKey
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import (
+    JsonResponse,
+    ConnectionKey,
+    ConnectionUserAndKey,
+    KeyCertificateConnection,
+)
 from libcloud.common.types import InvalidCredsError
 
 __all__ = [
@@ -54,10 +55,10 @@ class KubernetesException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "KubernetesException %s %s" % (self.code, self.message)
+        return "KubernetesException {} {}".format(self.code, self.message)
 
 
 class KubernetesResponse(JsonResponse):
@@ -93,7 +94,7 @@ class KubernetesTLSAuthConnection(KeyCertificateConnection):
         **kwargs,
     ):
 
-        super(KubernetesTLSAuthConnection, self).__init__(
+        super().__init__(
             key_file=key_file,
             cert_file=cert_file,
             secure=secure,
@@ -167,13 +168,13 @@ class KubernetesBasicAuthConnection(ConnectionUserAndKey):
             headers["Content-Type"] = "application/json"
 
         if self.user_id and self.key:
-            auth_string = b("%s:%s" % (self.user_id, self.key))
+            auth_string = b("{}:{}".format(self.user_id, self.key))
             user_b64 = base64.b64encode(auth_string)
             headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
 
-class KubernetesDriverMixin(object):
+class KubernetesDriverMixin:
     """
     Base driver class to be used with various Kubernetes drivers.
 
@@ -246,7 +247,7 @@ class KubernetesDriverMixin(object):
 
         host = self._santize_host(host=host)
 
-        super(KubernetesDriverMixin, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

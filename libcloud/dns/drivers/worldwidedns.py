@@ -20,23 +20,23 @@ __all__ = ["WorldWideDNSDriver"]
 
 import re
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    RecordError,
+    ZoneDoesNotExistError,
+    RecordDoesNotExistError,
+)
 from libcloud.common.types import LibcloudError
 from libcloud.common.worldwidedns import WorldWideDNSConnection
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
-
 
 MAX_RECORD_ENTRIES = 40  # Maximum record entries for zone
 
 
 class WorldWideDNSError(LibcloudError):
     def __repr__(self):
-        return (
-            "<WorldWideDNSError in " + repr(self.driver) + " " + repr(self.value) + ">"
-        )
+        return "<WorldWideDNSError in " + repr(self.driver) + " " + repr(self.value) + ">"
 
 
 class WorldWideDNSDriver(DNSDriver):
@@ -86,9 +86,7 @@ class WorldWideDNSDriver(DNSDriver):
 
         :return: ``None``
         """
-        super(WorldWideDNSDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
         self.reseller_id = reseller_id
 
     def list_zones(self):
@@ -121,8 +119,7 @@ class WorldWideDNSDriver(DNSDriver):
         :rtype: ``generator`` of :class:`Record`
         """
         records = self._to_records(zone)
-        for record in records:
-            yield record
+        yield from records
 
     def get_zone(self, zone_id):
         """
@@ -162,18 +159,14 @@ class WorldWideDNSDriver(DNSDriver):
                     record_id=record_id,
                 )
         except ValueError:
-            raise WorldWideDNSError(
-                value="Record id should be a string number", driver=self
-            )
+            raise WorldWideDNSError(value="Record id should be a string number", driver=self)
         subdomain = zone.extra.get("S%s" % record_id)
         type = zone.extra.get("T%s" % record_id)
         data = zone.extra.get("D%s" % record_id)
         record = self._to_record(record_id, subdomain, type, data, zone)
         return record
 
-    def update_zone(
-        self, zone, domain, type="master", ttl=None, extra=None, ex_raw=False
-    ):
+    def update_zone(self, zone, domain, type="master", ttl=None, extra=None, ex_raw=False):
         """
         Update an existing zone.
 
@@ -212,9 +205,7 @@ class WorldWideDNSDriver(DNSDriver):
         https://www.worldwidedns.net/dns_api_protocol_list_domain_raw_reseller.asp
         """
         if extra is not None:
-            not_specified = [
-                key for key in zone.extra.keys() if key not in extra.keys()
-            ]
+            not_specified = [key for key in zone.extra.keys() if key not in extra.keys()]
         else:
             not_specified = zone.extra.keys()
 
@@ -266,9 +257,7 @@ class WorldWideDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         if (extra is None) or ("entry" not in extra):
-            raise WorldWideDNSError(
-                value="You must enter 'entry' parameter", driver=self
-            )
+            raise WorldWideDNSError(value="You must enter 'entry' parameter", driver=self)
         record_id = extra.get("entry")
         if name == "":
             name = "@"
@@ -364,9 +353,7 @@ class WorldWideDNSDriver(DNSDriver):
             # are full, raise error.
             record_id = self._get_available_record_entry(zone)
             if not record_id:
-                raise WorldWideDNSError(
-                    value="All record entries are full", driver=zone.driver
-                )
+                raise WorldWideDNSError(value="All record entries are full", driver=zone.driver)
         else:
             record_id = extra.get("entry")
         if name == "":
@@ -543,6 +530,4 @@ class WorldWideDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, _id, subdomain, type, data, zone):
-        return Record(
-            id=_id, name=subdomain, type=type, data=data, zone=zone, driver=zone.driver
-        )
+        return Record(id=_id, name=subdomain, type=type, data=data, zone=zone, driver=zone.driver)

@@ -16,20 +16,16 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import parse_qsl
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib, urlparse, parse_qsl
+from libcloud.test.compute import TestCaseMixin
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.ktucloud import KTUCloudNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-from libcloud.compute.drivers.ktucloud import KTUCloudNodeDriver
-
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):

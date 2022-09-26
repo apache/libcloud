@@ -18,26 +18,19 @@ Softlayer driver
 
 import time
 
+from libcloud.compute.base import Node, KeyPair, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState, KeyPairDoesNotExistError
+from libcloud.common.softlayer import SoftLayerException, SoftLayerConnection
+
 try:
-    from cryptography.hazmat.primitives.asymmetric import rsa
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
 
     crypto = True
 except ImportError:
     crypto = False
 
-from libcloud.common.softlayer import SoftLayerConnection, SoftLayerException
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import (
-    NodeDriver,
-    Node,
-    NodeLocation,
-    NodeSize,
-    NodeImage,
-    KeyPair,
-)
-from libcloud.compute.types import KeyPairDoesNotExistError
 
 DEFAULT_DOMAIN = "example.com"
 DEFAULT_CPU_SIZE = 1
@@ -323,9 +316,7 @@ class SoftLayerNodeDriver(NodeDriver):
         if ex_keyname:
             newCCI["sshKeys"] = [{"id": self._key_name_to_id(ex_keyname)}]
 
-        res = self.connection.request(
-            "SoftLayer_Virtual_Guest", "createObject", newCCI
-        ).object
+        res = self.connection.request("SoftLayer_Virtual_Guest", "createObject", newCCI).object
 
         node_id = res["id"]
         raw_node = self._get_order_information(node_id)
@@ -349,9 +340,7 @@ class SoftLayerNodeDriver(NodeDriver):
     # can we create new dependencies?
     def create_key_pair(self, name, ex_size=4096):
         if crypto is False:
-            raise NotImplementedError(
-                "create_key_pair needs" "the cryptography library"
-            )
+            raise NotImplementedError("create_key_pair needs" "the cryptography library")
         key = rsa.generate_private_key(
             public_exponent=65537, key_size=4096, backend=default_backend()
         )
@@ -402,9 +391,7 @@ class SoftLayerNodeDriver(NodeDriver):
         )
 
     def list_images(self, location=None):
-        result = self.connection.request(
-            "SoftLayer_Virtual_Guest", "getCreateObjectOptions"
-        ).object
+        result = self.connection.request("SoftLayer_Virtual_Guest", "getCreateObjectOptions").object
         return [self._to_image(i) for i in result["operatingSystems"]]
 
     def get_image(self, image_id):
@@ -450,9 +437,7 @@ class SoftLayerNodeDriver(NodeDriver):
         return NodeLocation(id=loc_id, name=name, country=country, driver=self)
 
     def list_locations(self):
-        res = self.connection.request(
-            "SoftLayer_Virtual_Guest", "getCreateObjectOptions"
-        ).object
+        res = self.connection.request("SoftLayer_Virtual_Guest", "getCreateObjectOptions").object
         return [self._to_loc(loc) for loc in res["datacenters"]]
 
     def list_nodes(self):

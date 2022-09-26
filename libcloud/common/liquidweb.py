@@ -15,11 +15,9 @@
 
 import base64
 
-from libcloud.common.base import JsonResponse
-from libcloud.common.base import ConnectionUserAndKey
 from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import ProviderError
-
 
 __all__ = [
     "API_HOST",
@@ -48,25 +46,25 @@ class LiquidWebException(ProviderError):
         :type  extra: ``list``
         """
         self.extra = extra
-        super(LiquidWebException, self).__init__(value, http_code, driver=None)
+        super().__init__(value, http_code, driver=None)
 
     def __str__(self):
-        return "%s  %s" % (self.http_code, self.value)
+        return "{}  {}".format(self.http_code, self.value)
 
     def __repr__(self):
-        return "LiquidWebException %s %s" % (self.http_code, self.value)
+        return "LiquidWebException {} {}".format(self.http_code, self.value)
 
 
 class APIException(LiquidWebException):
     def __init__(self, error_class, full_msg, http_code, extra=None):
         self.error_class = error_class
-        super(APIException, self).__init__(full_msg, http_code, extra=extra)
+        super().__init__(full_msg, http_code, extra=extra)
 
     def __str__(self):
-        return "%s: %s" % (self.error_class, self.value)
+        return "{}: {}".format(self.error_class, self.value)
 
     def __repr__(self):
-        return "%s: %s" % (self.error_class, self.value)
+        return "{}: {}".format(self.error_class, self.value)
 
 
 EXCEPTIONS_FIELDS = {
@@ -94,9 +92,7 @@ EXCEPTIONS_FIELDS = {
     "LW::Exception::RecordNotFound": {"fields": ["field", "input"]},
     "LW::Exception::RemoteService::Authorization": {"fields": ["url"]},
     "LW::Exception::Resource": {"fields": ["resource"]},
-    "LW::Exception::Resource::Insufficient": {
-        "fields": ["available", "requested", "resource"]
-    },
+    "LW::Exception::Resource::Insufficient": {"fields": ["available", "requested", "resource"]},
     "LW::Exception::Resource::Unavailable": {"fields": ["resource"]},
     "LW::Exception::Serialize": {"fields": ["data", "encoding"]},
     "LW::Exception::Workflow::Conflict": {"fields": ["conflict", "workflow"]},
@@ -109,9 +105,7 @@ class LiquidWebResponse(JsonResponse):
 
     def __init__(self, response, connection):
         self.errors = []
-        super(LiquidWebResponse, self).__init__(
-            response=response, connection=connection
-        )
+        super().__init__(response=response, connection=connection)
         self.objects, self.errors = self.parse_body_and_errors()
         if self.errors:
             error = self.errors.pop()
@@ -120,7 +114,7 @@ class LiquidWebResponse(JsonResponse):
     def parse_body_and_errors(self):
         data = []
         errors = []
-        js = super(LiquidWebResponse, self).parse_body()
+        js = super().parse_body()
         if "items" in js:
             data.append(js["items"])
 
@@ -164,7 +158,7 @@ class LiquidWebConnection(ConnectionUserAndKey):
     responseCls = LiquidWebResponse
 
     def add_default_headers(self, headers):
-        b64string = b("%s:%s" % (self.user_id, self.key))
+        b64string = b("{}:{}".format(self.user_id, self.key))
         encoded = base64.b64encode(b64string).decode("utf-8")
         authorization = "Basic " + encoded
 

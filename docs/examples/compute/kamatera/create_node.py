@@ -34,7 +34,7 @@ capabilities = driver.ex_list_capabilities(location)
 
 cpuTypes = {cpuType["id"]: cpuType for cpuType in capabilities["cpuTypes"]}
 for cpuType in cpuTypes.values():
-    print("%s: %s" % (cpuType["name"], cpuType["description"]))
+    print("{}: {}".format(cpuType["name"], cpuType["description"]))
 
 # Type B - General Purpose: Server CPUs are assigned to a dedicated physical
 #          CPU Thread with reserved resources guaranteed.
@@ -109,7 +109,7 @@ size = driver.ex_get_size(
 images = {image.id: image for image in driver.list_images(location)}
 
 for image in images.values():
-    print("%s: %s" % (image.id, image.name))
+    print("{}: {}".format(image.id, image.name))
 
 # list is shortened, actual list will vary and provide more OS image options
 
@@ -151,4 +151,4 @@ node = driver.create_node(
 
 # get the node SSH connection details
 
-print("root@%s  /  %s" % (node.public_ips[0], node.extra["generated_password"]))
+print("root@{}  /  {}".format(node.public_ips[0], node.extra["generated_password"]))

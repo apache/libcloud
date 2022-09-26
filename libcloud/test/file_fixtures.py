@@ -14,12 +14,9 @@
 # limitations under the License.
 
 # Helper class for loading large fixture data
-from __future__ import with_statement
 
 import os
-import codecs
 
-from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import u
 
 FIXTURES_ROOT = {
@@ -35,7 +32,7 @@ FIXTURES_ROOT = {
 }
 
 
-class FileFixtures(object):
+class FileFixtures:
     def __init__(self, fixtures_type, sub_dir=""):
         script_dir = os.path.abspath(os.path.split(__file__)[0])
         self.root = os.path.join(script_dir, FIXTURES_ROOT[fixtures_type], sub_dir)
@@ -43,65 +40,48 @@ class FileFixtures(object):
     def load(self, file):
         path = os.path.join(self.root, file)
         if os.path.exists(path):
-            if PY3:
-                with open(path, "r", encoding="utf-8") as fh:
-                    content = fh.read()
-                return u(content)
-            else:
-                with codecs.open(path, "r", "utf-8") as fh:
-                    content = fh.read()
-                return content
+            with open(path, encoding="utf-8") as fh:
+                content = fh.read()
+            return u(content)
         else:
-            raise IOError(path)
+            raise OSError(path)
 
 
 class ComputeFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(ComputeFileFixtures, self).__init__(
-            fixtures_type="compute", sub_dir=sub_dir
-        )
+        super().__init__(fixtures_type="compute", sub_dir=sub_dir)
 
 
 class StorageFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(StorageFileFixtures, self).__init__(
-            fixtures_type="storage", sub_dir=sub_dir
-        )
+        super().__init__(fixtures_type="storage", sub_dir=sub_dir)
 
 
 class LoadBalancerFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(LoadBalancerFileFixtures, self).__init__(
-            fixtures_type="loadbalancer", sub_dir=sub_dir
-        )
+        super().__init__(fixtures_type="loadbalancer", sub_dir=sub_dir)
 
 
 class DNSFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(DNSFileFixtures, self).__init__(fixtures_type="dns", sub_dir=sub_dir)
+        super().__init__(fixtures_type="dns", sub_dir=sub_dir)
 
 
 class DRSFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(DRSFileFixtures, self).__init__(fixtures_type="drs", sub_dir=sub_dir)
+        super().__init__(fixtures_type="drs", sub_dir=sub_dir)
 
 
 class OpenStackFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(OpenStackFixtures, self).__init__(
-            fixtures_type="openstack", sub_dir=sub_dir
-        )
+        super().__init__(fixtures_type="openstack", sub_dir=sub_dir)
 
 
 class ContainerFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(ContainerFileFixtures, self).__init__(
-            fixtures_type="container", sub_dir=sub_dir
-        )
+        super().__init__(fixtures_type="container", sub_dir=sub_dir)
 
 
 class BackupFileFixtures(FileFixtures):
     def __init__(self, sub_dir=""):
-        super(BackupFileFixtures, self).__init__(
-            fixtures_type="backup", sub_dir=sub_dir
-        )
+        super().__init__(fixtures_type="backup", sub_dir=sub_dir)

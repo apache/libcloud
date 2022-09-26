@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from typing import Dict
-
 import base64
+from typing import Dict, List
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 __all__ = ["API_HOST", "LuadnsException", "LuadnsResponse", "LuadnsConnection"]
 
@@ -32,15 +30,13 @@ class LuadnsResponse(JsonResponse):
     objects = []  # type: List[Dict]
 
     def __init__(self, response, connection):
-        super(LuadnsResponse, self).__init__(response=response, connection=connection)
+        super().__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise LuadnsException(
-                code=self.status, message=self.errors.pop()["message"]
-            )
+            raise LuadnsException(code=self.status, message=self.errors.pop()["message"])
 
     def parse_body_and_errors(self):
-        js = super(LuadnsResponse, self).parse_body()
+        js = super().parse_body()
         if "message" in js:
             self.errors.append(js)
         else:
@@ -57,7 +53,7 @@ class LuadnsConnection(ConnectionUserAndKey):
     responseCls = LuadnsResponse
 
     def add_default_headers(self, headers):
-        b64string = b("%s:%s" % (self.user_id, self.key))
+        b64string = b("{}:{}".format(self.user_id, self.key))
         encoded = base64.b64encode(b64string).decode("utf-8")
         authorization = "Basic " + encoded
 
@@ -74,7 +70,7 @@ class LuadnsException(Exception):
         self.args = (code, message)
 
     def __str__(self):
-        return "%s %s" % (self.code, self.message)
+        return "{} {}".format(self.code, self.message)
 
     def __repr__(self):
-        return "Luadns %s %s" % (self.code, self.message)
+        return "Luadns {} {}".format(self.code, self.message)

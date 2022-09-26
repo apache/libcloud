@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.compute.base import Node, NodeSize, NodeImage
 from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
 
@@ -57,9 +57,7 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         sizes = []
         for sz in szs["producttypes"]:
             diskofferingid = sz.get("diskofferingid", self.EMPTY_DISKOFFERINGID)
-            sizes.append(
-                NodeSize(diskofferingid, sz["diskofferingdesc"], 0, 0, 0, 0, self)
-            )
+            sizes.append(NodeSize(diskofferingid, sz["diskofferingdesc"], 0, 0, 0, 0, self))
         return sizes
 
     def create_node(self, name, size, image, location=None, ex_usageplantype="hourly"):
@@ -78,9 +76,7 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         if size.id != self.EMPTY_DISKOFFERINGID:
             params["diskofferingid"] = size.id
 
-        result = self._async_request(
-            command="deployVirtualMachine", params=params, method="GET"
-        )
+        result = self._async_request(command="deployVirtualMachine", params=params, method="GET")
 
         node = result["virtualmachine"]
 

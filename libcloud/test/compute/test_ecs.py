@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,27 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import unicode_literals
 
 import sys
 import unittest
 
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.utils.py3 import httplib
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (
     Node,
-    NodeAuthPassword,
+    NodeSize,
     NodeImage,
     NodeLocation,
-    NodeSize,
     StorageVolume,
     VolumeSnapshot,
+    NodeAuthPassword,
 )
-from libcloud.compute.drivers.ecs import ECSDriver
-from libcloud.compute.types import NodeState, StorageVolumeState
-from libcloud.test import MockHttp, LibcloudTestCase
-from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import ECS_PARAMS
-from libcloud.utils.py3 import httplib
+from libcloud.compute.types import NodeState, StorageVolumeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.ecs import ECSDriver
 
 
 class ECSDriverTestCase(LibcloudTestCase):
@@ -51,9 +49,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.fake_size = NodeSize(
             "ecs.t1.small", "ecs t1 small", None, None, None, None, self.driver
         )
-        self.fake_image = NodeImage(
-            self.image_id, name="ubuntu 14.04 64bit", driver=self.driver
-        )
+        self.fake_image = NodeImage(self.image_id, name="ubuntu 14.04 64bit", driver=self.driver)
         self.fake_node = Node(
             id="fake-node1",
             name="fake-node",
@@ -140,8 +136,7 @@ class ECSDriverTestCase(LibcloudTestCase):
                 (
                     "extra %(key)s not equal, "
                     'expected: "%(expected)s", '
-                    'actual: "%(actual)s"'
-                    % {"key": key, "expected": value, "actual": actual[key]}
+                    'actual: "%(actual)s"' % {"key": key, "expected": value, "actual": actual[key]}
                 ),
             )
 
@@ -353,9 +348,7 @@ class ECSDriverTestCase(LibcloudTestCase):
 
     def test_list_volumes_with_ex_volume_ids(self):
         ECSMockHttp.type = "list_volumes_ex_volume_ids"
-        volumes = self.driver.list_volumes(
-            ex_volume_ids=["i-28n7dkvov", "not-existed-id"]
-        )
+        volumes = self.driver.list_volumes(ex_volume_ids=["i-28n7dkvov", "not-existed-id"])
         self.assertIsNotNone(volumes)
 
     def test_list_volumes_with_ex_filters(self):
@@ -371,9 +364,7 @@ class ECSDriverTestCase(LibcloudTestCase):
     def test_list_volume_snapshots_with_ex_snapshot_ids(self):
         ECSMockHttp.type = "list_volume_snapshots_ex_snapshot_ids"
         ex_snapshot_ids = ["fake-snapshot1"]
-        self.driver.list_volume_snapshots(
-            self.fake_volume, ex_snapshot_ids=ex_snapshot_ids
-        )
+        self.driver.list_volume_snapshots(self.fake_volume, ex_snapshot_ids=ex_snapshot_ids)
 
     def test_list_volume_snapshots_with_ex_filters(self):
         ECSMockHttp.type = "list_volume_snapshots_ex_filters"
@@ -399,9 +390,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertIsNotNone(volume)
 
     def test_create_volume_without_ex_zone_id_exception(self):
-        self.assertRaises(
-            AttributeError, self.driver.create_volume, 1, "fake-volume-name"
-        )
+        self.assertRaises(AttributeError, self.driver.create_volume, 1, "fake-volume-name")
 
     def test_create_volume_snapshot(self):
         ECSMockHttp.type = "create_volume_snapshot"
@@ -429,9 +418,7 @@ class ECSDriverTestCase(LibcloudTestCase):
 
     def test_detach_volume(self):
         self.instance_id = "fake-node1"
-        result = self.driver.detach_volume(
-            self.fake_volume, ex_instance_id=self.instance_id
-        )
+        result = self.driver.detach_volume(self.fake_volume, ex_instance_id=self.instance_id)
         self.assertTrue(result)
 
     def test_detach_volume_query_instance_id(self):
@@ -459,9 +446,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertTrue(result)
 
     def test_destroy_volume_snapshot_exception(self):
-        self.assertRaises(
-            AttributeError, self.driver.destroy_volume_snapshot, self.fake_volume
-        )
+        self.assertRaises(AttributeError, self.driver.destroy_volume_snapshot, self.fake_volume)
 
     def test_list_images(self):
         images = self.driver.list_images(self.fake_location)
@@ -494,9 +479,7 @@ class ECSDriverTestCase(LibcloudTestCase):
             "import_oss_bucket": "",
             "import_oss_object": "",
         }
-        self._validate_extras(
-            expected_dev_mappings, image.extra["disk_device_mappings"]
-        )
+        self._validate_extras(expected_dev_mappings, image.extra["disk_device_mappings"])
 
     def test_list_images_with_ex_image_ids(self):
         ECSMockHttp.type = "list_images_ex_image_ids"
@@ -605,9 +588,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertTrue(result)
 
     def test_ex_delete_security_group_by_id(self):
-        result = self.driver.ex_delete_security_group_by_id(
-            group_id=self.fake_security_group_id
-        )
+        result = self.driver.ex_delete_security_group_by_id(group_id=self.fake_security_group_id)
         self.assertTrue(result)
 
     def test_ex_modify_security_group_by_id(self):
@@ -732,9 +713,7 @@ class ECSMockHttp(MockHttp):
 
     def _reboot_node_RebootInstance(self, method, url, body, headers):
         node_id = self.test.fake_node.id
-        self.assertUrlContainsQueryParams(
-            url, {"InstanceId": node_id, "ForceStop": "false"}
-        )
+        self.assertUrlContainsQueryParams(url, {"InstanceId": node_id, "ForceStop": "false"})
         resp_body = self.fixtures.load("reboot_instance.xml")
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
@@ -744,9 +723,7 @@ class ECSMockHttp(MockHttp):
 
     def _reboot_node_force_stop_RebootInstance(self, method, url, body, headers):
         node_id = self.test.fake_node.id
-        self.assertUrlContainsQueryParams(
-            url, {"InstanceId": node_id, "ForceStop": "true"}
-        )
+        self.assertUrlContainsQueryParams(url, {"InstanceId": node_id, "ForceStop": "true"})
         resp_body = self.fixtures.load("reboot_instance.xml")
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
@@ -776,9 +753,7 @@ class ECSMockHttp(MockHttp):
 
     def _stop_node_StopInstance(self, method, url, body, headers):
         node_id = self.test.fake_node.id
-        self.assertUrlContainsQueryParams(
-            url, {"InstanceId": node_id, "ForceStop": "false"}
-        )
+        self.assertUrlContainsQueryParams(url, {"InstanceId": node_id, "ForceStop": "false"})
         resp_body = self.fixtures.load("stop_instance.xml")
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
@@ -788,9 +763,7 @@ class ECSMockHttp(MockHttp):
 
     def _stop_node_force_stop_StopInstance(self, method, url, body, headers):
         node_id = self.test.fake_node.id
-        self.assertUrlContainsQueryParams(
-            url, {"InstanceId": node_id, "ForceStop": "true"}
-        )
+        self.assertUrlContainsQueryParams(url, {"InstanceId": node_id, "ForceStop": "true"})
         resp_body = self.fixtures.load("stop_instance.xml")
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
@@ -821,16 +794,12 @@ class ECSMockHttp(MockHttp):
         resp_body = self.fixtures.load("describe_snapshots.xml")
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
-    def _list_volume_snapshots_ex_snapshot_ids_DescribeSnapshots(
-        self, method, url, body, headers
-    ):
+    def _list_volume_snapshots_ex_snapshot_ids_DescribeSnapshots(self, method, url, body, headers):
         params = {"RegionId": self.test.region, "SnapshotIds": '["fake-snapshot1"]'}
         self.assertUrlContainsQueryParams(url, params)
         return self._DescribeSnapshots(method, url, body, headers)
 
-    def _list_volume_snapshots_ex_filters_DescribeSnapshots(
-        self, method, url, body, headers
-    ):
+    def _list_volume_snapshots_ex_filters_DescribeSnapshots(self, method, url, body, headers):
         params = {"InstanceId": self.test.fake_node.id}
         self.assertUrlContainsQueryParams(url, params)
         return self._DescribeSnapshots(method, url, body, headers)

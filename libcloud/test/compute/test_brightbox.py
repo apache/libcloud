@@ -13,25 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import unittest
 import base64
+import unittest
+
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.types import InvalidCredsError
+from libcloud.test.compute import TestCaseMixin
+from libcloud.test.secrets import BRIGHTBOX_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.brightbox import BrightboxNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.drivers.brightbox import BrightboxNodeDriver
-from libcloud.compute.types import NodeState
-
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.test.secrets import BRIGHTBOX_PARAMS
 
 USER_DATA = "#!/bin/sh\ntest_script.sh\n"
 
@@ -164,9 +162,7 @@ class BrightboxTest(unittest.TestCase, TestCaseMixin):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[1]
-        node = self.driver.create_node(
-            name="Test Node", image=image, size=size, location=location
-        )
+        node = self.driver.create_node(name="Test Node", image=image, size=size, location=location)
         self.assertEqual("srv-nnumd", node.id)
         self.assertEqual("Test Node", node.name)
         self.assertEqual("gb1-b", node.extra["zone"].name)
@@ -212,9 +208,7 @@ class BrightboxTest(unittest.TestCase, TestCaseMixin):
         cip_check = cip_list[0]
         self.assertEqual(cip_check["id"], "cip-tlrp3")
         self.assertEqual(cip_check["public_ip"], "109.107.35.16")
-        self.assertEqual(
-            cip_check["reverse_dns"], "cip-109-107-35-16.gb1.brightbox.com"
-        )
+        self.assertEqual(cip_check["reverse_dns"], "cip-109-107-35-16.gb1.brightbox.com")
         self.assertEqual(cip_check["status"], "unmapped")
         self.assertTrue(cip_check["server"] is None)
         self.assertTrue(cip_check["server_group"] is None)
@@ -257,35 +251,29 @@ class BrightboxMockHttp(MockHttp):
 
     def _token_UNAUTHORIZED_CLIENT(self, method, url, body, headers):
         if method == "POST":
-            return self.test_response(
-                httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}'
-            )
+            return self.test_response(httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}')
 
     def _1_0_servers_INVALID_CLIENT(self, method, url, body, headers):
         return self.test_response(httplib.BAD_REQUEST, '{"error":"invalid_client"}')
 
     def _1_0_servers_UNAUTHORIZED_CLIENT(self, method, url, body, headers):
-        return self.test_response(
-            httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}'
-        )
+        return self.test_response(httplib.UNAUTHORIZED, '{"error":"unauthorized_client"}')
 
     def _1_0_images(self, method, url, body, headers):
         if method == "GET":
-            return self.test_response(
-                httplib.OK, self.fixtures.load("list_images.json")
-            )
+            return self.test_response(httplib.OK, self.fixtures.load("list_images.json"))
 
     def _1_0_servers(self, method, url, body, headers):
         if method == "GET":
-            return self.test_response(
-                httplib.OK, self.fixtures.load("list_servers.json")
-            )
+            return self.test_response(httplib.OK, self.fixtures.load("list_servers.json"))
         elif method == "POST":
             body = json.loads(body)
             encoded = base64.b64encode(b(USER_DATA)).decode("ascii")
 
             if "user_data" in body and body["user_data"] != encoded:
-                data = '{"error_name":"dodgy user data", "errors": ["User data not encoded properly"]}'
+                data = (
+                    '{"error_name":"dodgy user data", "errors": ["User data not encoded properly"]}'
+                )
                 return self.test_response(httplib.BAD_REQUEST, data)
             if body.get("zone", "") == "zon-remk1":
                 node = json.loads(self.fixtures.load("create_server_gb1_b.json"))
@@ -304,18 +292,14 @@ class BrightboxMockHttp(MockHttp):
 
     def _1_0_server_types(self, method, url, body, headers):
         if method == "GET":
-            return self.test_response(
-                httplib.OK, self.fixtures.load("list_server_types.json")
-            )
+            return self.test_response(httplib.OK, self.fixtures.load("list_server_types.json"))
 
     def _1_0_zones(self, method, url, body, headers):
         if method == "GET":
             if headers["Host"] == "api.gbt.brightbox.com":
                 return self.test_response(httplib.OK, "{}")
             else:
-                return self.test_response(
-                    httplib.OK, self.fixtures.load("list_zones.json")
-                )
+                return self.test_response(httplib.OK, self.fixtures.load("list_zones.json"))
 
     def _2_0_zones(self, method, url, body, headers):
         data = '{"error_name":"unrecognised_endpoint", "errors": ["The request was for an unrecognised API endpoint"]}'
@@ -323,9 +307,7 @@ class BrightboxMockHttp(MockHttp):
 
     def _1_0_cloud_ips(self, method, url, body, headers):
         if method == "GET":
-            return self.test_response(
-                httplib.OK, self.fixtures.load("list_cloud_ips.json")
-            )
+            return self.test_response(httplib.OK, self.fixtures.load("list_cloud_ips.json"))
         elif method == "POST":
             if body:
                 body = json.loads(body)

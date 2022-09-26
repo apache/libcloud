@@ -15,26 +15,24 @@
 
 import sys
 
+from libcloud.test import MockHttp, unittest
+from libcloud.utils.py3 import httplib, assertRaisesRegex
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.cloudsigma import (
+    CloudSigmaError,
+    CloudSigmaNodeDriver,
+    CloudSigma_2_0_NodeDriver,
+)
+
 try:
     import simplejson as json
 except Exception:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
 
-from libcloud.common.types import InvalidCredsError
-from libcloud.compute.drivers.cloudsigma import CloudSigmaNodeDriver
-from libcloud.compute.drivers.cloudsigma import CloudSigma_2_0_NodeDriver
-from libcloud.compute.drivers.cloudsigma import CloudSigmaError
-from libcloud.compute.types import NodeState
-
-from libcloud.test import unittest
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-
-
-class CloudSigmaAPI20BaseTestCase(object):
+class CloudSigmaAPI20BaseTestCase:
     def setUp(self):
         self.driver_klass.connectionCls.conn_class = CloudSigmaMockHttp
 
@@ -143,10 +141,7 @@ class CloudSigmaAPI20BaseTestCase(object):
     def test_ex_start_node_already_started(self):
         CloudSigmaMockHttp.type = "ALREADY_STARTED"
 
-        expected_msg = (
-            'Cannot start guest in state "started". Guest should '
-            'be in state "stopped'
-        )
+        expected_msg = 'Cannot start guest in state "started". Guest should ' 'be in state "stopped'
 
         assertRaisesRegex(
             self,
@@ -189,9 +184,7 @@ class CloudSigmaAPI20BaseTestCase(object):
     def test_ex_clone_node(self):
         node_to_clone = self.driver.list_nodes()[0]
 
-        cloned_node = self.driver.ex_clone_node(
-            node=node_to_clone, name="test cloned node"
-        )
+        cloned_node = self.driver.ex_clone_node(node=node_to_clone, name="test cloned node")
         self.assertEqual(cloned_node.name, "test cloned node")
 
     def test_ex_open_vnc_tunnel(self):
@@ -261,9 +254,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertIsNone(rule.dst_port)
         self.assertIsNone(rule.src_ip)
         self.assertIsNone(rule.src_port)
-        self.assertEqual(
-            rule.comment, "Drop traffic from the VM to IP address 23.0.0.0/32"
-        )
+        self.assertEqual(rule.comment, "Drop traffic from the VM to IP address 23.0.0.0/32")
 
     def test_ex_create_firewall_policy_no_rules(self):
         CloudSigmaMockHttp.type = "CREATE_NO_RULES"
@@ -284,9 +275,7 @@ class CloudSigmaAPI20BaseTestCase(object):
             }
         ]
 
-        policy = self.driver.ex_create_firewall_policy(
-            name="test policy 2", rules=rules
-        )
+        policy = self.driver.ex_create_firewall_policy(name="test policy 2", rules=rules)
         rule = policy.rules[0]
 
         self.assertEqual(policy.name, "test policy 2")
@@ -303,9 +292,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         CloudSigmaMockHttp.type = "ATTACH_POLICY"
         updated_node = self.driver.ex_attach_firewall_policy(policy=policy, node=node)
         nic = updated_node.extra["nics"][0]
-        self.assertEqual(
-            nic["firewall_policy"]["uuid"], "461dfb8c-e641-43d7-a20e-32e2aa399086"
-        )
+        self.assertEqual(nic["firewall_policy"]["uuid"], "461dfb8c-e641-43d7-a20e-32e2aa399086")
 
     def test_ex_attach_firewall_policy_inexistent_nic(self):
         policy = self.driver.ex_list_firewall_policies()[0]
@@ -348,9 +335,7 @@ class CloudSigmaAPI20BaseTestCase(object):
     def test_ex_create_tag_with_resources(self):
         CloudSigmaMockHttp.type = "WITH_RESOURCES"
         resource_uuids = ["1"]
-        tag = self.driver.ex_create_tag(
-            name="test tag 3", resource_uuids=resource_uuids
-        )
+        tag = self.driver.ex_create_tag(name="test tag 3", resource_uuids=resource_uuids)
         self.assertEqual(tag.name, "test tag 3")
         self.assertEqual(tag.resources, resource_uuids)
 
@@ -432,9 +417,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(subscription.resource, "vlan")
         self.assertEqual(subscription.price, "10.26666666666666666666666667")
         self.assertEqual(subscription.auto_renew, False)
-        self.assertEqual(
-            subscription.subscribed_object, "2494079f-8376-40bf-9b37-34d633b8a7b7"
-        )
+        self.assertEqual(subscription.subscribed_object, "2494079f-8376-40bf-9b37-34d633b8a7b7")
 
     def test_ex_list_subscriptions_status_filterting(self):
         CloudSigmaMockHttp.type = "STATUS_FILTER"
@@ -447,9 +430,7 @@ class CloudSigmaAPI20BaseTestCase(object):
 
     def test_ex_toggle_subscription_auto_renew(self):
         subscription = self.driver.ex_list_subscriptions()[0]
-        status = self.driver.ex_toggle_subscription_auto_renew(
-            subscription=subscription
-        )
+        status = self.driver.ex_toggle_subscription_auto_renew(subscription=subscription)
         self.assertTrue(status)
 
     def test_ex_list_capabilities(self):
@@ -502,9 +483,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         drive = self.driver.ex_list_user_drives()[0]
         state = "unmounted"
 
-        drive = self.driver._wait_for_drive_state_transition(
-            drive=drive, state=state, timeout=0.5
-        )
+        drive = self.driver._wait_for_drive_state_transition(drive=drive, state=state, timeout=0.5)
         self.assertEqual(drive.status, state)
 
     def test_list_key_pairs(self):
@@ -513,9 +492,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         key = keys[0]
         self.assertEqual(len(keys), 2)
         self.assertEqual(key.name, "ala")
-        self.assertEqual(
-            key.fingerprint, "8c:71:a2:f0:bc:a4:45:66:a8:59:77:6d:80:d5:a0:89"
-        )
+        self.assertEqual(key.fingerprint, "8c:71:a2:f0:bc:a4:45:66:a8:59:77:6d:80:d5:a0:89")
         self.assertEqual(key.extra["uuid"], "186106ac-afb5-40e5-a0de-6f0feba5a3d5")
 
     def test_import_key_pair_from_string(self):
@@ -565,9 +542,7 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("servers_detail_mixed_state.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_2_0_servers_9de75ed6_fd33_45e2_963f_d405f31fd911(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_servers_9de75ed6_fd33_45e2_963f_d405f31fd911(self, method, url, body, headers):
         body = ""
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
@@ -635,9 +610,7 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("servers_close_vnc.json")
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
-    def _api_2_0_servers_3df825cb_9c1b_470d_acbd_03e1a966c046(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_servers_3df825cb_9c1b_470d_acbd_03e1a966c046(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("servers_get.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -649,15 +622,11 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("drives_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_2_0_drives_b02311e2_a83c_4c12_af10_b30d51c86913(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_drives_b02311e2_a83c_4c12_af10_b30d51c86913(self, method, url, body, headers):
         body = self.fixtures.load("drives_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_2_0_drives_9d1d2cf3_08c1_462f_8485_f4b073560809(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_drives_9d1d2cf3_08c1_462f_8485_f4b073560809(self, method, url, body, headers):
         body = self.fixtures.load("drives_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -707,9 +676,7 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("servers_attach_policy.json")
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _api_2_0_fwpolicies_0e339282_0cb5_41ac_a9db_727fb62ff2dc(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_fwpolicies_0e339282_0cb5_41ac_a9db_727fb62ff2dc(self, method, url, body, headers):
         if method == "DELETE":
             body = ""
             return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
@@ -728,9 +695,7 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("tags_create_with_resources.json")
             return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _api_2_0_tags_a010ec41_2ead_4630_a1d0_237fa77e4d4d(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_tags_a010ec41_2ead_4630_a1d0_237fa77e4d4d(self, method, url, body, headers):
         if method == "GET":
             # ex_get_tag
             body = self.fixtures.load("tags_get.json")
@@ -801,9 +766,7 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("keypairs_import.json")
             return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _api_2_0_keypairs_186106ac_afb5_40e5_a0de_6f0feba5a3d5(
-        self, method, url, body, headers
-    ):
+    def _api_2_0_keypairs_186106ac_afb5_40e5_a0de_6f0feba5a3d5(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("keypairs_get.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])

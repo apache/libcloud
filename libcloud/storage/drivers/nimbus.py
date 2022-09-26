@@ -13,21 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hmac
 import time
 import hashlib
-import hmac
+
+from libcloud.utils.py3 import httplib, urlencode
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.storage.base import Container, StorageDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json  # type: ignore  # noqa: F401
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.storage.base import Container, StorageDriver
 
 
 class NimbusResponse(JsonResponse):
@@ -56,7 +54,7 @@ class NimbusConnection(ConnectionUserAndKey):
 
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop("id")
-        super(NimbusConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def pre_connect_hook(self, params, headers):
         timestamp = str(int(time.time()))
@@ -69,7 +67,7 @@ class NimbusConnection(ConnectionUserAndKey):
             key=self.key,
         )
         headers["X-NIMBUS-IO-Timestamp"] = timestamp
-        headers["Authorization"] = "NIMBUS.IO %s:%s" % (self.id, signature)
+        headers["Authorization"] = "NIMBUS.IO {}:{}".format(self.id, signature)
         return params, headers
 
     def _calculate_signature(self, user_id, method, params, path, timestamp, key):
@@ -92,7 +90,7 @@ class NimbusStorageDriver(StorageDriver):
 
     def __init__(self, *args, **kwargs):
         self.user_id = kwargs["user_id"]
-        super(NimbusStorageDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def iterate_containers(self):
         response = self.connection.request("/customers/%s/collections" % (self.user_id))

@@ -19,21 +19,18 @@
 #
 
 import sys
-import unittest
 import json
-
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.equinixmetal import EquinixMetalNodeDriver
-from libcloud.compute.base import Node, KeyPair
-from libcloud.compute.types import NodeState
-
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
+import unittest
 
 # This is causing test failures inder Python 3.5
 import libcloud.compute.drivers.equinixmetal
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, KeyPair
+from libcloud.test.compute import TestCaseMixin
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.equinixmetal import EquinixMetalNodeDriver
 
 libcloud.compute.drivers.equinixmetal.USE_ASYNC_IO_IF_AVAILABLE = False
 
@@ -173,9 +170,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
         nodes = self.driver.ex_list_nodes_for_project(
             ex_project_id="4b653fce-6405-4300-9f7d-c587b7888fe5"
         )
-        self.assertEqual(
-            nodes[0].public_ips, ["147.75.102.193", "2604:1380:2000:c100::3"]
-        )
+        self.assertEqual(nodes[0].public_ips, ["147.75.102.193", "2604:1380:2000:c100::3"])
 
     def test_ex_create_bgp_session(self):
         node = self.driver.list_nodes("project-id")[0]
@@ -183,9 +178,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
         self.assertEqual(session["status"], "unknown")
 
     def test_ex_get_bgp_session(self):
-        session = self.driver.ex_get_bgp_session(
-            self.driver.ex_list_bgp_sessions()[0]["id"]
-        )
+        session = self.driver.ex_get_bgp_session(self.driver.ex_list_bgp_sessions()[0]["id"])
         self.assertEqual(session["status"], "down")
 
     def test_ex_list_bgp_sessions_for_project(self):
@@ -195,9 +188,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
         self.assertEqual(sessions["bgp_sessions"][0]["status"], "down")
 
     def test_ex_list_bgp_sessions_for_node(self):
-        sessions = self.driver.ex_list_bgp_sessions_for_node(
-            self.driver.list_nodes()[0]
-        )
+        sessions = self.driver.ex_list_bgp_sessions_for_node(self.driver.list_nodes()[0])
         self.assertEqual(sessions["bgp_sessions"][0]["status"], "down")
 
     def test_ex_list_bgp_sessions(self):
@@ -205,18 +196,14 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
         self.assertEqual(sessions[0]["status"], "down")
 
     def test_ex_delete_bgp_session(self):
-        self.driver.ex_delete_bgp_session(
-            session_uuid="08f6b756-758b-4f1f-bfaf-b9b5479822d7"
-        )
+        self.driver.ex_delete_bgp_session(session_uuid="08f6b756-758b-4f1f-bfaf-b9b5479822d7")
 
     def test_ex_list_events_for_node(self):
         events = self.driver.ex_list_events_for_node(self.driver.list_nodes()[0])
         self.assertEqual(events["events"][0]["ip"], "157.52.105.28")
 
     def test_ex_list_events_for_project(self):
-        events = self.driver.ex_list_events_for_project(
-            self.driver.ex_list_projects()[0]
-        )
+        events = self.driver.ex_list_events_for_project(self.driver.ex_list_projects()[0])
         self.assertEqual(events["meta"]["total"], len(events["events"]))
 
     def test_ex_get_node_bandwidth(self):
@@ -395,9 +382,7 @@ class EquinixMetalMockHttp(MockHttp):
             body = self.fixtures.load("sshkey_create.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _metal_v1_ssh_keys_2c1a7f23_1dc6_4a37_948e_d9857d9f607c(
-        self, method, url, body, headers
-    ):
+    def _metal_v1_ssh_keys_2c1a7f23_1dc6_4a37_948e_d9857d9f607c(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
@@ -409,9 +394,7 @@ class EquinixMetalMockHttp(MockHttp):
             body = self.fixtures.load("devices.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _metal_v1_devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb(
-        self, method, url, body, headers
-    ):
+    def _metal_v1_devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb(self, method, url, body, headers):
         if method in ["DELETE", "PUT"]:
             return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
@@ -482,9 +465,7 @@ class EquinixMetalMockHttp(MockHttp):
             body = self.fixtures.load("node_bandwidth.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _metal_v1_ips_01c184f5_1413_4b0b_9f6d_ac993f6c9241(
-        self, method, url, body, headers
-    ):
+    def _metal_v1_ips_01c184f5_1413_4b0b_9f6d_ac993f6c9241(self, method, url, body, headers):
         body = self.fixtures.load("ip_address.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -497,9 +478,7 @@ class EquinixMetalMockHttp(MockHttp):
             body = self.fixtures.load("associate_ip.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _metal_v1_ips_aea4ee0c_675f_4b77_8337_8e13b868dd9c(
-        self, method, url, body, headers
-    ):
+    def _metal_v1_ips_aea4ee0c_675f_4b77_8337_8e13b868dd9c(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
@@ -526,9 +505,7 @@ class EquinixMetalMockHttp(MockHttp):
             body = json.dumps({"volumes": []})
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _metal_v1_storage_74f11291_fde8_4abf_8150_e51cda7308c3(
-        self, method, url, body, headers
-    ):
+    def _metal_v1_storage_74f11291_fde8_4abf_8150_e51cda7308c3(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
@@ -539,9 +516,7 @@ class EquinixMetalMockHttp(MockHttp):
             body = self.fixtures.load("attach_volume.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _metal_v1_storage_a08aaf76_e0ce_43aa_b9cd_cce0d4ae4f4c(
-        self, method, url, body, headers
-    ):
+    def _metal_v1_storage_a08aaf76_e0ce_43aa_b9cd_cce0d4ae4f4c(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 

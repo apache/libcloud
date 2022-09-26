@@ -13,18 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import hashlib
-import hmac
 import sys
+import hmac
 import time
 import uuid
+import base64
+import hashlib
 
-from libcloud.utils.py3 import ET
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.common.types import MalformedResponseError
-from libcloud.utils.py3 import b, u, urlquote, PY3
+from libcloud.utils.py3 import ET, b, u, urlquote
 from libcloud.utils.xml import findtext
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
+from libcloud.common.types import MalformedResponseError
 
 __all__ = [
     "AliyunXmlResponse",
@@ -55,21 +54,13 @@ class AliyunXmlResponse(XmlResponse):
             return self.body
 
         try:
-            if PY3:
-                parser = ET.XMLParser(encoding="utf-8")
-                body = ET.XML(self.body.encode("utf-8"), parser=parser)
-            else:
-                try:
-                    body = ET.XML(self.body)
-                except ValueError:
-                    body = ET.XML(self.body.encode("utf-8"))
+            parser = ET.XMLParser(encoding="utf-8")
+            body = ET.XML(self.body.encode("utf-8"), parser=parser)
         except Exception:
             raise MalformedResponseError(
                 "Failed to parse XML", body=self.body, driver=self.connection.driver
             )
-        self.request_id = findtext(
-            element=body, xpath="RequestId", namespace=self.namespace
-        )
+        self.request_id = findtext(element=body, xpath="RequestId", namespace=self.namespace)
         self.host_id = findtext(element=body, xpath="HostId", namespace=self.namespace)
         return body
 
@@ -77,7 +68,7 @@ class AliyunXmlResponse(XmlResponse):
         """
         Parse error responses from Aliyun.
         """
-        body = super(AliyunXmlResponse, self).parse_error()
+        body = super().parse_error()
         code, message = self._parse_error_details(element=body)
         request_id = findtext(element=body, xpath="RequestId", namespace=self.namespace)
         host_id = findtext(element=body, xpath="HostId", namespace=self.namespace)
@@ -102,7 +93,7 @@ class AliyunXmlResponse(XmlResponse):
         return (code, message)
 
 
-class AliyunRequestSigner(object):
+class AliyunRequestSigner:
     """
     Class handles signing the outgoing Aliyun requests.
     """
@@ -156,7 +147,7 @@ class AliyunRequestSignerAlgorithmV1_0(AliyunRequestSigner):
         keys.sort()
         pairs = []
         for key in keys:
-            pairs.append("%s=%s" % (_percent_encode(key), _percent_encode(params[key])))
+            pairs.append("{}={}".format(_percent_encode(key), _percent_encode(params[key])))
         qs = urlquote("&".join(pairs), safe="-_.~")
         string_to_sign = "&".join((method, urlquote(path, safe=""), qs))
         b64_hmac = base64.b64encode(
@@ -194,7 +185,7 @@ class SignedAliyunConnection(AliyunConnection):
         api_version=None,
         signature_version=DEFAULT_SIGNATURE_VERSION,
     ):
-        super(SignedAliyunConnection, self).__init__(
+        super().__init__(
             user_id=user_id,
             key=key,
             secure=secure,
@@ -225,9 +216,7 @@ class SignedAliyunConnection(AliyunConnection):
         )
 
     def add_default_params(self, params):
-        params = self.signer.get_request_params(
-            params=params, method=self.method, path=self.action
-        )
+        params = self.signer.get_request_params(params=params, method=self.method, path=self.action)
         return params
 
 
@@ -243,11 +232,9 @@ def _percent_encode(encode_str):
     """
     encoding = sys.stdin.encoding or "cp936"
     decoded = str(encode_str)
-    if PY3:
-        if isinstance(encode_str, bytes):
-            decoded = encode_str.decode(encoding)
-    else:
-        decoded = str(encode_str).decode(encoding)
+
+    if isinstance(encode_str, bytes):
+        decoded = encode_str.decode(encoding)
 
     res = urlquote(decoded.encode("utf8"), "")
     res = res.replace("+", "%20")

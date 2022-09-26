@@ -17,14 +17,10 @@
 import sys
 import unittest
 
-from libcloud.storage.drivers.s3 import S3SignatureV4Connection
-from libcloud.storage.drivers.scaleway import (
-    ScalewayStorageDriver,
-    SCW_FR_PAR_STANDARD_HOST,
-)
-from libcloud.test.storage.test_s3 import S3MockHttp, S3Tests
-
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.drivers.s3 import S3SignatureV4Connection
+from libcloud.test.storage.test_s3 import S3Tests, S3MockHttp
+from libcloud.storage.drivers.scaleway import SCW_FR_PAR_STANDARD_HOST, ScalewayStorageDriver
 
 
 class ScalewayStorageDriverTestCase(S3Tests, unittest.TestCase):
@@ -37,7 +33,7 @@ class ScalewayStorageDriverTestCase(S3Tests, unittest.TestCase):
         return self.driver_type(*self.driver_args, host=self.default_host)
 
     def setUp(self):
-        super(ScalewayStorageDriverTestCase, self).setUp()
+        super().setUp()
 
         ScalewayStorageDriver.connectionCls.conn_class = S3MockHttp
         S3MockHttp.type = None

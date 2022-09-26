@@ -23,26 +23,21 @@ try:
 except ImportError:
     import json
 
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
-from libcloud.common.types import ProviderError
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.types import ProviderError, MalformedResponseError
 from libcloud.common.pointdns import PointDNSConnection
 from libcloud.common.exceptions import BaseHTTPError
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
 
 
 class PointDNSException(ProviderError):
     def __init__(self, value, http_code, driver=None):
-        super(PointDNSException, self).__init__(
-            value=value, http_code=http_code, driver=driver
-        )
+        super().__init__(value=value, http_code=http_code, driver=driver)
         self.args = (http_code, value)
 
 
-class Redirect(object):
+class Redirect:
     """
     Point DNS redirect.
     """
@@ -92,14 +87,14 @@ class Redirect(object):
         return self.driver.ex_delete_redirect(redirect=self)
 
     def __repr__(self):
-        return "<PointDNSRedirect: name=%s, data=%s, type=%s ...>" % (
+        return "<PointDNSRedirect: name={}, data={}, type={} ...>".format(
             self.name,
             self.data,
             self.type,
         )
 
 
-class MailRedirect(object):
+class MailRedirect:
     """
     Point DNS mail redirect.
     """
@@ -136,7 +131,7 @@ class MailRedirect(object):
         return self.driver.ex_delete_mail_redirect(mail_r=self)
 
     def __repr__(self):
-        return "<PointDNSMailRedirect: source=%s, destination=%s,zone=%s ...>" % (
+        return "<PointDNSMailRedirect: source={}, destination={},zone={} ...>".format(
             self.source,
             self.destination,
             self.zone.id,
@@ -219,9 +214,7 @@ class PointDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         try:
-            response = self.connection.request(
-                "/zones/%s/records/%s" % (zone_id, record_id)
-            )
+            response = self.connection.request("/zones/{}/records/{}".format(zone_id, record_id))
         except MalformedResponseError as e:
             if e.body == "Not found":
                 raise RecordDoesNotExistError(
@@ -326,9 +319,7 @@ class PointDNSDriver(DNSDriver):
             r_json.update(extra)
         r_data = json.dumps({"zone": r_json})
         try:
-            response = self.connection.request(
-                "/zones/%s" % zone.id, method="PUT", data=r_data
-            )
+            response = self.connection.request("/zones/%s" % zone.id, method="PUT", data=r_data)
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
                 raise ZoneDoesNotExistError(
@@ -369,7 +360,7 @@ class PointDNSDriver(DNSDriver):
         r_data = json.dumps({"zone_record": r_json})
         try:
             response = self.connection.request(
-                "/zones/%s/records/%s" % (zone.id, record.id), method="PUT", data=r_data
+                "/zones/{}/records/{}".format(zone.id, record.id), method="PUT", data=r_data
             )
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
@@ -414,7 +405,7 @@ class PointDNSDriver(DNSDriver):
         record_id = record.id
         try:
             self.connection.request(
-                "/zones/%s/records/%s" % (zone_id, record_id), method="DELETE"
+                "/zones/{}/records/{}".format(zone_id, record_id), method="DELETE"
             )
         except MalformedResponseError as e:
             if e.body == "Not found":
@@ -446,9 +437,7 @@ class PointDNSDriver(DNSDriver):
         mail_redirects = self._to_mail_redirects(response.object, zone)
         return mail_redirects
 
-    def ex_create_redirect(
-        self, redirect_to, name, type, zone, iframe=None, query=None
-    ):
+    def ex_create_redirect(self, redirect_to, name, type, zone, iframe=None, query=None):
         """
         :param redirect_to: The data field. (redirect_to)
         :type redirect_to: ``str``
@@ -524,7 +513,7 @@ class PointDNSDriver(DNSDriver):
         """
         try:
             response = self.connection.request(
-                "/zones/%s/redirects/%s" % (zone_id, redirect_id)
+                "/zones/{}/redirects/{}".format(zone_id, redirect_id)
             )
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
@@ -549,7 +538,7 @@ class PointDNSDriver(DNSDriver):
         """
         try:
             response = self.connection.request(
-                "/zones/%s/mail_redirects/%s" % (zone_id, mail_r_id)
+                "/zones/{}/mail_redirects/{}".format(zone_id, mail_r_id)
             )
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
@@ -603,7 +592,7 @@ class PointDNSDriver(DNSDriver):
         r_data = json.dumps({"zone_redirect": r_json})
         try:
             response = self.connection.request(
-                "/zones/%s/redirects/%s" % (zone_id, redirect.id),
+                "/zones/{}/redirects/{}".format(zone_id, redirect.id),
                 method="PUT",
                 data=r_data,
             )
@@ -638,7 +627,7 @@ class PointDNSDriver(DNSDriver):
         r_data = json.dumps({"zone_redirect": r_json})
         try:
             response = self.connection.request(
-                "/zones/%s/mail_redirects/%s" % (zone_id, mail_r.id),
+                "/zones/{}/mail_redirects/{}".format(zone_id, mail_r.id),
                 method="PUT",
                 data=r_data,
             )
@@ -664,7 +653,7 @@ class PointDNSDriver(DNSDriver):
         redirect_id = redirect.id
         try:
             self.connection.request(
-                "/zones/%s/redirects/%s" % (zone_id, redirect_id), method="DELETE"
+                "/zones/{}/redirects/{}".format(zone_id, redirect_id), method="DELETE"
             )
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
@@ -687,7 +676,7 @@ class PointDNSDriver(DNSDriver):
         mail_r_id = mail_r.id
         try:
             self.connection.request(
-                "/zones/%s/mail_redirects/%s" % (zone_id, mail_r_id), method="DELETE"
+                "/zones/{}/mail_redirects/{}".format(zone_id, mail_r_id), method="DELETE"
             )
         except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == "Not found":
@@ -770,9 +759,7 @@ class PointDNSDriver(DNSDriver):
         type = record.get("redirect_type")
         iframe = record.get("iframe_title")
         query = record.get("redirect_query_string")
-        return Redirect(
-            id, name, redirect_to, type, self, zone, iframe=iframe, query=query
-        )
+        return Redirect(id, name, redirect_to, type, self, zone, iframe=iframe, query=query)
 
     def _to_mail_redirects(self, data, zone):
         mail_redirects = []

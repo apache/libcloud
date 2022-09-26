@@ -15,16 +15,16 @@
 
 import os
 import sys
-from io import StringIO
 import zlib
-import requests_mock
-
+from io import StringIO
 from unittest import mock
 
+import requests_mock
+
 import libcloud
+from libcloud.http import LibcloudConnection
 from libcloud.test import unittest
 from libcloud.common.base import Connection
-from libcloud.http import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
 EXPECTED_DATA_JSON = """
@@ -60,11 +60,11 @@ Content-Type: application/xml
 
 class TestLoggingConnection(unittest.TestCase):
     def setUp(self):
-        super(TestLoggingConnection, self).setUp()
+        super().setUp()
         self._reset_environ()
 
     def tearDown(self):
-        super(TestLoggingConnection, self).tearDown()
+        super().tearDown()
         Connection.conn_class = LibcloudConnection
 
     def test_debug_method_uses_log_class(self):
@@ -131,9 +131,7 @@ class TestLoggingConnection(unittest.TestCase):
         self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
 
         # body type is bytes
-        r = self._get_mock_response(
-            "application/json", bytes('{"foo": "bar!"}', "utf-8")
-        )
+        r = self._get_mock_response("application/json", bytes('{"foo": "bar!"}', "utf-8"))
         result = conn._log_response(r).replace("\r", "")
         self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
 

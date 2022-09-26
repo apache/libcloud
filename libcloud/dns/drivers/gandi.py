@@ -13,23 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    RecordError,
+    ZoneDoesNotExistError,
+    RecordDoesNotExistError,
+)
+from libcloud.common.gandi import GandiResponse, BaseGandiDriver, GandiConnection
 
 __all__ = ["GandiDNSDriver"]
-
-from libcloud.common.gandi import BaseGandiDriver, GandiConnection
-from libcloud.common.gandi import GandiResponse
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import RecordError
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
 
 
 TTL_MIN = 30
 TTL_MAX = 2592000  # 30 days
 
 
-class NewZoneVersion(object):
+class NewZoneVersion:
     """
     Changes to a zone in the Gandi DNS service need to be wrapped in a new
     version object. The changes are made to the new version, then that
@@ -155,7 +157,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             extra["priority"] = int(split[0])
             value = split[1]
         return Record(
-            id="%s:%s" % (record["type"], record["name"]),
+            id="{}:{}".format(record["type"], record["name"]),
             name=record["name"],
             type=self._string_to_record_type(record["type"]),
             data=value,
@@ -182,9 +184,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         record_type, name = record_id.split(":", 1)
         filter_opts = {"name": name, "type": record_type}
         self.connection.set_context({"zone_id": zone_id})
-        records = self.connection.request(
-            "domain.zone.record.list", zid, 0, filter_opts
-        ).object
+        records = self.connection.request("domain.zone.record.list", zid, 0, filter_opts).object
 
         if len(records) == 0:
             raise RecordDoesNotExistError(value="", driver=self, record_id=record_id)
@@ -204,9 +204,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
                     "TTL must be at least 30 seconds", driver=self, record_id=record_id
                 )
             if extra["ttl"] > TTL_MAX:
-                raise RecordError(
-                    "TTL must not excdeed 30 days", driver=self, record_id=record_id
-                )
+                raise RecordError("TTL must not excdeed 30 days", driver=self, record_id=record_id)
 
     def create_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
@@ -253,13 +251,9 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         with NewZoneVersion(self, record.zone) as vid:
             con = self.connection
             con.set_context({"zone_id": record.zone.id})
-            count = con.request(
-                "domain.zone.record.delete", zid, vid, filter_opts
-            ).object
+            count = con.request("domain.zone.record.delete", zid, vid, filter_opts).object
 
         if count == 1:
             return True
 
-        raise RecordDoesNotExistError(
-            value="No such record", driver=self, record_id=record.id
-        )
+        raise RecordDoesNotExistError(value="No such record", driver=self, record_id=record.id)

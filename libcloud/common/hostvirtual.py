@@ -18,9 +18,9 @@ except ImportError:
     import json  # type: ignore
 
 from libcloud.utils.py3 import httplib
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.types import InvalidCredsError
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import LibcloudError
+from libcloud.compute.types import InvalidCredsError
 
 API_HOST = "vapi.vr.org"
 

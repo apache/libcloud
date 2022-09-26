@@ -16,17 +16,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
-
-from libcloud.compute.base import NodeLocation
-from libcloud.loadbalancer.base import Member, Algorithm
-from libcloud.loadbalancer.drivers.softlayer import SoftlayerLBDriver
-from libcloud.loadbalancer.types import State
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib, xmlrpclib
+from libcloud.compute.base import NodeLocation
 from libcloud.test.secrets import SOFTLAYER_PARAMS
+from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.types import State
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.loadbalancer.drivers.softlayer import SoftlayerLBDriver
 
 
 class SoftlayerLBTests(unittest.TestCase):
@@ -104,9 +101,7 @@ class SoftlayerLBTests(unittest.TestCase):
         lb_package = [p for p in packages if p.capacity == 50][0]
 
         self.assertTrue(
-            self.driver.ex_place_balancer_order(
-                lb_package, NodeLocation("dal05", None, None, None)
-            )
+            self.driver.ex_place_balancer_order(lb_package, NodeLocation("dal05", None, None, None))
         )
 
 
@@ -119,27 +114,19 @@ class SoftLayerMockHttp(MockHttp):
     def _xmlrpc(self, method, url, body, headers):
         params, meth_name = xmlrpclib.loads(body)
         url = url.replace("/", "_")
-        meth_name = "%s_%s" % (url, meth_name)
+        meth_name = "{}_{}".format(url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
-    def _xmlrpc_v3_SoftLayer_Account_getAdcLoadBalancers(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Account_getAdcLoadBalancers(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Account_getAdcLoadBalancers.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Billing_Item_cancelService(
-        self, method, url, body, headers
-    ):
+    def _xmlrpc_v3_SoftLayer_Billing_Item_cancelService(self, method, url, body, headers):
         body = self.fixtures.load("v3__SoftLayer_Billing_Item_cancelService.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "v3__SoftLayer_Location_Datacenter_getDatacenters.xml"
-        )
+    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(self, method, url, body, headers):
+        body = self.fixtures.load("v3__SoftLayer_Location_Datacenter_getDatacenters.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_deleteObject(
@@ -181,9 +168,7 @@ class SoftLayerMockHttp(MockHttp):
     def _xmlrpc_v3_SoftLayer_Network_Subnet_IpAddress_getByIpAddress(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "v3__SoftLayer_Network_Subnet_IpAddress_getByIpAddress.xml"
-        )
+        body = self.fixtures.load("v3__SoftLayer_Network_Subnet_IpAddress_getByIpAddress.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Product_Order_placeOrder(self, method, url, body, headers):

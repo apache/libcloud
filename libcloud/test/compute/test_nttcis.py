@@ -19,25 +19,26 @@ from types import GeneratorType
 
 import pytest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ET
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.nttcis import NttCisAPIException, NetworkDomainServicePlan
-from libcloud.common.nttcis import (
-    NttCisServerCpuSpecification,
-    NttCisServerDisk,
-    NttCisServerVMWareTools,
-)
-from libcloud.common.nttcis import NttCisTag, NttCisTagKey
-from libcloud.common.nttcis import ClassFactory
-from libcloud.common.nttcis import TYPES_URN
-from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
-from libcloud.compute.drivers.nttcis import NttCisNic
-from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import ET, httplib
+from libcloud.utils.xml import findall, findtext, fixxpath
+from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeLocation, NodeAuthPassword
 from libcloud.test.secrets import NTTCIS_PARAMS
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.common.nttcis import (
+    TYPES_URN,
+    NttCisTag,
+    ClassFactory,
+    NttCisTagKey,
+    NttCisServerDisk,
+    NttCisAPIException,
+    NttCisServerVMWareTools,
+    NetworkDomainServicePlan,
+    NttCisServerCpuSpecification,
+)
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.nttcis import NttCisNic
+from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
 
 
 @pytest.fixture()
@@ -120,9 +121,7 @@ def test_paginated_mcp2_call_EMPTY(driver):
     # cache org
     driver.connection._get_orgId()
     NttCisMockHttp.type = "EMPTY"
-    node_list_generator = driver.connection.paginated_request_with_orgId_api_2(
-        "server/server"
-    )
+    node_list_generator = driver.connection.paginated_request_with_orgId_api_2("server/server")
     empty_node_list = []
     for node_list in node_list_generator:
         empty_node_list.extend(node_list)
@@ -133,9 +132,7 @@ def test_paginated_mcp2_call_PAGED_THEN_EMPTY(driver):
     # cache org
     driver.connection._get_orgId()
     NttCisMockHttp.type = "PAGED_THEN_EMPTY"
-    node_list_generator = driver.connection.paginated_request_with_orgId_api_2(
-        "server/server"
-    )
+    node_list_generator = driver.connection.paginated_request_with_orgId_api_2("server/server")
     final_node_list = []
     for node_list in node_list_generator:
         final_node_list.extend(node_list)
@@ -210,9 +207,7 @@ def test_list_sizes_response(driver):
 
 def test_list_datacenter_snapshot_windows(driver):
     NttCisMockHttp.type = None
-    ret = driver.list_snapshot_windows(
-        "f1d6a564-490e-4166-b91d-feddc1f92025", "ADVANCED"
-    )
+    ret = driver.list_snapshot_windows("f1d6a564-490e-4166-b91d-feddc1f92025", "ADVANCED")
     assert isinstance(ret[0], dict)
 
 
@@ -233,9 +228,7 @@ def test_enable_snapshot_service(driver):
 
 def test_initiate_manual_snapshot(driver):
     NttCisMockHttp.type = None
-    result = driver.ex_initiate_manual_snapshot(
-        "test", "e1eb7d71-93c9-4b9c-807c-e05932dc8143"
-    )
+    result = driver.ex_initiate_manual_snapshot("test", "e1eb7d71-93c9-4b9c-807c-e05932dc8143")
     assert result is True
 
 
@@ -256,35 +249,27 @@ def test_disable_node_snapshot(driver):
 
 
 def test_reboot_node_response(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = node.reboot()
     assert ret is True
 
 
 def test_reboot_node_response_INPROGRESS(driver):
     NttCisMockHttp.type = "INPROGRESS"
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     with pytest.raises(NttCisAPIException):
         node.reboot()
 
 
 def test_destroy_node_response(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = node.destroy()
     assert ret is True
 
 
 def test_destroy_node_response_RESOURCE_BUSY(driver):
     NttCisMockHttp.type = "INPROGRESS"
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     with pytest.raises(NttCisAPIException):
         node.destroy()
 
@@ -300,9 +285,7 @@ def test_list_images(driver):
 
 
 def test_clean_failed_deployment_response_with_node(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = driver.ex_clean_failed_deployment(node)
     assert ret is True
 
@@ -630,9 +613,7 @@ def test_create_node_no_network_domain_fail(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
-        driver.create_node(
-            name="test3", image=image, auth=rootPw, ex_primary_nic_vlan="fakevlan"
-        )
+        driver.create_node(name="test3", image=image, auth=rootPw, ex_primary_nic_vlan="fakevlan")
 
 
 def test_create_node_no_primary_nic_fail(driver):
@@ -855,12 +836,8 @@ def test_create_node_additional_nics(driver):
 def test_create_node_additional_nics_vlan_ipv4_coexist_fail(driver):
     root_pw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
-    nic1 = NttCisNic(
-        private_ip_v4="10.1.1.1", vlan="fake_vlan", network_adapter_name="v1000"
-    )
-    nic2 = NttCisNic(
-        private_ip_v4="10.1.1.2", vlan="fake_vlan2", network_adapter_name="v1000"
-    )
+    nic1 = NttCisNic(private_ip_v4="10.1.1.1", vlan="fake_vlan", network_adapter_name="v1000")
+    nic2 = NttCisNic(private_ip_v4="10.1.1.2", vlan="fake_vlan2", network_adapter_name="v1000")
     additional_nics = [nic1, nic2]
     with pytest.raises(ValueError):
         driver.create_node(
@@ -946,51 +923,39 @@ def test_create_node_mcp2_indicate_dns(driver):
 
 
 def test_ex_shutdown_graceful(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = driver.ex_shutdown_graceful(node)
     assert ret is True
 
 
 def test_ex_shutdown_graceful_INPROGRESS(driver):
     NttCisMockHttp.type = "INPROGRESS"
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     with pytest.raises(NttCisAPIException):
         driver.ex_shutdown_graceful(node)
 
 
 def test_ex_start_node(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = driver.ex_start_node(node)
     assert ret is True
 
 
 def test_ex_start_node_INPROGRESS(driver):
     NttCisMockHttp.type = "INPROGRESS"
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     with pytest.raises(NttCisAPIException):
         driver.ex_start_node(node)
 
 
 def test_ex_power_off(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = driver.ex_power_off(node)
     assert ret is True
 
 
 def test_ex_update_vm_tools(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = driver.ex_update_vm_tools(node)
     assert ret is True
 
@@ -1011,9 +976,7 @@ def test_ex_power_off_INPROGRESS(driver):
 
 
 def test_ex_reset(driver):
-    node = Node(
-        id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver
-    )
+    node = Node(id="11", name=None, state=None, public_ips=None, private_ips=None, driver=driver)
     ret = driver.ex_reset(node)
     assert ret is True
 
@@ -1043,9 +1006,7 @@ def test_ex_create_network_domain(driver):
 def test_ex_create_network_domain_NO_DESCRIPTION(driver):
     location = driver.ex_get_location_by_id("NA9")
     plan = NetworkDomainServicePlan.ADVANCED
-    net = driver.ex_create_network_domain(
-        location=location, name="test", service_plan=plan
-    )
+    net = driver.ex_create_network_domain(location=location, name="test", service_plan=plan)
     assert net.name == "test"
     assert net.id == "f14a871f-9a25-470c-aef8-51e13202e1aa"
 
@@ -1263,9 +1224,7 @@ def test_ex_create_firewall_rule(driver):
 def test_ex_create_firewall_rule_with_specific_source_ip(driver):
     net = driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
     rules = driver.ex_list_firewall_rules(net)
-    specific_source_ip_rule = list(
-        filter(lambda x: x.name == "SpecificSourceIP", rules)
-    )[0]
+    specific_source_ip_rule = list(filter(lambda x: x.name == "SpecificSourceIP", rules))[0]
     rule = driver.ex_create_firewall_rule(
         net,
         specific_source_ip_rule.name,
@@ -1282,9 +1241,7 @@ def test_ex_create_firewall_rule_with_specific_source_ip(driver):
 def test_ex_create_firewall_rule_with_source_ip(driver):
     net = driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
     rules = driver.ex_list_firewall_rules(net)
-    specific_source_ip_rule = list(
-        filter(lambda x: x.name == "SpecificSourceIP", rules)
-    )[0]
+    specific_source_ip_rule = list(filter(lambda x: x.name == "SpecificSourceIP", rules))[0]
     specific_source_ip_rule.source.any_ip = False
     specific_source_ip_rule.source.ip_address = "10.0.0.1"
     specific_source_ip_rule.source.ip_prefix_size = "15"
@@ -1304,9 +1261,7 @@ def test_ex_create_firewall_rule_with_source_ip(driver):
 def test_ex_create_firewall_rule_with_any_ip(driver):
     net = driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
     rules = driver.ex_list_firewall_rules(net)
-    specific_source_ip_rule = list(
-        filter(lambda x: x.name == "SpecificSourceIP", rules)
-    )[0]
+    specific_source_ip_rule = list(filter(lambda x: x.name == "SpecificSourceIP", rules))[0]
     specific_source_ip_rule.source.any_ip = True
     rule = driver.ex_create_firewall_rule(
         net,
@@ -2148,7 +2103,7 @@ def test_delete_consistency_group(driver):
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
-        super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
+        super().__init__("Invalid Request - %s" % tag)
 
 
 class NttCisMockHttp(MockHttp):
@@ -2212,9 +2167,7 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load("networkWithLocation.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(
-        self, method, url, body, headers
-    ):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
         body = self.fixtures.load("server.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2334,9 +2287,7 @@ class NttCisMockHttp(MockHttp):
             elif key == "sourceImageId":
                 assert value == "fake_image"
             else:
-                raise ValueError(
-                    "Could not find in url parameters {0}:{1}".format(key, value)
-                )
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("server_server.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2362,9 +2313,7 @@ class NttCisMockHttp(MockHttp):
             elif key == "networkDomainId":
                 pass
             else:
-                raise ValueError(
-                    "Could not find in url parameters {0}:{1}".format(key, value)
-                )
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("server_antiAffinityRule_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2528,9 +2477,7 @@ class NttCisMockHttp(MockHttp):
             elif key == "state":
                 assert value == "fake_state"
             else:
-                raise ValueError(
-                    "Could not find in url parameters {0}:{1}".format(key, value)
-                )
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("network_networkDomain.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2560,9 +2507,7 @@ class NttCisMockHttp(MockHttp):
             elif key == "state":
                 assert value == "fake_state"
             else:
-                raise ValueError(
-                    "Could not find in url parameters {0}:{1}".format(key, value)
-                )
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("network_vlan.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2607,9 +2552,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml"
-        )
+        body = self.fixtures.load("server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deployNetworkDomain(
@@ -2624,17 +2567,13 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml"
-        )
+        body = self.fixtures.load("network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be_ALLFILTERS(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml"
-        )
+        body = self.fixtures.load("network_networkDomain_8cdfd607_f429_4df6_9352_162cfc0891be.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editNetworkDomain(
@@ -2667,9 +2606,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_0e56433f_d808_4669_821d_812769517ff8(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_vlan_0e56433f_d808_4669_821d_812769517ff8.xml"
-        )
+        body = self.fixtures.load("network_vlan_0e56433f_d808_4669_821d_812769517ff8.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editVlan(
@@ -2711,9 +2648,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba.xml"
-        )
+        body = self.fixtures.load("network_publicIpBlock_4487241a_f0ca_11e3_9315_d4bed9b167ba.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock(
@@ -2725,9 +2660,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8.xml"
-        )
+        body = self.fixtures.load("network_publicIpBlock_9945dc4a_bdce_11e4_8c14_b8ca3a5d9ef8.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_removePublicIpBlock(
@@ -2757,9 +2690,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c.xml"
-        )
+        body = self.fixtures.load("network_firewallRule_d0a20f59_77b9_4f28_a63b_e58496b73a6c.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editFirewallRule(
@@ -2798,9 +2729,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce.xml"
-        )
+        body = self.fixtures.load("network_natRule_2187a636_7ebb_49a1_a2ff_5d617f496dce.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_deleteNatRule(
@@ -2866,17 +2795,13 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml"
-        )
+        body = self.fixtures.load("image_osImage_c14b1a46_2428_44c1_9c1a_b20e6418d08c.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml"
-        )
+        body = self.fixtures.load("image_osImage_6b4fb0c7_a57b_4f58_b59c_9958f94f971a.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_osImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(
@@ -2906,17 +2831,13 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml"
-        )
+        body = self.fixtures.load("image_customerImage_5234e5c7_01de_4411_8b6e_baeb8d91cf5d.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml"
-        )
+        body = self.fixtures.load("image_customerImage_2ffa36c8_1848_49eb_b4fa_9d908775f68c.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_image_customerImage_FAKE_IMAGE_ID(
@@ -3020,9 +2941,7 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load("tag_createTagKey_BADREQUEST.xml")
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey(
-        self, method, url, body, headers
-    ):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey(self, method, url, body, headers):
         body = self.fixtures.load("tag_tagKey_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3050,9 +2969,7 @@ class NttCisMockHttp(MockHttp):
             elif key == "pageSize":
                 assert value == "250"
             else:
-                raise ValueError(
-                    "Could not find in url parameters {0}:{1}".format(key, value)
-                )
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("tag_tagKey_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3065,9 +2982,7 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_d047c609_93d7_4bc5_8fc9_732c85840075_NOEXIST(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "tag_tagKey_5ab77f5f_5aa9_426f_8459_4eab34e03d54_BADREQUEST.xml"
-        )
+        body = self.fixtures.load("tag_tagKey_5ab77f5f_5aa9_426f_8459_4eab34e03d54_BADREQUEST.xml")
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_editTagKey_NAME(
@@ -3200,9 +3115,7 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load("tag_removeTag_BADREQUEST.xml")
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag(
-        self, method, url, body, headers
-    ):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag(self, method, url, body, headers):
         body = self.fixtures.load("tag_tag_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3232,9 +3145,7 @@ class NttCisMockHttp(MockHttp):
             elif key == "tagKeyId":
                 assert value == "fake_tag_key_id"
             else:
-                raise ValueError(
-                    "Could not find in url parameters {0}:{1}".format(key, value)
-                )
+                raise ValueError("Could not find in url parameters {}:{}".format(key, value))
         body = self.fixtures.load("tag_tag_list.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3366,8 +3277,7 @@ class NttCisMockHttp(MockHttp):
 
         if 0 == len(ports_required) and 0 == len(child_port_list_required):
             raise ValueError(
-                "At least one port element or one "
-                "childPortListId element must be provided"
+                "At least one port element or one " "childPortListId element must be provided"
             )
 
         if ports_required[0].get("begin") is None:
@@ -3390,8 +3300,7 @@ class NttCisMockHttp(MockHttp):
 
         if 0 == len(ports_required) and 0 == len(child_port_list_required):
             raise ValueError(
-                "At least one port element or one "
-                "childPortListId element must be provided"
+                "At least one port element or one " "childPortListId element must be provided"
             )
 
         if ports_required[0].get("begin") is None:

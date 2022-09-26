@@ -17,24 +17,18 @@
 Provides generic deployment steps for machines post boot.
 """
 
-from __future__ import with_statement
-
-from typing import Union
-from typing import Optional
-from typing import List
-from typing import IO
-from typing import cast
 
 import os
 import re
 import binascii
+from typing import IO, List, Union, Optional, cast
 
-from libcloud.utils.py3 import basestring, PY3
-from libcloud.compute.base import Node
+from libcloud.utils.py3 import basestring
 from libcloud.compute.ssh import BaseSSHClient
+from libcloud.compute.base import Node
 
 
-class Deployment(object):
+class Deployment:
     """
     Base class for deployment tasks.
     """
@@ -55,12 +49,9 @@ class Deployment(object):
         raise NotImplementedError("run not implemented for this deployment")
 
     def _get_string_value(self, argument_name, argument_value):
-        if not isinstance(argument_value, basestring) and not hasattr(
-            argument_value, "read"
-        ):
+        if not isinstance(argument_value, basestring) and not hasattr(argument_value, "read"):
             raise TypeError(
-                "%s argument must be a string or a file-like "
-                "object" % (argument_name)
+                "%s argument must be a string or a file-like " "object" % (argument_name)
             )
 
         if hasattr(argument_value, "read"):
@@ -135,7 +126,7 @@ class FileDeployment(Deployment):
         return self.__repr__()
 
     def __repr__(self):
-        return "<FileDeployment source=%s, target=%s>" % (self.source, self.target)
+        return "<FileDeployment source={}, target={}>".format(self.source, self.target)
 
 
 class ScriptDeployment(Deployment):
@@ -205,13 +196,9 @@ class ScriptDeployment(Deployment):
         See also :class:`Deployment.run`
         """
         self.name = cast(str, self.name)
-        file_path = client.put(
-            path=self.name, chmod=int("755", 8), contents=self.script
-        )
+        file_path = client.put(path=self.name, chmod=int("755", 8), contents=self.script)
         # Pre-pend cwd if user specified a relative path
-        if self.name and (
-            self.name[0] not in ["/", "\\"] and not re.match(r"^\w\:.*$", file_path)
-        ):
+        if self.name and (self.name[0] not in ["/", "\\"] and not re.match(r"^\w\:.*$", file_path)):
             base_path = os.path.dirname(file_path)
             name = os.path.join(base_path, self.name)
         elif self.name and (self.name[0] == "\\" or re.match(r"^\w\:.*$", file_path)):
@@ -225,13 +212,11 @@ class ScriptDeployment(Deployment):
 
         if self.args:
             # Append arguments to the command
-            cmd = "%s %s" % (name, " ".join(self.args))
+            cmd = "{} {}".format(name, " ".join(self.args))
         else:
             cmd = name
 
-        self.stdout, self.stderr, self.exit_status = client.run(
-            cmd, timeout=self.timeout
-        )
+        self.stdout, self.stderr, self.exit_status = client.run(cmd, timeout=self.timeout)
 
         if self.delete:
             client.delete(self.name)
@@ -252,9 +237,11 @@ class ScriptDeployment(Deployment):
             exit_status = "script didn't run yet"
             stdout = None
             stderr = None
-        return (
-            "<ScriptDeployment script=%s, exit_status=%s, stdout=%s, "
-            "stderr=%s>" % (script, exit_status, stdout, stderr)
+        return "<ScriptDeployment script=%s, exit_status=%s, stdout=%s, " "stderr=%s>" % (
+            script,
+            exit_status,
+            stdout,
+            stderr,
         )
 
 
@@ -296,13 +283,10 @@ class ScriptFileDeployment(ScriptDeployment):
         with open(script_file, "rb") as fp:
             content = fp.read()  # type: Union[bytes, str]
 
-        if PY3:
-            content = cast(bytes, content)
-            content = content.decode("utf-8")
+        content = cast(bytes, content)
+        content = content.decode("utf-8")
 
-        super(ScriptFileDeployment, self).__init__(
-            script=content, args=args, name=name, delete=delete, timeout=timeout
-        )
+        super().__init__(script=content, args=args, name=name, delete=delete, timeout=timeout)
 
 
 class MultiStepDeployment(Deployment):

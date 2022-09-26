@@ -13,18 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
-
-from integration.compute.driver.test import TestNodeDriver
+import unittest
 
 from integration.compute.api.data import NODES, REPORT_DATA
+from integration.compute.driver.test import TestNodeDriver
 
 
 class IntegrationTest(unittest.TestCase):
     def setUp(self):
-        self.instance = TestNodeDriver('apache', 'libcloud', secure=False,
-                                       host='localhost', port=9898)
+        self.instance = TestNodeDriver(
+            "apache", "libcloud", secure=False, host="localhost", port=9898
+        )
 
     def test_nodes(self):
         """
@@ -33,14 +33,14 @@ class IntegrationTest(unittest.TestCase):
         """
         nodes = self.instance.list_nodes()
         for node in NODES:
-            match = [n for n in nodes if n.id == node['id']]
+            match = [n for n in nodes if n.id == node["id"]]
             self.assertTrue(len(match) == 1)
             match = match[0]
-            self.assertEqual(match.id, node['id'])
-            self.assertEqual(match.name, node['name'])
-            self.assertEqual(match.private_ips, node['private_ips'])
-            self.assertEqual(match.public_ips, node['public_ips'])
-            self.assertEqual(match.extra, node['extra'])
+            self.assertEqual(match.id, node["id"])
+            self.assertEqual(match.name, node["name"])
+            self.assertEqual(match.private_ips, node["private_ips"])
+            self.assertEqual(match.public_ips, node["public_ips"])
+            self.assertEqual(match.extra, node["extra"])
 
     def test_ex_report_data(self):
         """
@@ -50,8 +50,9 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(data, REPORT_DATA)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import libcloud
-    with open('/tmp/testing.log', 'w') as f:
+
+    with open("/tmp/testing.log", "w") as f:
         libcloud.enable_debug(f)
         sys.exit(unittest.main())

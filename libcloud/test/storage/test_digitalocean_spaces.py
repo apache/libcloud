@@ -16,18 +16,16 @@
 import sys
 import unittest
 
-from libcloud.common.types import LibcloudError
-
-from libcloud.storage.base import Container, Object
-from libcloud.storage.drivers.digitalocean_spaces import (
-    DigitalOceanSpacesStorageDriver,
-    DOSpacesConnectionAWS4,
-    DOSpacesConnectionAWS2,
-    DO_SPACES_HOSTS_BY_REGION,
-)
-
 from libcloud.test import LibcloudTestCase
+from libcloud.common.types import LibcloudError
+from libcloud.storage.base import Object, Container
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.drivers.digitalocean_spaces import (
+    DO_SPACES_HOSTS_BY_REGION,
+    DOSpacesConnectionAWS2,
+    DOSpacesConnectionAWS4,
+    DigitalOceanSpacesStorageDriver,
+)
 
 
 class DigitalOceanSpacesTests(LibcloudTestCase):
@@ -37,16 +35,12 @@ class DigitalOceanSpacesTests(LibcloudTestCase):
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(
-            *self.driver_args, signature_version="2", host=self.default_host
-        )
+        return self.driver_type(*self.driver_args, signature_version="2", host=self.default_host)
 
     def setUp(self):
         self.driver = self.create_driver()
         self.container = Container("test-container", {}, self.driver)
-        self.object = Object(
-            "test-object", 1, "hash", {}, "meta_data", self.container, self.driver
-        )
+        self.object = Object("test-object", 1, "hash", {}, "meta_data", self.container, self.driver)
 
     def test_connection_class_type(self):
         res = self.driver.connectionCls is DOSpacesConnectionAWS2
@@ -74,15 +68,11 @@ class DigitalOceanSpacesTests(LibcloudTestCase):
 
     def test_invalid_signature_version(self):
         with self.assertRaises(ValueError):
-            self.driver_type(
-                *self.driver_args, signature_version="3", host=self.default_host
-            )
+            self.driver_type(*self.driver_args, signature_version="3", host=self.default_host)
 
     def test_invalid_region(self):
         with self.assertRaises(LibcloudError):
-            self.driver_type(
-                *self.driver_args, region="atlantis", host=self.default_host
-            )
+            self.driver_type(*self.driver_args, region="atlantis", host=self.default_host)
 
 
 class DigitalOceanSpacesTests_v4(DigitalOceanSpacesTests):
@@ -117,9 +107,7 @@ class DigitalOceanSpacesDoubleInstanceTests(LibcloudTestCase):
 
     def setUp(self):
         self.driver_v2 = self.driver_type(*self.driver_args, signature_version="2")
-        self.driver_v4 = self.driver_type(
-            *self.driver_args, signature_version="4", region="ams3"
-        )
+        self.driver_v4 = self.driver_type(*self.driver_args, signature_version="4", region="ams3")
 
     def test_connection_class_type(self):
         res = self.driver_v2.connectionCls is DOSpacesConnectionAWS2

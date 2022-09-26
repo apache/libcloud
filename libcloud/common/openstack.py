@@ -17,25 +17,19 @@
 Common utilities for OpenStack
 """
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.exceptions import BaseHTTPError
+from libcloud.utils.py3 import ET, httplib
+from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.common.types import ProviderError
-from libcloud.compute.types import LibcloudError, MalformedResponseError
-from libcloud.compute.types import KeyPairDoesNotExistError
-from libcloud.common.openstack_identity import (
-    AUTH_TOKEN_HEADER,
-    get_class_for_auth_version,
-)
+from libcloud.compute.types import LibcloudError, MalformedResponseError, KeyPairDoesNotExistError
+from libcloud.common.exceptions import BaseHTTPError
 
 # Imports for backward compatibility reasons
 from libcloud.common.openstack_identity import (
+    AUTH_TOKEN_HEADER,
     OpenStackServiceCatalog,
     OpenStackIdentityTokenScope,
+    get_class_for_auth_version,
 )
-
 
 try:
     import simplejson as json
@@ -183,7 +177,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         retry_delay=None,
         backoff=None,
     ):
-        super(OpenStackBaseConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -213,8 +207,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         if ex_force_auth_token and not ex_force_base_url:
             raise LibcloudError(
-                "Must also provide ex_force_base_url when specifying "
-                "ex_force_auth_token."
+                "Must also provide ex_force_base_url when specifying " "ex_force_auth_token."
             )
 
         if ex_force_auth_token:
@@ -254,9 +247,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         return self._osa
 
-    def request(
-        self, action, params=None, data="", headers=None, method="GET", raw=False
-    ):
+    def request(self, action, params=None, data="", headers=None, method="GET", raw=False):
         headers = headers or {}
         params = params or {}
 
@@ -355,7 +346,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 raise LibcloudError("Invalid microversion format: servicename X.XX")
 
             if self.service_type and self.service_type.startswith(service_type):
-                headers["OpenStack-API-Version"] = "%s %s" % (
+                headers["OpenStack-API-Version"] = "{} {}".format(
                     service_type,
                     microversion,
                 )
@@ -363,7 +354,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     def morph_action_hook(self, action):
         self._populate_hosts_and_request_paths()
-        return super(OpenStackBaseConnection, self).morph_action_hook(action)
+        return super().morph_action_hook(action)
 
     def _set_up_connection_info(self, url):
         result = self._tuple_from_url(url)
@@ -405,9 +396,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_user_info = osa.auth_user_info
 
             # Pull out and parse the service catalog
-            osc = OpenStackServiceCatalog(
-                service_catalog=osa.urls, auth_version=self._auth_version
-            )
+            osc = OpenStackServiceCatalog(service_catalog=osa.urls, auth_version=self._auth_version)
             self.service_catalog = osc
 
         url = self._ex_force_base_url or self.get_endpoint()
@@ -482,10 +471,10 @@ class OpenStackResponse(Response):
             # it along as the whole response body in the text variable.
             text = body
 
-        return "%s %s %s" % (self.status, self.error, text)
+        return "{} {} {}".format(self.status, self.error, text)
 
 
-class OpenStackDriverMixin(object):
+class OpenStackDriverMixin:
     def __init__(
         self,
         ex_force_base_url=None,

@@ -20,7 +20,6 @@
 
 # pylint: skip-file
 
-from __future__ import absolute_import
 
 import sys
 import types
@@ -49,32 +48,29 @@ if (2, 0) <= sys.version_info < (3, 0):
 if (2, 7) <= sys.version_info < (2, 8):
     PY27 = True
 
-if sys.version_info >= (3, 0):
-    PY3 = True
+PY3 = True
 
 if PY3:
-    import http.client as httplib
-    from io import StringIO
+    import base64
     import urllib
     import urllib as urllib2
-    import base64
+    import http.client as httplib
 
     # pylint: disable=no-name-in-module
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
-
+    from io import StringIO
+    from os.path import relpath
     from urllib.parse import quote as urlquote
     from urllib.parse import unquote as urlunquote
     from urllib.parse import urlencode as urlencode
-    from os.path import relpath
 
     if sys.version_info >= (3, 5, 0):
         from importlib import reload
     else:
         from imp import reload
 
-    from builtins import bytes
-    from builtins import next
+    from builtins import next, bytes
 
     parse_qs = urlparse.parse_qs
     parse_qsl = urlparse.parse_qsl
@@ -92,7 +88,7 @@ if PY3:
         elif isinstance(s, int):
             return bytes([s])
         else:
-            raise TypeError("Invalid argument %r for b()" % (s,))
+            raise TypeError("Invalid argument {!r} for b()".format(s))
 
     def ensure_string(s):
         if isinstance(s, str):
@@ -100,7 +96,7 @@ if PY3:
         elif isinstance(s, bytes):
             return s.decode("utf-8")
         else:
-            raise TypeError("Invalid argument %r for ensure_string()" % (s,))
+            raise TypeError("Invalid argument {!r} for ensure_string()".format(s))
 
     def byte(n):
         # assume n is a Latin-1 string of length 1
@@ -159,17 +155,17 @@ if PY3:
         return getattr(self, "assertRegex")(*args, **kwargs)
 
 else:
-    import httplib  # NOQA
-    from StringIO import StringIO  # NOQA
-    import urllib  # NOQA
-    import urllib2  # NOQA
-    import urlparse  # NOQA
-    import xmlrpclib  # NOQA
     import base64  # NOQA
+    import urllib  # NOQA
     from urllib import quote as _urlquote  # NOQA
     from urllib import unquote as urlunquote  # NOQA
     from urllib import urlencode as urlencode  # NOQA
 
+    import httplib  # NOQA
+    import urllib2  # NOQA
+    import urlparse  # NOQA
+    import xmlrpclib  # NOQA
+    from StringIO import StringIO  # NOQA
     from __builtin__ import reload  # NOQA
 
     parse_qs = urlparse.parse_qs

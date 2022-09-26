@@ -13,30 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
-import multiprocessing
 import os
-import platform
-import shutil
 import sys
-import tempfile
 import time
+import shutil
+import platform
+import tempfile
 import unittest
+import multiprocessing
 
-from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container
-from libcloud.storage.base import Object
-from libcloud.storage.types import ContainerAlreadyExistsError
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import InvalidContainerNameError
 from libcloud.utils.files import exhaust_iterator
+from libcloud.common.types import LibcloudError
+from libcloud.storage.base import Object, Container
+from libcloud.storage.types import (
+    ContainerIsNotEmptyError,
+    InvalidContainerNameError,
+    ContainerDoesNotExistError,
+    ContainerAlreadyExistsError,
+)
 
 try:
-    from libcloud.storage.drivers.local import LocalStorageDriver
-    from libcloud.storage.drivers.local import LockLocalStorage
     import fasteners  # noqa
+
+    from libcloud.storage.drivers.local import LockLocalStorage, LocalStorageDriver
 except ImportError:
     print("fasteners library is not available, skipping local_storage tests...")
     LocalStorageDriver = None
@@ -93,10 +93,7 @@ class LocalTests(unittest.TestCase):
             os.unlink(tmppath)
         except Exception as e:
             msg = str(e)
-            if (
-                "being used by another process" in msg
-                and platform.system().lower() == "windows"
-            ):
+            if "being used by another process" in msg and platform.system().lower() == "windows":
                 return
             raise e
 

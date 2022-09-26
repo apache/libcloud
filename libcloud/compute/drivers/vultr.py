@@ -15,28 +15,33 @@
 """
 Vultr Driver
 """
-import time
 import json
+import time
 import base64
+from typing import Any, Dict, List, Union, Optional
 from functools import update_wrapper
-from typing import Optional, List, Dict, Union, Any
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import LibcloudError
-from libcloud.common.types import ServiceUnavailableError
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import KeyPair, StorageVolume
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.types import NodeState, StorageVolumeState
-from libcloud.compute.types import Provider, VolumeSnapshotState
+from libcloud.utils.py3 import httplib, urlencode
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import LibcloudError, InvalidCredsError, ServiceUnavailableError
+from libcloud.common.vultr import (
+    DEFAULT_API_VERSION,
+    VultrNetwork,
+    VultrConnectionV2,
+    VultrNodeSnapshot,
+)
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+)
+from libcloud.compute.types import Provider, NodeState, StorageVolumeState, VolumeSnapshotState
 from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
 from libcloud.utils.publickey import get_pubkey_openssh_fingerprint
-from libcloud.common.vultr import DEFAULT_API_VERSION
-from libcloud.common.vultr import VultrConnectionV2
-from libcloud.common.vultr import VultrNetwork, VultrNodeSnapshot
 
 # For matching region by id
 VULTR_COMPUTE_INSTANCE_LOCATIONS = {
@@ -646,7 +651,7 @@ class VultrResponse(JsonResponse):
             raise LibcloudError(self.body)
 
 
-class SSHKey(object):
+class SSHKey:
     def __init__(self, id, name, pub_key):
         self.id = id
         self.name = name
@@ -715,7 +720,7 @@ class VultrConnection(ConnectionKey):
             return True
 
 
-class VultrNodeDriverHelper(object):
+class VultrNodeDriverHelper:
     """
     VultrNode helper class.
     """
@@ -845,9 +850,7 @@ class VultrNodeDriverV1(VultrNodeDriver):
         return self._list_resources("/v1/os/list", self._to_image)
 
     # pylint: disable=too-many-locals
-    def create_node(
-        self, name, size, image, location, ex_ssh_key_ids=None, ex_create_attr=None
-    ):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None, ex_create_attr=None):
         """
         Create a node
 
@@ -1251,9 +1254,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                 data["snapshot_id"] = ex_snapshot
 
         if ex_userdata:
-            data["user_data"] = base64.b64encode(bytes(ex_userdata, "utf-8")).decode(
-                "utf-8"
-            )
+            data["user_data"] = base64.b64encode(bytes(ex_userdata, "utf-8")).decode("utf-8")
 
         if ex_script_id:
             data["script_id"] = ex_script_id
@@ -1273,9 +1274,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         if self._is_bare_metal(size):
             if ex_persistent_pxe:
                 data["persistent_pxe"] = ex_persistent_pxe
-            resp = self.connection.request(
-                "/v2/bare-metals", data=json.dumps(data), method="POST"
-            )
+            resp = self.connection.request("/v2/bare-metals", data=json.dumps(data), method="POST")
             return self._to_node(resp.object["bare_metal"])
         else:
             if ex_private_network_ids:
@@ -1299,9 +1298,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             if ex_backups:
                 data["backups"] = "enabled" if ex_backups is True else "disabled"
 
-            resp = self.connection.request(
-                "/v2/instances", data=json.dumps(data), method="POST"
-            )
+            resp = self.connection.request("/v2/instances", data=json.dumps(data), method="POST")
             return self._to_node(resp.object["instance"])
 
     def reboot_node(self, node: Node) -> bool:
@@ -1315,9 +1312,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         if self._is_bare_metal(node.size):
             return self.ex_reboot_bare_metal_node(node)
 
-        resp = self.connection.request(
-            "/v2/instances/%s/reboot" % node.id, method="POST"
-        )
+        resp = self.connection.request("/v2/instances/%s/reboot" % node.id, method="POST")
 
         return resp.success()
 
@@ -1332,9 +1327,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         if self._is_bare_metal(node.size):
             return self.ex_start_bare_metal_node(node)
 
-        resp = self.connection.request(
-            "/v2/instances/%s/start" % node.id, method="POST"
-        )
+        resp = self.connection.request("/v2/instances/%s/start" % node.id, method="POST")
 
         return resp.success()
 
@@ -1436,9 +1429,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         except AttributeError:
             data["region"] = location
 
-        resp = self.connection.request(
-            "/v2/blocks", data=json.dumps(data), method="POST"
-        )
+        resp = self.connection.request("/v2/blocks", data=json.dumps(data), method="POST")
         return self._to_volume(resp.object["block"])
 
     def attach_volume(
@@ -1541,9 +1532,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             "name": name,
             "ssh_key": key_material,
         }
-        resp = self.connection.request(
-            "/v2/ssh-keys", data=json.dumps(data), method="POST"
-        )
+        resp = self.connection.request("/v2/ssh-keys", data=json.dumps(data), method="POST")
         return self._to_key_pair(resp.object["ssh_key"])
 
     def delete_key_pair(self, key_pair: KeyPair) -> bool:
@@ -1555,9 +1544,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         :rtype: ``bool``
         """
 
-        resp = self.connection.request(
-            "/v2/ssh-keys/%s" % key_pair.extra["id"], method="DELETE"
-        )
+        resp = self.connection.request("/v2/ssh-keys/%s" % key_pair.extra["id"], method="DELETE")
 
         return resp.success()
 
@@ -1578,9 +1565,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request(
-            "/v2/bare-metals/%s/reboot" % node.id, method="POST"
-        )
+        resp = self.connection.request("/v2/bare-metals/%s/reboot" % node.id, method="POST")
 
         return resp.success()
 
@@ -1607,9 +1592,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request(
-            "/v2/bare-metals/%s/start" % node.id, method="POST"
-        )
+        resp = self.connection.request("/v2/bare-metals/%s/start" % node.id, method="POST")
 
         return resp.success()
 
@@ -1621,9 +1604,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request(
-            "/v2/bare-metals/%s/halt" % node.id, method="POST"
-        )
+        resp = self.connection.request("/v2/bare-metals/%s/halt" % node.id, method="POST")
 
         return resp.success()
 
@@ -1660,9 +1641,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         """
 
         data = {"instance_ids": [node.id for node in nodes]}
-        resp = self.connection.request(
-            "/v2/instances/halt", data=json.dumps(data), method="POST"
-        )
+        resp = self.connection.request("/v2/instances/halt", data=json.dumps(data), method="POST")
 
         return resp.success()
 
@@ -1712,9 +1691,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         if description:
             data["description"] = description
 
-        resp = self.connection.request(
-            "/v2/snapshots", data=json.dumps(data), method="POST"
-        )
+        resp = self.connection.request("/v2/snapshots", data=json.dumps(data), method="POST")
 
         return self._to_snapshot(resp.object["snapshot"])
 
@@ -1727,9 +1704,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         :rtype: ``bool``
         """
 
-        resp = self.connection.request(
-            "/v2/snapshots/%s" % snapshot.id, method="DELETE"
-        )
+        resp = self.connection.request("/v2/snapshots/%s" % snapshot.id, method="DELETE")
 
         return resp.success()
 
@@ -1775,9 +1750,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         if description:
             data["description"] = description
 
-        resp = self.connection.request(
-            "/v2/private-networks", data=json.dumps(data), method="POST"
-        )
+        resp = self.connection.request("/v2/private-networks", data=json.dumps(data), method="POST")
 
         return self._to_network(resp.object["network"])
 
@@ -1801,9 +1774,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request(
-            "/v2/private-networks/%s" % network.id, method="DELETE"
-        )
+        resp = self.connection.request("/v2/private-networks/%s" % network.id, method="DELETE")
 
         return resp.success()
 
@@ -1894,9 +1865,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             extra["mac_address"] = data["mac_address"]
             private_ips = None
         else:
-            state = self._get_node_state(
-                data["status"], power_state=data["power_status"]
-            )
+            state = self._get_node_state(data["status"], power_state=data["power_status"])
             extra["vcpu_count"] = data["vcpu_count"]
             extra["allowed_bandwidth"] = data["allowed_bandwidth"]
             extra["power_status"] = data["power_status"]
@@ -1932,9 +1901,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             "attached_to_instance": data["attached_to_instance"],
             "mount_id": data["mount_id"],
         }
-        return StorageVolume(
-            id=id_, name=name, size=size, driver=self, state=state, extra=extra
-        )
+        return StorageVolume(id=id_, name=name, size=size, driver=self, state=state, extra=extra)
 
     def _get_node_state(
         self,
@@ -1981,9 +1948,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             "continent": data["continent"],
             "option": data["options"],
         }
-        return NodeLocation(
-            id=id_, name=name, country=country, driver=self, extra=extra
-        )
+        return NodeLocation(id=id_, name=name, country=country, driver=self, extra=extra)
 
     def _to_image(self, data: Dict[str, Any]) -> NodeImage:
         id_ = data["id"]
@@ -2029,15 +1994,13 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
     def _to_network(self, data: Dict[str, Any]) -> VultrNetwork:
         id_ = data["id"]
-        cidr_block = "%s/%s" % (data["v4_subnet"], data["v4_subnet_mask"])
+        cidr_block = "{}/{}".format(data["v4_subnet"], data["v4_subnet_mask"])
         location = data["region"]
         extra = {
             "description": data["description"],
             "date_created": data["date_created"],
         }
-        return VultrNetwork(
-            id=id_, cidr_block=cidr_block, location=location, extra=extra
-        )
+        return VultrNetwork(id=id_, cidr_block=cidr_block, location=location, extra=extra)
 
     def _to_snapshot(self, data: Dict[str, Any]) -> VultrNodeSnapshot:
         id_ = data["id"]

@@ -14,21 +14,25 @@
 
 import sys
 import unittest
-
 from unittest.mock import MagicMock
 
-from libcloud.dns.base import Record, Zone
-from libcloud.dns.types import RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.test import LibcloudTestCase, MockHttp
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_DURABLEDNS
+from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import (
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
 from libcloud.utils.py3 import httplib
-from libcloud.dns.drivers.durabledns import DurableDNSDriver
-from libcloud.dns.drivers.durabledns import ZONE_EXTRA_PARAMS_DEFAULT_VALUES
-from libcloud.dns.drivers.durabledns import DEFAULT_TTL
-from libcloud.dns.drivers.durabledns import RECORD_EXTRA_PARAMS_DEFAULT_VALUES
+from libcloud.test.secrets import DNS_PARAMS_DURABLEDNS
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.durabledns import (
+    DEFAULT_TTL,
+    ZONE_EXTRA_PARAMS_DEFAULT_VALUES,
+    RECORD_EXTRA_PARAMS_DEFAULT_VALUES,
+    DurableDNSDriver,
+)
 
 
 class DurableDNSTests(LibcloudTestCase):
@@ -273,12 +277,8 @@ class DurableDNSTests(LibcloudTestCase):
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "1.2.3.4")
-        self.assertEqual(
-            record.extra.get("aux"), RECORD_EXTRA_PARAMS_DEFAULT_VALUES.get("aux")
-        )
-        self.assertEqual(
-            record.extra.get("ttl"), RECORD_EXTRA_PARAMS_DEFAULT_VALUES.get("ttl")
-        )
+        self.assertEqual(record.extra.get("aux"), RECORD_EXTRA_PARAMS_DEFAULT_VALUES.get("aux"))
+        self.assertEqual(record.extra.get("ttl"), RECORD_EXTRA_PARAMS_DEFAULT_VALUES.get("ttl"))
 
     def test_create_record_with_extra_param(self):
         zone = self.driver.list_zones()[0]
@@ -296,9 +296,7 @@ class DurableDNSTests(LibcloudTestCase):
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "1.2.3.4")
-        self.assertEqual(
-            record.extra.get("aux"), RECORD_EXTRA_PARAMS_DEFAULT_VALUES.get("aux")
-        )
+        self.assertEqual(record.extra.get("aux"), RECORD_EXTRA_PARAMS_DEFAULT_VALUES.get("aux"))
         self.assertEqual(record.extra.get("ttl"), 4000)
 
     def test_create_record_zone_does_not_exist(self):
@@ -322,9 +320,7 @@ class DurableDNSTests(LibcloudTestCase):
             extra=z_extra,
         )
         try:
-            self.driver.create_record(
-                name="record1", zone=zone, type=RecordType.A, data="1.2.3.4"
-            )
+            self.driver.create_record(name="record1", zone=zone, type=RecordType.A, data="1.2.3.4")
         except ZoneDoesNotExistError:
             pass
         else:
@@ -621,9 +617,7 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("list_records.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_listRecords_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_listRecords_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("list_records_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -639,21 +633,15 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("get_record.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_getRecord_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_getRecord_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("get_record_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_getRecord_php_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_getRecord_php_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("get_record_RECORD_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_createZone_php_WITH_EXTRA_PARAMS(
-        self, method, url, body, headers
-    ):
+    def _services_dns_createZone_php_WITH_EXTRA_PARAMS(self, method, url, body, headers):
         body = self.fixtures.load("create_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -669,27 +657,19 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("get_zone_NO_EXTRA_PARAMS.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_createZone_php_ZONE_ALREADY_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_createZone_php_ZONE_ALREADY_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("create_zone_ZONE_ALREADY_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_createRecord_php_NO_EXTRA_PARAMS(
-        self, method, url, body, headers
-    ):
+    def _services_dns_createRecord_php_NO_EXTRA_PARAMS(self, method, url, body, headers):
         body = self.fixtures.load("create_record_NO_EXTRA_PARAMS.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_createRecord_php_WITH_EXTRA_PARAMS(
-        self, method, url, body, headers
-    ):
+    def _services_dns_createRecord_php_WITH_EXTRA_PARAMS(self, method, url, body, headers):
         body = self.fixtures.load("create_record_WITH_EXTRA_PARAMS.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_createRecord_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_createRecord_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("create_record_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -701,9 +681,7 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("get_zone_UPDATE_ZONE.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_updateZone_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_updateZone_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("update_zone_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -711,9 +689,7 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("update_record.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_updateRecord_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_updateRecord_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("update_record_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -721,9 +697,7 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("delete_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_deleteZone_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_deleteZone_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("delete_zone_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -731,15 +705,11 @@ class DurableDNSMockHttp(MockHttp):
         body = self.fixtures.load("delete_record.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_deleteRecord_php_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_deleteRecord_php_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("delete_record_RECORD_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _services_dns_deleteRecord_php_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _services_dns_deleteRecord_php_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("delete_record_ZONE_DOES_NOT_EXIST.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

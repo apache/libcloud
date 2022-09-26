@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-
 import os
 import binascii
-
-from libcloud.common.providers import get_driver as _get_driver
-from libcloud.common.providers import set_driver as _set_driver
+from typing import List
 
 # Imported for backward compatibility
 # noinspection PyProtectedMember
-from libcloud.utils.retry import Retry  # flake8: noqa
 from libcloud.utils.retry import DEFAULT_DELAY  # noqa: F401
-from libcloud.utils.retry import DEFAULT_TIMEOUT  # noqa: F401
 from libcloud.utils.retry import DEFAULT_BACKOFF  # noqa: F401
+from libcloud.utils.retry import DEFAULT_TIMEOUT  # noqa: F401
 from libcloud.utils.retry import TRANSIENT_SSL_ERROR  # noqa: F401
+from libcloud.utils.retry import Retry  # flake8: noqa
 from libcloud.utils.retry import TransientSSLError  # noqa: F401
-
+from libcloud.common.providers import get_driver as _get_driver
+from libcloud.common.providers import set_driver as _set_driver
 
 __all__ = [
     "find",
@@ -206,7 +203,7 @@ def dict2str(data):
     result = ""
     for k in data:
         if data[k] is not None:
-            result += "%s %s\n" % (str(k), str(data[k]))
+            result += "{} {}\n".format(str(k), str(data[k]))
         else:
             result += "%s\n" % str(k)
 
@@ -214,11 +211,11 @@ def dict2str(data):
 
 
 def reverse_dict(dictionary):
-    return dict([(value, key) for key, value in list(dictionary.items())])
+    return {value: key for key, value in list(dictionary.items())}
 
 
 def lowercase_keys(dictionary):
-    return dict(((k.lower(), v) for k, v in dictionary.items()))
+    return {k.lower(): v for k, v in dictionary.items()}
 
 
 def get_secure_random_string(size):
@@ -238,7 +235,7 @@ def get_secure_random_string(size):
     return value
 
 
-class ReprMixin(object):
+class ReprMixin:
     """
     Mixin class which adds __repr__ and __str__ methods for the attributes
     specified on the class.
@@ -250,7 +247,7 @@ class ReprMixin(object):
         attributes = []
         for attribute in self._repr_attributes:
             value = getattr(self, attribute, None)
-            attributes.append("%s=%s" % (attribute, value))
+            attributes.append("{}={}".format(attribute, value))
 
         values = (self.__class__.__name__, ", ".join(attributes))
         result = "<%s %s>" % values

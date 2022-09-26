@@ -15,9 +15,8 @@
 
 from base64 import b64encode
 
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import httplib
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.utils.py3 import b, httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
 
 class OnAppResponse(JsonResponse):
@@ -57,7 +56,7 @@ class OnAppConnection(ConnectionUserAndKey):
         :rtype:         ``dict``
         :return:        Default input headers with the "Authorization" header.
         """
-        b64string = b("%s:%s" % (self.user_id, self.key))
+        b64string = b("{}:{}".format(self.user_id, self.key))
         encoded = b64encode(b64string).decode("utf-8")
 
         headers["Authorization"] = "Basic " + encoded

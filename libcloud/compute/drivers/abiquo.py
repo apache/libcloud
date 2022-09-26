@@ -21,12 +21,10 @@ This version is compatible with the following versions of Abiquo:
     * Abiquo 3.4 (http://wiki.abiquo.com/display/ABI34/The+Abiquo+API)
 """
 
-from libcloud.utils.py3 import ET
-from libcloud.compute.base import NodeDriver, NodeSize
+from libcloud.utils.py3 import ET, tostring
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.common.abiquo import AbiquoResponse, AbiquoConnection, get_href
 from libcloud.compute.types import Provider, LibcloudError
-from libcloud.common.abiquo import AbiquoConnection, get_href, AbiquoResponse
-from libcloud.compute.base import NodeLocation, NodeImage, Node
-from libcloud.utils.py3 import tostring
 
 
 class AbiquoNodeDriver(NodeDriver):
@@ -75,14 +73,10 @@ class AbiquoNodeDriver(NodeDriver):
         :type        endpoint: ``str`` that can be parsed as URL
         """
         self.endpoint = endpoint
-        super(AbiquoNodeDriver, self).__init__(
-            key=user_id, secret=secret, secure=False, host=None, port=None, **kwargs
-        )
+        super().__init__(key=user_id, secret=secret, secure=False, host=None, port=None, **kwargs)
         self.ex_populate_cache()
 
-    def create_node(
-        self, image, name=None, size=None, location=None, ex_group_name=None
-    ):
+    def create_node(self, image, name=None, size=None, location=None, ex_group_name=None):
         """
         Create a new node instance in Abiquo
 
@@ -404,9 +398,7 @@ class AbiquoNodeDriver(NodeDriver):
                 vms = self.connection.request(vms_link, headers=headers).object
                 for vm in vms.findall("virtualMachine"):
                     nodes.append(self._to_node(vm, self))
-                group = NodeGroup(
-                    self, vapp.findtext("name"), nodes, get_href(vapp, "edit")
-                )
+                group = NodeGroup(self, vapp.findtext("name"), nodes, get_href(vapp, "edit"))
                 groups.append(group)
 
         return groups
@@ -452,9 +444,7 @@ class AbiquoNodeDriver(NodeDriver):
                         id_template = templ.findtext("id")
                         ids = [image.id for image in images]
                         if id_template not in ids:
-                            images.append(
-                                self._to_nodeimage(templ, self, get_href(repo, "edit"))
-                            )
+                            images.append(self._to_nodeimage(templ, self, get_href(repo, "edit")))
 
         return images
 
@@ -552,9 +542,7 @@ class AbiquoNodeDriver(NodeDriver):
         """
         reboot_uri = node.extra["uri_id"] + "/action/reset"
         reboot_hdr = {"Accept": self.AR_MIME_TYPE}
-        res = self.connection.async_request(
-            action=reboot_uri, method="POST", headers=reboot_hdr
-        )
+        res = self.connection.async_request(action=reboot_uri, method="POST", headers=reboot_hdr)
         return res.async_success()  # pylint: disable=maybe-no-member
 
     # -------------------------
@@ -621,9 +609,7 @@ class AbiquoNodeDriver(NodeDriver):
         private_ips = []
         public_ips = []
         nics_hdr = {"Accept": self.NICS_MIME_TYPE}
-        nics_element = self.connection.request(
-            get_href(vm, "nics"), headers=nics_hdr
-        ).object
+        nics_element = self.connection.request(get_href(vm, "nics"), headers=nics_hdr).object
         for nic in nics_element.findall("nic"):
             ip = nic.findtext("ip")
             for link in nic.findall("link"):
@@ -668,8 +654,7 @@ class AbiquoNodeDriver(NodeDriver):
         if location is not None:
             yield location
         else:
-            for loc in self.list_locations():
-                yield loc
+            yield from self.list_locations()
 
     def _get_enterprise_id(self):
         """
@@ -774,7 +759,7 @@ class AbiquoNodeDriver(NodeDriver):
         return self.connection.request(edit_vm, headers=headers).object
 
 
-class NodeGroup(object):
+class NodeGroup:
     """
     Group of virtual machines that can be managed together
 

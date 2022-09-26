@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.cloudstack import CloudStackDriverMixIn
-from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
-from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import Provider
-from libcloud.loadbalancer.types import State
 from libcloud.utils.misc import reverse_dict
+from libcloud.common.cloudstack import CloudStackDriverMixIn
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State, Provider
 
 
 class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
@@ -68,9 +66,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
                 + "you also need to provide host and path argument"
             )
 
-        super(CloudStackLBDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port)
 
     def list_protocols(self):
         """
@@ -139,9 +135,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
 
         ip_args.update({"zoneid": location, "networkid": network_id, "vpc_id": vpc_id})
 
-        result = self._async_request(
-            command="associateIpAddress", params=ip_args, method="GET"
-        )
+        result = self._async_request(command="associateIpAddress", params=ip_args, method="GET")
         public_ip = result["ipaddress"]
 
         args.update(
@@ -154,18 +148,14 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
             }
         )
 
-        result = self._sync_request(
-            command="createLoadBalancerRule", params=args, method="GET"
-        )
+        result = self._sync_request(command="createLoadBalancerRule", params=args, method="GET")
 
         listbalancers = self._sync_request(
             command="listLoadBalancerRules", params=args, method="GET"
         )
 
         listbalancers = [
-            rule
-            for rule in listbalancers["loadbalancerrule"]
-            if rule["id"] == result["id"]
+            rule for rule in listbalancers["loadbalancerrule"] if rule["id"] == result["id"]
         ]
         if len(listbalancers) != 1:
             return None
@@ -227,6 +217,4 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         return balancer
 
     def _to_member(self, obj, port, balancer):
-        return Member(
-            id=obj["id"], ip=obj["nic"][0]["ipaddress"], port=port, balancer=balancer
-        )
+        return Member(id=obj["id"], ip=obj["nic"][0]["ipaddress"], port=port, balancer=balancer)

@@ -13,18 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
-
-from libcloud.compute.drivers.vcl import VCLNodeDriver as VCL
-from libcloud.compute.types import NodeState
+import unittest
 
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.utils.py3 import httplib, xmlrpclib
 from libcloud.test.secrets import VCL_PARAMS
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.vcl import VCLNodeDriver as VCL
 
 
 class VCLTests(unittest.TestCase):
@@ -82,7 +79,7 @@ class VCLMockHttp(MockHttp):
     def _xmlrpc(self, method, url, body, headers):
         params, meth_name = xmlrpclib.loads(body)
         if self.type:
-            meth_name = "%s_%s" % (meth_name, self.type)
+            meth_name = "{}_{}".format(meth_name, self.type)
         return getattr(self, meth_name)(method, url, body, headers)
 
     def XMLRPCgetImages(self, method, url, body, headers):

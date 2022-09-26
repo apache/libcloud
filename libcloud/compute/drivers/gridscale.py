@@ -15,24 +15,23 @@
 
 import time
 
-from libcloud.common.gridscale import GridscaleBaseDriver
-from libcloud.common.gridscale import GridscaleConnection
 from libcloud.compute.base import (
-    NodeImage,
-    NodeLocation,
-    VolumeSnapshot,
     Node,
-    StorageVolume,
     KeyPair,
+    NodeImage,
     NodeState,
-    StorageVolumeState,
     NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
+    StorageVolumeState,
 )
-from libcloud.compute.providers import Provider
 from libcloud.utils.iso8601 import parse_date
+from libcloud.common.gridscale import GridscaleBaseDriver, GridscaleConnection
+from libcloud.compute.providers import Provider
 
 
-class GridscaleIp(object):
+class GridscaleIp:
     """
     Ip Object
 
@@ -57,15 +56,12 @@ class GridscaleIp(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            "Ip: id={}, family={}, prefix={}, create_time={}, "
-            "ip_address={}".format(
-                self.id, self.family, self.prefix, self.create_time, self.ip_address
-            )
+        return "Ip: id={}, family={}, prefix={}, create_time={}, " "ip_address={}".format(
+            self.id, self.family, self.prefix, self.create_time, self.ip_address
         )
 
 
-class GridscaleNetwork(object):
+class GridscaleNetwork:
     """
     Network Object
 
@@ -89,11 +85,8 @@ class GridscaleNetwork(object):
         self.relations = relations
 
     def __repr__(self):
-        return (
-            "Network: id={}, name={}, status={}, create_time={}, "
-            "relations={}".format(
-                self.id, self.name, self.status, self.create_time, self.relations
-            )
+        return "Network: id={}, name={}, status={}, create_time={}, " "relations={}".format(
+            self.id, self.name, self.status, self.create_time, self.relations
         )
 
 
@@ -110,7 +103,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
     features = {"create_node": ["ssh_key"]}
 
     def __init__(self, user_id, key, **kwargs):
-        super(GridscaleNodeDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
     def list_nodes(self):
         """
@@ -181,9 +174,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :rtype: ``list`` of :class:`.VolumeSnapshot`
         """
         snapshots = []
-        result = self._sync_request(
-            endpoint="objects/storages/" "{}/snapshots".format(volume.id)
-        )
+        result = self._sync_request(endpoint="objects/storages/" "{}/snapshots".format(volume.id))
         for key, value in self._get_response_dict(result).items():
             snapshot = self._to_volume_snapshot(value)
             snapshots.append(snapshot)
@@ -243,9 +234,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
 
         if size.ram % 1024 != 0:
-            raise Exception(
-                "Value not accepted. Use a multiple of 1024 e.g." "1024, 2048, 3072..."
-            )
+            raise Exception("Value not accepted. Use a multiple of 1024 e.g." "1024, 2048, 3072...")
         data = {
             "name": name,
             "cores": size.extra["cores"],
@@ -300,9 +289,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         )
 
         return self._to_ip(
-            self._get_resource(
-                "ips", self.connection.poll_response_initial.object["object_uuid"]
-            )
+            self._get_resource("ips", self.connection.poll_response_initial.object["object_uuid"])
         )
 
     def ex_create_networks(self, name, location):
@@ -482,9 +469,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             associated_ips = self.ex_list_ips_for_node(node=node)
 
         # 1. Delete the server itself
-        result = self._sync_request(
-            endpoint="objects/servers/{}".format(node.id), method="DELETE"
-        )
+        result = self._sync_request(endpoint="objects/servers/{}".format(node.id), method="DELETE")
 
         # 2. Destroy associated resouces (if requested)
         if ex_destroy_associated_resources:
@@ -521,9 +506,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: ``True`` if delete_image was successful, ``False`` otherwise.
         :rtype: ``bool``
         """
-        result = self._sync_request(
-            endpoint="objects/ips/{}".format(ip.id), method="DELETE"
-        )
+        result = self._sync_request(endpoint="objects/ips/{}".format(ip.id), method="DELETE")
         return result.status == 204
 
     def destroy_volume_snapshot(self, snapshot):
@@ -672,9 +655,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
     def import_key_pair_from_string(self, name, key_material):
         data = {"name": name, "sshkey": key_material}
-        result = self._sync_request(
-            endpoint="objects/sshkeys/", method="POST", data=data
-        )
+        result = self._sync_request(endpoint="objects/sshkeys/", method="POST", data=data)
         key = self._to_key(result.object, name=name, sshkey=key_material)
         return key
 
@@ -869,9 +850,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
         node = volume.extra["relations"]["servers"][0]
         result = self._sync_request(
-            endpoint="objects/servers/{}/storages/{}".format(
-                node["object_uuid"], volume.id
-            ),
+            endpoint="objects/servers/{}/storages/{}".format(node["object_uuid"], volume.id),
             method="DELETE",
         )
         return result.status == 204
@@ -894,8 +873,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
         result = self._sync_request(
             data={"rollback": rollback},
-            endpoint="objects/storages/{}/snapshots/"
-            "{}/rollback".format(volume.id, snapshot.id),
+            endpoint="objects/storages/{}/snapshots/" "{}/rollback".format(volume.id, snapshot.id),
             method="PATCH",
         )
         return result
@@ -1132,9 +1110,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: Response dictionary.
         :rtype: nested ``dict``
         """
-        data = self._sync_request(
-            endpoint="objects/{}/{}".format(endpoint_suffix, object_uuid)
-        )
+        data = self._sync_request(endpoint="objects/{}/{}".format(endpoint_suffix, object_uuid))
 
         data = self._get_response_dict(data)
 

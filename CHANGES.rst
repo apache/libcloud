@@ -12,6 +12,22 @@ Common
   (GITHUB-1717, GITHUB-1718)
   [Dimitris Galanis - @dimgal1]
 
+
+- Update EC2 price scraping script to utilize official pricing API endpoint.
+
+  Pricing file has also been updated to include latest EC2 pricing data.
+
+  Complete raw pricing data file size has grown by ~1 MB (from ~2 MB to
+  ~3 MB).
+
+  By default when requesting pricing data we only cache pricing data in memory
+  for used / requested drivers so a slight memory increase due to the pricing
+  file size increase will only affect users who utilize pricing related
+  functionality in the EC2 driver.
+
+  (GITHUB-1715)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Compute
 ~~~~~~~
 
@@ -23,6 +39,40 @@ Compute
 
   (GITHUB-1700, GITHUB-1701)
   [Tomaz Muraus - @Kami]
+
+- [Azure ARM] Allow user to create volume / disks in specific zone by passing
+  ``ex_zones`` argument to the ``create_volume()`` method.
+
+  Also add new ``ex_sku_name`` and remove ``ex_account_type`` argument from
+  that method.
+
+  Also change ``DISK_API_VERSION`` version from ``2016-04-30-preview`` to
+  ``2018-06-01``. This is needed to be able to support those changes. Code
+  has been updated to handle slightly different response format for the
+  volume API operations.
+
+  (GITHUB-1736)
+  [Palash Gandhi - @palashgandhi]
+
+- [GCE] Add improved support for retrieving GCE image pricing data using
+  ``libcloud.pricing.get_image_price("gce_images", ...)`` method.
+
+  Existing way of retrieving image pricing using
+  ``libcloud.pricing.get_pricing("compute", "gce_images")`` method continues to
+  work.
+
+  (GITHUB-1699)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [Azure ARM] Add new ``ex_create_additional_capabilities()`` method which allows
+  user to set capabilities on a stopped node. This allows users to utilize ultra
+  SSDs and similar.
+
+  Also add support for new ``ex_iops`` and ``ex_throughput`` argument to the
+  ``create_volume()`` method.
+
+  (GITHUB-1744)
+  [John Wren Kennedy - @jwk404]
 
 Storage
 ~~~~~~~
@@ -39,7 +89,36 @@ Storage
   (``"0x8CFBAB7B5B82D8E"`` -> ``0x8CFBAB7B5B82D8E``).
 
   (GITHUB-1712)
-  [Timaz Muraus - @Kami]
+  [Tomaz Muraus - @Kami]
+
+Other / Development
+~~~~~--------------
+
+- All the imports in the code have been re-organized / sorted using the ``isort``
+  library.
+
+  Going forward, consistent import ordering will be automatically enforced
+  using ``isort`` check on the CI.
+
+  Developers can run the isort check locally using
+  ``tox -e <isort|isort-check>`` command.
+
+  (GITHUB-1761)
+  [Tomaz Muraus - @Kami]
+
+- Fix black config (``pyproject.toml``) and ensure max line length is correctly
+  set to 100 characters everywhere.
+
+  Also re-format code with this fixed / updated config option.
+
+  (GITHUB-1761)
+  [Tomaz Muraus - @Kami]
+
+- Code has been reformatted using pyupgrade and Python 3.6 higher compatible
+  syntax.
+
+  (GITHUB-1765)
+  [Tomaz Muraus - @Kami]
 
 Changes in Apache Libcloud 3.6.0
 --------------------------------

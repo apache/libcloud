@@ -17,19 +17,18 @@ VPS.net driver
 """
 import base64
 
+from libcloud.utils.py3 import b
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 API_HOST = "api.vps.net"
 API_VERSION = "api10json"
@@ -42,7 +41,7 @@ BANDWIDTH_PER_NODE = 250
 class VPSNetResponse(JsonResponse):
     def parse_body(self):
         try:
-            return super(VPSNetResponse, self).parse_body()
+            return super().parse_body()
         except MalformedResponseError:
             return self.body
 
@@ -54,7 +53,7 @@ class VPSNetResponse(JsonResponse):
 
     def parse_error(self):
         try:
-            errors = super(VPSNetResponse, self).parse_body()["errors"][0]
+            errors = super().parse_body()["errors"][0]
         except MalformedResponseError:
             return self.body
         else:
@@ -72,7 +71,7 @@ class VPSNetConnection(ConnectionUserAndKey):
     allow_insecure = False
 
     def add_default_headers(self, headers):
-        user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        user_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
@@ -109,7 +108,7 @@ class VPSNetNodeDriver(NodeDriver):
     def _to_image(self, image, cloud):
         image = NodeImage(
             id=image["id"],
-            name="%s: %s" % (cloud, image["label"]),
+            name="{}: {}".format(cloud, image["label"]),
             driver=self.connection.driver,
         )
 
@@ -155,7 +154,7 @@ class VPSNetNodeDriver(NodeDriver):
         }
 
         res = self.connection.request(
-            "/virtual_machines.%s" % (API_VERSION,),
+            "/virtual_machines.{}".format(API_VERSION),
             data=json.dumps(request),
             headers=headers,
             method="POST",
@@ -165,32 +164,30 @@ class VPSNetNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         res = self.connection.request(
-            "/virtual_machines/%s/%s.%s" % (node.id, "reboot", API_VERSION),
+            "/virtual_machines/{}/{}.{}".format(node.id, "reboot", API_VERSION),
             method="POST",
         )
         node = self._to_node(res.object["virtual_machine"])
         return True
 
     def list_sizes(self, location=None):
-        res = self.connection.request("/nodes.%s" % (API_VERSION,))
-        available_nodes = len(
-            [size for size in res.object if size["slice"]["virtual_machine_id"]]
-        )
+        res = self.connection.request("/nodes.{}".format(API_VERSION))
+        available_nodes = len([size for size in res.object if size["slice"]["virtual_machine_id"]])
         sizes = [self._to_size(i) for i in range(1, available_nodes + 1)]
         return sizes
 
     def destroy_node(self, node):
         res = self.connection.request(
-            "/virtual_machines/%s.%s" % (node.id, API_VERSION), method="DELETE"
+            "/virtual_machines/{}.{}".format(node.id, API_VERSION), method="DELETE"
         )
         return res.status == 200
 
     def list_nodes(self):
-        res = self.connection.request("/virtual_machines.%s" % (API_VERSION,))
+        res = self.connection.request("/virtual_machines.{}".format(API_VERSION))
         return [self._to_node(i["virtual_machine"]) for i in res.object]
 
     def list_images(self, location=None):
-        res = self.connection.request("/available_clouds.%s" % (API_VERSION,))
+        res = self.connection.request("/available_clouds.{}".format(API_VERSION))
 
         images = []
         for cloud in res.object:

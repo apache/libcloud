@@ -17,12 +17,19 @@ import unittest
 
 from libcloud.common.base import Connection, ConnectionKey, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError
-from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, StorageVolume
-from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    StorageVolume,
+    NodeAuthSSHKey,
+    NodeAuthPassword,
+)
 from libcloud.compute.types import StorageVolumeState
 
 
-class FakeDriver(object):
+class FakeDriver:
     type = 0
 
 

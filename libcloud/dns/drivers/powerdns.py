@@ -16,13 +16,12 @@ PowerDNS Driver
 """
 import json
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
-from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.exceptions import BaseHTTPError
 
 __all__ = [
     "PowerDNSDriver",
@@ -41,7 +40,7 @@ class PowerDNSResponse(JsonResponse):
         try:
             body = self.parse_body()
         except MalformedResponseError as e:
-            body = "%s: %s" % (e.value, e.body)
+            body = "{}: {}".format(e.value, e.body)
         try:
             errors = [body["error"]]
         except TypeError:
@@ -145,9 +144,7 @@ class PowerDNSDriver(DNSDriver):
         else:
             raise NotImplementedError("Unsupported API version: %s" % api_version)
 
-        super(PowerDNSDriver, self).__init__(
-            key=key, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secure=secure, host=host, port=port, **kwargs)
 
     def create_record(self, name, zone, type, data, extra=None):
         """
@@ -184,7 +181,7 @@ class PowerDNSDriver(DNSDriver):
         """
         extra = extra or {}
 
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone.id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone.id)
         if extra is None or extra.get("ttl", None) is None:
             raise ValueError("PowerDNS requires a ttl value for every record")
 
@@ -228,16 +225,12 @@ class PowerDNSDriver(DNSDriver):
                 payload["rrsets"][0]["comments"] = extra["comment"]
 
         try:
-            self.connection.request(
-                action=action, data=json.dumps(payload), method="PATCH"
-            )
+            self.connection.request(action=action, data=json.dumps(payload), method="PATCH")
         except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
                 "Could not find domain"
             ):
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
         return Record(
             id=None,
@@ -281,7 +274,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = "%s/servers/%s/zones" % (self.api_root, self.ex_server)
+        action = "{}/servers/{}/zones".format(self.api_root, self.ex_server)
         if extra is None or extra.get("nameservers", None) is None:
             msg = "PowerDNS requires a list of nameservers for every new zone"
             raise ValueError(msg)
@@ -289,20 +282,14 @@ class PowerDNSDriver(DNSDriver):
         payload.update(extra)
         zone_id = domain + "."
         try:
-            self.connection.request(
-                action=action, data=json.dumps(payload), method="POST"
-            )
+            self.connection.request(action=action, data=json.dumps(payload), method="POST")
         except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
                 "Domain '%s' already exists" % domain
             ):
-                raise ZoneAlreadyExistsError(
-                    zone_id=zone_id, driver=self, value=e.message
-                )
+                raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self, value=e.message)
             raise e
-        return Zone(
-            id=zone_id, domain=domain, type=None, ttl=None, driver=self, extra=extra
-        )
+        return Zone(id=zone_id, domain=domain, type=None, ttl=None, driver=self, extra=extra)
 
     def delete_record(self, record):
         """
@@ -313,20 +300,14 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = "%s/servers/%s/zones/%s" % (
+        action = "{}/servers/{}/zones/{}".format(
             self.api_root,
             self.ex_server,
             record.zone.id,
         )
-        payload = {
-            "rrsets": [
-                {"name": record.name, "type": record.type, "changetype": "DELETE"}
-            ]
-        }
+        payload = {"rrsets": [{"name": record.name, "type": record.type, "changetype": "DELETE"}]}
         try:
-            self.connection.request(
-                action=action, data=json.dumps(payload), method="PATCH"
-            )
+            self.connection.request(action=action, data=json.dumps(payload), method="PATCH")
         except BaseHTTPError:
             # I'm not sure if we should raise a ZoneDoesNotExistError here. The
             # base DNS API only specifies that we should return a bool. So,
@@ -348,7 +329,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone.id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone.id)
         try:
             self.connection.request(action=action, method="DELETE")
         except BaseHTTPError:
@@ -377,14 +358,12 @@ class PowerDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         :raises: ZoneDoesNotExistError: If no zone could be found.
         """
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone_id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone_id)
         try:
             response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY:
-                raise ZoneDoesNotExistError(
-                    zone_id=zone_id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value=e.message)
             raise e
         return self._to_zone(response.object)
 
@@ -397,16 +376,14 @@ class PowerDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = "%s/servers/%s/zones/%s" % (self.api_root, self.ex_server, zone.id)
+        action = "{}/servers/{}/zones/{}".format(self.api_root, self.ex_server, zone.id)
         try:
             response = self.connection.request(action=action, method="GET")
         except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
                 "Could not find domain"
             ):
-                raise ZoneDoesNotExistError(
-                    zone_id=zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
         return self._to_records(response, zone)
 
@@ -416,7 +393,7 @@ class PowerDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        action = "%s/servers/%s/zones" % (self.api_root, self.ex_server)
+        action = "{}/servers/{}/zones".format(self.api_root, self.ex_server)
         response = self.connection.request(action=action, method="GET")
         return self._to_zones(response)
 
@@ -441,7 +418,7 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = "%s/servers/%s/zones/%s" % (
+        action = "{}/servers/{}/zones/{}".format(
             self.api_root,
             self.ex_server,
             record.zone.id,
@@ -493,16 +470,12 @@ class PowerDNSDriver(DNSDriver):
                 payload["rrsets"][0]["comments"] = extra["comment"]
 
         try:
-            self.connection.request(
-                action=action, data=json.dumps(payload), method="PATCH"
-            )
+            self.connection.request(action=action, data=json.dumps(payload), method="PATCH")
         except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and e.message.startswith(
                 "Could not find domain"
             ):
-                raise ZoneDoesNotExistError(
-                    zone_id=record.zone.id, driver=self, value=e.message
-                )
+                raise ZoneDoesNotExistError(zone_id=record.zone.id, driver=self, value=e.message)
             raise e
         return Record(
             id=None,

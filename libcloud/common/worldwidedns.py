@@ -14,10 +14,8 @@
 # limitations under the License.
 import re
 
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.base import Response
+from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.common.types import ProviderError
-
 
 OK_CODES = ["200", "211", "212", "213"]
 ERROR_CODES = [
@@ -41,60 +39,55 @@ ERROR_CODES = [
 class WorldWideDNSException(ProviderError):
     def __init__(self, value, http_code, code, driver=None):
         self.code = code
-        super(WorldWideDNSException, self).__init__(value, http_code, driver)
+        super().__init__(value, http_code, driver)
 
 
 class SuspendedAccount(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
-        value = (
-            "Login ID you supplied is SUSPENDED, you need to renew" + " your account"
-        )
-        super(SuspendedAccount, self).__init__(value, http_code, 401, driver)
+        value = "Login ID you supplied is SUSPENDED, you need to renew" + " your account"
+        super().__init__(value, http_code, 401, driver)
 
 
 class LoginOrPasswordNotMatch(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
-        value = (
-            "Login ID and/or Password you supplied is not on file or"
-            + " does not match"
-        )
-        super(LoginOrPasswordNotMatch, self).__init__(value, http_code, 403, driver)
+        value = "Login ID and/or Password you supplied is not on file or" + " does not match"
+        super().__init__(value, http_code, 403, driver)
 
 
 class NonExistentDomain(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Domain name supplied is not in your account"
-        super(NonExistentDomain, self).__init__(value, http_code, 405, driver)
+        super().__init__(value, http_code, 405, driver)
 
 
 class CouldntRemoveDomain(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Error occured removing domain from name server, try again"
-        super(CouldntRemoveDomain, self).__init__(value, http_code, 406, driver)
+        super().__init__(value, http_code, 406, driver)
 
 
 class LimitExceeded(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Your limit was exceeded, you need to upgrade your account"
-        super(LimitExceeded, self).__init__(value, http_code, 407, driver)
+        super().__init__(value, http_code, 407, driver)
 
 
 class ExistentDomain(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Domain already exists on our servers"
-        super(ExistentDomain, self).__init__(value, http_code, 408, driver)
+        super().__init__(value, http_code, 408, driver)
 
 
 class DomainBanned(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Domain is listed in DNSBL and is banned from our servers"
-        super(DomainBanned, self).__init__(value, http_code, 409, driver)
+        super().__init__(value, http_code, 409, driver)
 
 
 class InvalidDomainName(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Invalid domain name"
-        super(InvalidDomainName, self).__init__(value, http_code, 410, driver)
+        super().__init__(value, http_code, 410, driver)
 
 
 class ErrorOnReloadInNameServer(WorldWideDNSException):
@@ -108,25 +101,25 @@ class ErrorOnReloadInNameServer(WorldWideDNSException):
         elif server == 3:
             value = "Name server #3 kicked an error on reload, contact support"
             code = 413
-        super(ErrorOnReloadInNameServer, self).__init__(value, http_code, code, driver)
+        super().__init__(value, http_code, code, driver)
 
 
 class NewUserNotValid(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "New userid is not valid"
-        super(NewUserNotValid, self).__init__(value, http_code, 414, driver)
+        super().__init__(value, http_code, 414, driver)
 
 
 class CouldntReachNameServer(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "Couldn't reach the name server, try again later"
-        super(CouldntReachNameServer, self).__init__(value, http_code, 450, driver)
+        super().__init__(value, http_code, 450, driver)
 
 
 class NoZoneFile(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
         value = "No zone file in the name server queried"
-        super(NoZoneFile, self).__init__(value, http_code, 451, driver)
+        super().__init__(value, http_code, 451, driver)
 
 
 ERROR_CODE_TO_EXCEPTION_CLS = {

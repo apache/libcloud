@@ -14,13 +14,13 @@
 # limitations under the License.
 
 import os
-import sys
 import re
+import sys
 import fnmatch
+from distutils.core import Command
 
 import setuptools
 from setuptools import setup
-from distutils.core import Command
 
 try:
     import epydoc  # NOQA
@@ -48,11 +48,7 @@ def _filter_names(names):
     # This is needed when building a distro from a working
     # copy (likely a checkout) rather than a pristine export:
     for pattern in EXCLUDE_PATTERNS:
-        names = [
-            n
-            for n in names
-            if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")
-        ]
+        names = [n for n in names if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")]
     return names
 
 

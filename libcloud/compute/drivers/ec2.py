@@ -17,43 +17,40 @@
 Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
+import re
+import copy
+import time
+import base64
+import warnings
 from typing import List
 
-import re
-import base64
-import copy
-import warnings
-import time
-
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import b, basestring, ensure_string
-
-from libcloud.utils.xml import fixxpath, findtext, findattr, findall
-from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
-from libcloud.utils.publickey import get_pubkey_comment
-from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.iso8601 import parse_date_allow_empty
-from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
-from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
-from libcloud.common.types import (
-    InvalidCredsError,
-    MalformedResponseError,
-    LibcloudError,
+from libcloud.pricing import get_size_price
+from libcloud.utils.py3 import ET, b, basestring, ensure_string
+from libcloud.utils.xml import findall, findattr, findtext, fixxpath
+from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION, AWSBaseResponse, SignedAWSConnection
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
 )
-from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import KeyPair
 from libcloud.compute.types import (
     NodeState,
-    KeyPairDoesNotExistError,
     StorageVolumeState,
     VolumeSnapshotState,
+    KeyPairDoesNotExistError,
 )
+from libcloud.utils.iso8601 import parse_date, parse_date_allow_empty
+from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerprint
+from libcloud.compute.providers import Provider
 from libcloud.compute.constants.ec2_region_details_partial import (
     REGION_DETAILS as REGION_DETAILS_PARTIAL,
 )
-from libcloud.pricing import get_size_price
 
 __all__ = [
     "API_VERSION",
@@ -308,24 +305,21 @@ OUTSCALE_INSTANCE_TYPES = {
     },
     "os1.2xlarge": {
         "id": "os1.2xlarge",
-        "name": "Memory Optimized, High Storage, Passthrough NIC Double Extra "
-        "Large Instance",
+        "name": "Memory Optimized, High Storage, Passthrough NIC Double Extra " "Large Instance",
         "ram": 65536,
         "disk": 60,
         "bandwidth": None,
     },
     "os1.4xlarge": {
         "id": "os1.4xlarge",
-        "name": "Memory Optimized, High Storage, Passthrough NIC Quadruple Ext"
-        "ra Large Instance",
+        "name": "Memory Optimized, High Storage, Passthrough NIC Quadruple Ext" "ra Large Instance",
         "ram": 131072,
         "disk": 120,
         "bandwidth": None,
     },
     "os1.8xlarge": {
         "id": "os1.8xlarge",
-        "name": "Memory Optimized, High Storage, Passthrough NIC Eight Extra L"
-        "arge Instance",
+        "name": "Memory Optimized, High Storage, Passthrough NIC Eight Extra L" "arge Instance",
         "ram": 249856,
         "disk": 500,
         "bandwidth": None,
@@ -835,13 +829,12 @@ VALID_VOLUME_TYPES = ["standard", "io1", "io2", "gp2", "gp3", "st1", "sc1"]
 
 class EC2NodeLocation(NodeLocation):
     def __init__(self, id, name, country, driver, availability_zone):
-        super(EC2NodeLocation, self).__init__(id, name, country, driver)
+        super().__init__(id, name, country, driver)
         self.availability_zone = availability_zone
 
     def __repr__(self):
         return (
-            "<EC2NodeLocation: id=%s, name=%s, country=%s, "
-            "availability_zone=%s driver=%s>"
+            "<EC2NodeLocation: id=%s, name=%s, country=%s, " "availability_zone=%s driver=%s>"
         ) % (self.id, self.name, self.country, self.availability_zone, self.driver.name)
 
 
@@ -867,7 +860,7 @@ class EC2Response(AWSBaseResponse):
 
         for err in body.findall("Errors/Error"):
             code, message = list(err)
-            err_list.append("%s: %s" % (code.text, message.text))
+            err_list.append("{}: {}".format(code.text, message.text))
             if code.text == "InvalidClientTokenId":
                 raise InvalidCredsError(err_list[-1])
             if code.text == "SignatureDoesNotMatch":
@@ -902,7 +895,7 @@ class EC2Connection(SignedAWSConnection):
     service_name = "ec2"
 
 
-class ExEC2AvailabilityZone(object):
+class ExEC2AvailabilityZone:
     """
     Extension class which stores information about an EC2 availability zone.
 
@@ -915,9 +908,11 @@ class ExEC2AvailabilityZone(object):
         self.region_name = region_name
 
     def __repr__(self):
-        return (
-            "<ExEC2AvailabilityZone: name=%s, zone_state=%s, " "region_name=%s>"
-        ) % (self.name, self.zone_state, self.region_name)
+        return ("<ExEC2AvailabilityZone: name=%s, zone_state=%s, " "region_name=%s>") % (
+            self.name,
+            self.zone_state,
+            self.region_name,
+        )
 
 
 class EC2ReservedNode(Node):
@@ -929,7 +924,7 @@ class EC2ReservedNode(Node):
     """
 
     def __init__(self, id, state, driver, size=None, image=None, extra=None):
-        super(EC2ReservedNode, self).__init__(
+        super().__init__(
             id=id,
             name=None,
             state=state,
@@ -943,7 +938,7 @@ class EC2ReservedNode(Node):
         return ("<EC2ReservedNode: id=%s>") % (self.id)
 
 
-class EC2SecurityGroup(object):
+class EC2SecurityGroup:
     """
     Represents information about a Security group
 
@@ -961,7 +956,7 @@ class EC2SecurityGroup(object):
         return ("<EC2SecurityGroup: id=%s, name=%s") % (self.id, self.name)
 
 
-class EC2ImportSnapshotTask(object):
+class EC2ImportSnapshotTask:
     """
     Represents information about a describe_import_snapshot_task.
 
@@ -979,7 +974,7 @@ class EC2ImportSnapshotTask(object):
         )
 
 
-class EC2PlacementGroup(object):
+class EC2PlacementGroup:
     """
     Represents information about a Placement Grous
 
@@ -992,10 +987,10 @@ class EC2PlacementGroup(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<EC2PlacementGroup: name=%s, state=%s>" % (self.name, self.strategy)
+        return "<EC2PlacementGroup: name={}, state={}>".format(self.name, self.strategy)
 
 
-class EC2Network(object):
+class EC2Network:
     """
     Represents information about a VPC (Virtual Private Cloud) network
 
@@ -1012,7 +1007,7 @@ class EC2Network(object):
         return ("<EC2Network: id=%s, name=%s") % (self.id, self.name)
 
 
-class EC2NetworkSubnet(object):
+class EC2NetworkSubnet:
     """
     Represents information about a VPC (Virtual Private Cloud) subnet
 
@@ -1029,7 +1024,7 @@ class EC2NetworkSubnet(object):
         return ("<EC2NetworkSubnet: id=%s, name=%s") % (self.id, self.name)
 
 
-class EC2NetworkInterface(object):
+class EC2NetworkInterface:
     """
     Represents information about a VPC network interface
 
@@ -1048,7 +1043,7 @@ class EC2NetworkInterface(object):
         return ("<EC2NetworkInterface: id=%s, name=%s") % (self.id, self.name)
 
 
-class ElasticIP(object):
+class ElasticIP:
     """
     Represents information about an elastic IP address
 
@@ -1083,7 +1078,7 @@ class ElasticIP(object):
         )
 
 
-class VPCInternetGateway(object):
+class VPCInternetGateway:
     """
     Class which stores information about VPC Internet Gateways.
 
@@ -1101,16 +1096,14 @@ class VPCInternetGateway(object):
         return ("<VPCInternetGateway: id=%s>") % (self.id)
 
 
-class EC2RouteTable(object):
+class EC2RouteTable:
     """
     Class which stores information about VPC Route Tables.
 
     Note: This class is VPC specific.
     """
 
-    def __init__(
-        self, id, name, routes, subnet_associations, propagating_gateway_ids, extra=None
-    ):
+    def __init__(self, id, name, routes, subnet_associations, propagating_gateway_ids, extra=None):
         """
         :param      id: The ID of the route table.
         :type       id: ``str``
@@ -1143,7 +1136,7 @@ class EC2RouteTable(object):
         return ("<EC2RouteTable: id=%s>") % (self.id)
 
 
-class EC2Route(object):
+class EC2Route:
     """
     Class which stores information about a Route.
 
@@ -1201,7 +1194,7 @@ class EC2Route(object):
         return ("<EC2Route: cidr=%s>") % (self.cidr)
 
 
-class EC2SubnetAssociation(object):
+class EC2SubnetAssociation:
     """
     Class which stores information about Route Table associated with
     a given Subnet in a VPC
@@ -1233,7 +1226,7 @@ class EC2SubnetAssociation(object):
         return ("<EC2SubnetAssociation: id=%s>") % (self.id)
 
 
-class EC2VolumeModification(object):
+class EC2VolumeModification:
     """
     Describes the modification status of an EBS volume.
 
@@ -1359,9 +1352,7 @@ class BaseEC2NodeDriver(NodeDriver):
         elem = self.connection.request(self.path, params=params).object
 
         nodes = []
-        for rs in findall(
-            element=elem, xpath="reservationSet/item", namespace=NAMESPACE
-        ):
+        for rs in findall(element=elem, xpath="reservationSet/item", namespace=NAMESPACE):
             nodes += self._to_nodes(rs, "instancesSet/item")
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
@@ -1376,10 +1367,8 @@ class BaseEC2NodeDriver(NodeDriver):
         # NOTE: Those two imports are intentionally here and made lazy to
         # avoid importing massive constant file in case it's not actually
         # needed
-        from libcloud.compute.constants.ec2_region_details_complete import (
-            REGION_DETAILS,
-        )
         from libcloud.compute.constants.ec2_instance_types import INSTANCE_TYPES
+        from libcloud.compute.constants.ec2_region_details_complete import REGION_DETAILS
 
         available_types = REGION_DETAILS[self.region_name]["instance_types"]
         sizes = []
@@ -1468,9 +1457,7 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_filters:
             params.update(self._build_filters(ex_filters))
 
-        images = self._to_images(
-            self.connection.request(self.path, params=params).object
-        )
+        images = self._to_images(self.connection.request(self.path, params=params).object)
         return images
 
     def get_image(self, image_id):
@@ -1528,9 +1515,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         volumes = [
             self._to_volume(el)
-            for el in response.findall(
-                fixxpath(xpath="volumeSet/item", namespace=NAMESPACE)
-            )
+            for el in response.findall(fixxpath(xpath="volumeSet/item", namespace=NAMESPACE))
         ]
         return volumes
 
@@ -1649,14 +1634,10 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_spot:
             params["InstanceMarketOptions.MarketType"] = "spot"
             if ex_spot_max_price is not None:
-                params["InstanceMarketOptions.SpotOptions.MaxPrice"] = str(
-                    ex_spot_max_price
-                )
+                params["InstanceMarketOptions.SpotOptions.MaxPrice"] = str(ex_spot_max_price)
 
         if ex_security_groups and ex_securitygroup:
-            raise ValueError(
-                "You can only supply ex_security_groups or" " ex_securitygroup"
-            )
+            raise ValueError("You can only supply ex_security_groups or" " ex_securitygroup")
 
         # ex_securitygroup is here for backward compatibility
         security_groups = ex_security_groups or ex_securitygroup
@@ -1681,17 +1662,15 @@ class BaseEC2NodeDriver(NodeDriver):
                 security_group_ids = [security_group_ids]
 
             for sig in range(len(security_group_ids)):
-                security_group_id_params[
-                    "SecurityGroupId.%d" % (sig + 1,)
-                ] = security_group_ids[sig]
+                security_group_id_params["SecurityGroupId.%d" % (sig + 1,)] = security_group_ids[
+                    sig
+                ]
 
         if location:
             availability_zone = getattr(location, "availability_zone", None)
             if availability_zone:
                 if availability_zone.region_name != self.region_name:
-                    raise AttributeError(
-                        "Invalid availability zone: %s" % (availability_zone.name)
-                    )
+                    raise AttributeError("Invalid availability zone: %s" % (availability_zone.name))
                 params["Placement.AvailabilityZone"] = availability_zone.name
 
         if auth and ex_keyname:
@@ -1999,9 +1978,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {"Action": "DescribeKeyPairs"}
 
         response = self.connection.request(self.path, params=params)
-        elems = findall(
-            element=response.object, xpath="keySet/item", namespace=NAMESPACE
-        )
+        elems = findall(element=response.object, xpath="keySet/item", namespace=NAMESPACE)
 
         key_pairs = self._to_key_pairs(elems=elems)
         return key_pairs
@@ -2010,9 +1987,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {"Action": "DescribeKeyPairs", "KeyName": name}
 
         response = self.connection.request(self.path, params=params)
-        elems = findall(
-            element=response.object, xpath="keySet/item", namespace=NAMESPACE
-        )
+        elems = findall(element=response.object, xpath="keySet/item", namespace=NAMESPACE)
 
         key_pair = self._to_key_pairs(elems=elems)[0]
         return key_pair
@@ -2083,9 +2058,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return image
 
-    def create_image(
-        self, node, name, description=None, reboot=False, block_device_mapping=None
-    ):
+    def create_image(self, node, name, description=None, reboot=False, block_device_mapping=None):
         """
         Create an Amazon Machine Image based off of an EBS-backed instance.
 
@@ -2278,9 +2251,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         importSnapshot = self.connection.request(self.path, params=params).object
 
-        importTaskId = findtext(
-            element=importSnapshot, xpath="importTaskId", namespace=NAMESPACE
-        )
+        importTaskId = findtext(element=importSnapshot, xpath="importTaskId", namespace=NAMESPACE)
 
         volumeSnapshot = self._wait_for_import_snapshot_completion(
             import_task_id=importTaskId, timeout=1800, interval=15
@@ -2288,9 +2259,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return volumeSnapshot
 
-    def _wait_for_import_snapshot_completion(
-        self, import_task_id, timeout=1800, interval=15
-    ):
+    def _wait_for_import_snapshot_completion(self, import_task_id, timeout=1800, interval=15):
         """
         It waits for import snapshot to be completed
 
@@ -2311,9 +2280,7 @@ class BaseEC2NodeDriver(NodeDriver):
         snapshotId = None
         while snapshotId is None:
             if time.time() - start_time >= timeout:
-                raise Exception(
-                    "Timeout while waiting " "for import task Id %s" % import_task_id
-                )
+                raise Exception("Timeout while waiting " "for import task Id %s" % import_task_id)
             res = self.ex_describe_import_snapshot_tasks(import_task_id)
             snapshotId = res.snapshotId
 
@@ -2503,9 +2470,7 @@ class BaseEC2NodeDriver(NodeDriver):
         if filters:
             params.update(self._build_filters(filters))
 
-        return self._to_networks(
-            self.connection.request(self.path, params=params).object
-        )
+        return self._to_networks(self.connection.request(self.path, params=params).object)
 
     def ex_create_network(self, cidr_block, name=None, instance_tenancy="default"):
         """
@@ -2581,9 +2546,7 @@ class BaseEC2NodeDriver(NodeDriver):
         if filters:
             params.update(self._build_filters(filters))
 
-        return self._to_subnets(
-            self.connection.request(self.path, params=params).object
-        )
+        return self._to_subnets(self.connection.request(self.path, params=params).object)
 
     def ex_create_subnet(self, vpc_id, cidr_block, availability_zone, name=None):
         """
@@ -2622,9 +2585,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return subnet
 
-    def ex_modify_subnet_attribute(
-        self, subnet, attribute="auto_public_ip", value=False
-    ):
+    def ex_modify_subnet_attribute(self, subnet, attribute="auto_public_ip", value=False):
         """
         Modifies a subnet attribute.
         You can only modify one attribute at a time.
@@ -2685,9 +2646,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
 
         groups = []
-        for group in findall(
-            element=response, xpath="securityGroupInfo/item", namespace=NAMESPACE
-        ):
+        for group in findall(element=response, xpath="securityGroupInfo/item", namespace=NAMESPACE):
             name = findtext(element=group, xpath="groupName", namespace=NAMESPACE)
             groups.append(name)
 
@@ -2801,9 +2760,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         return self.ex_delete_security_group_by_name(name)
 
-    def ex_authorize_security_group(
-        self, name, from_port, to_port, cidr_ip, protocol="tcp"
-    ):
+    def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip, protocol="tcp"):
         """
         Edit a Security Group to allow specific traffic.
 
@@ -3074,18 +3031,14 @@ class BaseEC2NodeDriver(NodeDriver):
             "CidrIp": "0.0.0.0/0",
         }
         try:
-            results.append(
-                self.connection.request(self.path, params=params.copy()).object
-            )
+            results.append(self.connection.request(self.path, params=params.copy()).object)
         except Exception as e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params["IpProtocol"] = "udp"
 
         try:
-            results.append(
-                self.connection.request(self.path, params=params.copy()).object
-            )
+            results.append(self.connection.request(self.path, params=params.copy()).object)
         except Exception as e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
@@ -3093,9 +3046,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params.update({"IpProtocol": "icmp", "FromPort": "-1", "ToPort": "-1"})
 
         try:
-            results.append(
-                self.connection.request(self.path, params=params.copy()).object
-            )
+            results.append(self.connection.request(self.path, params=params.copy()).object)
         except Exception as e:
 
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
@@ -3131,12 +3082,8 @@ class BaseEC2NodeDriver(NodeDriver):
             element=result, xpath="availabilityZoneInfo/item", namespace=NAMESPACE
         ):
             name = findtext(element=element, xpath="zoneName", namespace=NAMESPACE)
-            zone_state = findtext(
-                element=element, xpath="zoneState", namespace=NAMESPACE
-            )
-            region_name = findtext(
-                element=element, xpath="regionName", namespace=NAMESPACE
-            )
+            zone_state = findtext(element=element, xpath="zoneState", namespace=NAMESPACE)
+            region_name = findtext(element=element, xpath="regionName", namespace=NAMESPACE)
 
             availability_zone = ExEC2AvailabilityZone(
                 name=name, zone_state=zone_state, region_name=region_name
@@ -3328,9 +3275,7 @@ class BaseEC2NodeDriver(NodeDriver):
             params.update({"AllocationId": elastic_ip.extra["allocation_id"]})
 
         response = self.connection.request(self.path, params=params).object
-        association_id = findtext(
-            element=response, xpath="associationId", namespace=NAMESPACE
-        )
+        association_id = findtext(element=response, xpath="associationId", namespace=NAMESPACE)
         return association_id
 
     def ex_associate_addresses(self, node, elastic_ip, domain=None):
@@ -3339,9 +3284,7 @@ class BaseEC2NodeDriver(NodeDriver):
         the ex_associate_address_with_node method.
         """
 
-        return self.ex_associate_address_with_node(
-            node=node, elastic_ip=elastic_ip, domain=domain
-        )
+        return self.ex_associate_address_with_node(node=node, elastic_ip=elastic_ip, domain=domain)
 
     def ex_disassociate_address(self, elastic_ip, domain=None):
         """
@@ -3435,9 +3378,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {"Action": "DescribeNetworkInterfaces"}
 
-        return self._to_interfaces(
-            self.connection.request(self.path, params=params).object
-        )
+        return self._to_interfaces(self.connection.request(self.path, params=params).object)
 
     def ex_create_network_interface(
         self, subnet, name=None, description=None, private_ip_address=None
@@ -3476,9 +3417,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
 
-        element = response.findall(
-            fixxpath(xpath="networkInterface", namespace=NAMESPACE)
-        )[0]
+        element = response.findall(fixxpath(xpath="networkInterface", namespace=NAMESPACE))[0]
 
         interface = self._to_interface(element, name)
 
@@ -3505,9 +3444,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
-    def ex_attach_network_interface_to_node(
-        self, network_interface, node, device_index
-    ):
+    def ex_attach_network_interface_to_node(self, network_interface, node, device_index):
         """
         Attach a network interface to an instance.
 
@@ -3532,9 +3469,7 @@ class BaseEC2NodeDriver(NodeDriver):
         }
 
         response = self.connection.request(self.path, params=params).object
-        attachment_id = findattr(
-            element=response, xpath="attachmentId", namespace=NAMESPACE
-        )
+        attachment_id = findattr(element=response, xpath="attachmentId", namespace=NAMESPACE)
 
         return attachment_id
 
@@ -3731,9 +3666,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params)
         data = response.object
 
-        elems = data.findall(
-            fixxpath(xpath="accountAttributeSet/item", namespace=NAMESPACE)
-        )
+        elems = data.findall(fixxpath(xpath="accountAttributeSet/item", namespace=NAMESPACE))
 
         result = {"resource": {}}
 
@@ -3757,9 +3690,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``dict``
         """
-        warnings.warn(
-            "This method has been deprecated in favor of " "list_key_pairs method"
-        )
+        warnings.warn("This method has been deprecated in favor of " "list_key_pairs method")
 
         key_pairs = self.list_key_pairs()
 
@@ -3806,9 +3737,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {"Action": "DescribeKeyPairs", "KeyName.1": name}
 
         response = self.connection.request(self.path, params=params).object
-        key_name = findattr(
-            element=response, xpath="keySet/item/keyName", namespace=NAMESPACE
-        )
+        key_name = findattr(element=response, xpath="keySet/item/keyName", namespace=NAMESPACE)
         fingerprint = findattr(
             element=response, xpath="keySet/item/keyFingerprint", namespace=NAMESPACE
         ).strip()
@@ -3826,9 +3755,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        warnings.warn(
-            "This method has been deprecated in favor of " "create_key_pair method"
-        )
+        warnings.warn("This method has been deprecated in favor of " "create_key_pair method")
 
         key_pair = self.create_key_pair(name=name)
 
@@ -3850,9 +3777,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        warnings.warn(
-            "This method has been deprecated in favor of " "delete_key_pair method"
-        )
+        warnings.warn("This method has been deprecated in favor of " "delete_key_pair method")
 
         keypair = KeyPair(name=keypair, public_key=None, fingerprint=None, driver=self)
 
@@ -3874,13 +3799,10 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         warnings.warn(
-            "This method has been deprecated in favor of "
-            "import_key_pair_from_string method"
+            "This method has been deprecated in favor of " "import_key_pair_from_string method"
         )
 
-        key_pair = self.import_key_pair_from_string(
-            name=name, key_material=key_material
-        )
+        key_pair = self.import_key_pair_from_string(name=name, key_material=key_material)
 
         result = {"keyName": key_pair.name, "keyFingerprint": key_pair.fingerprint}
         return result
@@ -3903,8 +3825,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         warnings.warn(
-            "This method has been deprecated in favor of "
-            "import_key_pair_from_file method"
+            "This method has been deprecated in favor of " "import_key_pair_from_file method"
         )
 
         key_pair = self.import_key_pair_from_file(name=name, key_file_path=keyfile)
@@ -3923,14 +3844,10 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_comment = get_pubkey_comment(pubkey, default="unnamed")
-        key_name = "%s-%s" % (key_comment, key_fingerprint)
+        key_name = "{}-{}".format(key_comment, key_fingerprint)
 
         key_pairs = self.list_key_pairs()
-        key_pairs = [
-            key_pair
-            for key_pair in key_pairs
-            if key_pair.fingerprint == key_fingerprint
-        ]
+        key_pairs = [key_pair for key_pair in key_pairs if key_pair.fingerprint == key_fingerprint]
 
         if len(key_pairs) >= 1:
             key_pair = key_pairs[0]
@@ -4138,9 +4055,7 @@ class BaseEC2NodeDriver(NodeDriver):
         }
 
         result = self.connection.request(self.path, params=params).object
-        association_id = findtext(
-            element=result, xpath="associationId", namespace=NAMESPACE
-        )
+        association_id = findtext(element=result, xpath="associationId", namespace=NAMESPACE)
 
         return association_id
 
@@ -4202,9 +4117,7 @@ class BaseEC2NodeDriver(NodeDriver):
         }
 
         result = self.connection.request(self.path, params=params).object
-        new_association_id = findtext(
-            element=result, xpath="newAssociationId", namespace=NAMESPACE
-        )
+        new_association_id = findtext(element=result, xpath="newAssociationId", namespace=NAMESPACE)
 
         return new_association_id
 
@@ -4375,14 +4288,10 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=parameters.copy()).object
 
         return self._to_volume_modification(
-            response.findall(fixxpath(xpath="volumeModification", namespace=NAMESPACE))[
-                0
-            ]
+            response.findall(fixxpath(xpath="volumeModification", namespace=NAMESPACE))[0]
         )
 
-    def ex_describe_volumes_modifications(
-        self, dry_run=False, volume_ids=None, filters=None
-    ):
+    def ex_describe_volumes_modifications(self, dry_run=False, volume_ids=None, filters=None):
         """
         Describes one or more of your volume modifications.
 
@@ -4416,7 +4325,7 @@ class BaseEC2NodeDriver(NodeDriver):
         return self._to_volume_modifications(response)
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         # pylint: disable=no-member
         if hasattr(self, "token") and self.token is not None:
             kwargs["token"] = self.token
@@ -4429,16 +4338,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _to_nodes(self, object, xpath):
         return [
-            self._to_node(el)
-            for el in object.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))
+            self._to_node(el) for el in object.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))
         ]
 
     def _to_node(self, element):
         try:
             state = self.NODE_STATE_MAP[
-                findattr(
-                    element=element, xpath="instanceState/name", namespace=NAMESPACE
-                )
+                findattr(element=element, xpath="instanceState/name", namespace=NAMESPACE)
             ]
         except KeyError:
             state = NodeState.UNKNOWN
@@ -4449,9 +4355,7 @@ class BaseEC2NodeDriver(NodeDriver):
         instance_id = findtext(element=element, xpath="instanceId", namespace=NAMESPACE)
         public_ip = findtext(element=element, xpath="ipAddress", namespace=NAMESPACE)
         public_ips = [public_ip] if public_ip else []
-        private_ip = findtext(
-            element=element, xpath="privateIpAddress", namespace=NAMESPACE
-        )
+        private_ip = findtext(element=element, xpath="privateIpAddress", namespace=NAMESPACE)
         private_ips = [private_ip] if private_ip else []
         product_codes = []
         for p in findall(
@@ -4489,9 +4393,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_images(self, object):
         return [
             self._to_image(el)
-            for el in object.findall(
-                fixxpath(xpath="imagesSet/item", namespace=NAMESPACE)
-            )
+            for el in object.findall(fixxpath(xpath="imagesSet/item", namespace=NAMESPACE))
         ]
 
     def _to_image(self, element):
@@ -4578,9 +4480,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_snapshots(self, response):
         return [
             self._to_snapshot(el)
-            for el in response.findall(
-                fixxpath(xpath="snapshotSet/item", namespace=NAMESPACE)
-            )
+            for el in response.findall(fixxpath(xpath="snapshotSet/item", namespace=NAMESPACE))
         ]
 
     def _to_snapshot(self, element, name=None):
@@ -4638,9 +4538,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _to_key_pair(self, elem):
         name = findtext(element=elem, xpath="keyName", namespace=NAMESPACE)
-        fingerprint = findtext(
-            element=elem, xpath="keyFingerprint", namespace=NAMESPACE
-        ).strip()
+        fingerprint = findtext(element=elem, xpath="keyFingerprint", namespace=NAMESPACE).strip()
         private_key = findtext(element=elem, xpath="keyMaterial", namespace=NAMESPACE)
 
         key_pair = KeyPair(
@@ -4671,9 +4569,7 @@ class BaseEC2NodeDriver(NodeDriver):
         tags = self._get_resource_tags(element)
 
         # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP["security_group"]
-        )
+        extra = self._get_extra_dict(element, RESOURCE_EXTRA_ATTRIBUTES_MAP["security_group"])
 
         # Add tags to the extra dict
         extra["tags"] = tags
@@ -4682,9 +4578,7 @@ class BaseEC2NodeDriver(NodeDriver):
         ingress_rules = self._to_security_group_rules(element, "ipPermissions/item")
 
         # Get egress rules
-        egress_rules = self._to_security_group_rules(
-            element, "ipPermissionsEgress/item"
-        )
+        egress_rules = self._to_security_group_rules(element, "ipPermissionsEgress/item")
 
         return EC2SecurityGroup(sg_id, name, ingress_rules, egress_rules, extra=extra)
 
@@ -4702,13 +4596,9 @@ class BaseEC2NodeDriver(NodeDriver):
         """
 
         rule = {}
-        rule["protocol"] = findtext(
-            element=element, xpath="ipProtocol", namespace=NAMESPACE
-        )
+        rule["protocol"] = findtext(element=element, xpath="ipProtocol", namespace=NAMESPACE)
 
-        rule["from_port"] = findtext(
-            element=element, xpath="fromPort", namespace=NAMESPACE
-        )
+        rule["from_port"] = findtext(element=element, xpath="fromPort", namespace=NAMESPACE)
 
         rule["to_port"] = findtext(element=element, xpath="toPort", namespace=NAMESPACE)
 
@@ -4719,15 +4609,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         for element in elements:
             item = {
-                "user_id": findtext(
-                    element=element, xpath="userId", namespace=NAMESPACE
-                ),
-                "group_id": findtext(
-                    element=element, xpath="groupId", namespace=NAMESPACE
-                ),
-                "group_name": findtext(
-                    element=element, xpath="groupName", namespace=NAMESPACE
-                ),
+                "user_id": findtext(element=element, xpath="userId", namespace=NAMESPACE),
+                "group_id": findtext(element=element, xpath="groupId", namespace=NAMESPACE),
+                "group_name": findtext(element=element, xpath="groupName", namespace=NAMESPACE),
             }
             rule["group_pairs"].append(item)
 
@@ -4735,8 +4619,7 @@ class BaseEC2NodeDriver(NodeDriver):
         elements = element.findall(fixxpath(xpath="ipRanges/item", namespace=NAMESPACE))
 
         rule["cidr_ips"] = [
-            findtext(element=element, xpath="cidrIp", namespace=NAMESPACE)
-            for element in elements
+            findtext(element=element, xpath="cidrIp", namespace=NAMESPACE) for element in elements
         ]
 
         return rule
@@ -4744,9 +4627,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_networks(self, response):
         return [
             self._to_network(el)
-            for el in response.findall(
-                fixxpath(xpath="vpcSet/item", namespace=NAMESPACE)
-            )
+            for el in response.findall(fixxpath(xpath="vpcSet/item", namespace=NAMESPACE))
         ]
 
     def _to_network(self, element, name=None):
@@ -4782,9 +4663,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype:   ``list`` of :class:`ElasticIP`
         """
         addresses = []
-        for el in response.findall(
-            fixxpath(xpath="addressesSet/item", namespace=NAMESPACE)
-        ):
+        for el in response.findall(fixxpath(xpath="addressesSet/item", namespace=NAMESPACE)):
             addr = self._to_address(el, only_associated)
             if addr is not None:
                 addresses.append(addr)
@@ -4799,9 +4678,7 @@ class BaseEC2NodeDriver(NodeDriver):
         domain = findtext(element=element, xpath="domain", namespace=NAMESPACE)
 
         # Build our extra dict
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP["elastic_ip"]
-        )
+        extra = self._get_extra_dict(element, RESOURCE_EXTRA_ATTRIBUTES_MAP["elastic_ip"])
 
         # Return NoneType if only associated IPs are requested
         if only_associated and not instance_id:
@@ -4826,9 +4703,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_subnets(self, response):
         return [
             self._to_subnet(el)
-            for el in response.findall(
-                fixxpath(xpath="subnetSet/item", namespace=NAMESPACE)
-            )
+            for el in response.findall(fixxpath(xpath="subnetSet/item", namespace=NAMESPACE))
         ]
 
     def _to_subnet(self, element, name=None):
@@ -4872,9 +4747,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype:     :class: `EC2NetworkInterface`
         """
 
-        interface_id = findtext(
-            element=element, xpath="networkInterfaceId", namespace=NAMESPACE
-        )
+        interface_id = findtext(element=element, xpath="networkInterfaceId", namespace=NAMESPACE)
 
         state = findtext(element=element, xpath="status", namespace=NAMESPACE)
 
@@ -4900,9 +4773,7 @@ class BaseEC2NodeDriver(NodeDriver):
                     "private_dns": findtext(
                         element=item, xpath="privateDnsName", namespace=NAMESPACE
                     ),
-                    "primary": findtext(
-                        element=item, xpath="primary", namespace=NAMESPACE
-                    ),
+                    "primary": findtext(element=item, xpath="primary", namespace=NAMESPACE),
                 }
             )
 
@@ -4935,21 +4806,15 @@ class BaseEC2NodeDriver(NodeDriver):
         """
 
         # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP["reserved_node"]
-        )
+        extra = self._get_extra_dict(element, RESOURCE_EXTRA_ATTRIBUTES_MAP["reserved_node"])
 
         try:
-            size = [
-                size for size in self.list_sizes() if size.id == extra["instance_type"]
-            ][0]
+            size = [size for size in self.list_sizes() if size.id == extra["instance_type"]][0]
         except IndexError:
             size = None
 
         return EC2ReservedNode(
-            id=findtext(
-                element=element, xpath="reservedInstancesId", namespace=NAMESPACE
-            ),
+            id=findtext(element=element, xpath="reservedInstancesId", namespace=NAMESPACE),
             state=findattr(element=element, xpath="state", namespace=NAMESPACE),
             driver=self,
             size=size,
@@ -4959,9 +4824,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_device_mappings(self, object):
         return [
             self._to_device_mapping(el)
-            for el in object.findall(
-                fixxpath(xpath="blockDeviceMapping/item", namespace=NAMESPACE)
-            )
+            for el in object.findall(fixxpath(xpath="blockDeviceMapping/item", namespace=NAMESPACE))
         ]
 
     def _to_device_mapping(self, element):
@@ -4975,9 +4838,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         mapping = {}
 
-        mapping["device_name"] = findattr(
-            element=element, xpath="deviceName", namespace=NAMESPACE
-        )
+        mapping["device_name"] = findattr(element=element, xpath="deviceName", namespace=NAMESPACE)
 
         mapping["virtual_name"] = findattr(
             element=element, xpath="virtualName", namespace=NAMESPACE
@@ -4995,9 +4856,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_instance_device_mappings(self, object):
         return [
             self._to_instance_device_mapping(el)
-            for el in object.findall(
-                fixxpath(xpath="blockDeviceMapping/item", namespace=NAMESPACE)
-            )
+            for el in object.findall(fixxpath(xpath="blockDeviceMapping/item", namespace=NAMESPACE))
         ]
 
     def _to_instance_device_mapping(self, element):
@@ -5009,9 +4868,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         mapping = {}
 
-        mapping["device_name"] = findattr(
-            element=element, xpath="deviceName", namespace=NAMESPACE
-        )
+        mapping["device_name"] = findattr(element=element, xpath="deviceName", namespace=NAMESPACE)
         mapping["ebs"] = self._get_extra_dict(
             element, RESOURCE_EXTRA_ATTRIBUTES_MAP["ebs_instance_block_device"]
         )
@@ -5027,13 +4884,9 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_internet_gateway(self, element, name=None):
         id = findtext(element=element, xpath="internetGatewayId", namespace=NAMESPACE)
 
-        vpc_id = findtext(
-            element=element, xpath="attachmentSet/item/vpcId", namespace=NAMESPACE
-        )
+        vpc_id = findtext(element=element, xpath="attachmentSet/item/vpcId", namespace=NAMESPACE)
 
-        state = findtext(
-            element=element, xpath="attachmentSet/item/state", namespace=NAMESPACE
-        )
+        state = findtext(element=element, xpath="attachmentSet/item/state", namespace=NAMESPACE)
 
         # If there's no attachment state, let's
         # set it to available
@@ -5059,24 +4912,18 @@ class BaseEC2NodeDriver(NodeDriver):
     def _to_route_tables(self, response):
         return [
             self._to_route_table(el)
-            for el in response.findall(
-                fixxpath(xpath="routeTableSet/item", namespace=NAMESPACE)
-            )
+            for el in response.findall(fixxpath(xpath="routeTableSet/item", namespace=NAMESPACE))
         ]
 
     def _to_route_table(self, element, name=None):
         # route table id
-        route_table_id = findtext(
-            element=element, xpath="routeTableId", namespace=NAMESPACE
-        )
+        route_table_id = findtext(element=element, xpath="routeTableId", namespace=NAMESPACE)
 
         # Get our tags
         tags = self._get_resource_tags(element)
 
         # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP["route_table"]
-        )
+        extra = self._get_extra_dict(element, RESOURCE_EXTRA_ATTRIBUTES_MAP["route_table"])
 
         # Add tags to the extra dict
         extra["tags"] = tags
@@ -5085,15 +4932,11 @@ class BaseEC2NodeDriver(NodeDriver):
         routes = self._to_routes(element, "routeSet/item")
 
         # Get subnet associations
-        subnet_associations = self._to_subnet_associations(
-            element, "associationSet/item"
-        )
+        subnet_associations = self._to_subnet_associations(element, "associationSet/item")
 
         # Get propagating routes virtual private gateways (VGW) IDs
         propagating_gateway_ids = []
-        for el in element.findall(
-            fixxpath(xpath="propagatingVgwSet/item", namespace=NAMESPACE)
-        ):
+        for el in element.findall(fixxpath(xpath="propagatingVgwSet/item", namespace=NAMESPACE)):
             propagating_gateway_ids.append(
                 findtext(element=el, xpath="gatewayId", namespace=NAMESPACE)
             )
@@ -5111,8 +4954,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _to_routes(self, element, xpath):
         return [
-            self._to_route(el)
-            for el in element.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))
+            self._to_route(el) for el in element.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))
         ]
 
     def _to_route(self, element):
@@ -5130,13 +4972,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         instance_id = findtext(element=element, xpath="instanceId", namespace=NAMESPACE)
 
-        owner_id = findtext(
-            element=element, xpath="instanceOwnerId", namespace=NAMESPACE
-        )
+        owner_id = findtext(element=element, xpath="instanceOwnerId", namespace=NAMESPACE)
 
-        interface_id = findtext(
-            element=element, xpath="networkInterfaceId", namespace=NAMESPACE
-        )
+        interface_id = findtext(element=element, xpath="networkInterfaceId", namespace=NAMESPACE)
 
         state = findtext(element=element, xpath="state", namespace=NAMESPACE)
 
@@ -5174,9 +5012,7 @@ class BaseEC2NodeDriver(NodeDriver):
             element=element, xpath="routeTableAssociationId", namespace=NAMESPACE
         )
 
-        route_table_id = findtext(
-            element=element, xpath="routeTableId", namespace=NAMESPACE
-        )
+        route_table_id = findtext(element=element, xpath="routeTableId", namespace=NAMESPACE)
 
         subnet_id = findtext(element=element, xpath="subnetId", namespace=NAMESPACE)
 
@@ -5195,19 +5031,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
         for value in arr:
             i += 1
-            params["%s.%s" % (key, i)] = value
+            params["{}.{}".format(key, i)] = value
 
         return params
 
     def _get_boolean(self, element):
-        tag = "{%s}%s" % (NAMESPACE, "return")
+        tag = "{{{}}}{}".format(NAMESPACE, "return")
         return element.findtext(tag) == "true"
 
     def _get_terminate_boolean(self, element):
-        status = element.findtext(".//{%s}%s" % (NAMESPACE, "name"))
-        return any(
-            [term_status == status for term_status in ("shutting-down", "terminated")]
-        )
+        status = element.findtext(".//{{{}}}{}".format(NAMESPACE, "name"))
+        return any([term_status == status for term_status in ("shutting-down", "terminated")])
 
     def _add_instance_filter(self, params, node):
         """
@@ -5246,9 +5080,7 @@ class BaseEC2NodeDriver(NodeDriver):
         extra = {}
         for attribute, values in mapping.items():
             transform_func = values["transform_func"]
-            value = findattr(
-                element=element, xpath=values["xpath"], namespace=NAMESPACE
-            )
+            value = findattr(element=element, xpath=values["xpath"], namespace=NAMESPACE)
             if value is not None:
                 extra[attribute] = transform_func(value)
             else:
@@ -5297,17 +5129,13 @@ class BaseEC2NodeDriver(NodeDriver):
         for idx, mapping in enumerate(block_device_mapping):
             idx += 1  # We want 1-based indexes
             if not isinstance(mapping, dict):
-                raise AttributeError(
-                    "mapping %s in block_device_mapping " "not a dict" % mapping
-                )
+                raise AttributeError("mapping %s in block_device_mapping " "not a dict" % mapping)
             for k, v in mapping.items():
                 if not isinstance(v, dict):
                     params["BlockDeviceMapping.%d.%s" % (idx, k)] = str(v)
                 else:
                     for key, value in v.items():
-                        params["BlockDeviceMapping.%d.%s.%s" % (idx, k, key)] = str(
-                            value
-                        )
+                        params["BlockDeviceMapping.%d.%s.%s" % (idx, k, key)] = str(value)
         return params
 
     def _get_billing_product_params(self, billing_products):
@@ -5353,9 +5181,7 @@ class BaseEC2NodeDriver(NodeDriver):
         for idx, content in enumerate(disk_container):
             idx += 1  # We want 1-based indexes
             if not isinstance(content, dict):
-                raise AttributeError(
-                    "content %s in disk_container not a dict" % content
-                )
+                raise AttributeError("content %s in disk_container not a dict" % content)
 
             for k, v in content.items():
                 if not isinstance(v, dict):
@@ -5363,7 +5189,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
                 else:
                     for key, value in v.items():
-                        params["DiskContainer.%s.%s" % (k, key)] = str(value)
+                        params["DiskContainer.{}.{}".format(k, key)] = str(value)
 
         return params
 
@@ -5425,9 +5251,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
                 ip_ranges["IpPermissions.1.IpRanges.%s.CidrIp" % (index)] = cidr_ip
                 if description is not None:
-                    ip_ranges[
-                        "IpPermissions.1.IpRanges.%s.Description" % (index)
-                    ] = description
+                    ip_ranges["IpPermissions.1.IpRanges.%s.Description" % (index)] = description
 
             params.update(ip_ranges)
 
@@ -5437,19 +5261,19 @@ class BaseEC2NodeDriver(NodeDriver):
                 index += 1
 
                 if "group_id" in group_pair.keys():
-                    user_groups[
-                        "IpPermissions.1.Groups.%s.GroupId" % (index)
-                    ] = group_pair["group_id"]
+                    user_groups["IpPermissions.1.Groups.%s.GroupId" % (index)] = group_pair[
+                        "group_id"
+                    ]
 
                 if "group_name" in group_pair.keys():
-                    user_groups[
-                        "IpPermissions.1.Groups.%s.GroupName" % (index)
-                    ] = group_pair["group_name"]
+                    user_groups["IpPermissions.1.Groups.%s.GroupName" % (index)] = group_pair[
+                        "group_name"
+                    ]
 
                 if "user_id" in group_pair.keys():
-                    user_groups[
-                        "IpPermissions.1.Groups.%s.UserId" % (index)
-                    ] = group_pair["user_id"]
+                    user_groups["IpPermissions.1.Groups.%s.UserId" % (index)] = group_pair[
+                        "user_id"
+                    ]
 
             params.update(user_groups)
 
@@ -5464,17 +5288,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         groups = []
 
-        for item in findall(
-            element=element, xpath="groupSet/item", namespace=NAMESPACE
-        ):
+        for item in findall(element=element, xpath="groupSet/item", namespace=NAMESPACE):
             groups.append(
                 {
-                    "group_id": findtext(
-                        element=item, xpath="groupId", namespace=NAMESPACE
-                    ),
-                    "group_name": findtext(
-                        element=item, xpath="groupName", namespace=NAMESPACE
-                    ),
+                    "group_id": findtext(element=item, xpath="groupId", namespace=NAMESPACE),
+                    "group_name": findtext(element=item, xpath="groupName", namespace=NAMESPACE),
                 }
             )
 
@@ -5502,7 +5320,7 @@ class BaseEC2NodeDriver(NodeDriver):
             if isinstance(filter_values, list):
                 for value_idx, value in enumerate(filter_values):
                     value_idx += 1  # We want 1-based indexes
-                    value_key = "Filter.%s.Value.%s" % (filter_idx, value_idx)
+                    value_key = "Filter.{}.Value.{}".format(filter_idx, value_idx)
                     filter_entries[value_key] = value
             else:
                 value_key = "Filter.%s.Value.1" % (filter_idx)
@@ -5563,15 +5381,11 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         if signature_version:
             self.signature_version = signature_version
         else:
-            self.signature_version = details.get(
-                "signature_version", DEFAULT_SIGNATURE_VERSION
-            )
+            self.signature_version = details.get("signature_version", DEFAULT_SIGNATURE_VERSION)
 
         host = host or details["endpoint"]
 
-        super(EC2NodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     @classmethod
     def list_regions(cls):
@@ -5628,7 +5442,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
                                Eucalyptus proprietary API calls
         :type     api_version: ``str``
         """
-        super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
+        super().__init__(key, secret, secure, host, port)
 
         if path is None:
             path = "/services/Eucalyptus"
@@ -5643,9 +5457,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
         return [
             self._to_size(el)
             for el in response.findall(
-                fixxpath(
-                    xpath="instanceTypeDetails/item", namespace=self.EUCA_NAMESPACE
-                )
+                fixxpath(xpath="instanceTypeDetails/item", namespace=self.EUCA_NAMESPACE)
             )
         ]
 
@@ -5801,13 +5613,9 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         self.connectionCls.host = details["endpoint"]
 
-        self._not_implemented_msg = (
-            "This method is not supported in the Outscale driver"
-        )
+        self._not_implemented_msg = "This method is not supported in the Outscale driver"
 
-        super(OutscaleNodeDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def create_node(self, **kwargs):
         """
@@ -5848,7 +5656,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         """
         if "ex_iamprofile" in kwargs:
             raise NotImplementedError("ex_iamprofile not implemented")
-        return super(OutscaleNodeDriver, self).create_node(**kwargs)
+        return super().create_node(**kwargs)
 
     def ex_create_network(self, cidr_block, name=None):
         """
@@ -5863,7 +5671,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         :return:    Dictionary of network properties
         :rtype:     ``dict``
         """
-        return super(OutscaleNodeDriver, self).ex_create_network(cidr_block, name=name)
+        return super().ex_create_network(cidr_block, name=name)
 
     def ex_modify_instance_attribute(
         self,
@@ -5907,9 +5715,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if instance_type is not None:
             attributes["InstanceType.Value"] = instance_type
 
-        return super(OutscaleNodeDriver, self).ex_modify_instance_attribute(
-            node, attributes
-        )
+        return super().ex_modify_instance_attribute(node, attributes)
 
     def ex_register_image(
         self,
@@ -5945,7 +5751,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         :rtype:     :class:`NodeImage`
         """
-        return super(OutscaleNodeDriver, self).ex_register_image(
+        return super().ex_register_image(
             name,
             description=description,
             architecture=architecture,
@@ -5987,9 +5793,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         """
         raise NotImplementedError(self._not_implemented_msg)
 
-    def ex_attach_network_interface_to_node(
-        self, network_interface, node, device_index
-    ):
+    def ex_attach_network_interface_to_node(self, network_interface, node, device_index):
         """
         Outscale does not support attaching a network interface.
 
@@ -6053,14 +5857,9 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if key_name is not None:
             params.update({"keyName": key_name})
 
-        response = self.connection.request(
-            self.path, params=params, method="GET"
-        ).object
+        response = self.connection.request(self.path, params=params, method="GET").object
 
-        return (
-            findtext(element=response, xpath="return", namespace=OUTSCALE_NAMESPACE)
-            == "true"
-        )
+        return findtext(element=response, xpath="return", namespace=OUTSCALE_NAMESPACE) == "true"
 
     def _to_quota(self, elem):
         """
@@ -6085,9 +5884,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
                 ownerId = findtext(
                     element=quota_item, xpath="ownerId", namespace=OUTSCALE_NAMESPACE
                 )
-                name = findtext(
-                    element=quota_item, xpath="name", namespace=OUTSCALE_NAMESPACE
-                )
+                name = findtext(element=quota_item, xpath="name", namespace=OUTSCALE_NAMESPACE)
                 displayName = findtext(
                     element=quota_item,
                     xpath="displayName",
@@ -6126,9 +5923,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         return quota
 
-    def ex_describe_quotas(
-        self, dry_run=False, filters=None, max_results=None, marker=None
-    ):
+    def ex_describe_quotas(self, dry_run=False, filters=None, max_results=None, marker=None):
         """
         Describes one or more of your quotas.
 
@@ -6164,26 +5959,18 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if max_results:
             params.update({"MaxResults": max_results})
 
-        response = self.connection.request(
-            self.path, params=params, method="GET"
-        ).object
+        response = self.connection.request(self.path, params=params, method="GET").object
 
         quota = self._to_quota(response)
 
-        is_truncated = findtext(
-            element=response, xpath="isTruncated", namespace=OUTSCALE_NAMESPACE
-        )
+        is_truncated = findtext(element=response, xpath="isTruncated", namespace=OUTSCALE_NAMESPACE)
 
         return is_truncated, quota
 
     def _to_product_type(self, elem):
 
-        productTypeId = findtext(
-            element=elem, xpath="productTypeId", namespace=OUTSCALE_NAMESPACE
-        )
-        description = findtext(
-            element=elem, xpath="description", namespace=OUTSCALE_NAMESPACE
-        )
+        productTypeId = findtext(element=elem, xpath="productTypeId", namespace=OUTSCALE_NAMESPACE)
+        description = findtext(element=elem, xpath="description", namespace=OUTSCALE_NAMESPACE)
 
         return {"productTypeId": productTypeId, "description": description}
 
@@ -6207,9 +5994,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if snapshot_id is not None:
             params.update({"SnapshotId": snapshot_id})
 
-        response = self.connection.request(
-            self.path, params=params, method="GET"
-        ).object
+        response = self.connection.request(self.path, params=params, method="GET").object
 
         product_type = self._to_product_type(response)
 
@@ -6231,9 +6016,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
                 xpath="description",
                 namespace=OUTSCALE_NAMESPACE,
             )
-            product_types.append(
-                {"productTypeId": productTypeId, "description": description}
-            )
+            product_types.append({"productTypeId": productTypeId, "description": description})
 
         return product_types
 
@@ -6254,9 +6037,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if filters:
             params.update(self._build_filters(filters))
 
-        response = self.connection.request(
-            self.path, params=params, method="GET"
-        ).object
+        response = self.connection.request(self.path, params=params, method="GET").object
 
         product_types = self._to_product_types(response)
 
@@ -6268,12 +6049,8 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         for instance_types_item in findall(
             element=elem, xpath="instanceTypeSet/item", namespace=OUTSCALE_NAMESPACE
         ):
-            name = findtext(
-                element=instance_types_item, xpath="name", namespace=OUTSCALE_NAMESPACE
-            )
-            vcpu = findtext(
-                element=instance_types_item, xpath="vcpu", namespace=OUTSCALE_NAMESPACE
-            )
+            name = findtext(element=instance_types_item, xpath="name", namespace=OUTSCALE_NAMESPACE)
+            vcpu = findtext(element=instance_types_item, xpath="vcpu", namespace=OUTSCALE_NAMESPACE)
             memory = findtext(
                 element=instance_types_item,
                 xpath="memory",
@@ -6329,9 +6106,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         if filters:
             params.update(self._build_filters(filters))
 
-        response = self.connection.request(
-            self.path, params=params, method="GET"
-        ).object
+        response = self.connection.request(self.path, params=params, method="GET").object
 
         instance_types = self._to_instance_types(response)
 
@@ -6357,7 +6132,7 @@ class OutscaleSASNodeDriver(OutscaleNodeDriver):
         region_details=None,
         **kwargs,
     ):
-        super(OutscaleSASNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -6388,7 +6163,7 @@ class OutscaleINCNodeDriver(OutscaleNodeDriver):
         region_details=None,
         **kwargs,
     ):
-        super(OutscaleINCNodeDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,

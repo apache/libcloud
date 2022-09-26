@@ -14,20 +14,16 @@
 # limitations under the License.
 
 import sys
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ET
-from libcloud.common.dimensiondata import DimensionDataAPIException
-from libcloud.common.types import InvalidCredsError
-from libcloud.backup.base import BackupTargetJob
-from libcloud.backup.drivers.dimensiondata import (
-    DimensionDataBackupDriver as DimensionData,
-)
-from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
 
 from libcloud.test import MockHttp, unittest
-from libcloud.test.file_fixtures import BackupFileFixtures
-
+from libcloud.utils.py3 import ET, httplib
+from libcloud.backup.base import BackupTargetJob
+from libcloud.common.types import InvalidCredsError
 from libcloud.test.secrets import DIMENSIONDATA_PARAMS
+from libcloud.test.file_fixtures import BackupFileFixtures
+from libcloud.common.dimensiondata import DimensionDataAPIException
+from libcloud.backup.drivers.dimensiondata import DEFAULT_BACKUP_PLAN
+from libcloud.backup.drivers.dimensiondata import DimensionDataBackupDriver as DimensionData
 
 
 class DimensionData_v2_4_Tests(unittest.TestCase):
@@ -65,9 +61,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
 
     def test_create_target_DEFAULT(self):
         DimensionDataMockHttp.type = "DEFAULT"
-        target = self.driver.create_target(
-            "name", "e75ead52-692f-4314-8725-c8a4f4d13a87"
-        )
+        target = self.driver.create_target("name", "e75ead52-692f-4314-8725-c8a4f4d13a87")
         self.assertEqual(target.id, "ee7c4b64-f7af-4a4f-8384-be362273530f")
         self.assertEqual(target.address, "e75ead52-692f-4314-8725-c8a4f4d13a87")
 
@@ -209,9 +203,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
     def test_ex_get_backup_details_for_target_DISABLED(self):
         DimensionDataMockHttp.type = "DISABLED"
         with self.assertRaises(DimensionDataAPIException) as context:
-            self.driver.ex_get_backup_details_for_target(
-                "e75ead52-692f-4314-8725-c8a4f4d13a87"
-            )
+            self.driver.ex_get_backup_details_for_target("e75ead52-692f-4314-8725-c8a4f4d13a87")
         self.assertEqual(context.exception.code, "ERROR")
         self.assertEqual(
             context.exception.msg,
@@ -239,9 +231,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         answer = self.driver.ex_list_available_schedule_policies(target)
         self.assertEqual(len(answer), 1)
         self.assertEqual(answer[0].name, "12AM - 6AM")
-        self.assertEqual(
-            answer[0].description, "Daily backup will start between 12AM - 6AM"
-        )
+        self.assertEqual(answer[0].description, "Daily backup will start between 12AM - 6AM")
 
     def test_ex_remove_client_from_target(self):
         target = self.driver.list_targets()[0]
@@ -267,8 +257,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             )
         self.assertEqual(context.exception.code, "ERROR")
         self.assertTrue(
-            "Backup Client is currently performing another operation"
-            in context.exception.msg
+            "Backup Client is currently performing another operation" in context.exception.msg
         )
 
     def test_priv_target_to_target_address(self):
@@ -280,9 +269,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
 
     def test_priv_target_to_target_address_STR(self):
         self.assertEqual(
-            self.driver._target_to_target_address(
-                "e75ead52-692f-4314-8725-c8a4f4d13a87"
-            ),
+            self.driver._target_to_target_address("e75ead52-692f-4314-8725-c8a4f4d13a87"),
             "e75ead52-692f-4314-8725-c8a4f4d13a87",
         )
 
@@ -312,7 +299,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
 
 class InvalidRequestError(Exception):
     def __init__(self, tag):
-        super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
+        super().__init__("Invalid Request - %s" % tag)
 
 
 class DimensionDataMockHttp(MockHttp):
@@ -357,41 +344,31 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml"
-        )
+        body = self.fixtures.load("server_server_e75ead52_692f_4314_8725_c8a4f4d13a87.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml"
-        )
+        body = self.fixtures.load("server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOCLIENT(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml"
-        )
+        body = self.fixtures.load("server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOJOB(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml"
-        )
+        body = self.fixtures.load("server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DISABLED(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml"
-        )
+        body = self.fixtures.load("server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_DEFAULT.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server(
@@ -425,7 +402,7 @@ class DimensionDataMockHttp(MockHttp):
             body = self.fixtures.load("_backup_client_SUCCESS_PUT.xml")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
-            raise ValueError("Unknown Method {0}".format(method))
+            raise ValueError("Unknown Method {}".format(method))
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_e75ead52_692f_4314_8725_c8a4f4d13a87_backup_NOCLIENT(
         self, method, url, body, headers
@@ -483,7 +460,7 @@ class DimensionDataMockHttp(MockHttp):
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         else:
-            raise ValueError("Unknown Method {0}".format(method))
+            raise ValueError("Unknown Method {}".format(method))
 
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e75ead52_692f_4314_8725_c8a4f4d13a87_NOBACKUP(
         self, method, url, body, headers
@@ -518,9 +495,7 @@ class DimensionDataMockHttp(MockHttp):
         request = ET.fromstring(body)
         service_plan = request.get("servicePlan")
         if service_plan != DEFAULT_BACKUP_PLAN:
-            raise InvalidRequestError(
-                "Expected %s backup plan in test" % DEFAULT_BACKUP_PLAN
-            )
+            raise InvalidRequestError("Expected %s backup plan in test" % DEFAULT_BACKUP_PLAN)
         body = self.fixtures.load("_backup_modify.xml")
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -529,10 +504,10 @@ class DimensionDataMockHttp(MockHttp):
         self, method, url, body, headers
     ):
         if url.endswith("disable"):
-            body = self.fixtures.load(("_remove_backup_client.xml"))
+            body = self.fixtures.load("_remove_backup_client.xml")
         elif url.endswith("cancelJob"):
             body = self.fixtures.load(
-                ("" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob.xml")
+                "" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob.xml"
             )
         else:
             raise ValueError("Unknown URL: %s" % url)
@@ -542,13 +517,10 @@ class DimensionDataMockHttp(MockHttp):
         self, method, url, body, headers
     ):
         if url.endswith("disable"):
-            body = self.fixtures.load(("_remove_backup_client_FAIL.xml"))
+            body = self.fixtures.load("_remove_backup_client_FAIL.xml")
         elif url.endswith("cancelJob"):
             body = self.fixtures.load(
-                (
-                    ""
-                    "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob_FAIL.xml"
-                )
+                "" "_backup_client_30b1ff76_c76d_4d7c_b39d_3b72be0384c8_cancelJob_FAIL.xml"
             )
         else:
             raise ValueError("Unknown URL: %s" % url)

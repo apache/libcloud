@@ -19,15 +19,13 @@
 
 import sys
 import unittest
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.drivers.linode import LinodeNodeDriver
-from libcloud.compute.base import Node, NodeAuthPassword
-from libcloud.compute.base import NodeAuthSSHKey, StorageVolume
 
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, StorageVolume, NodeAuthSSHKey, NodeAuthPassword
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.linode import LinodeNodeDriver
 
 
 class LinodeTest(unittest.TestCase, TestCaseMixin):
@@ -150,11 +148,15 @@ class LinodeMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_create(self, method, url, body, headers):
-        body = '{"ERRORARRAY":[],"ACTION":"linode.disk.create","DATA":{"JobID":1298,"DiskID":55647}}'
+        body = (
+            '{"ERRORARRAY":[],"ACTION":"linode.disk.create","DATA":{"JobID":1298,"DiskID":55647}}'
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_delete(self, method, url, body, headers):
-        body = '{"ERRORARRAY":[],"ACTION":"linode.disk.delete","DATA":{"JobID":1298,"DiskID":55648}}'
+        body = (
+            '{"ERRORARRAY":[],"ACTION":"linode.disk.delete","DATA":{"JobID":1298,"DiskID":55648}}'
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_disk_createfromdistribution(self, method, url, body, headers):

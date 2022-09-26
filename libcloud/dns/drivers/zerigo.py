@@ -19,18 +19,13 @@ __all__ = ["ZerigoDNSDriver"]
 import copy
 import base64
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.utils.py3 import ET
-from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.utils.xml import findtext, findall
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import ET, b, httplib
+from libcloud.utils.xml import findall, findtext
+from libcloud.utils.misc import get_new_obj, merge_valid_keys
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
 
 API_HOST = "ns.zerigo.com"
 API_VERSION = "1.1"
@@ -52,7 +47,7 @@ class ZerigoError(LibcloudError):
         return "Errors: %s" % (", ".join(self.errors))
 
     def __repr__(self):
-        return "<ZerigoError response code=%s, errors count=%s>" % (
+        return "<ZerigoError response code={}, errors count={}>".format(
             self.code,
             len(self.errors),
         )
@@ -73,13 +68,9 @@ class ZerigoDNSResponse(XmlResponse):
         elif status == 404:
             context = self.connection.context
             if context["resource"] == "zone":
-                raise ZoneDoesNotExistError(
-                    value="", driver=self, zone_id=context["id"]
-                )
+                raise ZoneDoesNotExistError(value="", driver=self, zone_id=context["id"])
             elif context["resource"] == "record":
-                raise RecordDoesNotExistError(
-                    value="", driver=self, record_id=context["id"]
-                )
+                raise RecordDoesNotExistError(value="", driver=self, record_id=context["id"])
         elif status != 503:
             try:
                 body = ET.XML(self.body)
@@ -101,7 +92,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
     responseCls = ZerigoDNSResponse
 
     def add_default_headers(self, headers):
-        auth_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+        auth_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (auth_b64.decode("utf-8"))
         return headers
 
@@ -113,7 +104,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
 
         if method in ("POST", "PUT"):
             headers = {"Content-Type": "application/xml; charset=UTF-8"}
-        return super(ZerigoDNSConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
@@ -192,9 +183,7 @@ class ZerigoDNSDriver(DNSDriver):
 
         path = API_ROOT + "zones/%s.xml" % (zone.id)
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl, extra=extra)
-        response = self.connection.request(
-            action=path, data=ET.tostring(zone_elem), method="PUT"
-        )
+        response = self.connection.request(action=path, data=ET.tostring(zone_elem), method="PUT")
         assert response.status == httplib.OK
 
         merged = merge_valid_keys(
@@ -228,9 +217,7 @@ class ZerigoDNSDriver(DNSDriver):
     def update_record(self, record, name=None, type=None, data=None, extra=None):
         path = API_ROOT + "hosts/%s.xml" % (record.id)
         record_elem = self._to_record_elem(name=name, type=type, data=data, extra=extra)
-        response = self.connection.request(
-            action=path, data=ET.tostring(record_elem), method="PUT"
-        )
+        response = self.connection.request(action=path, data=ET.tostring(record_elem), method="PUT")
         assert response.status == httplib.OK
 
         merged = merge_valid_keys(
@@ -358,9 +345,7 @@ class ZerigoDNSDriver(DNSDriver):
 
             if "priority" in extra:
                 # Only MX and SRV records support priority
-                priority_elem = ET.SubElement(
-                    record_elem, "priority", {"type": "integer"}
-                )
+                priority_elem = ET.SubElement(record_elem, "priority", {"type": "integer"})
 
                 priority_elem.text = str(extra["priority"])
 
@@ -404,9 +389,7 @@ class ZerigoDNSDriver(DNSDriver):
             "slave-nameservers": slave_nameservers,
             "tags": tags,
         }
-        zone = Zone(
-            id=str(id), domain=domain, type=type, ttl=int(ttl), driver=self, extra=extra
-        )
+        zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl), driver=self, extra=extra)
         return zone
 
     def _to_records(self, elem, zone):
@@ -464,8 +447,7 @@ class ZerigoDNSDriver(DNSDriver):
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
 
-            for item in items:
-                yield item
+            yield from items
 
     def _get_data(self, rtype, last_key, **kwargs):
         # Note: last_key in this case really is a "last_page".

@@ -16,47 +16,45 @@
 Tests for Google Compute Engine Driver
 """
 
-import datetime
-from unittest import mock
 import sys
+import datetime
 import unittest
-
-from libcloud.utils.py3 import httplib
-from libcloud.compute.drivers.gce import (
-    GCENodeDriver,
-    API_VERSION,
-    timestamp_to_datetime,
-    GCEAddress,
-    GCEBackend,
-    GCEBackendService,
-    GCEFirewall,
-    GCEForwardingRule,
-    GCEHealthCheck,
-    GCENetwork,
-    GCENodeImage,
-    GCERoute,
-    GCERegion,
-    GCETargetHttpProxy,
-    GCEUrlMap,
-    GCEZone,
-    GCESubnetwork,
-    GCEProject,
-)
-from libcloud.common.google import (
-    GoogleBaseAuthConnection,
-    ResourceNotFoundError,
-    ResourceExistsError,
-    GoogleBaseError,
-)
-from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
-from libcloud.compute.base import Node, StorageVolume
-from libcloud.compute.types import NodeState
+from unittest import mock
 
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, StorageVolume
 from libcloud.test.compute import TestCaseMixin
-from libcloud.test.file_fixtures import ComputeFileFixtures
-
 from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
+from libcloud.common.google import (
+    GoogleBaseError,
+    ResourceExistsError,
+    ResourceNotFoundError,
+    GoogleBaseAuthConnection,
+)
+from libcloud.compute.types import NodeState
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.gce import (
+    API_VERSION,
+    GCEZone,
+    GCERoute,
+    GCERegion,
+    GCEUrlMap,
+    GCEAddress,
+    GCEBackend,
+    GCENetwork,
+    GCEProject,
+    GCEFirewall,
+    GCENodeImage,
+    GCENodeDriver,
+    GCESubnetwork,
+    GCEHealthCheck,
+    GCEBackendService,
+    GCEForwardingRule,
+    GCETargetHttpProxy,
+    timestamp_to_datetime,
+)
+from libcloud.test.common.test_google import GoogleTestCase, GoogleAuthMockHttp
 
 
 class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
@@ -160,13 +158,9 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_find_zone_or_region(self):
         zone1 = self.driver._find_zone_or_region("libcloud-demo-np-node", "instances")
         self.assertEqual(zone1.name, "us-central2-a")
-        zone2 = self.driver._find_zone_or_region(
-            "libcloud-demo-europe-np-node", "instances"
-        )
+        zone2 = self.driver._find_zone_or_region("libcloud-demo-europe-np-node", "instances")
         self.assertEqual(zone2.name, "europe-west1-a")
-        region = self.driver._find_zone_or_region(
-            "libcloud-demo-address", "addresses", region=True
-        )
+        region = self.driver._find_zone_or_region("libcloud-demo-address", "addresses", region=True)
         self.assertEqual(region.name, "us-central1")
 
     def test_match_images(self):
@@ -202,14 +196,9 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         )
         self.assertEqual("READ_WRITE", d["mode"])
         self.assertEqual("PERSISTENT", d["type"])
+        self.assertTrue("initializeParams" in d and isinstance(d["initializeParams"], dict))
         self.assertTrue(
-            "initializeParams" in d and isinstance(d["initializeParams"], dict)
-        )
-        self.assertTrue(
-            all(
-                k in d["initializeParams"]
-                for k in ["sourceImage", "diskType", "diskName"]
-            )
+            all(k in d["initializeParams"] for k in ["sourceImage", "diskType", "diskName"])
         )
         self.assertTrue(d["initializeParams"]["sourceImage"].startswith("https://"))
         self.assertTrue(d["autoDelete"])
@@ -265,9 +254,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         )
 
         actual = self.driver._build_scheduling_gce_struct("TERMINATE", True, False)
-        self.assertTrue(
-            "automaticRestart" in actual and actual["automaticRestart"] is True
-        )
+        self.assertTrue("automaticRestart" in actual and actual["automaticRestart"] is True)
         self.assertTrue(
             "onHostMaintenance" in actual and actual["onHostMaintenance"] == "TERMINATE"
         )
@@ -275,9 +262,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertFalse(actual["preemptible"])
 
     def test_build_service_account_gce_struct(self):
-        self.assertRaises(
-            ValueError, self.driver._build_service_account_gce_struct, None
-        )
+        self.assertRaises(ValueError, self.driver._build_service_account_gce_struct, None)
         input = {"scopes": ["compute-ro"]}
         actual = self.driver._build_service_account_gce_struct(input)
         self.assertTrue("email" in actual)
@@ -291,9 +276,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_build_service_account_gce_list(self):
         # ensure we have a list
-        self.assertRaises(
-            ValueError, self.driver._build_service_accounts_gce_list, "foo"
-        )
+        self.assertRaises(ValueError, self.driver._build_service_accounts_gce_list, "foo")
         # no input
         actual = self.driver._build_service_accounts_gce_list()
         self.assertTrue(len(actual) == 1)
@@ -317,9 +300,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue("lcnetwork", actual)
 
         # if selflinks is true, we need objname
-        self.assertRaises(
-            ValueError, self.driver._get_selflink_or_name, "lcnetwork", True
-        )
+        self.assertRaises(ValueError, self.driver._get_selflink_or_name, "lcnetwork", True)
 
     def test_ex_get_serial_output(self):
         self.assertRaises(ValueError, self.driver.ex_get_serial_output, "foo")
@@ -499,9 +480,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         node_name = self.driver.ex_get_node("node-name", loc)
         lcnode = self.driver.ex_get_node("lcnode-001", loc)
         node_list = [node_name, lcnode]
-        self.assertTrue(
-            self.driver.ex_instancegroup_remove_instances(gceobj, node_list)
-        )
+        self.assertTrue(self.driver.ex_instancegroup_remove_instances(gceobj, node_list))
 
     def test_ex_instancegroup_set_named_ports(self):
         name = "myname"
@@ -509,9 +488,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         gceobj = self.driver.ex_get_instancegroup(name, loc)
         named_ports = [{"name": "foo", "port": 4444}]
         # base case
-        self.assertTrue(
-            self.driver.ex_instancegroup_set_named_ports(gceobj, named_ports)
-        )
+        self.assertTrue(self.driver.ex_instancegroup_set_named_ports(gceobj, named_ports))
         # specify nothing, default is empty list
         self.assertTrue(self.driver.ex_instancegroup_set_named_ports(gceobj))
         # specify empty list
@@ -616,12 +593,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_sslcertificate(self):
         ssl_name = "example"
-        private_key = (
-            "-----BEGIN RSA PRIVATE KEY-----\nfoobar==\n-----END RSA PRIVATE KEY-----\n"
-        )
-        certificate = (
-            "-----BEGIN CERTIFICATE-----\nfoobar==\n-----END CERTIFICATE-----\n"
-        )
+        private_key = "-----BEGIN RSA PRIVATE KEY-----\nfoobar==\n-----END RSA PRIVATE KEY-----\n"
+        certificate = "-----BEGIN CERTIFICATE-----\nfoobar==\n-----END CERTIFICATE-----\n"
         ssl = self.driver.ex_create_sslcertificate(
             ssl_name, certificate=certificate, private_key=private_key
         )
@@ -637,9 +610,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         region = self.driver.ex_get_region(region_name)
         description = "LCTestSubnet"
         privateipgoogleaccess = True
-        secondaryipranges = [
-            {"rangeName": "secondary", "ipCidrRange": "192.168.168.0/24"}
-        ]
+        secondaryipranges = [{"rangeName": "secondary", "ipCidrRange": "192.168.168.0/24"}]
         # test by network/region name
         subnet = self.driver.ex_create_subnetwork(
             name,
@@ -826,9 +797,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_list_instancegroupmanagers(self):
         instancegroupmanagers = self.driver.ex_list_instancegroupmanagers()
         instancegroupmanagers_all = self.driver.ex_list_instancegroupmanagers("all")
-        instancegroupmanagers_ue1b = self.driver.ex_list_instancegroupmanagers(
-            "us-east1-b"
-        )
+        instancegroupmanagers_ue1b = self.driver.ex_list_instancegroupmanagers("us-east1-b")
         self.assertEqual(len(instancegroupmanagers), 1)
         self.assertEqual(len(instancegroupmanagers_all), 2)
         self.assertEqual(len(instancegroupmanagers_ue1b), 1)
@@ -926,7 +895,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         backend = self.driver.ex_create_backend(ig)
 
         self.assertTrue(isinstance(backend, GCEBackend))
-        self.assertEqual(backend.name, "%s/instanceGroups/%s" % (ig.zone.name, ig.name))
+        self.assertEqual(backend.name, "{}/instanceGroups/{}".format(ig.zone.name, ig.name))
         self.assertEqual(backend.instance_group.name, ig.name)
         self.assertEqual(backend.balancing_mode, "UTILIZATION")
 
@@ -973,9 +942,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_image(self):
         volume = self.driver.ex_get_volume("lcdisk")
-        description = (
-            "CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12"
-        )
+        description = "CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12"
         name = "coreos"
         family = "coreos-stable"
         licenses = ["projects/coreos-cloud/global/licenses/coreos-stable"]
@@ -1008,16 +975,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
             "sourceDisk": volume.extra["selfLink"],
             "zone": volume.extra["zone"].name,
         }
-        mock_request.assert_called_once_with(
-            "/global/images", data=expected_data, method="POST"
-        )
+        mock_request.assert_called_once_with("/global/images", data=expected_data, method="POST")
 
     def test_ex_copy_image(self):
         name = "coreos"
         url = "gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz"
-        description = (
-            "CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12"
-        )
+        description = "CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12"
         family = "coreos-stable"
         guest_os_features = ["VIRTIO_SCSI_MULTIQUEUE"]
         expected_features = [{"type": "VIRTIO_SCSI_MULTIQUEUE"}]
@@ -1176,9 +1139,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         network_name = "lcnetwork"
         cidr = "10.11.0.0/16"
         routing_mode = "REGIONAL"
-        network = self.driver.ex_create_network(
-            network_name, cidr, routing_mode="regional"
-        )
+        network = self.driver.ex_create_network(network_name, cidr, routing_mode="regional")
         self.assertTrue(isinstance(network, GCENetwork))
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, cidr)
@@ -1215,9 +1176,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         # get running node, change machine type
         zone = "us-central1-a"
         node = self.driver.ex_get_node("node-name", zone)
-        self.assertRaises(
-            GoogleBaseError, self.driver.ex_set_machine_type, node, "custom-4-61440"
-        )
+        self.assertRaises(GoogleBaseError, self.driver.ex_set_machine_type, node, "custom-4-61440")
 
     def test_ex_set_machine_type(self):
         # get stopped node, change machine type
@@ -1264,9 +1223,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertIsInstance(node_data["serviceAccounts"][0]["scopes"], list)
         self.assertEqual(len(node_data["serviceAccounts"][0]["scopes"]), 1)
         self.assertEqual(len(node_data["networkInterfaces"]), 1)
-        self.assertTrue(
-            node_data["networkInterfaces"][0]["network"].startswith("https://")
-        )
+        self.assertTrue(node_data["networkInterfaces"][0]["network"].startswith("https://"))
 
     def test_create_node_location_not_provided(self):
         # location is not specified neither via datacenter constructor argument
@@ -1314,9 +1271,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(node.extra["networkInterfaces"][0]["name"], "nic0")
 
         # Test using just the network
-        node = self.driver.create_node(
-            node_name, size, image, location=zone, ex_network=network
-        )
+        node = self.driver.create_node(node_name, size, image, location=zone, ex_network=network)
         self.assertEqual(node.extra["networkInterfaces"][0]["name"], "nic0")
 
         # Test using just the struct
@@ -1435,9 +1390,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(node, Node))
         node = self.driver.create_node(node_name, size, None, ex_boot_disk=boot_disk)
         self.assertTrue(isinstance(node, Node))
-        node = self.driver.create_node(
-            node_name, size, None, ex_disks_gce_struct=gce_disk_struct
-        )
+        node = self.driver.create_node(node_name, size, None, ex_disks_gce_struct=gce_disk_struct)
         self.assertTrue(isinstance(node, Node))
         self.assertRaises(
             ValueError,
@@ -1470,9 +1423,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_create_node_image_family(self):
         node_name = "node-name"
         size = self.driver.ex_get_size("n1-standard-1")
-        node = self.driver.create_node(
-            node_name, size, image=None, ex_image_family="coreos-stable"
-        )
+        node = self.driver.create_node(node_name, size, image=None, ex_image_family="coreos-stable")
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
@@ -1585,25 +1536,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         # md is a list of dicts, each with 'key' and 'value' for
         # backwards compatibility
         md = [{"key": "k0", "value": "v0"}, {"key": "k1", "value": "v1"}]
-        request, data = self.driver._create_node_req(
-            node_name, size, image, zone, metadata=md
-        )
+        request, data = self.driver._create_node_req(node_name, size, image, zone, metadata=md)
         self.assertTrue("items" in data["metadata"])
         self.assertEqual(len(data["metadata"]["items"]), 2)
 
         # md doesn't contain "items" key
         md = {"key": "key1", "value": "value1"}
-        request, data = self.driver._create_node_req(
-            node_name, size, image, zone, metadata=md
-        )
+        request, data = self.driver._create_node_req(node_name, size, image, zone, metadata=md)
         self.assertTrue("items" in data["metadata"])
         self.assertEqual(len(data["metadata"]["items"]), 1)
 
         # md contains "items" key
         md = {"items": [{"key": "k0", "value": "v0"}]}
-        request, data = self.driver._create_node_req(
-            node_name, size, image, zone, metadata=md
-        )
+        request, data = self.driver._create_node_req(node_name, size, image, zone, metadata=md)
         self.assertTrue("items" in data["metadata"])
         self.assertEqual(len(data["metadata"]["items"]), 1)
         self.assertEqual(data["metadata"]["items"][0]["key"], "k0")
@@ -1624,9 +1569,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         )
         self.assertTrue("guestAccelerators" in data)
         self.assertEqual(len(data["guestAccelerators"]), 1)
-        self.assertTrue(
-            "nvidia-tesla-k80" in data["guestAccelerators"][0]["acceleratorType"]
-        )
+        self.assertTrue("nvidia-tesla-k80" in data["guestAccelerators"][0]["acceleratorType"])
         self.assertEqual(data["guestAccelerators"][0]["acceleratorCount"], 3)
 
     def test_create_node_with_labels(self):
@@ -1637,9 +1580,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
         # labels is a dict
         labels = {"label1": "v1", "label2": "v2"}
-        request, data = self.driver._create_node_req(
-            node_name, size, image, zone, ex_labels=labels
-        )
+        request, data = self.driver._create_node_req(node_name, size, image, zone, ex_labels=labels)
         self.assertTrue(data["labels"] is not None)
         self.assertEqual(len(data["labels"]), 2)
         self.assertEqual(data["labels"]["label1"], "v1")
@@ -1762,9 +1703,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_create_volume_image_family(self):
         volume_name = "lcdisk"
         size = 10
-        volume = self.driver.create_volume(
-            size, volume_name, ex_image_family="coreos-stable"
-        )
+        volume = self.driver.create_volume(size, volume_name, ex_image_family="coreos-stable")
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
 
@@ -1858,15 +1797,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(remove_node)
         self.assertEqual(len(targetpool.nodes), 1)
 
-        add_node = self.driver.ex_targetpool_add_node(
-            targetpool, node.extra["selfLink"]
-        )
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node.extra["selfLink"])
         self.assertTrue(add_node)
         self.assertEqual(len(targetpool.nodes), 2)
 
-        remove_node = self.driver.ex_targetpool_remove_node(
-            targetpool, node.extra["selfLink"]
-        )
+        remove_node = self.driver.ex_targetpool_remove_node(targetpool, node.extra["selfLink"])
         self.assertTrue(remove_node)
         self.assertEqual(len(targetpool.nodes), 1)
 
@@ -1875,24 +1810,18 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(targetpool.nodes), 2)
 
         # check that duplicates are filtered
-        add_node = self.driver.ex_targetpool_add_node(
-            targetpool, node.extra["selfLink"]
-        )
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node.extra["selfLink"])
         self.assertTrue(add_node)
         self.assertEqual(len(targetpool.nodes), 2)
 
     def test_ex_targetpool_remove_add_healthcheck(self):
         targetpool = self.driver.ex_get_targetpool("lctargetpool")
         healthcheck = self.driver.ex_get_healthcheck("libcloud-lb-demo-healthcheck")
-        remove_healthcheck = self.driver.ex_targetpool_remove_healthcheck(
-            targetpool, healthcheck
-        )
+        remove_healthcheck = self.driver.ex_targetpool_remove_healthcheck(targetpool, healthcheck)
         self.assertTrue(remove_healthcheck)
         self.assertEqual(len(targetpool.healthchecks), 0)
 
-        add_healthcheck = self.driver.ex_targetpool_add_healthcheck(
-            targetpool, healthcheck
-        )
+        add_healthcheck = self.driver.ex_targetpool_add_healthcheck(targetpool, healthcheck)
         self.assertTrue(add_healthcheck)
         self.assertEqual(len(targetpool.healthchecks), 1)
 
@@ -1964,12 +1893,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(destroyed)
 
     def test_ex_delete_image(self):
-        self.assertRaises(
-            ResourceNotFoundError, self.driver.ex_get_image, "missing-image"
-        )
-        self.assertRaises(
-            ResourceNotFoundError, self.driver.ex_delete_image, "missing-image"
-        )
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_image, "missing-image")
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_delete_image, "missing-image")
 
         image = self.driver.ex_get_image("debian-7")
         deleted = self.driver.ex_delete_image(image)
@@ -2187,9 +2112,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra["description"], description)
         self.assertEqual(image.extra["family"], family)
 
-        self.assertRaises(
-            ResourceNotFoundError, self.driver.ex_get_image_from_family, "nofamily"
-        )
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_image_from_family, "nofamily")
 
     def test_ex_get_route(self):
         route_name = "lcdemoroute"
@@ -2206,14 +2129,18 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(network.extra["gatewayIPv4"], "10.11.0.1")
         self.assertEqual(network.extra["description"], "A custom network")
         # do the same but this time with URL
-        url = "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/lcnetwork"
+        url = (
+            "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/lcnetwork"
+        )
         network = self.driver.ex_get_network(url)
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, "10.11.0.0/16")
         self.assertEqual(network.extra["gatewayIPv4"], "10.11.0.1")
         self.assertEqual(network.extra["description"], "A custom network")
         # do the same but with a network under a different project
-        url_other = "https://www.googleapis.com/compute/v1/projects/other_name/global/networks/lcnetwork"
+        url_other = (
+            "https://www.googleapis.com/compute/v1/projects/other_name/global/networks/lcnetwork"
+        )
         network = self.driver.ex_get_network(url_other)
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, "10.11.0.0/16")
@@ -2234,9 +2161,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
             "us-central1-b",
         )
         missing_node = "dummy-node"
-        self.assertRaises(
-            ResourceNotFoundError, self.driver.ex_get_node, missing_node, "all"
-        )
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_node, missing_node, "all")
 
     def test_ex_get_project(self):
         project = self.driver.ex_get_project()
@@ -2255,16 +2180,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         )
 
     def test_ex_add_access_config(self):
-        self.assertRaises(
-            ValueError, self.driver.ex_add_access_config, "node", "name", "nic"
-        )
+        self.assertRaises(ValueError, self.driver.ex_add_access_config, "node", "name", "nic")
         node = self.driver.ex_get_node("node-name", "us-central1-a")
         self.assertTrue(self.driver.ex_add_access_config(node, "foo", "bar"))
 
     def test_ex_delete_access_config(self):
-        self.assertRaises(
-            ValueError, self.driver.ex_add_access_config, "node", "name", "nic"
-        )
+        self.assertRaises(ValueError, self.driver.ex_add_access_config, "node", "name", "nic")
         node = self.driver.ex_get_node("node-name", "us-central1-a")
         self.assertTrue(self.driver.ex_delete_access_config(node, "foo", "bar"))
 
@@ -2276,9 +2197,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         bucket_name = "https://www.googleapis.com/foo"
         self.driver.ex_set_usage_export_bucket(bucket_name)
 
-        project = GCEProject(
-            id=None, name=None, metadata=None, quotas=None, driver=self.driver
-        )
+        project = GCEProject(id=None, name=None, metadata=None, quotas=None, driver=self.driver)
         project.set_usage_export_bucket(bucket=bucket_name)
 
     def test__set_project_metadata(self):
@@ -2335,9 +2254,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
         # add new metadata, remove existing sshKeys. in this case, we had an
         # 'sshKeys' entry, but it will be removed entirely
-        gce_md = {
-            "items": [{"key": "foo", "value": "one"}, {"key": "nokeys", "value": "two"}]
-        }
+        gce_md = {"items": [{"key": "foo", "value": "one"}, {"key": "nokeys", "value": "two"}]}
         md = self.driver._set_project_metadata(gce_md, True, "this is a test")
         self.assertEqual(len(md), 2, str(md))
         sshKeys = ""
@@ -2351,17 +2268,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_set_common_instance_metadata(self):
         # test non-dict
-        self.assertRaises(
-            ValueError, self.driver.ex_set_common_instance_metadata, ["bad", "type"]
-        )
+        self.assertRaises(ValueError, self.driver.ex_set_common_instance_metadata, ["bad", "type"])
         # test standard python dict
         pydict = {"key": "pydict", "value": 1}
         self.driver.ex_set_common_instance_metadata(pydict)
         # test GCE badly formatted dict
         bad_gcedict = {"items": "foo"}
-        self.assertRaises(
-            ValueError, self.driver.ex_set_common_instance_metadata, bad_gcedict
-        )
+        self.assertRaises(ValueError, self.driver.ex_set_common_instance_metadata, bad_gcedict)
         # test gce formatted dict
         gcedict = {
             "items": [
@@ -2372,25 +2285,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.driver.ex_set_common_instance_metadata(gcedict)
 
         # Verify project notation works
-        project = GCEProject(
-            id=None, name=None, metadata=None, quotas=None, driver=self.driver
-        )
+        project = GCEProject(id=None, name=None, metadata=None, quotas=None, driver=self.driver)
         project.set_common_instance_metadata(metadata=gcedict)
 
     def test_ex_set_node_metadata(self):
         node = self.driver.ex_get_node("node-name", "us-central1-a")
         # test non-dict
-        self.assertRaises(
-            ValueError, self.driver.ex_set_node_metadata, node, ["bad", "type"]
-        )
+        self.assertRaises(ValueError, self.driver.ex_set_node_metadata, node, ["bad", "type"])
         # test standard python dict
         pydict = {"key": "pydict", "value": 1}
         self.driver.ex_set_node_metadata(node, pydict)
         # test GCE badly formatted dict
         bad_gcedict = {"items": "foo"}
-        self.assertRaises(
-            ValueError, self.driver.ex_set_node_metadata, node, bad_gcedict
-        )
+        self.assertRaises(ValueError, self.driver.ex_set_node_metadata, node, bad_gcedict)
         # test gce formatted dict
         gcedict = {
             "items": [
@@ -2476,9 +2383,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         instancetemplate_name = "my-instance-template1"
         instancetemplate = self.driver.ex_get_instancetemplate(instancetemplate_name)
         self.assertEqual(instancetemplate.name, instancetemplate_name)
-        self.assertEqual(
-            instancetemplate.extra["properties"]["machineType"], "n1-standard-1"
-        )
+        self.assertEqual(instancetemplate.extra["properties"]["machineType"], "n1-standard-1")
 
     def test_ex_get_snapshot(self):
         snapshot_name = "lcsnapshot"
@@ -2601,9 +2506,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         # '/project' path instead
         if not path:
             path = "/project"
-        method_name = super(GCEMockHttp, self)._get_method_name(
-            type, use_param, qs, path
-        )
+        method_name = super()._get_method_name(type, use_param, qs, path)
         return method_name
 
     def _setUsageExportBucket(self, method, url, body, headers):
@@ -2615,12 +2518,8 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("zones_us_central1_a_instances_custom_node.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_setMachineType(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_node_name_setMachineType.json"
-        )
+    def _zones_us_central1_a_instances_node_name_setMachineType(self, method, url, body, header):
+        body = self.fixtures.load("zones_us_central1_a_instances_node_name_setMachineType.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_setMachineType_notstopped(
@@ -2631,9 +2530,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_custom_node_setMachineType(
-        self, method, url, body, header
-    ):
+    def _zones_us_central1_a_instances_custom_node_setMachineType(self, method, url, body, header):
         body = {
             "error": {
                 "errors": [
@@ -2656,84 +2553,48 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             httplib.responses[httplib.BAD_REQUEST],
         )
 
-    def _zones_us_central1_a_instances_stopped_node_setMachineType(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_stopped_node_setMachineType.json"
-        )
+    def _zones_us_central1_a_instances_stopped_node_setMachineType(self, method, url, body, header):
+        body = self.fixtures.load("zones_us_central1_a_instances_stopped_node_setMachineType.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_operations_operation_setMachineType(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_operations_operation_setMachineType.json"
-        )
+    def _zones_us_central1_a_operations_operation_setMachineType(self, method, url, body, header):
+        body = self.fixtures.load("zones_us_central1_a_operations_operation_setMachineType.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_operations_operation_startnode(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_operations_operation_startnode.json"
-        )
+    def _zones_us_central1_a_operations_operation_startnode(self, method, url, body, header):
+        body = self.fixtures.load("zones_us_central1_a_operations_operation_startnode.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_stopped_node_start(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_stopped_node_start.json"
-        )
+    def _zones_us_central1_a_instances_stopped_node_start(self, method, url, body, header):
+        body = self.fixtures.load("zones_us_central1_a_instances_stopped_node_start.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_stopped_node_stop(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_stopped_node_stop.json"
-        )
+    def _zones_us_central1_a_instances_stopped_node_stop(self, method, url, body, header):
+        body = self.fixtures.load("zones_us_central1_a_instances_stopped_node_stop.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances_stopped_node(self, method, url, body, headers):
         body = self.fixtures.load("zones_us_central1_a_instances_stopped_node.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_operations_operation_stopnode(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_operations_operation_stopnode.json"
-        )
+    def _zones_us_central1_a_operations_operation_stopnode(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us_central1_a_operations_operation_stopnode.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances_node_name_stop(self, method, url, body, headers):
         body = self.fixtures.load("zones_us_central1_a_instances_node_name_stop.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_acceleratorTypes_nvidia_tesla_k80(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_acceleratorTypes_nvidia_tesla_k80.json"
-        )
+    def _zones_us_central1_a_acceleratorTypes_nvidia_tesla_k80(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us_central1_a_acceleratorTypes_nvidia_tesla_k80.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_setMetadata(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_node_name_setMetadata_post.json"
-        )
+    def _zones_us_central1_a_instances_node_name_setMetadata(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us_central1_a_instances_node_name_setMetadata_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_setLabels(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_node_name_setLabels_post.json"
-        )
+    def _zones_us_central1_a_instances_node_name_setLabels(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us_central1_a_instances_node_name_setLabels_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_images_custom_image_setLabels(self, method, url, body, headers):
@@ -2834,19 +2695,13 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("global_httpHealthChecks_basic-check.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_httpHealthChecks_libcloud_lb_demo_healthcheck(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "global_httpHealthChecks_libcloud-lb-demo-healthcheck.json"
-        )
+    def _global_httpHealthChecks_libcloud_lb_demo_healthcheck(self, method, url, body, headers):
+        body = self.fixtures.load("global_httpHealthChecks_libcloud-lb-demo-healthcheck.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_httpHealthChecks_lchealthcheck(self, method, url, body, headers):
         if method == "DELETE":
-            body = self.fixtures.load(
-                "global_httpHealthChecks_lchealthcheck_delete.json"
-            )
+            body = self.fixtures.load("global_httpHealthChecks_lchealthcheck_delete.json")
         elif method == "PUT":
             body = self.fixtures.load("global_httpHealthChecks_lchealthcheck_put.json")
         else:
@@ -2892,12 +2747,8 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("global_images_debian_7_wheezy_v20131120_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_images_debian_7_wheezy_v20131014_deprecate(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "global_images_debian_7_wheezy_v20131014_deprecate.json"
-        )
+    def _global_images_debian_7_wheezy_v20131014_deprecate(self, method, url, body, headers):
+        body = self.fixtures.load("global_images_debian_7_wheezy_v20131014_deprecate.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_images_family_coreos_beta(self, method, url, body, headers):
@@ -2986,24 +2837,16 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("global_snapshots_lcsnapshot.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_setUsageExportBucket(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_setUsageExportBucket(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_setUsageExportBucket.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_setCommonInstanceMetadata(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_setCommonInstanceMetadata(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_setCommonInstanceMetadata.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_backendServices_post(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "operations_operation_global_backendServices_post.json"
-        )
+    def _global_operations_operation_global_backendServices_post(self, method, url, body, headers):
+        body = self.fixtures.load("operations_operation_global_backendServices_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_backendServices_web_service_delete(
@@ -3022,12 +2865,8 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_forwardingRules_post(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "operations_operation_global_forwardingRules_post.json"
-        )
+    def _global_operations_operation_global_forwardingRules_post(self, method, url, body, headers):
+        body = self.fixtures.load("operations_operation_global_forwardingRules_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_httpHealthChecks_lchealthcheck_delete(
@@ -3038,12 +2877,8 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_images_debian7_delete(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "operations_operation_global_images_debian7_delete.json"
-        )
+    def _global_operations_operation_global_images_debian7_delete(self, method, url, body, headers):
+        body = self.fixtures.load("operations_operation_global_images_debian7_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_httpHealthChecks_lchealthcheck_put(
@@ -3054,75 +2889,53 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_httpHealthChecks_post(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "operations_operation_global_httpHealthChecks_post.json"
-        )
+    def _global_operations_operation_global_httpHealthChecks_post(self, method, url, body, headers):
+        body = self.fixtures.load("operations_operation_global_httpHealthChecks_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_firewalls_lcfirewall_delete(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_firewalls_lcfirewall_delete.json"
-        )
+        body = self.fixtures.load("operations_operation_global_firewalls_lcfirewall_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_firewalls_lcfirewall_put(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_firewalls_lcfirewall_put.json"
-        )
+        body = self.fixtures.load("operations_operation_global_firewalls_lcfirewall_put.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_firewalls_post(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_global_firewalls_post(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_global_firewalls_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_routes_lcdemoroute_delete(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_routes_lcdemoroute_delete.json"
-        )
+        body = self.fixtures.load("operations_operation_global_routes_lcdemoroute_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_networks_lcnetwork_delete(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_networks_lcnetwork_delete.json"
-        )
+        body = self.fixtures.load("operations_operation_global_networks_lcnetwork_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_routes_post(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_global_routes_post(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_global_routes_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_networks_post(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_global_networks_post(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_global_networks_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_snapshots_lcsnapshot_delete(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_snapshots_lcsnapshot_delete.json"
-        )
+        body = self.fixtures.load("operations_operation_global_snapshots_lcsnapshot_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_image_post(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_global_image_post(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_global_image_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
@@ -3137,9 +2950,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _global_operations_operation_global_targetHttpProxies_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_targetHttpProxies_post.json"
-        )
+        body = self.fixtures.load("operations_operation_global_targetHttpProxies_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_targetHttpProxies_web_proxy_delete(
@@ -3150,18 +2961,14 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_urlMaps_post(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_global_urlMaps_post(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_global_urlMaps_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_operations_operation_global_urlMaps_web_map_delete(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_global_urlMaps_web_map_delete.json"
-        )
+        body = self.fixtures.load("operations_operation_global_urlMaps_web_map_delete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_targetHttpProxies(self, method, url, body, headers):
@@ -3192,29 +2999,19 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("global_urlMaps_web_map.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_east1_subnetworks_cf_972cf02e6ad49113(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-east1_subnetworks_cf_972cf02e6ad49113.json"
-        )
+    def _regions_us_east1_subnetworks_cf_972cf02e6ad49113(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-east1_subnetworks_cf_972cf02e6ad49113.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_subnetworks_cf_972cf02e6ad49112(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_subnetworks_cf_972cf02e6ad49112.json"
-        )
+    def _regions_us_central1_subnetworks_cf_972cf02e6ad49112(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_subnetworks_cf_972cf02e6ad49112.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_other_name_regions_us_central1(self, method, url, body, headers):
         body = self.fixtures.load("projects_other_name_regions_us-central1.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_other_name_global_networks_lcnetwork(
-        self, method, url, body, headers
-    ):
+    def _projects_other_name_global_networks_lcnetwork(self, method, url, body, headers):
         body = self.fixtures.load("projects_other_name_global_networks_lcnetwork.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
@@ -3225,9 +3022,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _projects_other_name_global_networks_shared_network_for_mig(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "projects_other_name_global_networks_shared_network_for_mig.json"
-        )
+        body = self.fixtures.load("projects_other_name_global_networks_shared_network_for_mig.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_other_name_regions_us_central1_subnetworks_cf_972cf02e6ad49114(
@@ -3254,26 +3049,20 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_addresses_post(
-        self, method, url, body, headers
-    ):
+    def _global_operations_operation_global_addresses_post(self, method, url, body, headers):
         body = self.fixtures.load("operations_operation_global_addresses_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_regions_us-central1_addresses_post.json"
-        )
+        body = self.fixtures.load("operations_operation_regions_us-central1_addresses_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_subnetworks_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_regions_us-central1_subnetworks_post.json"
-        )
+        body = self.fixtures.load("operations_operation_regions_us-central1_subnetworks_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_forwardingRules_post(
@@ -3300,17 +3089,11 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_serialPort(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instances_node_name_getSerialOutput.json"
-        )
+    def _zones_us_central1_a_instances_node_name_serialPort(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instances_node_name_getSerialOutput.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_addAccessConfig(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_instances_node_name_addAccessConfig(self, method, url, body, headers):
         body = self.fixtures.load(
             "operations_operation_zones_us-central1-a_instances_node_name_addAccessConfig_post.json"
         )
@@ -3324,20 +3107,14 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_operations_operation_setLabels_post(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_operations_operation_setLabels_post(self, method, url, body, headers):
         body = self.fixtures.load(
             "operations_operation_zones_us_central1_a_node_name_setLabels_post.json"
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_setImageLabels_post(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "global_operations_operation_setImageLabels_post.json"
-        )
+    def _global_operations_operation_setImageLabels_post(self, method, url, body, headers):
+        body = self.fixtures.load("global_operations_operation_setImageLabels_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(
@@ -3351,9 +3128,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _regions_us_central1_operations_operation_regions_us_central1_targetPools_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_regions_us-central1_targetPools_post.json"
-        )
+        body = self.fixtures.load("operations_operation_regions_us-central1_targetPools_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instances_node_name_addAccessConfig_post(
@@ -3439,9 +3214,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_instances_node_name_setDiskAutoDelete(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "zones_us_central1_a_instances_node_name_setDiskAutoDelete.json"
-        )
+        body = self.fixtures.load("zones_us_central1_a_instances_node_name_setDiskAutoDelete.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_volume_auto_delete(
@@ -3479,9 +3252,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_zones_us-central1-a_disks_post.json"
-        )
+        body = self.fixtures.load("operations_operation_zones_us-central1-a_disks_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instances_lcnode_000_delete(
@@ -3543,17 +3314,13 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_europe_west1_a_operations_operation_zones_europe_west1_a_instances_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_zones_europe-west1-a_instances_post.json"
-        )
+        body = self.fixtures.load("operations_operation_zones_europe-west1-a_instances_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instances_post(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "operations_operation_zones_us-central1-a_instances_post.json"
-        )
+        body = self.fixtures.load("operations_operation_zones_us-central1-a_instances_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _project(self, method, url, body, headers):
@@ -3572,20 +3339,12 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("projects_suse-cloud_global_licenses_sles_11.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_rhel_cloud_global_licenses_rhel_7_server(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "projects_rhel-cloud_global_licenses_rhel_server.json"
-        )
+    def _projects_rhel_cloud_global_licenses_rhel_7_server(self, method, url, body, headers):
+        body = self.fixtures.load("projects_rhel-cloud_global_licenses_rhel_server.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_coreos_cloud_global_licenses_coreos_stable(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "projects_coreos-cloud_global_licenses_coreos_stable.json"
-        )
+    def _projects_coreos_cloud_global_licenses_coreos_stable(self, method, url, body, headers):
+        body = self.fixtures.load("projects_coreos-cloud_global_licenses_coreos_stable.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_suse_cloud_global_licenses_sles_12(self, method, url, body, headers):
@@ -3608,20 +3367,12 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("projects_coreos-cloud_global_images.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_coreos_cloud_global_images_family_coreos_beta(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "projects_coreos-cloud_global_images_family_coreos_beta.json"
-        )
+    def _projects_coreos_cloud_global_images_family_coreos_beta(self, method, url, body, header):
+        body = self.fixtures.load("projects_coreos-cloud_global_images_family_coreos_beta.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_coreos_cloud_global_images_family_coreos_stable(
-        self, method, url, body, header
-    ):
-        body = self.fixtures.load(
-            "projects_coreos-cloud_global_images_family_coreos_stable.json"
-        )
+    def _projects_coreos_cloud_global_images_family_coreos_stable(self, method, url, body, header):
+        body = self.fixtures.load("projects_coreos-cloud_global_images_family_coreos_stable.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_cos_cloud_global_images(self, method, url, body, header):
@@ -3711,9 +3462,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
 
     def _regions_us_central1_addresses_lcaddress(self, method, url, body, headers):
         if method == "DELETE":
-            body = self.fixtures.load(
-                "regions_us-central1_addresses_lcaddress_delete.json"
-            )
+            body = self.fixtures.load("regions_us-central1_addresses_lcaddress_delete.json")
         else:
             body = self.fixtures.load("regions_us-central1_addresses_lcaddress.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -3726,12 +3475,8 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("regions_us-central1_subnetworks_subnet_1.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_addresses_lcaddressinternal(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_addresses_lcaddressinternal.json"
-        )
+    def _regions_us_central1_addresses_lcaddressinternal(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_addresses_lcaddressinternal.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_forwardingRules(self, method, url, body, headers):
@@ -3741,25 +3486,17 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("regions_us-central1_forwardingRules.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_forwardingRules_libcloud_lb_demo_lb(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_forwardingRules_libcloud-lb-demo-lb.json"
-        )
+    def _regions_us_central1_forwardingRules_libcloud_lb_demo_lb(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_forwardingRules_libcloud-lb-demo-lb.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_forwardingRules_lcforwardingrule(
-        self, method, url, body, headers
-    ):
+    def _regions_us_central1_forwardingRules_lcforwardingrule(self, method, url, body, headers):
         if method == "DELETE":
             body = self.fixtures.load(
                 "regions_us-central1_forwardingRules_lcforwardingrule_delete.json"
             )
         else:
-            body = self.fixtures.load(
-                "regions_us-central1_forwardingRules_lcforwardingrule.json"
-            )
+            body = self.fixtures.load("regions_us-central1_forwardingRules_lcforwardingrule.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_targetInstances(self, method, url, body, headers):
@@ -3776,25 +3513,17 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("regions_us-central1_targetPools.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_targetInstances_lctargetinstance(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_targetInstances_lctargetinstance(self, method, url, body, headers):
         if method == "DELETE":
             body = self.fixtures.load(
                 "zones_us-central1-a_targetInstances_lctargetinstance_delete.json"
             )
         else:
-            body = self.fixtures.load(
-                "zones_us-central1-a_targetInstances_lctargetinstance.json"
-            )
+            body = self.fixtures.load("zones_us-central1-a_targetInstances_lctargetinstance.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_targetPools_lb_pool_getHealth(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_targetPools_lb_pool_getHealth.json"
-        )
+    def _regions_us_central1_targetPools_lb_pool_getHealth(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_targetPools_lb_pool_getHealth.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_lb_pool(self, method, url, body, headers):
@@ -3803,33 +3532,21 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
 
     def _regions_us_central1_targetPools_lctargetpool(self, method, url, body, headers):
         if method == "DELETE":
-            body = self.fixtures.load(
-                "regions_us-central1_targetPools_lctargetpool_delete.json"
-            )
+            body = self.fixtures.load("regions_us-central1_targetPools_lctargetpool_delete.json")
         else:
-            body = self.fixtures.load(
-                "regions_us-central1_targetPools_lctargetpool.json"
-            )
+            body = self.fixtures.load("regions_us-central1_targetPools_lctargetpool.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_targetPools_lctargetpool_sticky(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_targetPools_lctargetpool_sticky.json"
-        )
+    def _regions_us_central1_targetPools_lctargetpool_sticky(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_targetPools_lctargetpool_sticky.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_backup_pool(self, method, url, body, headers):
         body = self.fixtures.load("regions_us-central1_targetPools_backup_pool.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_targetPools_libcloud_lb_demo_lb_tp(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_targetPools_libcloud-lb-demo-lb-tp.json"
-        )
+    def _regions_us_central1_targetPools_libcloud_lb_demo_lb_tp(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_targetPools_libcloud-lb-demo-lb-tp.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_targetPools_lctargetpool_removeHealthCheck(
@@ -3856,17 +3573,11 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_targetPools_lb_pool_setBackup(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "regions_us-central1_targetPools_lb_pool_setBackup_post.json"
-        )
+    def _regions_us_central1_targetPools_lb_pool_setBackup(self, method, url, body, headers):
+        body = self.fixtures.load("regions_us-central1_targetPools_lb_pool_setBackup_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _regions_us_central1_targetPools_lctargetpool_addInstance(
-        self, method, url, body, headers
-    ):
+    def _regions_us_central1_targetPools_lctargetpool_addInstance(self, method, url, body, headers):
         body = self.fixtures.load(
             "regions_us-central1_targetPools_lctargetpool_addInstance_post.json"
         )
@@ -3914,12 +3625,8 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("zones_us-central1-a_disks_lcdisk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_disks_lcdisk_createSnapshot(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_disks_lcdisk_createSnapshot_post.json"
-        )
+    def _zones_us_central1_a_disks_lcdisk_createSnapshot(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_disks_lcdisk_createSnapshot_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_disks_lcdisk_resize(self, method, url, body, headers):
@@ -3942,33 +3649,23 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_disks_libcloud_lb_demo_www_000(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_b_disks_libcloud_lb_demo_www_000(self, method, url, body, headers):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_disks_libcloud_lb_demo_www_001(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_b_disks_libcloud_lb_demo_www_001(self, method, url, body, headers):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_disks_libcloud_lb_demo_www_002(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_b_disks_libcloud_lb_demo_www_002(self, method, url, body, headers):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central2_a_disks_libcloud_demo_boot_disk(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central2_a_disks_libcloud_demo_boot_disk(self, method, url, body, headers):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central2_a_disks_libcloud_demo_np_node(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central2_a_disks_libcloud_demo_np_node(self, method, url, body, headers):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
@@ -3991,9 +3688,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("zones_us-central1-a_disks.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_europe_west1_a_disks_libcloud_demo_europe_np_node(
-        self, method, url, body, headers
-    ):
+    def _zones_europe_west1_a_disks_libcloud_demo_europe_np_node(self, method, url, body, headers):
         body = self.fixtures.load("generic_disk.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
@@ -4038,93 +3733,55 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
 
     def _zones_us_central1_a_instances_node_name(self, method, url, body, headers):
         if method == "DELETE":
-            body = self.fixtures.load(
-                "zones_us-central1-a_instances_node-name_delete.json"
-            )
+            body = self.fixtures.load("zones_us-central1-a_instances_node-name_delete.json")
         else:
             body = self.fixtures.load("zones_us-central1-a_instances_node-name.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_attachDisk(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instances_node-name_attachDisk_post.json"
-        )
+    def _zones_us_central1_a_instances_node_name_attachDisk(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instances_node-name_attachDisk_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_detachDisk(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instances_node-name_detachDisk_post.json"
-        )
+    def _zones_us_central1_a_instances_node_name_detachDisk(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instances_node-name_detachDisk_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_setTags(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instances_node-name_setTags_post.json"
-        )
+    def _zones_us_central1_a_instances_node_name_setTags(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instances_node-name_setTags_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instances_node_name_reset(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instances_node-name_reset_post.json"
-        )
+    def _zones_us_central1_a_instances_node_name_reset(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instances_node-name_reset_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances_lcnode_000(self, method, url, body, headers):
         if method == "DELETE":
-            body = self.fixtures.load(
-                "zones_us-central1-a_instances_lcnode-000_delete.json"
-            )
+            body = self.fixtures.load("zones_us-central1-a_instances_lcnode-000_delete.json")
         else:
             body = self.fixtures.load("zones_us-central1-a_instances_lcnode-000.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instances_lcnode_001(self, method, url, body, headers):
         if method == "DELETE":
-            body = self.fixtures.load(
-                "zones_us-central1-a_instances_lcnode-001_delete.json"
-            )
+            body = self.fixtures.load("zones_us-central1-a_instances_lcnode-001_delete.json")
         else:
             body = self.fixtures.load("zones_us-central1-a_instances_lcnode-001.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_instances_libcloud_lb_nopubip_001(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-b_instances_libcloud-lb-nopubip-001.json"
-        )
+    def _zones_us_central1_b_instances_libcloud_lb_nopubip_001(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-b_instances_libcloud-lb-nopubip-001.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_instances_libcloud_lb_demo_www_000(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-b_instances_libcloud-lb-demo-www-000.json"
-        )
+    def _zones_us_central1_b_instances_libcloud_lb_demo_www_000(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-b_instances_libcloud-lb-demo-www-000.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_instances_libcloud_lb_demo_www_001(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-b_instances_libcloud-lb-demo-www-001.json"
-        )
+    def _zones_us_central1_b_instances_libcloud_lb_demo_www_001(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-b_instances_libcloud-lb-demo-www-001.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_instances_libcloud_lb_demo_www_002(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-b_instances_libcloud-lb-demo-www-002.json"
-        )
+    def _zones_us_central1_b_instances_libcloud_lb_demo_www_002(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-b_instances_libcloud-lb-demo-www-002.json")
         return (
             httplib.NOT_FOUND,
             body,
@@ -4140,47 +3797,27 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("zones_us-central1-a_machineTypes.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_europe_west1_a_machineTypes_n1_standard_1(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_europe-west1-a_machineTypes_n1-standard-1.json"
-        )
+    def _zones_europe_west1_a_machineTypes_n1_standard_1(self, method, url, body, headers):
+        body = self.fixtures.load("zones_europe-west1-a_machineTypes_n1-standard-1.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_machineTypes_n1_standard_1(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_machineTypes_n1_standard_1(self, method, url, body, headers):
         body = self.fixtures.load("zones_us-central1-a_machineTypes_n1-standard-1.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instanceGroups_myinstancegroup(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instanceGroup_myinstancegroup.json"
-        )
+    def _zones_us_central1_a_instanceGroups_myinstancegroup(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instanceGroup_myinstancegroup.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instanceGroups_myinstancegroup2(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-a_instanceGroup_myinstancegroup2.json"
-        )
+    def _zones_us_central1_a_instanceGroups_myinstancegroup2(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-a_instanceGroup_myinstancegroup2.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_b_instanceGroups_myinstancegroup(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "zones_us-central1-b_instanceGroup_myinstancegroup.json"
-        )
+    def _zones_us_central1_b_instanceGroups_myinstancegroup(self, method, url, body, headers):
+        body = self.fixtures.load("zones_us-central1-b_instanceGroup_myinstancegroup.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_east1_b_instanceGroups_myinstancegroup(
-        self, method, url, body, headers
-    ):
+    def _zones_us_east1_b_instanceGroups_myinstancegroup(self, method, url, body, headers):
         body = self.fixtures.load("zones_us-east1-b_instanceGroup_myinstancegroup.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
@@ -4217,9 +3854,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_b_instanceGroupManagers_myinstancegroup(
         self, method, url, body, headers
     ):
-        body = self.fixtures.load(
-            "zones_us-central1-b_instanceGroupManagers_myinstancegroup.json"
-        )
+        body = self.fixtures.load("zones_us-central1-b_instanceGroupManagers_myinstancegroup.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup_listManagedInstances(
@@ -4238,9 +3873,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         # do an insert.  Returns an operations link, which then
         # returns the MIG URI.
         if method == "POST":
-            body = self.fixtures.load(
-                "zones_us-central1-a_instanceGroupManagers_insert.json"
-            )
+            body = self.fixtures.load("zones_us-central1-a_instanceGroupManagers_insert.json")
         else:
             body = self.fixtures.load("zones_us-central1-a_instanceGroupManagers.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -4266,14 +3899,10 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         """Redirects from _global_instanceTemplates"""
-        body = self.fixtures.load(
-            "operations_operation_global_instanceTemplates_insert.json"
-        )
+        body = self.fixtures.load("operations_operation_global_instanceTemplates_insert.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_instanceTemplates_my_instance_template1(
-        self, method, url, body, headers
-    ):
+    def _global_instanceTemplates_my_instance_template1(self, method, url, body, headers):
         body = self.fixtures.load("global_instanceTemplates_my_instance_template1.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
@@ -4300,20 +3929,14 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("global_sslcertificates_example.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_operations_operation_global_sslcertificates_post(
-        self, method, url, body, headers
-    ):
-        body = self.fixtures.load(
-            "operations_operation_global_sslcertificates_post.json"
-        )
+    def _global_operations_operation_global_sslcertificates_post(self, method, url, body, headers):
+        body = self.fixtures.load("operations_operation_global_sslcertificates_post.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instanceGroups_myname(self, method, url, body, headers):
         if method == "DELETE":
             # delete
-            body = self.fixtures.load(
-                "zones_us_central1_a_instanceGroups_myname_delete.json"
-            )
+            body = self.fixtures.load("zones_us_central1_a_instanceGroups_myname_delete.json")
         else:
             # get or list call
             body = self.fixtures.load("zones_us_central1_a_instanceGroups_myname.json")
@@ -4356,22 +3979,14 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instanceGroups_myname_listInstances(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_instanceGroups_myname_listInstances(self, method, url, body, headers):
         # POST
-        body = self.fixtures.load(
-            "zones_us_central1_a_instanceGroups_myname_listInstances.json"
-        )
+        body = self.fixtures.load("zones_us_central1_a_instanceGroups_myname_listInstances.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instanceGroups_myname_addInstances(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_instanceGroups_myname_addInstances(self, method, url, body, headers):
         # POST
-        body = self.fixtures.load(
-            "zones_us_central1_a_instanceGroups_myname_addInstances.json"
-        )
+        body = self.fixtures.load("zones_us_central1_a_instanceGroups_myname_addInstances.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_addInstances(
@@ -4387,9 +4002,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         self, method, url, body, headers
     ):
         # POST
-        body = self.fixtures.load(
-            "zones_us_central1_a_instanceGroups_myname_removeInstances.json"
-        )
+        body = self.fixtures.load("zones_us_central1_a_instanceGroups_myname_removeInstances.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_removeInstances(
@@ -4401,13 +4014,9 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
         )
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_instanceGroups_myname_setNamedPorts(
-        self, method, url, body, headers
-    ):
+    def _zones_us_central1_a_instanceGroups_myname_setNamedPorts(self, method, url, body, headers):
         # POST
-        body = self.fixtures.load(
-            "zones_us_central1_a_instanceGroups_myname_setNamedPorts.json"
-        )
+        body = self.fixtures.load("zones_us_central1_a_instanceGroups_myname_setNamedPorts.json")
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_setNamedPorts(

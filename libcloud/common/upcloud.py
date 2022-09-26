@@ -15,15 +15,15 @@
 import json
 import time
 
-from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.types import LibcloudError
+from libcloud.common.exceptions import BaseHTTPError
 
 
 class UpcloudTimeoutException(LibcloudError):
     pass
 
 
-class UpcloudCreateNodeRequestBody(object):
+class UpcloudCreateNodeRequestBody:
     """
     Body of the create_node request
 
@@ -85,7 +85,7 @@ class UpcloudCreateNodeRequestBody(object):
         return json.dumps(self.body)
 
 
-class UpcloudNodeDestroyer(object):
+class UpcloudNodeDestroyer:
     """
     Helper class for destroying node.
     Node must be first stopped and then it can be
@@ -149,7 +149,7 @@ class UpcloudNodeDestroyer(object):
         self._sleep_func(self.WAIT_AMOUNT)
 
 
-class UpcloudNodeOperations(object):
+class UpcloudNodeOperations:
     """
     Helper class to start and stop node.
 
@@ -169,7 +169,7 @@ class UpcloudNodeOperations(object):
         """
         body = {"stop_server": {"stop_type": "hard"}}
         self.connection.request(
-            "1.2/server/{0}/stop".format(node_id), method="POST", data=json.dumps(body)
+            "1.2/server/{}/stop".format(node_id), method="POST", data=json.dumps(body)
         )
 
     def get_node_state(self, node_id):
@@ -182,7 +182,7 @@ class UpcloudNodeOperations(object):
         :rtype: ``str``
         """
 
-        action = "1.2/server/{0}".format(node_id)
+        action = "1.2/server/{}".format(node_id)
         try:
             response = self.connection.request(action)
             return response.object["server"]["state"]
@@ -198,10 +198,10 @@ class UpcloudNodeOperations(object):
         :param  node_id: Id of the Node
         :type   node_id: ``int``
         """
-        self.connection.request("1.2/server/{0}".format(node_id), method="DELETE")
+        self.connection.request("1.2/server/{}".format(node_id), method="DELETE")
 
 
-class PlanPrice(object):
+class PlanPrice:
     """
     Helper class to construct plan price in different zones
 
@@ -237,7 +237,7 @@ class PlanPrice(object):
         return None
 
 
-class _LoginUser(object):
+class _LoginUser:
     def __init__(self, user_id, auth=None):
         self.user_id = user_id
         self.auth = auth
@@ -252,7 +252,7 @@ class _LoginUser(object):
         return login_user
 
 
-class _StorageDevice(object):
+class _StorageDevice:
     def __init__(self, image, size):
         self.image = image
         self.size = size

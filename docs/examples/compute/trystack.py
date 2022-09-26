@@ -1,7 +1,6 @@
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
-import libcloud.security
 
 # At the time this example was written, https://nova-api.trystack.org:5443
 # was using a certificate issued by a Certificate Authority (CA) which is

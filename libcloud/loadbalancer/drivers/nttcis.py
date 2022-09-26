@@ -14,30 +14,26 @@
 # limitations under the License.
 
 from libcloud.utils.py3 import ET
-from libcloud.common.nttcis import NttCisConnection
-from libcloud.common.nttcis import NttCisPool
-from libcloud.common.nttcis import NttCisPoolMember
-from libcloud.common.nttcis import NttCisVirtualListener
-from libcloud.common.nttcis import NttCisVIPNode
-from libcloud.common.nttcis import NttCisDefaultHealthMonitor
-from libcloud.common.nttcis import NttCisPersistenceProfile
-from libcloud.common.nttcis import NttCisVirtualListenerCompatibility
-from libcloud.common.nttcis import NttCisDefaultiRule
-from libcloud.common.nttcis import API_ENDPOINTS
-from libcloud.common.nttcis import DEFAULT_REGION
-from libcloud.common.nttcis import TYPES_URN
-from libcloud.common.nttcis import process_xml, get_params
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.utils.misc import reverse_dict
-from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import (
-    Algorithm,
-    Driver,
-    LoadBalancer,
-    DEFAULT_ALGORITHM,
+from libcloud.common.nttcis import (
+    TYPES_URN,
+    API_ENDPOINTS,
+    DEFAULT_REGION,
+    NttCisPool,
+    NttCisVIPNode,
+    NttCisConnection,
+    NttCisPoolMember,
+    NttCisDefaultiRule,
+    NttCisVirtualListener,
+    NttCisPersistenceProfile,
+    NttCisDefaultHealthMonitor,
+    NttCisVirtualListenerCompatibility,
+    get_params,
+    process_xml,
 )
-from libcloud.loadbalancer.base import Member
-from libcloud.loadbalancer.types import Provider
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM, Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State, Provider
 
 
 class NttCisLBDriver(Driver):
@@ -94,7 +90,7 @@ class NttCisLBDriver(Driver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
-        super(NttCisLBDriver, self).__init__(
+        super().__init__(
             key=key,
             secret=secret,
             secure=secure,
@@ -110,7 +106,7 @@ class NttCisLBDriver(Driver):
         Add the region to the kwargs before the connection is instantiated
         """
 
-        kwargs = super(NttCisLBDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["region"] = self.selected_region
         return kwargs
 
@@ -359,9 +355,7 @@ class NttCisLBDriver(Driver):
         :return: ``True`` if member detach was successful, otherwise ``False``.
         :rtype: ``bool``
         """
-        create_pool_m = ET.Element(
-            "removePoolMember", {"xmlns": TYPES_URN, "id": member.id}
-        )
+        create_pool_m = ET.Element("removePoolMember", {"xmlns": TYPES_URN, "id": member.id})
 
         result = self.connection.request_with_orgId_api_2(
             "networkDomainVip/removePoolMember",
@@ -498,9 +492,7 @@ class NttCisLBDriver(Driver):
         ET.SubElement(create_node_elm, "ipv4Address").text = ip
         ET.SubElement(create_node_elm, "status").text = "ENABLED"
         ET.SubElement(create_node_elm, "connectionLimit").text = str(connection_limit)
-        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(
-            connection_rate_limit
-        )
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(connection_rate_limit)
 
         response = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/createNode",
@@ -530,12 +522,8 @@ class NttCisLBDriver(Driver):
         create_node_elm = ET.Element("editNode", {"xmlns": TYPES_URN})
         create_node_elm.set("id", node.id)
         ET.SubElement(create_node_elm, "healthMonitorId").text = node.health_monitor_id
-        ET.SubElement(create_node_elm, "connectionLimit").text = str(
-            node.connection_limit
-        )
-        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(
-            node.connection_rate_limit
-        )
+        ET.SubElement(create_node_elm, "connectionLimit").text = str(node.connection_limit)
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(node.connection_rate_limit)
 
         self.connection.request_with_orgId_api_2(
             action="networkDomainVip/editNode",
@@ -558,9 +546,7 @@ class NttCisLBDriver(Driver):
         :rtype: ``NttCisNode``
         """
         create_node_elm = ET.Element("editNode", {"xmlns": TYPES_URN})
-        ET.SubElement(create_node_elm, "status").text = (
-            "ENABLED" if enabled is True else "DISABLED"
-        )
+        ET.SubElement(create_node_elm, "status").text = "ENABLED" if enabled is True else "DISABLED"
 
         self.connection.request_with_orgId_api_2(
             action="networkDomainVip/editNode",
@@ -737,29 +723,19 @@ class NttCisLBDriver(Driver):
         ET.SubElement(create_node_elm, "type").text = listener_type
         ET.SubElement(create_node_elm, "protocol").text = protocol
         if listener_ip_address is not None:
-            ET.SubElement(create_node_elm, "listenerIpAddress").text = str(
-                listener_ip_address
-            )
+            ET.SubElement(create_node_elm, "listenerIpAddress").text = str(listener_ip_address)
         if port is not None:
             ET.SubElement(create_node_elm, "port").text = str(port)
         ET.SubElement(create_node_elm, "enabled").text = "true"
         ET.SubElement(create_node_elm, "connectionLimit").text = str(connection_limit)
-        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(
-            connection_rate_limit
-        )
-        ET.SubElement(
-            create_node_elm, "sourcePortPreservation"
-        ).text = source_port_preservation
+        ET.SubElement(create_node_elm, "connectionRateLimit").text = str(connection_rate_limit)
+        ET.SubElement(create_node_elm, "sourcePortPreservation").text = source_port_preservation
         if pool is not None:
             ET.SubElement(create_node_elm, "poolId").text = pool.id
         if persistence_profile is not None:
-            ET.SubElement(
-                create_node_elm, "persistenceProfileId"
-            ).text = persistence_profile.id
+            ET.SubElement(create_node_elm, "persistenceProfileId").text = persistence_profile.id
         if optimization_profile is not None:
-            ET.SubElement(
-                create_node_elm, "optimizationProfile"
-            ).text = optimization_profile
+            ET.SubElement(create_node_elm, "optimizationProfile").text = optimization_profile
         if fallback_persistence_profile is not None:
             ET.SubElement(
                 create_node_elm, "fallbackPersistenceProfileId"
@@ -861,9 +837,7 @@ class NttCisLBDriver(Driver):
         response_code = findtext(result, "responseCode", TYPES_URN)
         return response_code in ["IN_PROGRESS", "OK"]
 
-    def ex_import_ssl_cert_chain(
-        self, network_domain_id, name, chain_crt_file, description=None
-    ):
+    def ex_import_ssl_cert_chain(self, network_domain_id, name, chain_crt_file, description=None):
         """
         Import an ssl certificate chain for ssl offloading onto
         the the load balancer
@@ -888,9 +862,7 @@ class NttCisLBDriver(Driver):
             )
 
         c = crypto.load_certificate(crypto.FILETYPE_PEM, open(chain_crt_file).read())
-        cert = OpenSSL.crypto.dump_certificate(crypto.FILETYPE_PEM, c).decode(
-            encoding="utf-8"
-        )
+        cert = OpenSSL.crypto.dump_certificate(crypto.FILETYPE_PEM, c).decode(encoding="utf-8")
         cert_chain_elem = ET.Element("importSslCertificateChain", {"xmlns": TYPES_URN})
         ET.SubElement(cert_chain_elem, "networkDomainId").text = network_domain_id
         ET.SubElement(cert_chain_elem, "name").text = name
@@ -962,13 +934,9 @@ class NttCisLBDriver(Driver):
             ET.SubElement(ssl_offload_elem, "description").text = description
         if ciphers is not None:
             ET.SubElement(ssl_offload_elem, "ciphers").text = ciphers
-        ET.SubElement(
-            ssl_offload_elem, "sslDomainCertificateId"
-        ).text = ssl_domain_cert_id
+        ET.SubElement(ssl_offload_elem, "sslDomainCertificateId").text = ssl_domain_cert_id
         if ssl_cert_chain_id is not None:
-            ET.SubElement(
-                ssl_offload_elem, "sslCertificateChainId"
-            ).text = ssl_cert_chain_id
+            ET.SubElement(ssl_offload_elem, "sslCertificateChainId").text = ssl_cert_chain_id
         result = self.connection.request_with_orgId_api_2(
             "networkDomainVip/createSslOffloadProfile",
             method="POST",
@@ -1012,13 +980,9 @@ class NttCisLBDriver(Driver):
             ET.SubElement(ssl_offload_elem, "description").text = description
         if ciphers is not None:
             ET.SubElement(ssl_offload_elem, "ciphers").text = ciphers
-        ET.SubElement(
-            ssl_offload_elem, "sslDomainCertificateId"
-        ).text = ssl_domain_cert_id
+        ET.SubElement(ssl_offload_elem, "sslDomainCertificateId").text = ssl_domain_cert_id
         if ssl_cert_chain_id is not None:
-            ET.SubElement(
-                ssl_offload_elem, "sslCertificateChainId"
-            ).text = ssl_cert_chain_id
+            ET.SubElement(ssl_offload_elem, "sslCertificateChainId").text = ssl_cert_chain_id
         result = self.connection.request_with_orgId_api_2(
             "networkDomainVip/editSslOffloadProfile",
             method="POST",
@@ -1080,9 +1044,7 @@ class NttCisLBDriver(Driver):
         :return: Returns an instance of ``NttCisPool``
         :rtype: ``NttCisPool``
         """
-        pool = self.connection.request_with_orgId_api_2(
-            "networkDomainVip/pool/%s" % pool_id
-        ).object
+        pool = self.connection.request_with_orgId_api_2("networkDomainVip/pool/%s" % pool_id).object
         return self._to_pool(pool)
 
     def ex_update_pool(self, pool):
@@ -1098,13 +1060,9 @@ class NttCisLBDriver(Driver):
         """
         create_node_elm = ET.Element("editPool", {"xmlns": TYPES_URN})
         create_node_elm.set("id", pool.id)
-        ET.SubElement(create_node_elm, "loadBalanceMethod").text = str(
-            pool.load_balance_method
-        )
+        ET.SubElement(create_node_elm, "loadBalanceMethod").text = str(pool.load_balance_method)
         ET.SubElement(create_node_elm, "healthMonitorId").text = pool.health_monitor_id
-        ET.SubElement(
-            create_node_elm, "serviceDownAction"
-        ).text = pool.service_down_action
+        ET.SubElement(create_node_elm, "serviceDownAction").text = pool.service_down_action
         ET.SubElement(create_node_elm, "slowRampTime").text = str(pool.slow_ramp_time)
 
         response = self.connection.request_with_orgId_api_2(
@@ -1193,9 +1151,7 @@ class NttCisLBDriver(Driver):
         :rtype: ``bool``
         """
         # remove the pool member
-        destroy_request = ET.Element(
-            "removePoolMember", {"xmlns": TYPES_URN, "id": member.id}
-        )
+        destroy_request = ET.Element("removePoolMember", {"xmlns": TYPES_URN, "id": member.id})
 
         result = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/removePoolMember",
@@ -1263,9 +1219,7 @@ class NttCisLBDriver(Driver):
         response_code = findtext(result, "responseCode", TYPES_URN)
         return response_code in ["IN_PROGRESS", "OK"]
 
-    def ex_wait_for_state(
-        self, state, func, poll_interval=2, timeout=60, *args, **kwargs
-    ):
+    def ex_wait_for_state(self, state, func, poll_interval=2, timeout=60, *args, **kwargs):
         """
         Wait for the function which returns a instance
         with field status to match
@@ -1290,9 +1244,7 @@ class NttCisLBDriver(Driver):
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
-        return self.connection.wait_for_state(
-            state, func, poll_interval, timeout, *args, **kwargs
-        )
+        return self.connection.wait_for_state(state, func, poll_interval, timeout, *args, **kwargs)
 
     def ex_get_default_health_monitors(self, network_domain):
         """
@@ -1501,12 +1453,8 @@ class NttCisLBDriver(Driver):
         return NttCisDefaultHealthMonitor(
             id=element.get("id"),
             name=findtext(element, "name", TYPES_URN),
-            node_compatible=bool(
-                findtext(element, "nodeCompatible", TYPES_URN) == "true"
-            ),
-            pool_compatible=bool(
-                findtext(element, "poolCompatible", TYPES_URN) == "true"
-            ),
+            node_compatible=bool(findtext(element, "nodeCompatible", TYPES_URN) == "true"),
+            pool_compatible=bool(findtext(element, "poolCompatible", TYPES_URN) == "true"),
         )
 
     def _to_nodes(self, object):

@@ -17,22 +17,31 @@ libcloud driver for the Host Virtual Inc. (VR) API
 Home page https://www.hostvirtual.com/
 """
 
-import time
 import re
+import time
+
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    NodeAuthSSHKey,
+    NodeAuthPassword,
+)
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
+from libcloud.common.hostvirtual import (
+    HostVirtualResponse,
+    HostVirtualException,
+    HostVirtualConnection,
+)
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.hostvirtual import HostVirtualResponse
-from libcloud.common.hostvirtual import HostVirtualConnection
-from libcloud.common.hostvirtual import HostVirtualException
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 
 API_ROOT = ""
 
@@ -67,9 +76,7 @@ class HostVirtualNodeDriver(NodeDriver):
 
     def __init__(self, key, secure=True, host=None, port=None):
         self.location = None
-        super(HostVirtualNodeDriver, self).__init__(
-            key=key, secure=secure, host=host, port=port
-        )
+        super().__init__(key=key, secure=secure, host=host, port=port)
 
     def list_nodes(self):
         try:
@@ -101,9 +108,7 @@ class HostVirtualNodeDriver(NodeDriver):
         params = {}
         if location is not None:
             params = {"location": location.id}
-        result = self.connection.request(
-            API_ROOT + "/cloud/sizes/", params=params
-        ).object
+        result = self.connection.request(API_ROOT + "/cloud/sizes/", params=params).object
         sizes = []
         for size in result:
             n = NodeSize(
@@ -287,9 +292,7 @@ class HostVirtualNodeDriver(NodeDriver):
         """
 
         params = {"mbpkgid": node_id}
-        result = self.connection.request(
-            API_ROOT + "/cloud/server", params=params
-        ).object
+        result = self.connection.request(API_ROOT + "/cloud/server", params=params).object
         node = self._to_node(result)
         return node
 

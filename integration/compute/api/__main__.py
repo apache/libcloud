@@ -17,5 +17,5 @@ from bottle import run
 
 import integration.api.routes  # noqa
 
-if __name__ == '__main__':
-    run(host='localhost', port=9898)
+if __name__ == "__main__":
+    run(host="localhost", port=9898)

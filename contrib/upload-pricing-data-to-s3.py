@@ -62,7 +62,7 @@ def upload_file(file_path):
         container = driver.get_container(container_name=BUCKET_NAME)
         obj = container.upload_object(file_path=file_path, object_name=object_name)
 
-        print(("Object uploaded to: %s/%s" % (BUCKET_NAME, object_name)))
+        print("Object uploaded to: {}/{}".format(BUCKET_NAME, object_name))
         print(obj)
 
 

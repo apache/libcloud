@@ -20,11 +20,10 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionKey, JsonResponse
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
 from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeImage
 
 API_CONTEXT = "/r"
 API_HOST = "rimuhosting.com"
@@ -56,7 +55,7 @@ class RimuHostingResponse(JsonResponse):
 
     def parse_body(self):
         try:
-            js = super(RimuHostingResponse, self).parse_body()
+            js = super().parse_body()
             keys = list(js.keys())
             if js[keys[0]]["response_type"] == "ERROR":
                 raise RimuHostingException(js[keys[0]]["human_readable_message"])
@@ -97,9 +96,7 @@ class RimuHostingConnection(ConnectionKey):
         if not params:
             params = {}
         # Override this method to prepend the api_context
-        return ConnectionKey.request(
-            self, self.api_context + action, params, data, headers, method
-        )
+        return ConnectionKey.request(self, self.api_context + action, params, data, headers, method)
 
 
 class RimuHostingNodeDriver(NodeDriver):
@@ -113,9 +110,7 @@ class RimuHostingNodeDriver(NodeDriver):
     connectionCls = RimuHostingConnection
     features = {"create_node": ["password"]}
 
-    def __init__(
-        self, key, host=API_HOST, port=443, api_context=API_CONTEXT, secure=True
-    ):
+    def __init__(self, key, host=API_HOST, port=443, api_context=API_CONTEXT, secure=True):
         """
         :param    key: API key (required)
         :type     key: ``str``
@@ -146,7 +141,7 @@ class RimuHostingNodeDriver(NodeDriver):
 
     def _order_uri(self, node, resource):
         # Returns the order uri with its resourse appended.
-        return "/orders/%s/%s" % (node.id, resource)
+        return "/orders/{}/{}".format(node.id, resource)
 
     # TODO: Get the node state.
     def _to_node(self, order):
@@ -155,16 +150,13 @@ class RimuHostingNodeDriver(NodeDriver):
             name=order["domain_name"],
             state=NodeState.RUNNING,
             public_ips=(
-                [order["allocated_ips"]["primary_ip"]]
-                + order["allocated_ips"]["secondary_ips"]
+                [order["allocated_ips"]["primary_ip"]] + order["allocated_ips"]["secondary_ips"]
             ),
             private_ips=[],
             driver=self.connection.driver,
             extra={
                 "order_oid": order["order_oid"],
-                "monthly_recurring_fee": order.get("billing_info").get(
-                    "monthly_recurring_fee"
-                ),
+                "monthly_recurring_fee": order.get("billing_info").get("monthly_recurring_fee"),
             },
         )
         return n
@@ -196,9 +188,7 @@ class RimuHostingNodeDriver(NodeDriver):
         else:
             location = ";dc_location=%s" % (location.id)
 
-        res = self.connection.request(
-            "/pricing-plans;server-type=VPS%s" % (location)
-        ).object
+        res = self.connection.request("/pricing-plans;server-type=VPS%s" % (location)).object
         return list(map(lambda x: self._to_size(x), res["pricing_plan_infos"]))
 
     def list_nodes(self):
@@ -335,9 +325,7 @@ class RimuHostingNodeDriver(NodeDriver):
             "/orders/new-vps", method="POST", data=json.dumps({"new-vps": data})
         ).object
         node = self._to_node(res["about_order"])
-        node.extra["password"] = res["new_order_request"]["instantiation_options"][
-            "password"
-        ]
+        node.extra["password"] = res["new_order_request"]["instantiation_options"]["password"]
         return node
 
     def list_locations(self):

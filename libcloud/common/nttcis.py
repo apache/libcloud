@@ -16,29 +16,27 @@
 NTTCIS Common Components
 """
 
-from typing import Dict
-
-import xml.etree.ElementTree as etree
 import re
-from functools import wraps
-from copy import deepcopy
-from base64 import b64encode
-from time import sleep
+import xml.etree.ElementTree as etree
 from io import BytesIO
+from copy import deepcopy
+from time import sleep
+from base64 import b64encode
+from typing import Dict
+from functools import wraps
 
-try:
-    from collections.abc import MutableSequence, Mapping
-except ImportError:
-    from collections import MutableSequence, Mapping
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, RawResponse
-from libcloud.compute.base import Node
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import b, httplib, basestring
 from libcloud.utils.xml import findtext
+from libcloud.common.base import RawResponse, XmlResponse, ConnectionUserAndKey
+from libcloud.compute.base import Node
 from libcloud.compute.types import LibcloudError, InvalidCredsError
+
+try:
+    from collections.abc import Mapping, MutableSequence
+except ImportError:
+    from collections.abc import Mapping, MutableSequence
 
 
 # Roadmap / TODO:
@@ -325,8 +323,9 @@ def dd_object_to_id(obj, obj_type, id_value="id"):
         return obj
     else:
         raise TypeError(
-            "Invalid type %s looking for basestring or %s"
-            % (type(obj).__name__, obj_type.__name__)
+            "Invalid type {} looking for basestring or {}".format(
+                type(obj).__name__, obj_type.__name__
+            )
         )
 
 
@@ -336,7 +335,7 @@ def LooseVersion(version):
     return float(version)
 
 
-class NetworkDomainServicePlan(object):
+class NetworkDomainServicePlan:
     ESSENTIALS = "ESSENTIALS"
     ADVANCED = "ADVANCED"
 
@@ -363,13 +362,9 @@ class NttCisResponse(XmlResponse):
                 message = findtext(body, message[0], message[1])
                 if message is not None:
                     break
-            raise NttCisAPIException(
-                code=code, msg=message, driver=self.connection.driver
-            )
+            raise NttCisAPIException(code=code, msg=message, driver=self.connection.driver)
         if self.status is not httplib.OK:
-            raise NttCisAPIException(
-                code=self.status, msg=body, driver=self.connection.driver
-            )
+            raise NttCisAPIException(code=self.status, msg=body, driver=self.connection.driver)
 
         return self.body
 
@@ -381,10 +376,10 @@ class NttCisAPIException(LibcloudError):
         self.driver = driver
 
     def __str__(self):
-        return "%s: %s" % (self.code, self.msg)
+        return "{}: {}".format(self.code, self.msg)
 
     def __repr__(self):
-        return "<NttCisAPIException: code='%s', msg='%s'>" % (self.code, self.msg)
+        return "<NttCisAPIException: code='{}', msg='{}'>".format(self.code, self.msg)
 
 
 class NttCisConnection(ConnectionUserAndKey):
@@ -424,7 +419,7 @@ class NttCisConnection(ConnectionUserAndKey):
         api_version=None,
         **conn_kwargs,
     ):
-        super(NttCisConnection, self).__init__(
+        super().__init__(
             user_id=user_id,
             key=key,
             secure=secure,
@@ -463,37 +458,35 @@ class NttCisConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers["Authorization"] = "Basic %s" % b64encode(
-            b("%s:%s" % (self.user_id, self.key))
+            b("{}:{}".format(self.user_id, self.key))
         ).decode("utf-8")
         headers["Content-Type"] = "application/xml"
         return headers
 
     def request_api_1(self, action, params=None, data="", headers=None, method="GET"):
-        action = "%s/%s/%s" % (self.api_path_version_1, self.api_version_1, action)
+        action = "{}/{}/{}".format(self.api_path_version_1, self.api_version_1, action)
 
-        return super(NttCisConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
-    def request_api_2(
-        self, path, action, params=None, data="", headers=None, method="GET"
-    ):
-        action = "%s/%s/%s/%s" % (
+    def request_api_2(self, path, action, params=None, data="", headers=None, method="GET"):
+        action = "{}/{}/{}/{}".format(
             self.api_path_version_2,
             self.active_api_version,
             path,
             action,
         )
 
-        return super(NttCisConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
     def raw_request_with_orgId_api_1(
         self, action, params=None, data="", headers=None, method="GET"
     ):
-        action = "%s/%s" % (self.get_resource_path_api_1(), action)
-        return super(NttCisConnection, self).request(
+        action = "{}/{}".format(self.get_resource_path_api_1(), action)
+        return super().request(
             action=action,
             params=params,
             data=data,
@@ -502,21 +495,17 @@ class NttCisConnection(ConnectionUserAndKey):
             raw=True,
         )
 
-    def request_with_orgId_api_1(
-        self, action, params=None, data="", headers=None, method="GET"
-    ):
-        action = "%s/%s" % (self.get_resource_path_api_1(), action)
+    def request_with_orgId_api_1(self, action, params=None, data="", headers=None, method="GET"):
+        action = "{}/{}".format(self.get_resource_path_api_1(), action)
 
-        return super(NttCisConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
-    def request_with_orgId_api_2(
-        self, action, params=None, data="", headers=None, method="GET"
-    ):
-        action = "%s/%s" % (self.get_resource_path_api_2(), action)
+    def request_with_orgId_api_2(self, action, params=None, data="", headers=None, method="GET"):
+        action = "{}/{}".format(self.get_resource_path_api_2(), action)
 
-        return super(NttCisConnection, self).request(
+        return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
 
@@ -552,9 +541,7 @@ class NttCisConnection(ConnectionUserAndKey):
             params = {}
         params["pageSize"] = page_size
 
-        resp = self.request_with_orgId_api_2(
-            action, params, data, headers, method
-        ).object
+        resp = self.request_with_orgId_api_2(action, params, data, headers, method).object
         yield resp
         if len(resp) <= 0:
             return
@@ -565,9 +552,7 @@ class NttCisConnection(ConnectionUserAndKey):
 
         while int(pcount) >= int(psize):
             params["pageNumber"] = int(pnumber) + 1
-            resp = self.request_with_orgId_api_2(
-                action, params, data, headers, method
-            ).object
+            resp = self.request_with_orgId_api_2(action, params, data, headers, method).object
             pcount = resp.get("pageCount")  # pylint: disable=no-member
             psize = resp.get("pageSize")  # pylint: disable=no-member
             pnumber = resp.get("pageNumber")  # pylint: disable=no-member
@@ -579,7 +564,7 @@ class NttCisConnection(ConnectionUserAndKey):
         resources that require a full path instead of just an ID, such as
         networks, and customer snapshots.
         """
-        return "%s/%s/%s" % (
+        return "{}/{}/{}".format(
             self.api_path_version_1,
             self.api_version_1,
             self._get_orgId(),
@@ -591,7 +576,7 @@ class NttCisConnection(ConnectionUserAndKey):
         resources that require a full path instead of just an ID, such as
         networks, and customer snapshots.
         """
-        return "%s/%s/%s" % (
+        return "{}/{}/{}".format(
             self.api_path_version_2,
             self.active_api_version,
             self._get_orgId(),
@@ -673,7 +658,7 @@ class NttCisConnection(ConnectionUserAndKey):
         )
 
 
-class NttCisAccountDetails(object):
+class NttCisAccountDetails:
     """
     NTTCIS account class details
     """
@@ -686,7 +671,7 @@ class NttCisAccountDetails(object):
         self.email = email
 
 
-class NttCisStatus(object):
+class NttCisStatus:
     """
     NTTCIS API pending operation status class
         action, request_time, user_name, number_of_steps, update_time,
@@ -734,7 +719,7 @@ class NttCisStatus(object):
         )
 
 
-class NttCisNetwork(object):
+class NttCisNetwork:
     """
     NTTCIS network with location.
     """
@@ -762,7 +747,7 @@ class NttCisNetwork(object):
         )
 
 
-class NttCisNetworkDomain(object):
+class NttCisNetworkDomain:
     """
     NttCis network domain with location.
     """
@@ -789,7 +774,7 @@ class NttCisNetworkDomain(object):
         )
 
 
-class NttCisPublicIpBlock(object):
+class NttCisPublicIpBlock:
     """
     NTTCIS Public IP Block with location.
     """
@@ -803,13 +788,16 @@ class NttCisPublicIpBlock(object):
         self.status = status
 
     def __repr__(self):
-        return (
-            "<NttCisNetworkDomain: id=%s, base_ip=%s, "
-            "size=%s, location=%s, status=%s>"
-        ) % (self.id, self.base_ip, self.size, self.location, self.status)
+        return ("<NttCisNetworkDomain: id=%s, base_ip=%s, " "size=%s, location=%s, status=%s>") % (
+            self.id,
+            self.base_ip,
+            self.size,
+            self.location,
+            self.status,
+        )
 
 
-class NttCisServerCpuSpecification(object):
+class NttCisServerCpuSpecification:
     """
     A class that represents the specification of the CPU(s) for a
     node
@@ -841,7 +829,7 @@ class NttCisServerCpuSpecification(object):
         ) % (self.cpu_count, self.cores_per_socket, self.performance)
 
 
-class NttCisServerDisk(object):
+class NttCisServerDisk:
     """
     A class that represents the disk on a server
     """
@@ -875,7 +863,7 @@ class NttCisServerDisk(object):
         return ("<NttCisServerDisk: " "id=%s, size_gb=%s") % (self.id, self.size_gb)
 
 
-class NttCisScsiController(object):
+class NttCisScsiController:
     """
     A class that represents the disk on a server
     """
@@ -905,12 +893,15 @@ class NttCisScsiController(object):
         self.state = state
 
     def __repr__(self):
-        return (
-            "<NttCisScsiController: " "id=%s, adapter_type=%s, bus_number=%s, state=%s"
-        ) % (self.id, self.adapter_type, self.bus_number, self.state)
+        return ("<NttCisScsiController: " "id=%s, adapter_type=%s, bus_number=%s, state=%s") % (
+            self.id,
+            self.adapter_type,
+            self.bus_number,
+            self.state,
+        )
 
 
-class NttCisServerVMWareTools(object):
+class NttCisServerVMWareTools:
     """
     A class that represents the VMWareTools for a node
     """
@@ -934,14 +925,14 @@ class NttCisServerVMWareTools(object):
         self.api_version = api_version
 
     def __repr__(self):
-        return (
-            "<NttCisServerVMWareTools "
-            "status=%s, version_status=%s, "
-            "api_version=%s>"
-        ) % (self.status, self.version_status, self.api_version)
+        return ("<NttCisServerVMWareTools " "status=%s, version_status=%s, " "api_version=%s>") % (
+            self.status,
+            self.version_status,
+            self.api_version,
+        )
 
 
-class NttCisSnapshot(object):
+class NttCisSnapshot:
     """
     NTTCIS Class representing server snapshots
     """
@@ -987,7 +978,7 @@ class NttCisSnapshot(object):
         )
 
 
-class NttCisReservedIpAddress(object):
+class NttCisReservedIpAddress:
     """
     NTTCIS Rerverse IPv4 address
     """
@@ -1013,7 +1004,7 @@ class NttCisReservedIpAddress(object):
         )
 
 
-class NttCisFirewallRule(object):
+class NttCisFirewallRule:
     """
     NTTCIS Firewall Rule for a network domain
     """
@@ -1090,7 +1081,7 @@ class NttCisFirewallAddress(object):
 """
 
 
-class NttCisFirewallAddress(object):
+class NttCisFirewallAddress:
     """
     The source or destination model in a firewall rule
     9/4/18: Editing Class to use with ex_create_firewall_rtule method.
@@ -1156,7 +1147,7 @@ class NttCisFirewallAddress(object):
         )
 
 
-class NttCisNatRule(object):
+class NttCisNatRule:
     """
     An IP NAT rule in a network domain
     """
@@ -1172,7 +1163,7 @@ class NttCisNatRule(object):
         return ("<NttCisNatRule: id=%s, status=%s>") % (self.id, self.status)
 
 
-class NttCisAntiAffinityRule(object):
+class NttCisAntiAffinityRule:
     """
     Anti-Affinity rule for NTTCIS
 
@@ -1197,7 +1188,7 @@ class NttCisAntiAffinityRule(object):
         return ("<NttCisAntiAffinityRule: id=%s>") % (self.id)
 
 
-class NttCisVlan(object):
+class NttCisVlan:
     """
     NTTCIS VLAN.
     """
@@ -1274,12 +1265,16 @@ class NttCisVlan(object):
         self.ipv6_gateway = ipv6_gateway
 
     def __repr__(self):
-        return (
-            "<NttCisVlan: id=%s, name=%s, " "description=%s, location=%s, status=%s>"
-        ) % (self.id, self.name, self.description, self.location, self.status)
+        return ("<NttCisVlan: id=%s, name=%s, " "description=%s, location=%s, status=%s>") % (
+            self.id,
+            self.name,
+            self.description,
+            self.location,
+            self.status,
+        )
 
 
-class NttCisPool(object):
+class NttCisPool:
     """
     NttCis VIP Pool.
     """
@@ -1340,7 +1335,7 @@ class NttCisPool(object):
         )
 
 
-class NttCisPoolMember(object):
+class NttCisPoolMember:
     """
     NTTCIS VIP Pool Member.
     """
@@ -1375,13 +1370,17 @@ class NttCisPoolMember(object):
         self.node_id = node_id
 
     def __repr__(self):
-        return (
-            "NttCisPoolMember: id=%s, name=%s, "
-            "ip=%s, status=%s, port=%s, node_id=%s>"
-        ) % (self.id, self.name, self.ip, self.status, self.port, self.node_id)
+        return ("NttCisPoolMember: id=%s, name=%s, " "ip=%s, status=%s, port=%s, node_id=%s>") % (
+            self.id,
+            self.name,
+            self.ip,
+            self.status,
+            self.port,
+            self.node_id,
+        )
 
 
-class NttCisVIPNode(object):
+class NttCisVIPNode:
     def __init__(
         self,
         id,
@@ -1431,7 +1430,7 @@ class NttCisVIPNode(object):
         )
 
 
-class NttCisVirtualListener(object):
+class NttCisVirtualListener:
     """
     NTTCIS Virtual Listener.
     """
@@ -1466,7 +1465,7 @@ class NttCisVirtualListener(object):
         )
 
 
-class NttCisDefaultHealthMonitor(object):
+class NttCisDefaultHealthMonitor:
     """
     A default health monitor for a VIP (node, pool or listener)
     """
@@ -1496,7 +1495,7 @@ class NttCisDefaultHealthMonitor(object):
         return ("<NttCisDefaultHealthMonitor: id=%s, name=%s>") % (self.id, self.name)
 
 
-class NttCisPersistenceProfile(object):
+class NttCisPersistenceProfile:
     """
     Each Persistence Profile declares the combination of Virtual Listener
     type and protocol with which it is
@@ -1530,7 +1529,7 @@ class NttCisPersistenceProfile(object):
         return ("NttCisPersistenceProfile: id=%s, name=%s>") % (self.id, self.name)
 
 
-class NttCisDefaultiRule(object):
+class NttCisDefaultiRule:
     """
     A default iRule for a network domain, can be applied to a listener
     """
@@ -1557,7 +1556,7 @@ class NttCisDefaultiRule(object):
         return ("<NttCisDefaultiRule: id=%s, name=%s>") % (self.id, self.name)
 
 
-class NttCisVirtualListenerCompatibility(object):
+class NttCisVirtualListenerCompatibility:
     """
     A compatibility preference for a persistence profile or iRule
     specifies which virtual listener types this profile or iRule can be
@@ -1575,7 +1574,7 @@ class NttCisVirtualListenerCompatibility(object):
         )
 
 
-class NttCisBackupDetails(object):
+class NttCisBackupDetails:
     """
     NTTCIS Backup Details represents information about
     a targets backups configuration
@@ -1607,7 +1606,7 @@ class NttCisBackupDetails(object):
         return ("<NttCisBackupDetails: id=%s>") % (self.asset_id)
 
 
-class NttCisBackupClient(object):
+class NttCisBackupClient:
     """
     An object that represents a backup client
     """
@@ -1661,7 +1660,7 @@ class NttCisBackupClient(object):
         return ("<NttCisBackupClient: id=%s>") % (self.id)
 
 
-class NttCisBackupClientAlert(object):
+class NttCisBackupClientAlert:
     """
     An alert for a backup client
     """
@@ -1684,7 +1683,7 @@ class NttCisBackupClientAlert(object):
         return ("<NttCisBackupClientAlert: trigger=%s>") % (self.trigger)
 
 
-class NttCisBackupClientRunningJob(object):
+class NttCisBackupClientRunningJob:
     """
     A running job for a given backup client
     """
@@ -1710,7 +1709,7 @@ class NttCisBackupClientRunningJob(object):
         return ("<NttCisBackupClientRunningJob: id=%s>") % (self.id)
 
 
-class NttCisBackupClientType(object):
+class NttCisBackupClientType:
     """
     A client type object for backups
     """
@@ -1736,7 +1735,7 @@ class NttCisBackupClientType(object):
         return ("<NttCisBackupClientType: type=%s>") % (self.type)
 
 
-class NttCisBackupStoragePolicy(object):
+class NttCisBackupStoragePolicy:
     """
     A representation of a storage policy
     """
@@ -1762,7 +1761,7 @@ class NttCisBackupStoragePolicy(object):
         return ("<NttCisBackupStoragePolicy: name=%s>") % (self.name)
 
 
-class NttCisBackupSchedulePolicy(object):
+class NttCisBackupSchedulePolicy:
     """
     A representation of a schedule policy
     """
@@ -1784,7 +1783,7 @@ class NttCisBackupSchedulePolicy(object):
         return ("<NttCisBackupSchedulePolicy: name=%s>") % (self.name)
 
 
-class NttCisTag(object):
+class NttCisTag:
     """
     A representation of a Tag in NTTCIS
     A Tag first must have a Tag Key, then an asset is tag with
@@ -1831,7 +1830,7 @@ class NttCisTag(object):
         )
 
 
-class NttCisTagKey(object):
+class NttCisTagKey:
     """
     A representation of a Tag Key in NTTCIS
     A tag key is required to tag an asset
@@ -1867,7 +1866,7 @@ class NttCisTagKey(object):
         return ("NttCisTagKey: id=%s name=%s>") % (self.id, self.name)
 
 
-class NttCisIpAddressList(object):
+class NttCisIpAddressList:
     """
     NttCis IP Address list
     """
@@ -1938,7 +1937,7 @@ class NttCisIpAddressList(object):
         )
 
 
-class NttCisChildIpAddressList(object):
+class NttCisChildIpAddressList:
     """
     NttCis Child IP Address list
     """
@@ -1958,10 +1957,10 @@ class NttCisChildIpAddressList(object):
         self.name = name
 
     def __repr__(self):
-        return "<NttCisChildIpAddressList: id=%s, name=%s>" % (self.id, self.name)
+        return "<NttCisChildIpAddressList: id={}, name={}>".format(self.id, self.name)
 
 
-class NttCisIpAddress(object):
+class NttCisIpAddress:
     """
     A representation of IP Address in NttCis
     """
@@ -1984,14 +1983,14 @@ class NttCisIpAddress(object):
         self.prefix_size = prefix_size
 
     def __repr__(self):
-        return "<NttCisIpAddress: begin=%s, end=%s, prefix_size=%s>" % (
+        return "<NttCisIpAddress: begin={}, end={}, prefix_size={}>".format(
             self.begin,
             self.end,
             self.prefix_size,
         )
 
 
-class NttCisPortList(object):
+class NttCisPortList:
     """
     NttCis Port list
     """
@@ -2055,7 +2054,7 @@ class NttCisPortList(object):
         )
 
 
-class NttCisChildPortList(object):
+class NttCisChildPortList:
     """
     NttCis Child Port list
     """
@@ -2075,10 +2074,10 @@ class NttCisChildPortList(object):
         self.name = name
 
     def __repr__(self):
-        return "<NttCisChildPortList: id=%s, name=%s>" % (self.id, self.name)
+        return "<NttCisChildPortList: id={}, name={}>".format(self.id, self.name)
 
 
-class NttCisPort(object):
+class NttCisPort:
     """
     A representation of Port in NTTCIS
     """
@@ -2097,10 +2096,10 @@ class NttCisPort(object):
         self.end = end
 
     def __repr__(self):
-        return "<NttCisPort: begin=%s, end=%s>" % (self.begin, self.end)
+        return "<NttCisPort: begin={}, end={}>".format(self.begin, self.end)
 
 
-class NttCisNic(object):
+class NttCisNic:
     """
     A representation of Network Adapter in NTTCIS
     """
@@ -2134,7 +2133,7 @@ class NttCisNic(object):
 # single authoritative source.
 
 
-class ClassFactory(object):
+class ClassFactory:
     pass
 
 
@@ -2183,11 +2182,7 @@ def processor(mapping, name=None):
     def handle_map(map, name):
         tmp = {}
         types = [type(x) for x in map.values()]
-        if (
-            XmlListConfig not in types
-            and XmlDictConfig not in types
-            and dict not in types
-        ):
+        if XmlListConfig not in types and XmlDictConfig not in types and dict not in types:
             return map
 
         elif XmlListConfig in types:
@@ -2327,9 +2322,7 @@ class XmlListConfig(list):
                     # property refers to an element used repeatedly
                     #  in the XML for data centers only
                     if "property" in element.tag:
-                        self.append(
-                            {element.attrib.get("name"): element.attrib.get("value")}
-                        )
+                        self.append({element.attrib.get("name"): element.attrib.get("value")})
                     else:
                         self.append(element.attrib)
             elif element.text:
@@ -2348,13 +2341,7 @@ class XmlDictConfig(dict):
     def __init__(self, parent_element):
         if parent_element.items():
             if "property" in parent_element.tag:
-                self.update(
-                    {
-                        parent_element.attrib.get("name"): parent_element.attrib.get(
-                            "value"
-                        )
-                    }
-                )
+                self.update({parent_element.attrib.get("name"): parent_element.attrib.get("value")})
             else:
                 self.update(dict(parent_element.items()))
         for element in parent_element:

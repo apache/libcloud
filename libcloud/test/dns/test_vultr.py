@@ -16,15 +16,18 @@
 import sys
 import unittest
 
-from libcloud.dns.drivers.vultr import VultrDNSDriver, VultrDNSDriverV1
-from libcloud.dns.types import RecordType
-from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
-from libcloud.test.secrets import VULTR_PARAMS
-from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.types import ZoneAlreadyExistsError
 from libcloud.dns.base import Zone, Record
+from libcloud.dns.types import (
+    RecordType,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+)
+from libcloud.utils.py3 import httplib
+from libcloud.test.secrets import VULTR_PARAMS
+from libcloud.dns.drivers.vultr import VultrDNSDriver, VultrDNSDriverV1
+from libcloud.test.file_fixtures import DNSFileFixtures
 
 
 class VultrTests(unittest.TestCase):
@@ -122,9 +125,7 @@ class VultrTests(unittest.TestCase):
         self.assertTrue(status)
 
     def test_create_zone_success(self):
-        zone = self.driver.create_zone(
-            domain="test.com", extra={"serverip": "127.0.0.1"}
-        )
+        zone = self.driver.create_zone(domain="test.com", extra={"serverip": "127.0.0.1"})
 
         self.assertEqual(zone.id, "test.com")
         self.assertEqual(zone.domain, "test.com")
@@ -135,9 +136,7 @@ class VultrTests(unittest.TestCase):
         VultrMockHttp.type = "CREATE_ZONE_ZONE_ALREADY_EXISTS"
 
         try:
-            self.driver.create_zone(
-                domain="example.com", extra={"serverip": "127.0.0.1"}
-            )
+            self.driver.create_zone(domain="example.com", extra={"serverip": "127.0.0.1"})
         except ZoneAlreadyExistsError as e:
             self.assertEqual(e.zone_id, "example.com")
         else:
@@ -255,9 +254,7 @@ class VultrMockHttp(MockHttp):
         body = self.fixtures.load("get_zone.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_records_GET_RECORD_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_records_GET_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("list_records.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -277,9 +274,7 @@ class VultrMockHttp(MockHttp):
         body = self.fixtures.load("list_domains.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_create_domain_CREATE_ZONE_ZONE_ALREADY_EXISTS(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_create_domain_CREATE_ZONE_ZONE_ALREADY_EXISTS(self, method, url, body, headers):
         body = ""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -287,26 +282,18 @@ class VultrMockHttp(MockHttp):
         body = self.fixtures.load("list_domains.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_delete_domain_DELETE_ZONE_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_delete_domain_DELETE_ZONE_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = ""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_records_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_records_DELETE_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("list_records.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_delete_record_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_delete_record_DELETE_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_list_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_list_DELETE_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load("test_zone.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -314,9 +301,7 @@ class VultrMockHttp(MockHttp):
         body = self.fixtures.load("list_domains.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_dns_records_LIST_RECORDS_ZONE_DOES_NOT_EXIST(
-        self, method, url, body, headers
-    ):
+    def _v1_dns_records_LIST_RECORDS_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = ""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

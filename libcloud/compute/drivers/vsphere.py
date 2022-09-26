@@ -20,39 +20,35 @@ Code inspired by https://github.com/vmware/pyvmomi-community-samples
 Authors: Dimitris Moraitis, Alex Tsiliris, Markos Gogoulos
 """
 
-import time
-import logging
-import json
-import base64
-import warnings
-import asyncio
 import ssl
+import json
+import time
+import atexit
+import base64
+import asyncio
+import hashlib
+import logging
+import warnings
 import functools
 import itertools
-import hashlib
+
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
+from libcloud.common.types import LibcloudError, ProviderError, InvalidCredsError
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.networking import is_public_subnet
+from libcloud.common.exceptions import BaseHTTPError
 
 try:
     from pyVim import connect
-    from pyVmomi import vim, vmodl, VmomiSupport
+    from pyVmomi import VmomiSupport, vim, vmodl
     from pyVim.task import WaitForTask
 
     pyvmomi = True
 except ImportError:
     pyvmomi = None
 
-import atexit
-
-
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node, NodeSize
-from libcloud.compute.base import NodeImage, NodeLocation
-from libcloud.compute.types import NodeState, Provider
-from libcloud.utils.networking import is_public_subnet
-from libcloud.utils.py3 import httplib
-from libcloud.common.types import ProviderError
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.base import JsonResponse, ConnectionKey
 
 logger = logging.getLogger("libcloud.compute.drivers.vsphere")
 
@@ -125,18 +121,13 @@ class VSphereNodeDriver(NodeDriver):
             error_message = str(exc).lower()
             if "incorrect user name" in error_message:
                 raise InvalidCredsError("Check your username and " "password are valid")
-            if (
-                "connection refused" in error_message
-                or "is not a vim server" in error_message
-            ):
+            if "connection refused" in error_message or "is not a vim server" in error_message:
                 raise LibcloudError(
                     "Check that the host provided is a " "vSphere installation",
                     driver=self,
                 )
             if "name or service not known" in error_message:
-                raise LibcloudError(
-                    "Check that the vSphere host is accessible", driver=self
-                )
+                raise LibcloudError("Check that the vSphere host is accessible", driver=self)
             if "certificate verify failed" in error_message:
                 # bypass self signed certificates
                 try:
@@ -224,11 +215,9 @@ class VSphereNodeDriver(NodeDriver):
                     "parent": str(data.parent),
                 }
         except AttributeError as exc:
-            logger.error("Cannot convert location %s: %r" % (data.name, exc))
+            logger.error("Cannot convert location {}: {!r}".format(data.name, exc))
             extra = {}
-        return NodeLocation(
-            id=data.name, name=data.name, country=None, extra=extra, driver=self
-        )
+        return NodeLocation(id=data.name, name=data.name, country=None, extra=extra, driver=self)
 
     def ex_list_networks(self):
         """
@@ -319,9 +308,7 @@ class VSphereNodeDriver(NodeDriver):
 
         return NodeImage(id=uuid, name=name, driver=self, extra=extra)
 
-    def _collect_properties(
-        self, content, view_ref, obj_type, path_set=None, include_mors=False
-    ):
+    def _collect_properties(self, content, view_ref, obj_type, path_set=None, include_mors=False):
         """
         Collect properties for managed objects from a view ref
         Check the vSphere API documentation for example on retrieving
@@ -497,9 +484,7 @@ class VSphereNodeDriver(NodeDriver):
                 continue  # Do not include templates in node list
             vms.append(vm)
         loop = asyncio.get_event_loop()
-        vms = [
-            loop.run_in_executor(None, self._to_node, vms[i]) for i in range(len(vms))
-        ]
+        vms = [loop.run_in_executor(None, self._to_node, vms[i]) for i in range(len(vms))]
         return await asyncio.gather(*vms)
 
     def _to_nodes_recursive(self, vm_list):
@@ -776,9 +761,7 @@ class VSphereNodeDriver(NodeDriver):
         Create node snapshot
         """
         vm = self.find_by_uuid(node.id)
-        return WaitForTask(
-            vm.CreateSnapshot(snapshot_name, description, dump_memory, quiesce)
-        )
+        return WaitForTask(vm.CreateSnapshot(snapshot_name, description, dump_memory, quiesce))
 
     def ex_remove_snapshot(self, node, snapshot_name=None, remove_children=True):
         """
@@ -800,12 +783,8 @@ class VSphereNodeDriver(NodeDriver):
                     snapshot = s.snapshot
                     break
             else:
-                raise LibcloudError(
-                    "Snapshot `%s` not found" % snapshot_name, driver=self
-                )
-        return self.wait_for_task(
-            snapshot.RemoveSnapshot_Task(removeChildren=remove_children)
-        )
+                raise LibcloudError("Snapshot `%s` not found" % snapshot_name, driver=self)
+        return self.wait_for_task(snapshot.RemoveSnapshot_Task(removeChildren=remove_children))
 
     def ex_revert_to_snapshot(self, node, snapshot_name=None):
         """
@@ -826,9 +805,7 @@ class VSphereNodeDriver(NodeDriver):
                     snapshot = s.snapshot
                     break
             else:
-                raise LibcloudError(
-                    "Snapshot `%s` not found" % snapshot_name, driver=self
-                )
+                raise LibcloudError("Snapshot `%s` not found" % snapshot_name, driver=self)
         return self.wait_for_task(snapshot.RevertToSnapshot_Task())
 
     def _find_template_by_uuid(self, template_uuid):
@@ -845,9 +822,7 @@ class VSphereNodeDriver(NodeDriver):
                 if vm.config.instanceUuid == template_uuid:
                     template = vm
         except Exception as exc:
-            raise LibcloudError(
-                "Error while searching for template: %s" % exc, driver=self
-            )
+            raise LibcloudError("Error while searching for template: %s" % exc, driver=self)
         if not template:
             raise LibcloudError("Unable to locate VirtualMachine.", driver=self)
 
@@ -885,9 +860,7 @@ class VSphereNodeDriver(NodeDriver):
         """
         obj = None
         content = self.connection.RetrieveContent()
-        container = content.viewManager.CreateContainerView(
-            content.rootFolder, vimtype, True
-        )
+        container = content.viewManager.CreateContainerView(content.rootFolder, vimtype, True)
         for c in container.view:
             if name:
                 if c.name == name:
@@ -1002,9 +975,7 @@ class VSphereNodeDriver(NodeDriver):
 
         try:
             content = self.connection.RetrieveContent()
-            rec = content.storageResourceManager.RecommendDatastores(
-                storageSpec=storagespec
-            )
+            rec = content.storageResourceManager.RecommendDatastores(storageSpec=storagespec)
             rec_action = rec.recommendations[0].action[0]
             real_datastore_name = rec_action.destination.name
         except Exception:
@@ -1035,17 +1006,13 @@ class VSphereNodeDriver(NodeDriver):
             if portgroup:
                 dvs_port_connection = vim.dvs.PortConnection()
                 dvs_port_connection.portgroupKey = portgroup.key
-                dvs_port_connection.switchUuid = (
-                    portgroup.config.distributedVirtualSwitch.uuid
-                )
+                dvs_port_connection.switchUuid = portgroup.config.distributedVirtualSwitch.uuid
                 nicspec.device.backing = (
                     vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
                 )
                 nicspec.device.backing.port = dvs_port_connection
             else:
-                nicspec.device.backing = (
-                    vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-                )
+                nicspec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
                 nicspec.device.backing.network = self.get_obj([vim.Network], ex_network)
                 nicspec.device.backing.deviceName = ex_network
             nicspec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
@@ -1092,9 +1059,7 @@ class VSphereNodeDriver(NodeDriver):
         network_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
         network_spec.device = vim.vm.device.VirtualVmxnet3()
 
-        network_spec.device.backing = (
-            vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-        )
+        network_spec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
 
         network_spec.device.backing.useAutoDetect = False
         network_spec.device.backing.network = self.get_obj([vim.Network], network_name)
@@ -1154,7 +1119,7 @@ class VSphereNodeDriver(NodeDriver):
         return content.about.version
 
 
-class VSphereNetwork(object):
+class VSphereNetwork:
     """
     Represents information about a VPC (Virtual Private Cloud) network
 
@@ -1234,17 +1199,11 @@ class VSphere_REST_NodeDriver(NodeDriver):
         httplib.NO_CONTENT,
     ]
 
-    def __init__(
-        self, key, secret=None, secure=True, host=None, port=443, ca_cert=None
-    ):
+    def __init__(self, key, secret=None, secure=True, host=None, port=443, ca_cert=None):
 
         if not key or not secret:
-            raise InvalidCredsError(
-                "Please provide both username " "(key) and password (secret)."
-            )
-        super(VSphere_REST_NodeDriver, self).__init__(
-            key=key, secure=secure, host=host, port=port
-        )
+            raise InvalidCredsError("Please provide both username " "(key) and password (secret).")
+        super().__init__(key=key, secure=secure, host=host, port=port)
         prefixes = ["http://", "https://"]
         for prefix in prefixes:
             if host.startswith(prefix):
@@ -1366,9 +1325,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         hosts_futures = [
             loop.run_in_executor(
                 None,
-                functools.partial(
-                    self.ex_list_hosts, ex_filter_datacenters=datacenter["id"]
-                ),
+                functools.partial(self.ex_list_hosts, ex_filter_datacenters=datacenter["id"]),
             )
             for datacenter in datacenters
         ]
@@ -1567,9 +1524,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         image_name = vm["guest_OS"]
         image_id = image_name + "_id"
         image_extra = {"type": "guest_OS"}
-        image = NodeImage(
-            id=image_id, name=image_name, driver=driver, extra=image_extra
-        )
+        image = NodeImage(id=image_id, name=image_name, driver=driver, extra=image_extra)
         extra = {"snapshots": []}
         if len(vm_id_host) > 1:
             extra["host"] = vm_id_host[1].get("name", "")
@@ -1650,8 +1605,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 params[param] = value
         result = self._request(req, params=params)
         to_return = [
-            {"name": item["name"], "id": item["datacenter"]}
-            for item in result.object["value"]
+            {"name": item["name"], "id": item["datacenter"]} for item in result.object["value"]
         ]
         return to_return
 
@@ -1671,9 +1625,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             return result["value"]
         except BaseHTTPError:
             logger.error(
-                "Library was cannot be accesed, "
-                " most probably the VCenter service "
-                "is stopped"
+                "Library was cannot be accesed, " " most probably the VCenter service " "is stopped"
             )
             return []
 
@@ -1786,16 +1738,12 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def _request(self, req, method="GET", params=None, data=None):
         try:
-            result = self.connection.request(
-                req, method=method, params=params, data=data
-            )
+            result = self.connection.request(req, method=method, params=params, data=data)
         except BaseHTTPError as exc:
             if exc.code == 401:
                 self.connection.session_token = None
                 self._get_session_token()
-                result = self.connection.request(
-                    req, method=method, params=params, data=data
-                )
+                result = self.connection.request(req, method=method, params=params, data=data)
             else:
                 raise
         except Exception:
@@ -1823,9 +1771,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                     capacity = item["size"] // (1024**3)
                     extra["disk_size"] = capacity
                 images.append(
-                    NodeImage(
-                        id=item["id"], name=item["name"], driver=driver, extra=extra
-                    )
+                    NodeImage(id=item["id"], name=item["name"], driver=driver, extra=extra)
                 )
         if self.driver_soap is None:
             self._get_soap_driver()
@@ -1943,8 +1889,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         elif image.extra["type"] == "ovf":
             ovf_request = (
-                "/rest/com/vmware/vcenter/ovf/library-item"
-                "/id:{}?~action=filter".format(image.id)
+                "/rest/com/vmware/vcenter/ovf/library-item" "/id:{}?~action=filter".format(image.id)
             )
             spec = {}
             spec["target"] = {}
@@ -1970,9 +1915,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                     )
                     raise VSphereException(code="504", message=msg)
                 spec["target"]["resource_pool_id"] = resource_pool
-            ovf = self._request(
-                ovf_request, method="POST", data=json.dumps(spec)
-            ).object["value"]
+            ovf = self._request(ovf_request, method="POST", data=json.dumps(spec)).object["value"]
             spec["deployment_spec"] = {}
             spec["deployment_spec"]["name"] = name
             # assuming that since you want to make a vm you don't need reminder
@@ -2000,8 +1943,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 create_disk = True
 
             create_request = (
-                "/rest/com/vmware/vcenter/ovf/library-item"
-                "/id:{}?~action=deploy".format(image.id)
+                "/rest/com/vmware/vcenter/ovf/library-item" "/id:{}?~action=deploy".format(image.id)
             )
             data = json.dumps(
                 {"target": spec["target"], "deployment_spec": spec["deployment_spec"]}
@@ -2060,13 +2002,9 @@ class VSphere_REST_NodeDriver(NodeDriver):
             # hardware
             if size:
                 if size.ram:
-                    spec["hardware_customization"]["memory_update"] = {
-                        "memory": int(size.ram)
-                    }
+                    spec["hardware_customization"]["memory_update"] = {"memory": int(size.ram)}
                 if size.extra.get("cpu"):
-                    spec["hardware_customization"]["cpu_update"] = {
-                        "num_cpus": size.extra["cpu"]
-                    }
+                    spec["hardware_customization"]["cpu_update"] = {"num_cpus": size.extra["cpu"]}
                 if size.disk:
                     if not len(template["disks"]) > 0:
                         create_disk = True
@@ -2079,9 +2017,8 @@ class VSphere_REST_NodeDriver(NodeDriver):
                                 {"key": dsk, "value": update}
                             ]
 
-            create_request = (
-                "/rest/vcenter/vm-template/library-items/"
-                "{}/?action=deploy".format(image.id)
+            create_request = "/rest/vcenter/vm-template/library-items/" "{}/?action=deploy".format(
+                image.id
             )
             data = json.dumps({"spec": spec})
         # deploy the node

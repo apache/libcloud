@@ -13,30 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import base64
 import os.path
-import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
-
 import libcloud.utils.files
-
+from libcloud.test import MockHttp, make_response, generate_random_data
+from libcloud.utils.py3 import b, httplib, urlparse
 from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container, Object
+from libcloud.storage.base import Object, Container
 from libcloud.storage.types import (
-    ContainerAlreadyExistsError,
-    ContainerDoesNotExistError,
-    ContainerIsNotEmptyError,
     ObjectDoesNotExistError,
+    ContainerIsNotEmptyError,
+    ContainerDoesNotExistError,
+    ContainerAlreadyExistsError,
 )
-from libcloud.storage.drivers.atmos import AtmosConnection, AtmosDriver
-from libcloud.storage.drivers.dummy import DummyIterator
-
-from libcloud.test import MockHttp, generate_random_data, make_response
 from libcloud.test.file_fixtures import StorageFileFixtures
+from libcloud.storage.drivers.atmos import AtmosDriver, AtmosConnection
+from libcloud.storage.drivers.dummy import DummyIterator
 
 
 class AtmosTests(unittest.TestCase):
@@ -80,24 +75,18 @@ class AtmosTests(unittest.TestCase):
         self.assertEqual(len(objects), 2)
 
         obj = [o for o in objects if o.name == "not-a-container1"][0]
-        self.assertEqual(
-            obj.meta_data["object_id"], "651eae32634bf84529c74eabd555fda48c7cead6"
-        )
+        self.assertEqual(obj.meta_data["object_id"], "651eae32634bf84529c74eabd555fda48c7cead6")
         self.assertEqual(obj.container.name, "test_container")
 
     def test_get_container(self):
         container = self.driver.get_container(container_name="test_container")
         self.assertEqual(container.name, "test_container")
-        self.assertEqual(
-            container.extra["object_id"], "b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9"
-        )
+        self.assertEqual(container.extra["object_id"], "b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9")
 
     def test_get_container_escaped(self):
         container = self.driver.get_container(container_name="test & container")
         self.assertEqual(container.name, "test & container")
-        self.assertEqual(
-            container.extra["object_id"], "b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9"
-        )
+        self.assertEqual(container.extra["object_id"], "b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9")
 
     def test_get_container_not_found(self):
         try:
@@ -111,9 +100,7 @@ class AtmosTests(unittest.TestCase):
         container = self.driver.create_container(container_name="test_create_container")
         self.assertTrue(isinstance(container, Container))
         self.assertEqual(container.name, "test_create_container")
-        self.assertEqual(
-            container.extra["object_id"], "31a27b593629a3fe59f887fd973fd953e80062ce"
-        )
+        self.assertEqual(container.extra["object_id"], "31a27b593629a3fe59f887fd973fd953e80062ce")
 
     def test_create_container_already_exists(self):
         AtmosMockHttp.type = "ALREADY_EXISTS"
@@ -151,38 +138,28 @@ class AtmosTests(unittest.TestCase):
             self.fail("Container is not empty but an exception was not thrown")
 
     def test_get_object_success(self):
-        obj = self.driver.get_object(
-            container_name="test_container", object_name="test_object"
-        )
+        obj = self.driver.get_object(container_name="test_container", object_name="test_object")
         self.assertEqual(obj.container.name, "test_container")
         self.assertEqual(obj.size, 555)
         self.assertEqual(obj.hash, "6b21c4a111ac178feacf9ec9d0c71f17")
-        self.assertEqual(
-            obj.extra["object_id"], "322dce3763aadc41acc55ef47867b8d74e45c31d6643"
-        )
+        self.assertEqual(obj.extra["object_id"], "322dce3763aadc41acc55ef47867b8d74e45c31d6643")
         self.assertEqual(obj.extra["last_modified"], "Tue, 25 Jan 2011 22:01:49 GMT")
         self.assertEqual(obj.meta_data["foo-bar"], "test 1")
         self.assertEqual(obj.meta_data["bar-foo"], "test 2")
 
     def test_get_object_escaped(self):
-        obj = self.driver.get_object(
-            container_name="test & container", object_name="test & object"
-        )
+        obj = self.driver.get_object(container_name="test & container", object_name="test & object")
         self.assertEqual(obj.container.name, "test & container")
         self.assertEqual(obj.size, 555)
         self.assertEqual(obj.hash, "6b21c4a111ac178feacf9ec9d0c71f17")
-        self.assertEqual(
-            obj.extra["object_id"], "322dce3763aadc41acc55ef47867b8d74e45c31d6643"
-        )
+        self.assertEqual(obj.extra["object_id"], "322dce3763aadc41acc55ef47867b8d74e45c31d6643")
         self.assertEqual(obj.extra["last_modified"], "Tue, 25 Jan 2011 22:01:49 GMT")
         self.assertEqual(obj.meta_data["foo-bar"], "test 1")
         self.assertEqual(obj.meta_data["bar-foo"], "test 2")
 
     def test_get_object_not_found(self):
         try:
-            self.driver.get_object(
-                container_name="test_container", object_name="not_found"
-            )
+            self.driver.get_object(container_name="test_container", object_name="not_found")
         except ObjectDoesNotExistError:
             pass
         else:
@@ -484,9 +461,7 @@ class AtmosTests(unittest.TestCase):
         except AttributeError:
             pass
         else:
-            self.fail(
-                "File content type not provided" " but an exception was not thrown"
-            )
+            self.fail("File content type not provided" " but an exception was not thrown")
         finally:
             libcloud.utils.files.guess_file_mime_type = old_func
 
@@ -522,7 +497,7 @@ class AtmosTests(unittest.TestCase):
             ),
         ]
 
-        class FakeDriver(object):
+        class FakeDriver:
             path = ""
 
         for method, action, api_path, headers, expected in test_values:
@@ -534,9 +509,7 @@ class AtmosTests(unittest.TestCase):
             c.driver = d
             headers = c.add_default_headers(headers)
             headers["Date"] = headers["x-emc-date"] = test_date
-            self.assertEqual(
-                c._calculate_signature({}, headers), b(expected).decode("utf-8")
-            )
+            self.assertEqual(c._calculate_signature({}, headers), b(expected).decode("utf-8"))
 
 
 class AtmosMockHttp(MockHttp, unittest.TestCase):
@@ -563,7 +536,7 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             parsed[2] = parsed[2] + "/" + parsed[4]
             parsed[4] = ""
             url = urlparse.urlunparse(parsed)
-        return super(AtmosMockHttp, self).request(method, url, body, headers, raw)
+        return super().request(method, url, body, headers, raw)
 
     def _rest_namespace_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load("empty_directory_listing.xml")
@@ -581,15 +554,11 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load("list_containers.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _rest_namespace_test_container__metadata_system(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_test_container__metadata_system(self, method, url, body, headers):
         headers = {"x-emc-meta": "objectid=b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9"}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
-    def _rest_namespace_test_20_26_20container__metadata_system(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_test_20_26_20container__metadata_system(self, method, url, body, headers):
         headers = {"x-emc-meta": "objectid=b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9"}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
@@ -600,15 +569,11 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
     def _rest_namespace_test_create_container(self, method, url, body, headers):
         return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
-    def _rest_namespace_test_create_container__metadata_system(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_test_create_container__metadata_system(self, method, url, body, headers):
         headers = {"x-emc-meta": "objectid=31a27b593629a3fe59f887fd973fd953e80062ce"}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
-    def _rest_namespace_test_create_container_ALREADY_EXISTS(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_test_create_container_ALREADY_EXISTS(self, method, url, body, headers):
         body = self.fixtures.load("already_exists.xml")
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
 
@@ -631,9 +596,7 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "size": "555",
             "mtime": "2011-01-25T22:01:49Z",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
     def _rest_namespace_test_20_26_20container_test_20_26_20object_metadata_system(
@@ -644,22 +607,16 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "size": "555",
             "mtime": "2011-01-25T22:01:49Z",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
-    def _rest_namespace_test_container_test_object_metadata_user(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_test_container_test_object_metadata_user(self, method, url, body, headers):
         meta = {
             "md5": "6b21c4a111ac178feacf9ec9d0c71f17",
             "foo-bar": "test 1",
             "bar-foo": "test 2",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
     def _rest_namespace_test_20_26_20container_test_20_26_20object_metadata_user(
@@ -670,20 +627,14 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "foo-bar": "test 1",
             "bar-foo": "test 2",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
-    def _rest_namespace_test_container_not_found_metadata_system(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_test_container_not_found_metadata_system(self, method, url, body, headers):
         body = self.fixtures.load("not_found.xml")
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _rest_namespace_foo_bar_container_foo_bar_object_DELETE(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_foo_bar_container_foo_bar_object_DELETE(self, method, url, body, headers):
         return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object_DELETE(
@@ -709,9 +660,7 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "size": "555",
             "mtime": "2011-01-25T22:01:49Z",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftu_metadata_user(self, method, url, body, headers):
@@ -730,9 +679,7 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "size": "555",
             "mtime": "2011-01-25T22:01:49Z",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftsdn(self, method, url, body, headers):
@@ -755,9 +702,7 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "size": "555",
             "mtime": "2011-01-25T22:01:49Z",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftsde(self, method, url, body, headers):
@@ -779,14 +724,10 @@ class AtmosMockHttp(MockHttp, unittest.TestCase):
             "size": "555",
             "mtime": "2011-01-25T22:01:49Z",
         }
-        headers = {
-            "x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])
-        }
+        headers = {"x-emc-meta": ", ".join([k + "=" + v for k, v in list(meta.items())])}
         return (httplib.OK, "", headers, httplib.responses[httplib.OK])
 
-    def _rest_namespace_foo_bar_container_foo_bar_object(
-        self, method, url, body, headers
-    ):
+    def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url, body, headers):
         body = generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

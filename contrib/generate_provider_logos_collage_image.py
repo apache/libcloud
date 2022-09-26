@@ -28,10 +28,9 @@
 
 import os
 import sys
+import random
 import argparse
 import subprocess
-import random
-
 from os.path import join as pjoin
 
 DIMENSIONS = "150x150"  # Dimensions of the resized image (<width>x<height>)
@@ -53,9 +52,7 @@ def setup(output_path):
 
 def get_logo_files(input_path):
     logo_files = os.listdir(input_path)
-    logo_files = [
-        name for name in logo_files if "resized" not in name and name.endswith("png")
-    ]
+    logo_files = [name for name in logo_files if "resized" not in name and name.endswith("png")]
     logo_files = [pjoin(input_path, name) for name in logo_files]
 
     return logo_files
@@ -66,10 +63,10 @@ def resize_images(logo_files, output_path):
 
     for logo_file in logo_files:
         name, ext = os.path.splitext(os.path.basename(logo_file))
-        new_name = "%s%s" % (name, ext)
+        new_name = "{}{}".format(name, ext)
         out_name = pjoin(output_path, "resized/", new_name)
 
-        print("Resizing image: %(name)s" % {"name": logo_file})
+        print("Resizing image: {name}".format(name=logo_file))
 
         values = {"name": logo_file, "out_name": out_name, "dimensions": DIMENSIONS}
         cmd = "convert %(name)s -resize %(dimensions)s %(out_name)s"
@@ -92,7 +89,7 @@ def assemble_final_image(resized_images, output_path):
     cmd = "montage %(images)s -geometry %(geometry)s %(out_name)s"
     cmd = cmd % values
 
-    print("Generating final image: %(name)s" % {"name": final_name})
+    print("Generating final image: {name}".format(name=final_name))
     subprocess.call(cmd, shell=True)
 
 
@@ -113,9 +110,7 @@ def main(input_path, output_path):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Assemble provider logos " " in a single image"
-    )
+    parser = argparse.ArgumentParser(description="Assemble provider logos " " in a single image")
     parser.add_argument(
         "--input-path",
         action="store",

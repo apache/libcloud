@@ -1,8 +1,8 @@
 import os
 
+from libcloud.compute.base import NodeAuthSSHKey
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.compute.base import NodeAuthSSHKey
 
 cls = get_driver(Provider.PROFIT_BRICKS)
 
@@ -35,7 +35,7 @@ for img in images:
 node_key = None
 # Read SSH key from file
 # Specify correct path
-with open("/home/user/.ssh/id_rsa.pub", "r") as f:
+with open("/home/user/.ssh/id_rsa.pub") as f:
     node_key = NodeAuthSSHKey(f.read())
 f.close()
 

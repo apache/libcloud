@@ -14,16 +14,14 @@
 # limitations under the License.
 import sys
 import unittest
-from libcloud.utils.py3 import httplib
-
-from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation
-from libcloud.compute.drivers.voxel import VoxelNodeDriver as Voxel
-from libcloud.compute.types import InvalidCredsError
 
 from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-
+from libcloud.utils.py3 import httplib
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation
 from libcloud.test.secrets import VOXEL_PARAMS
+from libcloud.compute.types import InvalidCredsError
+from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.voxel import VoxelNodeDriver as Voxel
 
 
 class VoxelTest(unittest.TestCase):
@@ -80,14 +78,10 @@ class VoxelTest(unittest.TestCase):
     def test_create_node_invalid_disk_size(self):
         image = NodeImage(id=1, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
         size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
-        location = NodeLocation(
-            id=1, name="Europe", country="England", driver=self.driver
-        )
+        location = NodeLocation(id=1, name="Europe", country="England", driver=self.driver)
 
         try:
-            self.driver.create_node(
-                name="foo", image=image, size=size, location=location
-            )
+            self.driver.create_node(name="foo", image=image, size=size, location=location)
         except ValueError:
             pass
         else:
@@ -97,13 +91,9 @@ class VoxelTest(unittest.TestCase):
         VoxelMockHttp.type = "CREATE_NODE"
         image = NodeImage(id=1, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
         size = NodeSize(1, "256 slice", 1024, 500, None, None, driver=self.driver)
-        location = NodeLocation(
-            id=1, name="Europe", country="England", driver=self.driver
-        )
+        location = NodeLocation(id=1, name="Europe", country="England", driver=self.driver)
 
-        node = self.driver.create_node(
-            name="foo", image=image, size=size, location=location
-        )
+        node = self.driver.create_node(name="foo", image=image, size=size, location=location)
         self.assertEqual(node.id, "1234")
 
         node = self.driver.create_node(

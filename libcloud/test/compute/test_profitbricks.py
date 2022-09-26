@@ -14,18 +14,15 @@
 # limitations under the License.
 
 import sys
-from six import assertRegex
 
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.types import Provider
-from libcloud.compute.types import NodeState
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.compute.providers import get_driver
-from libcloud.test import unittest
+from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 from libcloud.test.secrets import PROFIT_BRICKS_PARAMS
+from libcloud.compute.types import Provider, NodeState
 from libcloud.common.exceptions import BaseHTTPError
+from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class ProfitBricksTests(unittest.TestCase):
@@ -231,16 +228,12 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(snapshot.size, 10)
         self.assertEqual(snapshot.created, "2016-10-26T11:38:45Z")
         self.assertEqual(snapshot.state, NodeState.RUNNING)
-        self.assertEqual(
-            snapshot.name, "Balancer Testing 1 Storage-Snapshot-10/26/2016"
-        )
+        self.assertEqual(snapshot.name, "Balancer Testing 1 Storage-Snapshot-10/26/2016")
 
         """
         Extra properties
         """
-        self.assertEqual(
-            snapshot.extra["name"], "Balancer Testing 1 Storage-Snapshot-10/26/2016"
-        )
+        self.assertEqual(snapshot.extra["name"], "Balancer Testing 1 Storage-Snapshot-10/26/2016")
         self.assertEqual(
             snapshot.extra["description"],
             ('Created from "Balancer Testing 1' ' Storage" in Data Center "Snapshot"'),
@@ -274,9 +267,7 @@ class ProfitBricksTests(unittest.TestCase):
     """
 
     def test_create_volume_snapshot(self):
-        volume = self.driver.ex_describe_volume(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "volumes/vol-2")
-        )
+        volume = self.driver.ex_describe_volume("/cloudapi/v4/datacenters/" "dc-1/" "volumes/vol-2")
         snapshot = self.driver.create_volume_snapshot(volume=volume)
 
         """
@@ -324,9 +315,7 @@ class ProfitBricksTests(unittest.TestCase):
             self.driver.create_volume_snapshot(volume=None)
 
     def test_ex_describe_snapshot(self):
-        snapshot_w_href = self.driver.ex_describe_snapshot(
-            ex_href="/cloudapi/v4/snapshots/sshot"
-        )
+        snapshot_w_href = self.driver.ex_describe_snapshot(ex_href="/cloudapi/v4/snapshots/sshot")
         snapshot_w_id = self.driver.ex_describe_snapshot(ex_snapshot_id="sshot")
         self._verify_snapshot(snapshot=snapshot_w_href)
         self._verify_snapshot(snapshot=snapshot_w_id)
@@ -376,9 +365,7 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(snapshot.extra["state"], "AVAILABLE")
 
     def test_ex_update_snapshot(self):
-        snapshot = self.driver.ex_describe_snapshot(
-            ex_href="/cloudapi/v4/snapshots/sshot"
-        )
+        snapshot = self.driver.ex_describe_snapshot(ex_href="/cloudapi/v4/snapshots/sshot")
         updated = self.driver.ex_update_snapshot(
             snapshot=snapshot,
             name="libcloud Test - RENAME",
@@ -386,24 +373,16 @@ class ProfitBricksTests(unittest.TestCase):
         )
 
         self.assertEqual(updated.name, "libcloud Test - RENAME")
-        self.assertEqual(
-            updated.extra["description"], "libcloud test snapshot - RENAME"
-        )
+        self.assertEqual(updated.extra["description"], "libcloud test snapshot - RENAME")
 
     def test_restore_volume_snapshot(self):
-        volume = self.driver.ex_describe_volume(
-            ex_datacenter_id="dc-1", ex_volume_id="vol-2"
-        )
+        volume = self.driver.ex_describe_volume(ex_datacenter_id="dc-1", ex_volume_id="vol-2")
         snapshot = self.driver.ex_describe_snapshot(ex_snapshot_id="sshot")
-        restored = self.driver.ex_restore_volume_snapshot(
-            volume=volume, snapshot=snapshot
-        )
+        restored = self.driver.ex_restore_volume_snapshot(volume=volume, snapshot=snapshot)
         self.assertTrue(restored)
 
     def test_destroy_volume_snapshot(self):
-        snapshot = self.driver.ex_describe_snapshot(
-            ex_href="/cloudapi/v4/snapshots/sshot"
-        )
+        snapshot = self.driver.ex_describe_snapshot(ex_href="/cloudapi/v4/snapshots/sshot")
         destroyed = self.driver.destroy_volume_snapshot(snapshot)
         self.assertTrue(destroyed)
 
@@ -420,9 +399,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_create_node(self):
         image = self.driver.ex_describe_image(ex_href="/cloudapi/v4/images/img-2")
-        datacenter = self.driver.ex_describe_datacenter(
-            ex_href="/cloudapi/v4/datacenters/dc-1"
-        )
+        datacenter = self.driver.ex_describe_datacenter(ex_href="/cloudapi/v4/datacenters/dc-1")
 
         ssh_key = NodeAuthSSHKey("ssh-rsa AAAAB3NzaC1")
         password = NodeAuthPassword("secretpassword1233")
@@ -480,28 +457,20 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_create_node_failure(self):
         image = self.driver.ex_describe_image(ex_href="/cloudapi/v4/images/img-2")
-        datacenter = self.driver.ex_describe_datacenter(
-            ex_href="/cloudapi/v4/datacenters/dc-1"
-        )
+        datacenter = self.driver.ex_describe_datacenter(ex_href="/cloudapi/v4/datacenters/dc-1")
         sizes = self.driver.list_sizes()
 
         with self.assertRaises(ValueError):
             "Raises value error if no size or ex_ram"
-            self.driver.create_node(
-                name="libcloud Test", image=image, ex_disk=40, ex_cores=1
-            )
+            self.driver.create_node(name="libcloud Test", image=image, ex_disk=40, ex_cores=1)
 
         with self.assertRaises(ValueError):
             "Raises value error if no size or ex_cores"
-            self.driver.create_node(
-                name="libcloud Test", image=image, ex_disk=40, ex_ram=1024
-            )
+            self.driver.create_node(name="libcloud Test", image=image, ex_disk=40, ex_ram=1024)
 
         with self.assertRaises(ValueError):
             "Raises value error if no size or ex_disk"
-            self.driver.create_node(
-                name="libcloud Test", image=image, ex_cores=2, ex_ram=1024
-            )
+            self.driver.create_node(name="libcloud Test", image=image, ex_cores=2, ex_ram=1024)
 
         with self.assertRaises(ValueError):
             "Raises value error if no ssh keys or password"
@@ -615,9 +584,7 @@ class ProfitBricksTests(unittest.TestCase):
         node_w_href = self.driver.ex_describe_node(
             ex_href=("/cloudapi/v4/datacenters/" "dc-1/" "servers/srv-1")
         )
-        node_w_id = self.driver.ex_describe_node(
-            ex_datacenter_id="dc-1", ex_node_id="srv-1"
-        )
+        node_w_id = self.driver.ex_describe_node(ex_datacenter_id="dc-1", ex_node_id="srv-1")
         self._verify_node(node=node_w_href)
         self._verify_node(node=node_w_id)
 
@@ -790,17 +757,13 @@ class ProfitBricksTests(unittest.TestCase):
         volume_w_href = self.driver.ex_describe_volume(
             ex_href=("/cloudapi/v4/datacenters/" "dc-1/" "volumes/vol-2")
         )
-        volume_w_id = self.driver.ex_describe_volume(
-            ex_datacenter_id="dc-1", ex_volume_id="vol-2"
-        )
+        volume_w_id = self.driver.ex_describe_volume(ex_datacenter_id="dc-1", ex_volume_id="vol-2")
         self._verify_volume(volume=volume_w_href)
         self._verify_volume(volume=volume_w_id)
 
     def test_ex_describe_volume_failure(self):
         with self.assertRaises(BaseHTTPError) as cm:
-            self.driver.ex_describe_volume(
-                ex_datacenter_id="dc-1", ex_volume_id="00000000"
-            )
+            self.driver.ex_describe_volume(ex_datacenter_id="dc-1", ex_volume_id="00000000")
         self.assertIn("Resource does not exist", cm.exception.message.value)
 
     def _verify_volume(self, volume):
@@ -1009,9 +972,7 @@ class ProfitBricksTests(unittest.TestCase):
     """
 
     def test_ex_describe_image(self):
-        image_w_href = self.driver.ex_describe_image(
-            ex_href=("/cloudapi/v4/images/" "img-2")
-        )
+        image_w_href = self.driver.ex_describe_image(ex_href=("/cloudapi/v4/images/" "img-2"))
         image_w_id = self.driver.ex_describe_image(ex_image_id="img-2")
         self._verify_image(image=image_w_href)
         self._verify_image(image=image_w_id)
@@ -1183,9 +1144,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_ex_create_network_interface(self):
 
-        node = self.driver.ex_describe_node(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/srv-1")
-        )
+        node = self.driver.ex_describe_node("/cloudapi/v4/datacenters/" "dc-1/" "servers/srv-1")
         network_interface = self.driver.ex_create_network_interface(
             node=node, lan_id=1, dhcp_active=True, nic_name="libcloud Test"
         )
@@ -1226,14 +1185,12 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_create_network_interface_failure(self):
         with self.assertRaises(AttributeError):
             "Raises attribute error if no node"
-            self.driver.ex_create_network_interface(
-                node=None, lan_id=1, nic_name="libcloud Test"
-            )
+            self.driver.ex_create_network_interface(node=None, lan_id=1, nic_name="libcloud Test")
 
     def test_ex_update_network_interface(self):
 
         network_interface = self.driver.ex_describe_network_interface(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2")
+            "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2"
         )
         updated = self.driver.ex_update_network_interface(
             network_interface=network_interface, name="libcloud Test - RENAME"
@@ -1259,17 +1216,15 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_destroy_network_interface(self):
 
         network_interface = self.driver.ex_describe_network_interface(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2")
+            "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2"
         )
-        destroyed = self.driver.ex_destroy_network_interface(
-            network_interface=network_interface
-        )
+        destroyed = self.driver.ex_destroy_network_interface(network_interface=network_interface)
 
         self.assertTrue(destroyed)
 
     def test_ex_set_inet_access(self):
         network_interface = self.driver.ex_describe_network_interface(
-            ("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2")
+            "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3" "/nics/nic-2"
         )
         updated = self.driver.ex_set_inet_access(
             network_interface=network_interface, internet_access=False
@@ -1359,11 +1314,7 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_describe_firewall_rule(self):
         firewall_rule_w_href = self.driver.ex_describe_firewall_rule(
             ex_href=(
-                "/cloudapi/v4/datacenters/"
-                "dc-1/servers/"
-                "s-3/nics/"
-                "nic-2/firewallrules"
-                "/fw2"
+                "/cloudapi/v4/datacenters/" "dc-1/servers/" "s-3/nics/" "nic-2/firewallrules" "/fw2"
             )
         )
         firewall_rule_w_id = self.driver.ex_describe_firewall_rule(
@@ -1395,13 +1346,7 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(firewall_rule.name, "SSH")
         self.assertEqual(
             firewall_rule.href,
-            (
-                "/cloudapi/v4/datacenters/"
-                "dc-1/servers/"
-                "s-3/nics/"
-                "nic-2/"
-                "firewallrules/fw2"
-            ),
+            ("/cloudapi/v4/datacenters/" "dc-1/servers/" "s-3/nics/" "nic-2/" "firewallrules/fw2"),
         )
         self.assertEqual(firewall_rule.state, NodeState.RUNNING)
 
@@ -1489,19 +1434,13 @@ class ProfitBricksTests(unittest.TestCase):
     def test_ex_create_firewall_rule_failure(self):
         with self.assertRaises(AttributeError):
             "Raises attribute error if no network interface"
-            self.driver.ex_create_firewall_rule(
-                network_interface=None, protocol="TCP", name="SSH"
-            )
+            self.driver.ex_create_firewall_rule(network_interface=None, protocol="TCP", name="SSH")
 
     def test_ex_update_firewall_rule(self):
 
         firewall_rule = self.driver.ex_describe_firewall_rule(
             ex_href=(
-                "/cloudapi/v4/datacenters/"
-                "dc-1/"
-                "servers/s-3/"
-                "nics/nic-2/"
-                "firewallrules/fw2"
+                "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3/" "nics/nic-2/" "firewallrules/fw2"
             )
         )
         updated = self.driver.ex_update_firewall_rule(
@@ -1522,11 +1461,7 @@ class ProfitBricksTests(unittest.TestCase):
 
         firewall_rule = self.driver.ex_describe_firewall_rule(
             ex_href=(
-                "/cloudapi/v4/datacenters/"
-                "dc-1/"
-                "servers/s-3/"
-                "nics/nic-2/"
-                "firewallrules/fw2"
+                "/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3/" "nics/nic-2/" "firewallrules/fw2"
             )
         )
         deleted = self.driver.ex_delete_firewall_rule(firewall_rule)
@@ -1654,12 +1589,8 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(extra["is_public"], True)
 
     def test_ex_update_lan(self):
-        lan = self.driver.ex_describe_lan(
-            ex_href=("/cloudapi/v4/datacenters/" "dc-1/lans/10")
-        )
-        updated = self.driver.ex_update_lan(
-            lan=lan, is_public=False, name="libcloud Test - RENAME"
-        )
+        lan = self.driver.ex_describe_lan(ex_href=("/cloudapi/v4/datacenters/" "dc-1/lans/10"))
+        updated = self.driver.ex_update_lan(lan=lan, is_public=False, name="libcloud Test - RENAME")
         extra = updated.extra
 
         """
@@ -1688,9 +1619,7 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(extra["is_public"], False)
 
     def test_ex_delete_lan(self):
-        lan = self.driver.ex_describe_lan(
-            ex_href=("/cloudapi/v4/datacenters/" "dc-1/lans/10")
-        )
+        lan = self.driver.ex_describe_lan(ex_href=("/cloudapi/v4/datacenters/" "dc-1/lans/10"))
         deleted = self.driver.ex_delete_lan(lan)
         self.assertTrue(deleted)
 
@@ -1737,12 +1666,8 @@ class ProfitBricksTests(unittest.TestCase):
         """
         self.assertEqual(load_balancer.extra["created_date"], "2016-10-26T13:02:33Z")
         self.assertEqual(load_balancer.extra["created_by"], "test@test.te")
-        self.assertEqual(
-            load_balancer.extra["etag"], "71e8df57a58615b9e15400ede4138b41"
-        )
-        self.assertEqual(
-            load_balancer.extra["last_modified_date"], "2016-10-26T13:02:33Z"
-        )
+        self.assertEqual(load_balancer.extra["etag"], "71e8df57a58615b9e15400ede4138b41")
+        self.assertEqual(load_balancer.extra["last_modified_date"], "2016-10-26T13:02:33Z")
         self.assertEqual(load_balancer.extra["last_modified_by"], "test@test.te")
         self.assertEqual(load_balancer.extra["state"], "AVAILABLE")
 
@@ -1768,9 +1693,7 @@ class ProfitBricksTests(unittest.TestCase):
         Standard properties
         """
         self.assertEqual(created.id, "bal-1")
-        self.assertEqual(
-            created.href, ("/cloudapi/v4/datacenters" "/dc-1" "/loadbalancers/bal-1")
-        )
+        self.assertEqual(created.href, ("/cloudapi/v4/datacenters" "/dc-1" "/loadbalancers/bal-1"))
         self.assertEqual(created.name, "libcloud Test")
         self.assertEqual(created.state, NodeState.PENDING)
 
@@ -1890,7 +1813,7 @@ class ProfitBricksTests(unittest.TestCase):
         Extra properties
         """
         self.assertEqual(extra["name"], "libcloud Test")
-        assertRegex(self, extra["mac"], "^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$")
+        self.assertRegex(extra["mac"], "^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$")
         self.assertTrue(len(extra["ips"]) > 0)
         self.assertEqual(extra["dhcp"], True)
         self.assertIsInstance(extra["lan"], int)
@@ -1911,7 +1834,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_ex_remove_nic_from_load_balancer(self):
         network_interface = self.driver.ex_describe_network_interface(
-            ex_href=(("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3/" "nics/nic-2"))
+            ex_href=("/cloudapi/v4/datacenters/" "dc-1/" "servers/s-3/" "nics/nic-2")
         )
         load_balancer = self.driver.ex_describe_load_balancer(
             ex_href=("/cloudapi/v4/datacenters/" "dc-2/" "loadbalancers/bal-1")
@@ -1938,9 +1861,7 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_ex_create_ip_block(self):
         location = self.driver.ex_describe_location(ex_location_id="us/las")
-        created = self.driver.ex_create_ip_block(
-            location=location, size=2, name="libcloud Test"
-        )
+        created = self.driver.ex_create_ip_block(location=location, size=2, name="libcloud Test")
         extra = created.extra
 
         """
@@ -2007,9 +1928,7 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertEqual(extra["state"], "AVAILABLE")
 
     def test_ex_delete_ip_block(self):
-        ip_block = self.driver.ex_describe_ip_block(
-            ex_href=("/cloudapi/v4/ipblocks/" "ipb-2")
-        )
+        ip_block = self.driver.ex_describe_ip_block(ex_href=("/cloudapi/v4/ipblocks/" "ipb-2"))
         deleted = self.driver.ex_delete_ip_block(ip_block)
         self.assertTrue(deleted)
 
@@ -2129,9 +2048,7 @@ class ProfitBricksMockHttp(MockHttp):
         elif method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
-    def _cloudapi_v4_datacenters_dc_1_servers_00000000(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_00000000(self, method, url, body, headers):
         return self._get_not_found()
 
     """
@@ -2141,23 +2058,17 @@ class ProfitBricksMockHttp(MockHttp):
     """
     "reboot a node"
 
-    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_reboot(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_reboot(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     "start a node"
 
-    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_stop(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_stop(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     "stop a node"
 
-    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_start(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_start(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     """
@@ -2202,9 +2113,7 @@ class ProfitBricksMockHttp(MockHttp):
             body = self.fixtures.load("ex_update_volume.json")
             return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
-    def _cloudapi_v4_datacenters_dc_1_volumes_00000000(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_volumes_00000000(self, method, url, body, headers):
         return self._get_not_found()
 
     """
@@ -2214,9 +2123,7 @@ class ProfitBricksMockHttp(MockHttp):
                 and a server but does delete the volume.
     """
 
-    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_volumes_vol_2(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_volumes_vol_2(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     """
@@ -2239,9 +2146,7 @@ class ProfitBricksMockHttp(MockHttp):
     POST    - attach a volume to a node (server)
     """
 
-    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_volumes(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_volumes(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("ex_list_attached_volumes.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -2257,9 +2162,7 @@ class ProfitBricksMockHttp(MockHttp):
     POST    - create a network interface for a node (server)
     """
 
-    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_nics(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_srv_1_nics(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("ex_list_network_interfaces.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -2276,9 +2179,7 @@ class ProfitBricksMockHttp(MockHttp):
     PATCH   - update a network interface
     """
 
-    def _cloudapi_v4_datacenters_dc_1_servers_s_3_nics_nic_2(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_s_3_nics_nic_2(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("ex_describe_network_interface.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -2290,9 +2191,7 @@ class ProfitBricksMockHttp(MockHttp):
             body = self.fixtures.load("ex_update_network_interface.json")
             return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
-    def _cloudapi_v4_datacenters_dc_1_servers_s_3_nics_00000000(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_1_servers_s_3_nics_00000000(self, method, url, body, headers):
         return self._get_not_found()
 
     """
@@ -2457,9 +2356,7 @@ class ProfitBricksMockHttp(MockHttp):
     PATCH   - update a load balancer
     """
 
-    def _cloudapi_v4_datacenters_dc_2_loadbalancers_bal_1(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_2_loadbalancers_bal_1(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("ex_describe_load_balancer.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -2471,9 +2368,7 @@ class ProfitBricksMockHttp(MockHttp):
             body = self.fixtures.load("ex_update_load_balancer.json")
             return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
-    def _cloudapi_v4_datacenters_dc_2_loadbalancers_00000000(
-        self, method, url, body, headers
-    ):
+    def _cloudapi_v4_datacenters_dc_2_loadbalancers_00000000(self, method, url, body, headers):
         return self._get_not_found()
 
     """

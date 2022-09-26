@@ -20,9 +20,12 @@ verification, depending on libcloud.security settings.
 
 import os
 import warnings
-import requests
 
+import requests
 from requests.adapters import HTTPAdapter
+
+import libcloud.security
+from libcloud.utils.py3 import urlparse
 
 try:
     # requests no longer vendors urllib3 in newer versions
@@ -30,9 +33,6 @@ try:
     from urllib3.poolmanager import PoolManager
 except ImportError:
     from requests.packages.urllib3.poolmanager import PoolManager  # type: ignore
-
-import libcloud.security
-from libcloud.utils.py3 import urlparse, PY3
 
 
 __all__ = ["LibcloudBaseConnection", "LibcloudConnection"]
@@ -50,7 +50,7 @@ class SignedHTTPSAdapter(HTTPAdapter):
     def __init__(self, cert_file, key_file):
         self.cert_file = cert_file
         self.key_file = key_file
-        super(SignedHTTPSAdapter, self).__init__()
+        super().__init__()
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(
@@ -62,7 +62,7 @@ class SignedHTTPSAdapter(HTTPAdapter):
         )
 
 
-class LibcloudBaseConnection(object):
+class LibcloudBaseConnection:
     """
     Base connection class to inherit from.
 
@@ -131,8 +131,7 @@ class LibcloudBaseConnection(object):
 
         if not parsed.hostname or not parsed.port:
             raise ValueError(
-                "proxy_url must be in the following format: "
-                "<scheme>://<proxy host>:<proxy port>"
+                "proxy_url must be in the following format: " "<scheme>://<proxy host>:<proxy port>"
             )
 
         proxy_scheme = parsed.scheme
@@ -192,18 +191,16 @@ class LibcloudConnection(LibcloudBaseConnection):
 
     def __init__(self, host, port, secure=None, **kwargs):
         scheme = "https" if secure is not None and secure else "http"
-        self.host = "{0}://{1}{2}".format(
+        self.host = "{}://{}{}".format(
             "https" if port == 443 else scheme,
             host,
-            ":{0}".format(port) if port not in (80, 443) else "",
+            ":{}".format(port) if port not in (80, 443) else "",
         )
 
         # Support for HTTP(s) proxy
         # NOTE: We always only use a single proxy (either HTTP or HTTPS)
         https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME, None)
-        http_proxy_url_env = os.environ.get(
-            HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env
-        )
+        http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env)
 
         # Connection argument has precedence over environment variables
         proxy_url = kwargs.pop("proxy_url", http_proxy_url_env)
@@ -228,9 +225,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         """
         return self.ca_cert if self.ca_cert is not None else self.verify
 
-    def request(
-        self, method, url, body=None, headers=None, raw=False, stream=False, hooks=None
-    ):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False, hooks=None):
         url = urlparse.urljoin(self.host, url)
         headers = self._normalize_headers(headers=headers)
 
@@ -246,14 +241,10 @@ class LibcloudConnection(LibcloudBaseConnection):
             hooks=hooks,
         )
 
-    def prepared_request(
-        self, method, url, body=None, headers=None, raw=False, stream=False
-    ):
+    def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):
         headers = self._normalize_headers(headers=headers)
 
-        req = requests.Request(
-            method, "".join([self.host, url]), data=body, headers=headers
-        )
+        req = requests.Request(method, "".join([self.host, url]), data=body, headers=headers)
 
         prepped = self.session.prepare_request(req)
 
@@ -303,7 +294,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         return headers
 
 
-class HttpLibResponseProxy(object):
+class HttpLibResponseProxy:
     """
     Provides a proxy pattern around the :class:`requests.Reponse`
     object to a :class:`httplib.HTTPResponse` object
@@ -329,10 +320,7 @@ class HttpLibResponseProxy(object):
         """
         Return a list of (header, value) tuples.
         """
-        if PY3:
-            return list(self._response.headers.items())
-        else:
-            return self._response.headers.items()
+        return list(self._response.headers.items())
 
     @property
     def status(self):

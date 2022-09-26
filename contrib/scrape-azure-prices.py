@@ -17,15 +17,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+import os
 import json
 import time
-import os
+
 import requests
 
-
-PRICES_URL = (
-    "https://azure.microsoft.com/api/v3/pricing/" "virtual-machines/calculator/"
-)
+PRICES_URL = "https://azure.microsoft.com/api/v3/pricing/" "virtual-machines/calculator/"
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRICING_FILE_PATH = os.path.join(BASE_PATH, "../libcloud/data/pricing.json")
 PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
@@ -64,7 +62,7 @@ def get_azure_prices():
 
 
 def write_azure_prices(file_path, prices):
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     data = json.loads(content)

@@ -20,14 +20,13 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
-from libcloud.common.types import LibcloudError
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer, Member
-from libcloud.utils.misc import ReprMixin
 from libcloud.utils.py3 import u
-from libcloud.utils.xml import findattr, findtext, findall
-
+from libcloud.utils.xml import findall, findattr, findtext
+from libcloud.utils.misc import ReprMixin
+from libcloud.common.types import LibcloudError
+from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
+from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
 
 SLB_API_VERSION = "2014-05-15"
 SLB_API_HOST = "slb.aliyuncs.com"
@@ -74,7 +73,7 @@ class SLBConnection(SignedAliyunConnection):
     service_name = "slb"
 
 
-class SLBLoadBalancerAttribute(object):
+class SLBLoadBalancerAttribute:
     """
     This class used to get listeners and backend servers related to a balancer
     listeners is a ``list`` of ``dict``, each element contains
@@ -102,14 +101,14 @@ class SLBLoadBalancerAttribute(object):
         return False
 
     def __repr__(self):
-        return "<SLBLoadBalancerAttribute id=%s, ports=%s, servers=%s ...>" % (
+        return "<SLBLoadBalancerAttribute id={}, ports={}, servers={} ...>".format(
             self.balancer.id,
             self.listeners,
             self.backend_servers,
         )
 
 
-class SLBLoadBalancerListener(ReprMixin, object):
+class SLBLoadBalancerListener(ReprMixin):
     """
     Base SLB load balancer listener class
     """
@@ -184,14 +183,12 @@ class SLBLoadBalancerHttpListener(SLBLoadBalancerListener):
         health_check,
         extra=None,
     ):
-        super(SLBLoadBalancerHttpListener, self).__init__(
-            port, backend_port, algorithm, bandwidth, extra=extra
-        )
+        super().__init__(port, backend_port, algorithm, bandwidth, extra=extra)
         self.sticky_session = sticky_session
         self.health_check = health_check
 
     def get_required_params(self):
-        params = super(SLBLoadBalancerHttpListener, self).get_required_params()
+        params = super().get_required_params()
         params["StickySession"] = self.sticky_session
         params["HealthCheck"] = self.health_check
         return params
@@ -247,15 +244,13 @@ class SLBLoadBalancerHttpsListener(SLBLoadBalancerListener):
         certificate_id,
         extra=None,
     ):
-        super(SLBLoadBalancerHttpsListener, self).__init__(
-            port, backend_port, algorithm, bandwidth, extra=extra
-        )
+        super().__init__(port, backend_port, algorithm, bandwidth, extra=extra)
         self.sticky_session = sticky_session
         self.health_check = health_check
         self.certificate_id = certificate_id
 
     def get_required_params(self):
-        params = super(SLBLoadBalancerHttpsListener, self).get_required_params()
+        params = super().get_required_params()
         params["StickySession"] = self.sticky_session
         params["HealthCheck"] = self.health_check
         params["ServerCertificateId"] = self.certificate_id
@@ -320,7 +315,7 @@ class SLBLoadBalancerUdpListener(SLBLoadBalancerTcpListener):
     ]
 
 
-class SLBServerCertificate(ReprMixin, object):
+class SLBServerCertificate(ReprMixin):
     _repr_attributes = ["id", "name", "fingerprint"]
 
     def __init__(self, id, name, fingerprint):
@@ -353,7 +348,7 @@ class SLBDriver(Driver):
     _ALGORITHM_TO_VALUE_MAP = ALGORITHM_TO_SLB_SCHEDULER
 
     def __init__(self, access_id, secret, region):
-        super(SLBDriver, self).__init__(access_id, secret)
+        super().__init__(access_id, secret)
         self.region = region
 
     def list_protocols(self):
@@ -450,25 +445,20 @@ class SLBDriver(Driver):
             try:
                 bandwidth = int(ex_bandwidth)
             except ValueError:
-                raise AttributeError(
-                    "ex_bandwidth should be a integer in " "range [1, 1000]."
-                )
+                raise AttributeError("ex_bandwidth should be a integer in " "range [1, 1000].")
             params["Bandwidth"] = bandwidth
 
         if ex_internet_charge_type:
             if ex_internet_charge_type.lower() == "paybybandwidth":
                 if bandwidth == -1:
                     raise AttributeError(
-                        "PayByBandwidth internet charge type"
-                        " need ex_bandwidth be set"
+                        "PayByBandwidth internet charge type" " need ex_bandwidth be set"
                     )
             params["InternetChargeType"] = ex_internet_charge_type
 
         if ex_address_type:
             if ex_address_type.lower() not in ("internet", "intranet"):
-                raise AttributeError(
-                    'ex_address_type should be "internet" ' 'or "intranet"'
-                )
+                raise AttributeError('ex_address_type should be "internet" ' 'or "intranet"')
             params["AddressType"] = ex_address_type
 
         if ex_vswitch_id:
@@ -603,9 +593,7 @@ class SLBDriver(Driver):
         ]
         return listeners
 
-    def ex_create_listener(
-        self, balancer, backend_port, protocol, algorithm, bandwidth, **kwargs
-    ):
+    def ex_create_listener(self, balancer, backend_port, protocol, algorithm, bandwidth, **kwargs):
         """
         Create load balancer listening rule.
 
@@ -791,9 +779,7 @@ class SLBDriver(Driver):
     def _to_balancer(self, el):
         _id = findtext(element=el, xpath="LoadBalancerId", namespace=self.namespace)
         name = findtext(element=el, xpath="LoadBalancerName", namespace=self.namespace)
-        status = findtext(
-            element=el, xpath="LoadBalancerStatus", namespace=self.namespace
-        )
+        status = findtext(element=el, xpath="LoadBalancerStatus", namespace=self.namespace)
         state = STATE_MAPPINGS.get(status, State.UNKNOWN)
         address = findtext(element=el, xpath="Address", namespace=self.namespace)
         extra = self._get_extra_dict(el, RESOURCE_EXTRA_ATTRIBUTES_MAP["balancer"])
@@ -835,9 +821,7 @@ class SLBDriver(Driver):
         extra = {}
         for attribute, values in mapping.items():
             transform_func = values["transform_func"]
-            value = findattr(
-                element=element, xpath=values["xpath"], namespace=self.namespace
-            )
+            value = findattr(element=element, xpath=values["xpath"], namespace=self.namespace)
             if value:
                 try:
                     extra[attribute] = transform_func(value)
@@ -870,16 +854,11 @@ class SLBDriver(Driver):
         if len(port_proto_elements) > 0:
             listeners = [self._to_port_and_protocol(el) for el in port_proto_elements]
         else:
-            port_elements = findall(
-                element, "ListenerPorts/ListenerPort", namespace=self.namespace
-            )
+            port_elements = findall(element, "ListenerPorts/ListenerPort", namespace=self.namespace)
             listeners = [
-                {"ListenerPort": el.text, "ListenerProtocol": "http"}
-                for el in port_elements
+                {"ListenerPort": el.text, "ListenerProtocol": "http"} for el in port_elements
             ]
-        server_elements = findall(
-            element, "BackendServers/BackendServer", namespace=self.namespace
-        )
+        server_elements = findall(element, "BackendServers/BackendServer", namespace=self.namespace)
         backend_servers = [self._to_server_and_weight(el) for el in server_elements]
         return SLBLoadBalancerAttribute(balancer, listeners, backend_servers)
 

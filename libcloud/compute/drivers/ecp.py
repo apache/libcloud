@@ -16,14 +16,16 @@
 """
 Enomaly ECP driver
 """
-import time
 import os
+import time
 import socket
 import binascii
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import base64_encode_string
+from libcloud.utils.py3 import b, httplib, base64_encode_string
+from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState, InvalidCredsError
+from libcloud.utils.networking import is_private_subnet
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -32,11 +34,6 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.base import Response, ConnectionUserAndKey
-from libcloud.compute.base import NodeDriver, NodeSize, NodeLocation
-from libcloud.compute.base import NodeImage, Node
-from libcloud.compute.types import Provider, NodeState, InvalidCredsError
-from libcloud.utils.networking import is_private_subnet
 
 # Defaults
 API_HOST = ""
@@ -86,7 +83,7 @@ class ECPConnection(ConnectionUserAndKey):
         # Authentication
         username = self.user_id
         password = self.key
-        base64string = base64_encode_string(b("%s:%s" % (username, password)))[:-1]
+        base64string = base64_encode_string(b("{}:{}".format(username, password)))[:-1]
         authheader = "Basic %s" % base64string
         headers["Authorization"] = authheader
 
@@ -157,9 +154,7 @@ class ECPNodeDriver(NodeDriver):
 
         # IPs
         iplist = [
-            interface["ip"]
-            for interface in vm["interfaces"]
-            if interface["ip"] != "127.0.0.1"
+            interface["ip"] for interface in vm["interfaces"] if interface["ip"] != "127.0.0.1"
         ]
 
         public_ips = []
@@ -167,7 +162,7 @@ class ECPNodeDriver(NodeDriver):
         for ip in iplist:
             try:
                 socket.inet_aton(ip)
-            except socket.error:
+            except OSError:
                 # not a valid ip
                 continue
             if is_private_subnet(ip):
@@ -205,9 +200,7 @@ class ECPNodeDriver(NodeDriver):
         # Wait for it to turn off and then continue (to turn it on again)
         while node.state == NodeState.REBOOTING:
             # Check if it's off.
-            response = self.connection.request(
-                "/rest/hosting/vm/%s" % node.id
-            ).parse_body()
+            response = self.connection.request("/rest/hosting/vm/%s" % node.id).parse_body()
             if response["vm"]["state"] == "off":
                 node.state = NodeState.TERMINATED
             else:
@@ -242,9 +235,7 @@ class ECPNodeDriver(NodeDriver):
         # Wait for the VM to turn off before continuing
         while node.state == NodeState.PENDING:
             # Check if it's off.
-            response = self.connection.request(
-                "/rest/hosting/vm/%s" % node.id
-            ).parse_body()
+            response = self.connection.request("/rest/hosting/vm/%s" % node.id).parse_body()
             if response["vm"]["state"] == "off":
                 node.state = NodeState.TERMINATED
             else:
@@ -275,7 +266,7 @@ class ECPNodeDriver(NodeDriver):
             images.append(
                 NodeImage(
                     id=ptemplate["uuid"],
-                    name="%s: %s" % (ptemplate["name"], ptemplate["description"]),
+                    name="{}: {}".format(ptemplate["name"], ptemplate["description"]),
                     driver=self,
                 )
             )

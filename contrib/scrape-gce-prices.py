@@ -35,18 +35,16 @@ or if it is the first time using it and no skus are saved:
     python scrape-gce-prices.py --all APIKEY
 """
 
+import os
 import copy
 import json
-import argparse
-import os
 import time
+import argparse
 
 from requests import request
 
 GCE_SERVICE_ID = "6F81-5844-456A"
-API_URL = "https://cloudbilling.googleapis.com/v1/services/" "{}/skus".format(
-    GCE_SERVICE_ID
-)
+API_URL = "https://cloudbilling.googleapis.com/v1/services/" "{}/skus".format(GCE_SERVICE_ID)
 
 API_KEY = os.environ.get("GCE_API_KEY", None)
 
@@ -380,10 +378,7 @@ def scrape_sku_price_info(key):
         for item in dict_["gce_disks"].values():
             description = item["description"]
             if description in sku["description"].lower():
-                if (
-                    "regional" in sku["description"].lower()
-                    and "regional" not in description
-                ):
+                if "regional" in sku["description"].lower() and "regional" not in description:
                     continue
                 location = sku["serviceRegions"][0]
                 usage_type = usage_type_map[sku["category"]["usageType"]]
@@ -398,7 +393,7 @@ def scrape_sku_price_info(key):
 
 def scrape_only_prices(key):
     data = get_all_skus(key)
-    with open(PRICING_FILE_PATH, "r") as fp:
+    with open(PRICING_FILE_PATH) as fp:
         content = fp.read()
     dict_ = json.loads(content)["compute"]
     for sku in data:
@@ -446,7 +441,7 @@ def price_from_sku(sku):
 
 
 def update_pricing_file(pricing_file_path, pricing_data):
-    with open(pricing_file_path, "r") as fp:
+    with open(pricing_file_path) as fp:
         content = fp.read()
 
     data = json.loads(content)
@@ -486,9 +481,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="scrape gce prices")
     help_msg = "If enabled both sku's and prices will be scraped"
     parser.add_argument("--all", action="store_true", help=help_msg)
-    help_msg = (
-        "Google API key, visit https://cloud.google.com/" "docs/authentication/api-keys"
-    )
+    help_msg = "Google API key, visit https://cloud.google.com/" "docs/authentication/api-keys"
     parser.add_argument("key", help=help_msg, nargs="?", default=API_KEY)
     arg = parser.parse_args()
 

@@ -19,9 +19,9 @@ import unittest
 import requests
 import requests_mock
 
-from libcloud.common.base import XmlResponse, JsonResponse, Connection
-from libcloud.common.types import MalformedResponseError
 from libcloud.http import LibcloudConnection
+from libcloud.common.base import Connection, XmlResponse, JsonResponse
+from libcloud.common.types import MalformedResponseError
 
 
 class ResponseClassesTests(unittest.TestCase):
@@ -33,9 +33,7 @@ class ResponseClassesTests(unittest.TestCase):
         with requests_mock.mock() as m:
             m.register_uri("GET", "mock://test.com/2", text="<foo>bar</foo>")
             response_obj = requests.get("mock://test.com/2")
-            response = XmlResponse(
-                response=response_obj, connection=self.mock_connection
-            )
+            response = XmlResponse(response=response_obj, connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed.tag, "foo")
@@ -56,9 +54,7 @@ class ResponseClassesTests(unittest.TestCase):
         with requests_mock.mock() as m:
             m.register_uri("GET", "mock://test.com/", text=" ")
             response_obj = requests.get("mock://test.com/")
-            response = XmlResponse(
-                response=response_obj, connection=self.mock_connection
-            )
+            response = XmlResponse(response=response_obj, connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed, "")
@@ -67,9 +63,7 @@ class ResponseClassesTests(unittest.TestCase):
         with requests_mock.mock() as m:
             m.register_uri("GET", "mock://test.com/", text='{"foo": "bar"}')
             response_obj = requests.get("mock://test.com/")
-            response = JsonResponse(
-                response=response_obj, connection=self.mock_connection
-            )
+            response = JsonResponse(response=response_obj, connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed, {"foo": "bar"})
@@ -89,9 +83,7 @@ class ResponseClassesTests(unittest.TestCase):
         with requests_mock.mock() as m:
             m.register_uri("GET", "mock://test.com/", text=" ")
             response_obj = requests.get("mock://test.com/")
-            response = JsonResponse(
-                response=response_obj, connection=self.mock_connection
-            )
+            response = JsonResponse(response=response_obj, connection=self.mock_connection)
 
         parsed = response.parse_body()
         self.assertEqual(parsed, "")

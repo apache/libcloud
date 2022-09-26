@@ -17,8 +17,7 @@ import os
 import sys
 import unittest
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     loader = unittest.TestLoader()
     tests = loader.discover(os.path.dirname(__file__))
     runner = unittest.runner.TextTestRunner(verbosity=3)

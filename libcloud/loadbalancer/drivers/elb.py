@@ -17,16 +17,15 @@ __all__ = ["ElasticLBDriver"]
 
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.xml import findtext, findall
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
+from libcloud.utils.xml import findall, findtext
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
-
+from libcloud.loadbalancer.base import Driver, Member, LoadBalancer
+from libcloud.loadbalancer.types import State
 
 VERSION = "2012-06-01"
 HOST = "elasticloadbalancing.%s.amazonaws.com"
 ROOT = "/%s/" % (VERSION)
-NS = "http://elasticloadbalancing.amazonaws.com/doc/%s/" % (VERSION,)
+NS = "http://elasticloadbalancing.amazonaws.com/doc/{}/".format(VERSION)
 
 
 class ELBResponse(AWSGenericResponse):
@@ -56,9 +55,7 @@ class ElasticLBDriver(Driver):
         self.token = token
         self.region = region
         self.region_name = region
-        super(ElasticLBDriver, self).__init__(
-            access_id, secret, token=token, host=HOST % region, region=region
-        )
+        super().__init__(access_id, secret, token=token, host=HOST % region, region=region)
 
     def list_protocols(self):
         return ["tcp", "ssl", "http", "https"]
@@ -177,9 +174,7 @@ class ElasticLBDriver(Driver):
         data = self.connection.request(ROOT, params=params).object
         return self._to_policy_types(data)
 
-    def ex_create_balancer_policy(
-        self, name, policy_name, policy_type, policy_attributes=None
-    ):
+    def ex_create_balancer_policy(self, name, policy_name, policy_type, policy_attributes=None):
         """
         Create a new load balancer policy
 
@@ -338,10 +333,7 @@ class ElasticLBDriver(Driver):
 
     def _to_balancers(self, data):
         xpath = "DescribeLoadBalancersResult/LoadBalancerDescriptions/member"
-        return [
-            self._to_balancer(el)
-            for el in findall(element=data, xpath=xpath, namespace=NS)
-        ]
+        return [self._to_balancer(el) for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_balancer(self, el):
         name = findtext(element=el, xpath="LoadBalancerName", namespace=NS)
@@ -391,7 +383,7 @@ class ElasticLBDriver(Driver):
         return params
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(ElasticLBDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         if hasattr(self, "token") and self.token is not None:
             kwargs["token"] = self.token
             kwargs["signature_version"] = "4"

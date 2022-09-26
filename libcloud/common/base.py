@@ -13,31 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union, Dict, Any
-from typing import Type
-from typing import Optional
-
-import json
 import os
 import ssl
-import socket
 import copy
-import binascii
+import json
 import time
-
-from libcloud.utils.py3 import ET
+import socket
+import binascii
+from typing import Any, Dict, Type, Union, Optional
 
 import libcloud
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import urlencode
-
+from libcloud.http import LibcloudConnection, HttpLibResponseProxy
+from libcloud.utils.py3 import ET, httplib, urlparse, urlencode
 from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.retry import Retry
-from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.http import LibcloudConnection, HttpLibResponseProxy
+from libcloud.common.exceptions import exception_from_message
 
 __all__ = [
     "RETRY_FAILED_HTTP_REQUESTS",
@@ -65,12 +56,12 @@ RETRY_FAILED_HTTP_REQUESTS = False
 ALLOW_PATH_DOUBLE_SLASHES = False
 
 
-class LazyObject(object):
+class LazyObject:
     """An object that doesn't get initialized until accessed."""
 
     @classmethod
     def _proxy(cls, *lazy_init_args, **lazy_init_kwargs):
-        class Proxy(cls, object):
+        class Proxy(cls):
             _lazy_obj = None
 
             def __init__(self):
@@ -117,7 +108,7 @@ class HTTPResponse(httplib.HTTPResponse):
         return httplib.HTTPResponse.read(self, amt)
 
 
-class Response(object):
+class Response:
     """
     A base Response class to derive from.
     """
@@ -321,7 +312,7 @@ class RawResponse(Response):
         return self._reason
 
 
-class Connection(object):
+class Connection:
     """
     A Base Connection class to derive from.
     """
@@ -362,9 +353,7 @@ class Connection(object):
         if not self.allow_insecure and not secure:
             # TODO: We should eventually switch to whitelist instead of
             # blacklist approach
-            raise ValueError(
-                "Non https connections are not allowed (use " "secure=True)"
-            )
+            raise ValueError("Non https connections are not allowed (use " "secure=True)")
 
         self.request_path = ""
 
@@ -424,7 +413,7 @@ class Connection(object):
         (scheme, netloc, request_path, param, query, fragment) = urlparse.urlparse(url)
 
         if scheme not in ["http", "https"]:
-            raise LibcloudError("Invalid scheme: %s in url %s" % (scheme, url))
+            raise LibcloudError("Invalid scheme: {} in url {}".format(scheme, url))
 
         if scheme == "http":
             secure = 0
@@ -461,9 +450,7 @@ class Connection(object):
         secure = self.secure
 
         if getattr(self, "base_url", None) and base_url is None:
-            (host, port, secure, request_path) = self._tuple_from_url(
-                getattr(self, "base_url")
-            )
+            (host, port, secure, request_path) = self._tuple_from_url(getattr(self, "base_url"))
         elif base_url is not None:
             (host, port, secure, request_path) = self._tuple_from_url(base_url)
         else:
@@ -507,13 +494,13 @@ class Connection(object):
         user_agent_suffix = " ".join(["(%s)" % x for x in self.ua])
 
         if self.driver:
-            user_agent = "libcloud/%s (%s) %s" % (
+            user_agent = "libcloud/{} ({}) {}".format(
                 libcloud.__version__,
                 self.driver.name,
                 user_agent_suffix,
             )
         else:
-            user_agent = "libcloud/%s %s" % (libcloud.__version__, user_agent_suffix)
+            user_agent = "libcloud/{} {}".format(libcloud.__version__, user_agent_suffix)
 
         return user_agent
 
@@ -740,9 +727,7 @@ class Connection(object):
             # valid - e.g. for S3 paths - /bucket//path1/path2.txt
             return self.request_path + action
 
-        url = urlparse.urljoin(
-            self.request_path.lstrip("/").rstrip("/") + "/", action.lstrip("/")
-        )
+        url = urlparse.urljoin(self.request_path.lstrip("/").rstrip("/") + "/", action.lstrip("/"))
 
         if not url.startswith("/"):
             return "/" + url
@@ -958,7 +943,7 @@ class ConnectionKey(Connection):
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(ConnectionKey, self).__init__(
+        super().__init__(
             secure=secure,
             host=host,
             port=port,
@@ -992,7 +977,7 @@ class CertificateConnection(Connection):
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(CertificateConnection, self).__init__(
+        super().__init__(
             secure=secure,
             host=host,
             port=port,
@@ -1032,7 +1017,7 @@ class KeyCertificateConnection(CertificateConnection):
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(KeyCertificateConnection, self).__init__(
+        super().__init__(
             cert_file,
             secure=secure,
             host=host,
@@ -1067,7 +1052,7 @@ class ConnectionUserAndKey(ConnectionKey):
         backoff=None,
         retry_delay=None,
     ):
-        super(ConnectionUserAndKey, self).__init__(
+        super().__init__(
             key,
             secure=secure,
             host=host,
@@ -1081,7 +1066,7 @@ class ConnectionUserAndKey(ConnectionKey):
         self.user_id = user_id
 
 
-class BaseDriver(object):
+class BaseDriver:
     """
     Base driver class from which other classes can inherit from.
     """

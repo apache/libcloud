@@ -1,6 +1,6 @@
-from libcloud.common.openstack_identity import OpenStackAuthenticationCache
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.common.openstack_identity import OpenStackAuthenticationCache
 
 
 class MyAuthenticationCache(OpenStackAuthenticationCache):

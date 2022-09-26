@@ -14,8 +14,9 @@
 # limitations under the License.
 
 import base64
+
 from libcloud.utils.py3 import b
 
-API_AUTH = ('apache', 'libcloud')
+API_AUTH = ("apache", "libcloud")
 
-EXPECTED_AUTH = 'Basic %s' % (base64.b64encode(b('%s:%s' % API_AUTH)))
+EXPECTED_AUTH = "Basic %s" % (base64.b64encode(b("%s:%s" % API_AUTH)))

@@ -15,11 +15,10 @@
 
 
 from libcloud.utils.py3 import httplib
-from libcloud.common.brightbox import BrightboxConnection
-from libcloud.loadbalancer.base import Driver, Algorithm, Member
-from libcloud.loadbalancer.base import LoadBalancer
-from libcloud.loadbalancer.types import State
 from libcloud.utils.misc import reverse_dict
+from libcloud.common.brightbox import BrightboxConnection
+from libcloud.loadbalancer.base import Driver, Member, Algorithm, LoadBalancer
+from libcloud.loadbalancer.types import State
 
 API_VERSION = "1.0"
 
@@ -70,14 +69,14 @@ class BrightboxLBDriver(Driver):
 
     def destroy_balancer(self, balancer):
         response = self.connection.request(
-            "/%s/load_balancers/%s" % (API_VERSION, balancer.id), method="DELETE"
+            "/{}/load_balancers/{}".format(API_VERSION, balancer.id), method="DELETE"
         )
 
         return response.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
         data = self.connection.request(
-            "/%s/load_balancers/%s" % (API_VERSION, balancer_id)
+            "/{}/load_balancers/{}".format(API_VERSION, balancer_id)
         ).object
         return self._to_balancer(data)
 
@@ -85,21 +84,21 @@ class BrightboxLBDriver(Driver):
         return self.balancer_attach_member(balancer, node)
 
     def balancer_attach_member(self, balancer, member):
-        path = "/%s/load_balancers/%s/add_nodes" % (API_VERSION, balancer.id)
+        path = "/{}/load_balancers/{}/add_nodes".format(API_VERSION, balancer.id)
 
         self._post(path, {"nodes": [self._member_to_node(member)]})
 
         return member
 
     def balancer_detach_member(self, balancer, member):
-        path = "/%s/load_balancers/%s/remove_nodes" % (API_VERSION, balancer.id)
+        path = "/{}/load_balancers/{}/remove_nodes".format(API_VERSION, balancer.id)
 
         response = self._post(path, {"nodes": [self._member_to_node(member)]})
 
         return response.status == httplib.ACCEPTED
 
     def balancer_list_members(self, balancer):
-        path = "/%s/load_balancers/%s" % (API_VERSION, balancer.id)
+        path = "/{}/load_balancers/{}".format(API_VERSION, balancer.id)
 
         data = self.connection.request(path).object
 

@@ -20,46 +20,36 @@ http://azure.microsoft.com/en-us/services/virtual-machines/
 """
 
 import re
-import time
-import collections
-import random
-import sys
 import copy
+import time
 import base64
-
-from datetime import datetime
+import random
+import collections
 from xml.dom import minidom
+from datetime import datetime
 from xml.sax.saxutils import escape as xml_escape
 
-from libcloud.utils.py3 import ET
-from libcloud.common.azure import AzureServiceManagementConnection
-from libcloud.common.azure import AzureRedirectException
-from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
-from libcloud.compute.types import NodeState
-from libcloud.common.types import LibcloudError
-from libcloud.utils.py3 import _real_unicode
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import ensure_string
+from libcloud.utils.py3 import ET, httplib, urlparse
 from libcloud.utils.py3 import urlquote as url_quote
+from libcloud.utils.py3 import _real_unicode, ensure_string
 from libcloud.utils.misc import ReprMixin
+from libcloud.common.azure import AzureRedirectException, AzureServiceManagementConnection
+from libcloud.common.types import LibcloudError
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+)
+from libcloud.compute.types import NodeState
+from libcloud.compute.providers import Provider
 
 HTTPSConnection = httplib.HTTPSConnection
 
-if sys.version_info < (3,):
-    _unicode_type = unicode  # NOQA  pylint: disable=undefined-variable
-
-    def _str(value):
-        if isinstance(value, unicode):  # NOQA  pylint: disable=undefined-variable
-            return value.encode("utf-8")
-
-        return str(value)
-
-else:
-    _str = str
-    _unicode_type = str
+_str = str
+_unicode_type = str
 
 
 AZURE_SERVICE_MANAGEMENT_HOST = "management.core.windows.net"
@@ -342,9 +332,7 @@ class AzureNodeDriver(NodeDriver):
         self.subscription_id = subscription_id
         self.key_file = key_file
         self.follow_redirects = kwargs.get("follow_redirects", True)
-        super(AzureNodeDriver, self).__init__(
-            self.subscription_id, self.key_file, secure=True, **kwargs
-        )
+        super().__init__(self.subscription_id, self.key_file, secure=True, **kwargs)
 
     def list_sizes(self):
         """
@@ -457,9 +445,7 @@ class AzureNodeDriver(NodeDriver):
 
         try:
             response = self._perform_post(
-                self._get_deployment_path_using_name(
-                    ex_cloud_service_name, _deployment_name
-                )
+                self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name)
                 + "/roleinstances/"
                 + _str(node.id)
                 + "?comp=reboot",
@@ -586,9 +572,7 @@ class AzureNodeDriver(NodeDriver):
             raise ValueError("Size must be an instance of NodeSize")
 
         if not isinstance(image, NodeImage):
-            raise ValueError(
-                "Image must be an instance of NodeImage, " "produced by list_images()"
-            )
+            raise ValueError("Image must be an instance of NodeImage, " "produced by list_images()")
 
         # Retrieve a list of currently available nodes for the provided cloud
         # service
@@ -671,9 +655,7 @@ class AzureNodeDriver(NodeDriver):
 
         network_config.input_endpoints.items.append(endpoint)
 
-        _storage_location = self._get_cloud_service_location(
-            service_name=ex_cloud_service_name
-        )
+        _storage_location = self._get_cloud_service_location(service_name=ex_cloud_service_name)
 
         if ex_storage_service_name is None:
             ex_storage_service_name = ex_cloud_service_name
@@ -711,13 +693,13 @@ class AzureNodeDriver(NodeDriver):
                 blob_url = "http://%s.blob.core.windows.net" % (ex_storage_service_name)
 
                 # Azure's pattern in the UI.
-                disk_name = "%s-%s-%s.vhd" % (
+                disk_name = "{}-{}-{}.vhd".format(
                     ex_cloud_service_name,
                     name,
                     time.strftime("%Y-%m-%d"),
                 )
 
-                media_link = "%s/vhds/%s" % (blob_url, disk_name)
+                media_link = "{}/vhds/{}".format(blob_url, disk_name)
 
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
@@ -754,12 +736,12 @@ class AzureNodeDriver(NodeDriver):
                 #  network_config = None
             else:
                 blob_url = "http://%s.blob.core.windows.net" % (ex_storage_service_name)
-                disk_name = "%s-%s-%s.vhd" % (
+                disk_name = "{}-{}-{}.vhd".format(
                     ex_cloud_service_name,
                     name,
                     time.strftime("%Y-%m-%d"),
                 )
-                media_link = "%s/vhds/%s" % (blob_url, disk_name)
+                media_link = "{}/vhds/{}".format(blob_url, disk_name)
                 disk_config = OSVirtualHardDisk(image.id, media_link)
 
             path = self._get_role_path(ex_cloud_service_name, _deployment_name)
@@ -789,9 +771,7 @@ class AzureNodeDriver(NodeDriver):
             extra={"ex_cloud_service_name": ex_cloud_service_name},
         )
 
-    def destroy_node(
-        self, node, ex_cloud_service_name=None, ex_deployment_slot="Production"
-    ):
+    def destroy_node(self, node, ex_cloud_service_name=None, ex_deployment_slot="Production"):
         """
         Remove Azure Virtual Machine
 
@@ -830,9 +810,7 @@ class AzureNodeDriver(NodeDriver):
         if _server_deployment_count > 1:
             path = self._get_role_path(ex_cloud_service_name, _deployment_name, node.id)
         else:
-            path = self._get_deployment_path_using_name(
-                ex_cloud_service_name, _deployment_name
-            )
+            path = self._get_deployment_path_using_name(ex_cloud_service_name, _deployment_name)
 
         path += "?comp=media"
 
@@ -843,9 +821,7 @@ class AzureNodeDriver(NodeDriver):
     def ex_list_cloud_services(self):
         return self._perform_get(self._get_hosted_service_path(), HostedServices)
 
-    def ex_create_cloud_service(
-        self, name, location, description=None, extended_properties=None
-    ):
+    def ex_create_cloud_service(self, name, location, description=None, extended_properties=None):
         """
         Create an azure cloud service.
 
@@ -889,17 +865,13 @@ class AzureNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        response = self._perform_cloud_service_delete(
-            self._get_hosted_service_path(name)
-        )
+        response = self._perform_cloud_service_delete(self._get_hosted_service_path(name))
 
         self.raise_for_response(response, 200)
 
         return True
 
-    def ex_add_instance_endpoints(
-        self, node, endpoints, ex_deployment_slot="Production"
-    ):
+    def ex_add_instance_endpoints(self, node, endpoints, ex_deployment_slot="Production"):
         all_endpoints = [
             {
                 "name": endpoint.name,
@@ -915,9 +887,7 @@ class AzureNodeDriver(NodeDriver):
         result = self.ex_set_instance_endpoints(node, all_endpoints, ex_deployment_slot)
         return result
 
-    def ex_set_instance_endpoints(
-        self, node, endpoints, ex_deployment_slot="Production"
-    ):
+    def ex_set_instance_endpoints(self, node, endpoints, ex_deployment_slot="Production"):
 
         """
         For example::
@@ -1027,9 +997,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        response = self._perform_storage_service_delete(
-            self._get_storage_service_path(name)
-        )
+        response = self._perform_storage_service_delete(self._get_storage_service_path(name))
         self.raise_for_response(response, 200)
 
         return True
@@ -1039,9 +1007,7 @@ class AzureNodeDriver(NodeDriver):
     """
 
     def create_volume_snapshot(self):
-        raise NotImplementedError(
-            "You cannot create snapshots of " "Azure VMs at this time."
-        )
+        raise NotImplementedError("You cannot create snapshots of " "Azure VMs at this time.")
 
     def attach_volume(self):
         raise NotImplementedError("attach_volume is not supported " "at this time.")
@@ -1436,7 +1402,7 @@ class AzureNodeDriver(NodeDriver):
             request.path += "?"
             for name, value in request.query:
                 if value is not None:
-                    request.path += "%s=%s%s" % (name, url_quote(value, "/()$=',"), "&")
+                    request.path += "{}={}{}".format(name, url_quote(value, "/()$=',"), "&")
             request.path = request.path[:-1]
 
         return request.path, request.query
@@ -1468,9 +1434,7 @@ class AzureNodeDriver(NodeDriver):
         return_type.
         """
 
-        return self._parse_response_body_from_xml_text(
-            response=response, return_type=return_type
-        )
+        return self._parse_response_body_from_xml_text(response=response, return_type=return_type)
 
     def _parse_response_body_from_xml_text(self, response, return_type):
         """
@@ -1569,17 +1533,12 @@ class AzureNodeDriver(NodeDriver):
 
         return return_obj
 
-    def _fill_scalar_list_of(
-        self, xmldoc, element_type, parent_xml_element_name, xml_element_name
-    ):
+    def _fill_scalar_list_of(self, xmldoc, element_type, parent_xml_element_name, xml_element_name):
         xmlelements = self._get_child_nodes(xmldoc, parent_xml_element_name)
 
         if xmlelements:
             xmlelements = self._get_child_nodes(xmlelements[0], xml_element_name)
-            return [
-                self._get_node_value(xmlelement, element_type)
-                for xmlelement in xmlelements
-            ]
+            return [self._get_node_value(xmlelement, element_type) for xmlelement in xmlelements]
 
     def _get_node_value(self, xmlelement, data_type):
         value = xmlelement.firstChild.nodeValue
@@ -1639,9 +1598,7 @@ class AzureNodeDriver(NodeDriver):
         """
         Converts a child of the current dom element to the specified type.
         """
-        xmlelements = self._get_child_nodes(
-            xmldoc, self._get_serialization_name(element_name)
-        )
+        xmlelements = self._get_child_nodes(xmldoc, self._get_serialization_name(element_name))
 
         if not xmlelements:
             return None
@@ -1677,9 +1634,7 @@ class AzureNodeDriver(NodeDriver):
         return decoded_bytes.decode("utf-8")
 
     def _fill_data_minidom(self, xmldoc, element_name, data_member):
-        xmlelements = self._get_child_nodes(
-            xmldoc, self._get_serialization_name(element_name)
-        )
+        xmlelements = self._get_child_nodes(xmldoc, self._get_serialization_name(element_name))
 
         if not xmlelements or not xmlelements[0].childNodes:
             return None
@@ -1804,9 +1759,7 @@ class AzureNodeDriver(NodeDriver):
     def _get_storage_service_path(self, service_name=None):
         return self._get_path("services/storageservices", service_name)
 
-    def _ex_complete_async_azure_operation(
-        self, response=None, operation_type="create_node"
-    ):
+    def _ex_complete_async_azure_operation(self, response=None, operation_type="create_node"):
         request_id = self._parse_response_for_async_op(response)
         operation_status = self._get_operation_status(request_id.request_id)
 
@@ -1848,7 +1801,7 @@ def _lower(text):
     return text.lower()
 
 
-class AzureXmlSerializer(object):
+class AzureXmlSerializer:
     @staticmethod
     def create_storage_service_input_to_xml(
         service_name,
@@ -1888,9 +1841,7 @@ class AzureXmlSerializer(object):
 
     @staticmethod
     def regenerate_keys_to_xml(key_type):
-        return AzureXmlSerializer.doc_from_data(
-            "RegenerateKeys", [("KeyType", key_type)]
-        )
+        return AzureXmlSerializer.doc_from_data("RegenerateKeys", [("KeyType", key_type)])
 
     @staticmethod
     def update_hosted_service_to_xml(label, description, extended_properties):
@@ -1989,14 +1940,10 @@ class AzureXmlSerializer(object):
 
     @staticmethod
     def update_deployment_status_to_xml(status):
-        return AzureXmlSerializer.doc_from_data(
-            "UpdateDeploymentStatus", [("Status", status)]
-        )
+        return AzureXmlSerializer.doc_from_data("UpdateDeploymentStatus", [("Status", status)])
 
     @staticmethod
-    def change_deployment_to_xml(
-        configuration, treat_warnings_as_error, mode, extended_properties
-    ):
+    def change_deployment_to_xml(configuration, treat_warnings_as_error, mode, extended_properties):
         return AzureXmlSerializer.doc_from_data(
             "ChangeConfiguration",
             [
@@ -2158,12 +2105,8 @@ class AzureXmlSerializer(object):
         AzureXmlSerializer.data_to_xml(
             [("ConfigurationSetType", configuration.configuration_set_type)], xml
         )
-        AzureXmlSerializer.data_to_xml(
-            [("ComputerName", configuration.computer_name)], xml
-        )
-        AzureXmlSerializer.data_to_xml(
-            [("AdminPassword", configuration.admin_password)], xml
-        )
+        AzureXmlSerializer.data_to_xml([("ComputerName", configuration.computer_name)], xml)
+        AzureXmlSerializer.data_to_xml([("AdminPassword", configuration.admin_password)], xml)
         AzureXmlSerializer.data_to_xml(
             [
                 (
@@ -2222,20 +2165,12 @@ class AzureXmlSerializer(object):
                 cert_settings.append(cert_setting)
 
                 cert_setting.append(
-                    AzureXmlSerializer.data_to_xml(
-                        [("StoreLocation", cert.store_location)]
-                    )
+                    AzureXmlSerializer.data_to_xml([("StoreLocation", cert.store_location)])
                 )
-                AzureXmlSerializer.data_to_xml(
-                    [("StoreName", cert.store_name)], cert_setting
-                )
-                AzureXmlSerializer.data_to_xml(
-                    [("Thumbprint", cert.thumbprint)], cert_setting
-                )
+                AzureXmlSerializer.data_to_xml([("StoreName", cert.store_name)], cert_setting)
+                AzureXmlSerializer.data_to_xml([("Thumbprint", cert.thumbprint)], cert_setting)
 
-        AzureXmlSerializer.data_to_xml(
-            [("AdminUsername", configuration.admin_user_name)], xml
-        )
+        AzureXmlSerializer.data_to_xml([("AdminUsername", configuration.admin_user_name)], xml)
         return xml
 
     @staticmethod
@@ -2245,9 +2180,7 @@ class AzureXmlSerializer(object):
         )
         AzureXmlSerializer.data_to_xml([("HostName", configuration.host_name)], xml)
         AzureXmlSerializer.data_to_xml([("UserName", configuration.user_name)], xml)
-        AzureXmlSerializer.data_to_xml(
-            [("UserPassword", configuration.user_password)], xml
-        )
+        AzureXmlSerializer.data_to_xml([("UserPassword", configuration.user_password)], xml)
         AzureXmlSerializer.data_to_xml(
             [
                 (
@@ -2276,15 +2209,11 @@ class AzureXmlSerializer(object):
             for key in configuration.ssh.key_pairs:
                 kpair = ET.Element("KeyPair")
                 kpairs.append(kpair)
-                AzureXmlSerializer.data_to_xml(
-                    [("Fingerprint", key.fingerprint)], kpair
-                )
+                AzureXmlSerializer.data_to_xml([("Fingerprint", key.fingerprint)], kpair)
                 AzureXmlSerializer.data_to_xml([("Path", key.path)], kpair)
 
         if configuration.custom_data is not None:
-            AzureXmlSerializer.data_to_xml(
-                [("CustomData", configuration.custom_data)], xml
-            )
+            AzureXmlSerializer.data_to_xml([("CustomData", configuration.custom_data)], xml)
 
         return xml
 
@@ -2311,9 +2240,7 @@ class AzureXmlSerializer(object):
                 input_endpoint,
             )
 
-            AzureXmlSerializer.data_to_xml(
-                [("LocalPort", endpoint.local_port)], input_endpoint
-            )
+            AzureXmlSerializer.data_to_xml([("LocalPort", endpoint.local_port)], input_endpoint)
             AzureXmlSerializer.data_to_xml([("Name", endpoint.name)], input_endpoint)
             AzureXmlSerializer.data_to_xml([("Port", endpoint.port)], input_endpoint)
 
@@ -2336,9 +2263,7 @@ class AzureXmlSerializer(object):
                     load_balancer_probe,
                 )
 
-            AzureXmlSerializer.data_to_xml(
-                [("Protocol", endpoint.protocol)], input_endpoint
-            )
+            AzureXmlSerializer.data_to_xml([("Protocol", endpoint.protocol)], input_endpoint)
             AzureXmlSerializer.data_to_xml(
                 [
                     (
@@ -2386,22 +2311,16 @@ class AzureXmlSerializer(object):
                     system_configuration_set, config_set
                 )
             elif isinstance(system_configuration_set, LinuxConfigurationSet):
-                AzureXmlSerializer.linux_configuration_to_xml(
-                    system_configuration_set, config_set
-                )
+                AzureXmlSerializer.linux_configuration_to_xml(system_configuration_set, config_set)
 
         if network_configuration_set is not None:
             config_set = ET.Element("ConfigurationSet")
             config_sets.append(config_set)
 
-            AzureXmlSerializer.network_configuration_to_xml(
-                network_configuration_set, config_set
-            )
+            AzureXmlSerializer.network_configuration_to_xml(network_configuration_set, config_set)
 
         if availability_set_name is not None:
-            AzureXmlSerializer.data_to_xml(
-                [("AvailabilitySetName", availability_set_name)], xml
-            )
+            AzureXmlSerializer.data_to_xml([("AvailabilitySetName", availability_set_name)], xml)
 
         if data_virtual_hard_disks is not None:
             vhds = ET.Element("DataVirtualHardDisks")
@@ -2422,18 +2341,10 @@ class AzureXmlSerializer(object):
         if os_virtual_hard_disk is not None:
             hd = ET.Element("OSVirtualHardDisk")
             xml.append(hd)
-            AzureXmlSerializer.data_to_xml(
-                [("HostCaching", os_virtual_hard_disk.host_caching)], hd
-            )
-            AzureXmlSerializer.data_to_xml(
-                [("DiskLabel", os_virtual_hard_disk.disk_label)], hd
-            )
-            AzureXmlSerializer.data_to_xml(
-                [("DiskName", os_virtual_hard_disk.disk_name)], hd
-            )
-            AzureXmlSerializer.data_to_xml(
-                [("MediaLink", os_virtual_hard_disk.media_link)], hd
-            )
+            AzureXmlSerializer.data_to_xml([("HostCaching", os_virtual_hard_disk.host_caching)], hd)
+            AzureXmlSerializer.data_to_xml([("DiskLabel", os_virtual_hard_disk.disk_label)], hd)
+            AzureXmlSerializer.data_to_xml([("DiskName", os_virtual_hard_disk.disk_name)], hd)
+            AzureXmlSerializer.data_to_xml([("MediaLink", os_virtual_hard_disk.media_link)], hd)
             AzureXmlSerializer.data_to_xml(
                 [("SourceImageName", os_virtual_hard_disk.source_image_name)], hd
             )
@@ -2510,12 +2421,8 @@ class AzureXmlSerializer(object):
         target_image_label,
         provisioning_configuration,
     ):
-        xml = AzureXmlSerializer.data_to_xml(
-            [("OperationType", "CaptureRoleOperation")]
-        )
-        AzureXmlSerializer.data_to_xml(
-            [("PostCaptureAction", post_capture_action)], xml
-        )
+        xml = AzureXmlSerializer.data_to_xml([("OperationType", "CaptureRoleOperation")])
+        AzureXmlSerializer.data_to_xml([("PostCaptureAction", post_capture_action)], xml)
 
         if provisioning_configuration is not None:
             provisioning_config = ET.Element("ProvisioningConfiguration")
@@ -2578,9 +2485,7 @@ class AzureXmlSerializer(object):
 
         if virtual_network_name is not None:
             doc.append(
-                AzureXmlSerializer.data_to_xml(
-                    [("VirtualNetworkName", virtual_network_name)]
-                )
+                AzureXmlSerializer.data_to_xml([("VirtualNetworkName", virtual_network_name)])
             )
 
         result = ensure_string(ET.tostring(doc, encoding="utf-8"))
@@ -2647,9 +2552,7 @@ class AzureXmlSerializer(object):
         AzureXmlSerializer.data_to_xml(data, doc)
         if extended_properties is not None:
             doc.append(
-                AzureXmlSerializer.extended_properties_dict_to_xml_fragment(
-                    extended_properties
-                )
+                AzureXmlSerializer.extended_properties_dict_to_xml_fragment(extended_properties)
             )
 
         result = ensure_string(ET.tostring(doc, encoding="utf-8"))
@@ -2681,7 +2584,7 @@ Borrowed from the Azure SDK for Python.
 """
 
 
-class WindowsAzureData(object):
+class WindowsAzureData:
 
     """
     This is the base of data class.
@@ -3218,7 +3121,7 @@ class SubscriptionCertificates(WindowsAzureDataTypedList):
     _repr_attributes = ["items"]
 
 
-class AzureHTTPRequest(object):
+class AzureHTTPRequest:
     def __init__(self):
         self.host = ""
         self.method = ""
@@ -3229,7 +3132,7 @@ class AzureHTTPRequest(object):
         self.protocol_override = None
 
 
-class AzureHTTPResponse(object):
+class AzureHTTPResponse:
     def __init__(self, status, message, headers, body):
         self.status = status
         self.message = message
@@ -3259,7 +3162,7 @@ class _ListOf(list):
             self.xml_element_name = list_type.__name__
         else:
             self.xml_element_name = xml_element_name
-        super(_ListOf, self).__init__()
+        super().__init__()
 
 
 class ScalarListOf(list):
@@ -3273,7 +3176,7 @@ class ScalarListOf(list):
     def __init__(self, list_type, xml_element_name):
         self.list_type = list_type
         self.xml_element_name = xml_element_name
-        super(ScalarListOf, self).__init__()
+        super().__init__()
 
 
 class _DictOf(dict):
@@ -3283,23 +3186,19 @@ class _DictOf(dict):
     Used for deserializaion and construction of the lists
     """
 
-    def __init__(
-        self, pair_xml_element_name, key_xml_element_name, value_xml_element_name
-    ):
+    def __init__(self, pair_xml_element_name, key_xml_element_name, value_xml_element_name):
         self.pair_xml_element_name = pair_xml_element_name
         self.key_xml_element_name = key_xml_element_name
         self.value_xml_element_name = value_xml_element_name
-        super(_DictOf, self).__init__()
+        super().__init__()
 
 
 class AzureNodeLocation(NodeLocation):
     # we can also have something in here for available services which is an
     # extra to the API with Azure
 
-    def __init__(
-        self, id, name, country, driver, available_services, virtual_machine_role_sizes
-    ):
-        super(AzureNodeLocation, self).__init__(id, name, country, driver)
+    def __init__(self, id, name, country, driver, available_services, virtual_machine_role_sizes):
+        super().__init__(id, name, country, driver)
         self.available_services = available_services
         self.virtual_machine_role_sizes = virtual_machine_role_sizes
 

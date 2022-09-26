@@ -6,6 +6,7 @@ include README.rst
 include tox.ini
 include .pylintrc
 include requirements-tests.txt
+include requirements-lint.txt
 include libcloud/data/pricing.json
 prune libcloud/test/secrets.py
 prune requirements-rtd.txt

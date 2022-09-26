@@ -1,8 +1,8 @@
 [tool.black]
-max-line-length = 100
-target_version = ['py36', 'py37', 'py38']
+line_length = 100
+target_version = ['py37', 'py38', 'py39', 'py310']
 include = '\.pyi?$'
-exclude = '''
+extended_exclude = '''
 (
   /(
     | \.git
@@ -11,3 +11,11 @@ exclude = '''
   )/
 )
 '''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 99
+src_paths = ["libcloud", "contrib", "docs", "demos", "pylint_plugins", "integration"]
+skip_glob = [".venv/*", ".tox/*", ".github/actions/*"]
+length_sort = true

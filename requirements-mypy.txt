@@ -1,0 +1,7 @@
+typing
+# Mypy requires typed-ast, which is broken on PyPy 3.7 (could work in PyPy 3.8).
+mypy==0.971; implementation_name == "cpython"
+types-simplejson
+types-certifi
+types-requests
+types-urllib3

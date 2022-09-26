@@ -1,9 +1,8 @@
-from __future__ import absolute_import
-
 from pprint import pprint
 
 # pylint: disable=import-error
-from twisted.internet import defer, threads, reactor
+from twisted.internet import defer, reactor, threads
+
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 

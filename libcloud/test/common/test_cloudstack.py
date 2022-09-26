@@ -16,26 +16,21 @@
 import sys
 import unittest
 
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import b, httplib, urlparse, parse_qsl
+from libcloud.common.types import MalformedResponseError
+from libcloud.common.cloudstack import CloudStackConnection
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import parse_qsl
-
-from libcloud.common.cloudstack import CloudStackConnection
-from libcloud.common.types import MalformedResponseError
-
-from libcloud.test import MockHttp
-
 
 async_delay = 0
 
 
-class CloudStackMockDriver(object):
+class CloudStackMockDriver:
     host = "nonexistent."
     path = "/path"
     async_poll_frequency = 0
@@ -48,9 +43,7 @@ class CloudStackMockDriver(object):
 class CloudStackCommonTest(unittest.TestCase):
     def setUp(self):
         CloudStackConnection.conn_class = CloudStackMockHttp
-        self.connection = CloudStackConnection(
-            "apikey", "secret", host=CloudStackMockDriver.host
-        )
+        self.connection = CloudStackConnection("apikey", "secret", host=CloudStackMockDriver.host)
         self.connection.poll_interval = 0.0
         self.driver = self.connection.driver = CloudStackMockDriver()
 

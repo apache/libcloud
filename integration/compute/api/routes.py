@@ -21,13 +21,13 @@ from integration.compute.api.data import NODES, REPORT_DATA
 from integration.compute.api.util import secure
 
 
-@route('/compute/nodes', method='GET')
+@route("/compute/nodes", method="GET")
 @secure
 def list_nodes():
     return json.dumps(NODES)
 
 
-@route('/compute/report_data', method='GET')
+@route("/compute/report_data", method="GET")
 @secure
 def ex_report_data():
     return REPORT_DATA

@@ -19,12 +19,9 @@ Common utilities needed by the :class:`AbiquoNodeDriver`.
 """
 import base64
 
-from libcloud.common.base import ConnectionUserAndKey, PollingConnection
-from libcloud.common.base import XmlResponse
-from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, httplib, urlparse
+from libcloud.common.base import XmlResponse, PollingConnection, ConnectionUserAndKey
+from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.base import NodeState
 
 
@@ -196,7 +193,7 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         backoff=None,
         proxy_url=None,
     ):
-        super(AbiquoConnection, self).__init__(
+        super().__init__(
             user_id=user_id,
             key=key,
             secure=secure,
@@ -226,7 +223,7 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         :return:        Default input headers with the 'Authorization'
                         header
         """
-        b64string = b("%s:%s" % (self.user_id, self.key))
+        b64string = b("{}:{}".format(self.user_id, self.key))
         encoded = base64.b64encode(b64string).decode("utf-8")
 
         authorization = "Basic " + encoded
@@ -293,4 +290,4 @@ class ForbiddenError(LibcloudError):
 
     def __init__(self, driver):
         message = "User has not permission to perform this task."
-        super(ForbiddenError, self).__init__(message, driver)
+        super().__init__(message, driver)

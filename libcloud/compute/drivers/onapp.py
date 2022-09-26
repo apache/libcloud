@@ -16,12 +16,10 @@
 import json
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.networking import is_private_subnet
-
 from libcloud.common.onapp import OnAppConnection
-from libcloud.compute.base import Node, NodeDriver, NodeImage, KeyPair
+from libcloud.compute.base import Node, KeyPair, NodeImage, NodeDriver
+from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.providers import Provider
-
 
 __all__ = ["OnAppNodeDriver"]
 
@@ -260,9 +258,7 @@ class OnAppNodeDriver(NodeDriver):
         :rtype: :class:`.KeyPair` object
         """
         user_id = self.connection.request("/profile.json").object["user"]["id"]
-        response = self.connection.request(
-            "/users/%s/ssh_keys/%s.json" % (user_id, name)
-        )
+        response = self.connection.request("/users/{}/ssh_keys/{}.json".format(user_id, name))
         return self._to_key_pair(response.object["ssh_key"])
 
     def import_key_pair_from_string(self, name, key_material):
@@ -298,9 +294,7 @@ class OnAppNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         key_id = key.name
-        response = self.connection.request(
-            "/settings/ssh_keys/%s.json" % key_id, method="DELETE"
-        )
+        response = self.connection.request("/settings/ssh_keys/%s.json" % key_id, method="DELETE")
         return response.status == httplib.NO_CONTENT
 
     #
@@ -330,9 +324,7 @@ class OnAppNodeDriver(NodeDriver):
             "min_memory_size": template["min_memory_size"],
             "created_at": template["created_at"],
         }
-        return NodeImage(
-            id=template["id"], name=template["label"], driver=self, extra=extra
-        )
+        return NodeImage(id=template["id"], name=template["label"], driver=self, extra=extra)
 
     def _to_node(self, data):
         identifier = data["identifier"]
@@ -346,12 +338,8 @@ class OnAppNodeDriver(NodeDriver):
             else:
                 public_ips.append(address)
 
-        extra = OnAppNodeDriver._get_extra_dict(
-            data, RESOURCE_EXTRA_ATTRIBUTES_MAP["node"]
-        )
-        return Node(
-            identifier, name, extra["state"], public_ips, private_ips, self, extra=extra
-        )
+        extra = OnAppNodeDriver._get_extra_dict(data, RESOURCE_EXTRA_ATTRIBUTES_MAP["node"])
+        return Node(identifier, name, extra["state"], public_ips, private_ips, self, extra=extra)
 
     @staticmethod
     def _get_extra_dict(response, mapping):

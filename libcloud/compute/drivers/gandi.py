@@ -18,18 +18,22 @@ Gandi driver for compute
 from datetime import datetime
 
 from libcloud.common.gandi import (
-    BaseGandiDriver,
-    GandiException,
-    NetworkInterface,
-    IPAddress,
     Disk,
+    IPAddress,
+    GandiException,
+    BaseGandiDriver,
+    NetworkInterface,
 )
-from libcloud.compute.base import KeyPair
-from libcloud.compute.base import StorageVolume
-from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import Node, NodeDriver
-from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
-
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+)
+from libcloud.compute.types import Provider, NodeState
 
 NODE_STATE_MAP = {
     "running": NodeState.RUNNING,
@@ -98,7 +102,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         @inherits: :class:`NodeDriver.__init__`
         """
-        super(GandiNodeDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _resource_info(self, type, id):
         try:
@@ -280,8 +284,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         if not login and not keypairs:
             raise GandiException(
                 1020,
-                "Login and password or ssh keypair "
-                "must be defined for node creation",
+                "Login and password or ssh keypair " "must be defined for node creation",
             )
 
         if location and isinstance(location, NodeLocation):
@@ -312,9 +315,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         }
 
         if login and password:
-            vm_spec.update(
-                {"login": login, "password": password}  # TODO : use NodeAuthPassword
-            )
+            vm_spec.update({"login": login, "password": password})  # TODO : use NodeAuthPassword
         if keypair_ids:
             vm_spec["keys"] = keypair_ids
 
@@ -339,9 +340,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return None
 
     def _to_image(self, img):
-        return NodeImage(
-            id=img["disk_id"], name=img["label"], driver=self.connection.driver
-        )
+        return NodeImage(id=img["disk_id"], name=img["label"], driver=self.connection.driver)
 
     def list_images(self, location=None):
         """
@@ -386,10 +385,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_instance_type(self, location=None):
-        return [
-            self._instance_type_to_size(instance)
-            for name, instance in INSTANCE_TYPES.items()
-        ]
+        return [self._instance_type_to_size(instance) for name, instance in INSTANCE_TYPES.items()]
 
     def list_sizes(self, location=None):
         """
@@ -434,9 +430,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return shares
 
     def _to_loc(self, loc):
-        return NodeLocation(
-            id=loc["id"], name=loc["dc_code"], country=loc["country"], driver=self
-        )
+        return NodeLocation(id=loc["id"], name=loc["dc_code"], country=loc["country"], driver=self)
 
     def list_locations(self):
         """
@@ -496,9 +490,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             "datacenter_id": int(location.id),
         }
         if snapshot:
-            op = self.connection.request(
-                "hosting.disk.create_from", disk_param, int(snapshot.id)
-            )
+            op = self.connection.request("hosting.disk.create_from", disk_param, int(snapshot.id))
         else:
             op = self.connection.request("hosting.disk.create", disk_param)
         if self._wait_operation(op.object["id"]):
@@ -522,9 +514,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        op = self.connection.request(
-            "hosting.vm.disk_attach", int(node.id), int(volume.id)
-        )
+        op = self.connection.request("hosting.vm.disk_attach", int(node.id), int(volume.id))
         if self._wait_operation(op.object["id"]):
             return True
         return False
@@ -541,9 +531,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         :rtype: ``bool``
         """
-        op = self.connection.request(
-            "hosting.vm.disk_detach", int(node.id), int(volume.id)
-        )
+        op = self.connection.request("hosting.vm.disk_detach", int(node.id), int(volume.id))
         if self._wait_operation(op.object["id"]):
             return True
         return False
@@ -635,9 +623,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         :rtype: ``bool``
         """
-        op = self.connection.request(
-            "hosting.vm.disk_attach", int(node.id), int(disk.id)
-        )
+        op = self.connection.request("hosting.vm.disk_attach", int(node.id), int(disk.id))
         if self._wait_operation(op.object["id"]):
             return True
         return False
@@ -654,9 +640,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         :rtype: ``bool``
         """
-        op = self.connection.request(
-            "hosting.vm.disk_detach", int(node.id), int(disk.id)
-        )
+        op = self.connection.request("hosting.vm.disk_detach", int(node.id), int(disk.id))
         if self._wait_operation(op.object["id"]):
             return True
         return False
@@ -673,9 +657,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         :rtype: ``bool``
         """
-        op = self.connection.request(
-            "hosting.vm.iface_attach", int(node.id), int(iface.id)
-        )
+        op = self.connection.request("hosting.vm.iface_attach", int(node.id), int(iface.id))
         if self._wait_operation(op.object["id"]):
             return True
         return False
@@ -692,9 +674,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         :rtype: ``bool``
         """
-        op = self.connection.request(
-            "hosting.vm.iface_detach", int(node.id), int(iface.id)
-        )
+        op = self.connection.request("hosting.vm.iface_detach", int(node.id), int(iface.id))
         if self._wait_operation(op.object["id"]):
             return True
         return False

@@ -16,9 +16,13 @@
 Base types used by other parts of libcloud
 """
 
-from libcloud.common.types import Type
-from libcloud.common.types import LibcloudError, MalformedResponseError
-from libcloud.common.types import InvalidCredsError, InvalidCredsException
+from libcloud.common.types import (
+    Type,
+    LibcloudError,
+    InvalidCredsError,
+    InvalidCredsException,
+    MalformedResponseError,
+)
 
 __all__ = [
     "Provider",
@@ -324,7 +328,7 @@ class NodeImageMemberState(Type):
     REJECTED = "rejected"
 
 
-class Architecture(object):
+class Architecture:
     """
     Image and size architectures.
 
@@ -354,7 +358,7 @@ class DeploymentError(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return "<DeploymentError: node=%s, error=%s, driver=%s>" % (
+        return "<DeploymentError: node={}, error={}, driver={}>".format(
             self.node.id,
             str(self.value),
             str(self.driver),
@@ -367,13 +371,13 @@ class KeyPairError(LibcloudError):
     def __init__(self, name, driver):
         self.name = name
         self.value = "Key pair with name %s does not exist" % (name)
-        super(KeyPairError, self).__init__(value=self.value, driver=driver)
+        super().__init__(value=self.value, driver=driver)
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return "<%s name=%s, value=%s, driver=%s>" % (
+        return "<{} name={}, value={}, driver={}>".format(
             self.error_type,
             self.name,
             self.value,

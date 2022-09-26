@@ -16,53 +16,53 @@ import os
 import sys
 import unittest
 
+from libcloud.storage import types
+from integration.storage.base import Integration
+
 try:
     import boto3
 except ImportError:
     boto3 = None
 
-from integration.storage.base import Integration
-from libcloud.storage import types
-
 
 class S3Test(Integration.TestBase):
-    provider = 's3'
+    provider = "s3"
 
     @classmethod
     def setUpClass(cls):
         if boto3 is None:
-            raise unittest.SkipTest('missing boto3 library')
+            raise unittest.SkipTest("missing boto3 library")
 
         config = {
             key: os.getenv(key)
             for key in (
-                'AWS_ACCESS_KEY_ID',
-                'AWS_ACCESS_KEY_SECRET',
+                "AWS_ACCESS_KEY_ID",
+                "AWS_ACCESS_KEY_SECRET",
             )
         }
 
         for key, value in config.items():
             if not value:
-                raise unittest.SkipTest('missing environment variable %s' % key)
+                raise unittest.SkipTest("missing environment variable %s" % key)
 
-        cls.account = config['AWS_ACCESS_KEY_ID']
-        cls.secret = config['AWS_ACCESS_KEY_SECRET']
+        cls.account = config["AWS_ACCESS_KEY_ID"]
+        cls.secret = config["AWS_ACCESS_KEY_SECRET"]
 
     @classmethod
     def tearDownClass(cls):
         client = boto3.Session(
             aws_access_key_id=cls.account,
             aws_secret_access_key=cls.secret,
-        ).client('s3')
+        ).client("s3")
 
         buckets = (
-            item['Name']
-            for item in client.list_buckets()['Buckets']
-            if item['Name'].startswith(cls.container_name_prefix)
+            item["Name"]
+            for item in client.list_buckets()["Buckets"]
+            if item["Name"].startswith(cls.container_name_prefix)
         )
 
         for name in buckets:
-            bucket = boto3.resource('s3').Bucket(name)
+            bucket = boto3.resource("s3").Bucket(name)
             bucket.objects.delete()
             client.delete_bucket(name)
 
@@ -74,5 +74,5 @@ class S3Test(Integration.TestBase):
             self.driver.get_object(container.name, obj.name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

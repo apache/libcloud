@@ -1,7 +1,6 @@
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-
-import libcloud.security
 
 # Skip this step if you are launching nodes on an official vCloud
 # provider. It is intended only for self signed SSL certs in
@@ -35,9 +34,7 @@ driver.destroy_node(node)
 node = driver.create_node(name="test node 2", image=image, ex_deploy=False)
 
 # Create node with custom CPU & Memory values
-node = driver.create_node(
-    name="test node 3", image=image, ex_vm_cpu=3, ex_vm_memory=1024
-)
+node = driver.create_node(name="test node 3", image=image, ex_vm_cpu=3, ex_vm_memory=1024)
 
 # Create node with customised networking parameters (eg. for OVF
 # imported images)

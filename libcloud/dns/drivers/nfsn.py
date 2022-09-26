@@ -16,13 +16,17 @@ NFSN DNS Driver
 """
 import re
 
-from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.nfsn import NFSNConnection
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.types import RecordAlreadyExistsError
-from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import (
+    Provider,
+    RecordType,
+    ZoneDoesNotExistError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
 from libcloud.utils.py3 import httplib
+from libcloud.common.nfsn import NFSNConnection
+from libcloud.common.exceptions import BaseHTTPError
 
 __all__ = [
     "NFSNDNSDriver",
@@ -150,11 +154,8 @@ class NFSNDNSDriver(DNSDriver):
             self.connection.request(action=action, data=payload, method="POST")
         except BaseHTTPError as e:
             exists_re = re.compile(r"That RR already exists on the domain")
-            if (
-                e.code == httplib.BAD_REQUEST
-                and re.search(exists_re, e.message) is not None
-            ):
-                value = '"%s" already exists in %s' % (name, zone.domain)
+            if e.code == httplib.BAD_REQUEST and re.search(exists_re, e.message) is not None:
+                value = '"{}" already exists in {}'.format(name, zone.domain)
                 raise RecordAlreadyExistsError(value=value, driver=self, record_id=None)
             raise e
         return self.ex_get_records_by(zone=zone, name=name, type=type)[0]
@@ -174,9 +175,7 @@ class NFSNDNSDriver(DNSDriver):
             self.connection.request(action=action, data=payload, method="POST")
         except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
-                raise RecordDoesNotExistError(
-                    value=e.message, driver=self, record_id=None
-                )
+                raise RecordDoesNotExistError(value=e.message, driver=self, record_id=None)
             raise e
         return True
 

@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionKey, BaseDriver
+from libcloud.common.base import BaseDriver, ConnectionKey
 from libcloud.common.types import LibcloudError
 
 __all__ = ["Member", "LoadBalancer", "Algorithm", "Driver", "DEFAULT_ALGORITHM"]
 
 
-class Member(object):
+class Member:
     """
     Represents a load balancer member.
     """
@@ -48,10 +48,10 @@ class Member(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<Member: id=%s, address=%s:%s>" % (self.id, self.ip, self.port)
+        return "<Member: id={}, address={}:{}>".format(self.id, self.ip, self.port)
 
 
-class LoadBalancer(object):
+class LoadBalancer:
     """
     Provide a common interface for handling Load Balancers.
     """
@@ -112,7 +112,7 @@ class LoadBalancer(object):
         )
 
 
-class Algorithm(object):
+class Algorithm:
     """
     Represents a load balancing algorithm.
     """
@@ -150,9 +150,7 @@ class Driver(BaseDriver):
     _VALUE_TO_ALGORITHM_MAP = {}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
-        super(Driver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def list_protocols(self):
         """
@@ -272,9 +270,7 @@ class Driver(BaseDriver):
         :rtype: :class:`Member`
         """
 
-        raise NotImplementedError(
-            "balancer_attach_member not implemented for this driver"
-        )
+        raise NotImplementedError("balancer_attach_member not implemented for this driver")
 
     def balancer_detach_member(self, balancer, member):
         """
@@ -290,9 +286,7 @@ class Driver(BaseDriver):
         :rtype: ``bool``
         """
 
-        raise NotImplementedError(
-            "balancer_detach_member not implemented for this driver"
-        )
+        raise NotImplementedError("balancer_detach_member not implemented for this driver")
 
     def balancer_list_members(self, balancer):
         """
@@ -304,9 +298,7 @@ class Driver(BaseDriver):
         :rtype: ``list`` of :class:`Member`
         """
 
-        raise NotImplementedError(
-            "balancer_list_members not implemented for this driver"
-        )
+        raise NotImplementedError("balancer_list_members not implemented for this driver")
 
     def list_supported_algorithms(self):
         """
@@ -342,6 +334,4 @@ class Driver(BaseDriver):
         try:
             return self._ALGORITHM_TO_VALUE_MAP[algorithm]
         except KeyError:
-            raise LibcloudError(
-                value="Invalid algorithm: %s" % (algorithm), driver=self
-            )
+            raise LibcloudError(value="Invalid algorithm: %s" % (algorithm), driver=self)

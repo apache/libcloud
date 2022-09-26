@@ -18,20 +18,28 @@ Scaleway Driver
 
 import copy
 
+from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.types import ProviderError
+from libcloud.compute.base import (
+    Node,
+    KeyPair,
+    NodeSize,
+    NodeImage,
+    NodeDriver,
+    NodeLocation,
+    StorageVolume,
+    VolumeSnapshot,
+)
+from libcloud.compute.types import NodeState, VolumeSnapshotState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.compute.providers import Provider
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.common.types import ProviderError
-from libcloud.compute.base import NodeDriver, NodeImage, Node, NodeSize
-from libcloud.compute.base import NodeLocation
-from libcloud.compute.base import StorageVolume, VolumeSnapshot, KeyPair
-from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState, VolumeSnapshotState
-from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
 
 __all__ = ["ScalewayResponse", "ScalewayConnection", "ScalewayNodeDriver"]
 
@@ -58,7 +66,7 @@ class ScalewayResponse(JsonResponse):
     ]
 
     def parse_error(self):
-        return super(ScalewayResponse, self).parse_error()["message"]
+        return super().parse_error()["message"]
 
     def success(self):
         return self.status in self.valid_response_codes
@@ -92,9 +100,7 @@ class ScalewayConnection(ConnectionUserAndKey):
             if not self.host == old_host:
                 self.connect()
 
-        return super(ScalewayConnection, self).request(
-            action, params, data, headers, method, raw, stream
-        )
+        return super().request(action, params, data, headers, method, raw, stream)
 
     def _request_paged(
         self,
@@ -115,9 +121,7 @@ class ScalewayConnection(ConnectionUserAndKey):
         elif isinstance(params, list):
             params.append(("per_page", 100))  # pylint: disable=no-member
 
-        results = self.request(
-            action, params, data, headers, method, raw, stream, region
-        ).object
+        results = self.request(action, params, data, headers, method, raw, stream, region).object
 
         links = self.connection.getresponse().links
         while links and "next" in links:
@@ -197,13 +201,11 @@ class ScalewayNodeDriver(NodeDriver):
         response = self.connection._request_paged("/products/servers", region=region)
         sizes = response["servers"]
 
-        response = self.connection._request_paged(
-            "/products/servers/availability", region=region
-        )
+        response = self.connection._request_paged("/products/servers/availability", region=region)
         availability = response["servers"]
 
         return sorted(
-            [self._to_size(name, sizes[name], availability[name]) for name in sizes],
+            (self._to_size(name, sizes[name], availability[name]) for name in sizes),
             key=lambda x: x.name,
         )
 
@@ -238,9 +240,7 @@ class ScalewayNodeDriver(NodeDriver):
             name=name,
             ram=int((size["ram"] or 0) / (1024 * 1024)),
             disk=min_disk,
-            bandwidth=int(
-                (size["network"]["sum_internet_bandwidth"] or 0) / (1024 * 1024)
-            ),
+            bandwidth=int((size["network"]["sum_internet_bandwidth"] or 0) / (1024 * 1024)),
             price=size["hourly_price"],
             driver=self,
             extra=extra,
@@ -372,9 +372,7 @@ class ScalewayNodeDriver(NodeDriver):
             created_at=parse_date(server["creation_date"]),
         )
 
-    def create_node(
-        self, name, size, image, ex_volumes=None, ex_tags=None, region=None
-    ):
+    def create_node(self, name, size, image, ex_volumes=None, ex_tags=None, region=None):
         """
         Create a new node.
 
@@ -432,8 +430,7 @@ class ScalewayNodeDriver(NodeDriver):
             range = (
                 "of %dGB" % size.disk
                 if size.extra.get("max_disk", size.disk) == size.disk
-                else "between %dGB and %dGB"
-                % (size.extra.get("max_disk", size.disk), size.disk)
+                else "between %dGB and %dGB" % (size.extra.get("max_disk", size.disk), size.disk)
             )
             raise ProviderError(
                 value=(
@@ -449,9 +446,7 @@ class ScalewayNodeDriver(NodeDriver):
         )
         server = response.object["server"]
         node = self._to_node(server)
-        node.extra["region"] = (
-            region.id if isinstance(region, NodeLocation) else region
-        ) or "par1"
+        node.extra["region"] = (region.id if isinstance(region, NodeLocation) else region) or "par1"
 
         # Scaleway doesn't start servers by default, let's do it
         self._action(node.id, "poweron")
@@ -531,15 +526,11 @@ class ScalewayNodeDriver(NodeDriver):
         :type region: :class:`.NodeLocation`
         """
         response = self.connection._request_paged("/snapshots", region=region)
-        snapshots = filter(
-            lambda s: s["base_volume"]["id"] == volume.id, response["snapshots"]
-        )
+        snapshots = filter(lambda s: s["base_volume"]["id"] == volume.id, response["snapshots"])
         return [self._to_snapshot(snapshot) for snapshot in snapshots]
 
     def _to_snapshot(self, snapshot):
-        state = self.SNAPSHOT_STATE_MAP.get(
-            snapshot["state"], VolumeSnapshotState.UNKNOWN
-        )
+        state = self.SNAPSHOT_STATE_MAP.get(snapshot["state"], VolumeSnapshotState.UNKNOWN)
         extra = {
             "organization": snapshot["organization"],
             "volume_type": snapshot["volume_type"],
@@ -649,9 +640,7 @@ class ScalewayNodeDriver(NodeDriver):
         :return: Available SSH keys.
         :rtype: ``list`` of :class:`KeyPair`
         """
-        response = self.connection.request(
-            "/users/%s" % (self._get_user_id()), region="account"
-        )
+        response = self.connection.request("/users/%s" % (self._get_user_id()), region="account")
         keys = response.object["user"]["ssh_public_keys"]
         return [
             KeyPair(
@@ -705,9 +694,7 @@ class ScalewayNodeDriver(NodeDriver):
 
     def _save_keys(self, keys):
         data = {
-            "ssh_public_keys": [
-                {"key": "%s %s" % (key.public_key, key.name)} for key in keys
-            ]
+            "ssh_public_keys": [{"key": "{} {}".format(key.public_key, key.name)} for key in keys]
         }
         response = self.connection.request(
             "/users/%s" % (self._get_user_id()),

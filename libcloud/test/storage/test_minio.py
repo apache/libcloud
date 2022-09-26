@@ -18,10 +18,8 @@ import sys
 import unittest
 
 from libcloud.common.types import LibcloudError
-from libcloud.storage.drivers.minio import MinIOStorageDriver
-from libcloud.storage.drivers.minio import MinIOConnectionAWS4
-
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.storage.drivers.minio import MinIOStorageDriver, MinIOConnectionAWS4
 
 
 class MinIOStorageDriverTestCase(unittest.TestCase):

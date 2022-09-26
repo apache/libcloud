@@ -17,16 +17,14 @@ import sys
 import unittest
 from datetime import datetime
 
-from libcloud.utils.py3 import httplib
-from libcloud.compute.base import Node, NodeState, NodeImage, StorageVolume
-from libcloud.compute.drivers.linode import LinodeNodeDriver
-from libcloud.compute.drivers.linode import LinodeNodeDriverV4
-from libcloud.common.linode import LinodeExceptionV4, LinodeDisk, LinodeIPAddress
-from libcloud.common.types import LibcloudError, InvalidCredsError
-
 from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.compute.base import Node, NodeImage, NodeState, StorageVolume
 from libcloud.test.compute import TestCaseMixin
+from libcloud.common.linode import LinodeDisk, LinodeIPAddress, LinodeExceptionV4
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.drivers.linode import LinodeNodeDriver, LinodeNodeDriverV4
 
 
 class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
@@ -38,9 +36,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         self.driver = LinodeNodeDriver("foo", api_version="4.0")
 
     def test_unknown_api_version(self):
-        self.assertRaises(
-            NotImplementedError, LinodeNodeDriver, "foo", api_version="2.0"
-        )
+        self.assertRaises(NotImplementedError, LinodeNodeDriver, "foo", api_version="2.0")
 
     def test_correct_class_is_used(self):
         self.assertIsInstance(self.driver, LinodeNodeDriverV4)
@@ -144,9 +140,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         size = self.driver.list_sizes()[0]
         location = self.driver.list_locations()[0]
         LinodeMockHttpV4.type = "NO_IMAGE"
-        node = self.driver.create_node(
-            location, size, name="TestNode", ex_tags=["testing123"]
-        )
+        node = self.driver.create_node(location, size, name="TestNode", ex_tags=["testing123"])
 
         self.assertIsNone(node.image)
         self.assertEqual(node.name, "TestNode")
@@ -199,9 +193,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         self.assertEqual(renamed_node.name, "new_name")
 
     def test_ex_resize_node(self):
-        node = Node(
-            "22344420", None, None, None, None, driver=self.driver, size="g6-nanode-1"
-        )
+        node = Node("22344420", None, None, None, None, driver=self.driver, size="g6-nanode-1")
         size = self.driver.list_sizes()[0]
         result = self.driver.ex_resize_node(node, size=size)
         self.assertTrue(result)
@@ -287,9 +279,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
     def test_create_volume(self):
         node = Node("22344420", None, NodeState.RUNNING, None, None, driver=self.driver)
-        volume = self.driver.create_volume(
-            "Volume1", 50, node=node, tags=["test123", "testing"]
-        )
+        volume = self.driver.create_volume("Volume1", 50, node=node, tags=["test123", "testing"])
 
         self.assertEqual(volume.extra["linode_id"], 22344420)
         self.assertEqual(volume.size, 50)
@@ -480,9 +470,7 @@ class LinodeMockHttpV4(MockHttp):
     def _v4_linode_instances_22344420_boot(self, method, url, body, headers):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v4_linode_instances_22344420_boot_ALREADY_BOOTED(
-        self, method, url, body, headers
-    ):
+    def _v4_linode_instances_22344420_boot_ALREADY_BOOTED(self, method, url, body, headers):
         body = '{"errors": [{"reason": "Linode 22344420 already booted."}]}'
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
 

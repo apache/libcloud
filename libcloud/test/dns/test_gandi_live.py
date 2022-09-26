@@ -13,28 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import sys
+import json
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.common.gandi_live import (
-    GandiLiveBaseError,
-    JsonParseError,
-    InvalidRequestError,
-)
+from libcloud.dns.base import Zone, Record
 from libcloud.dns.types import (
     RecordType,
     RecordError,
     ZoneDoesNotExistError,
-    RecordDoesNotExistError,
     ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
     RecordAlreadyExistsError,
 )
-from libcloud.dns.drivers.gandi_live import GandiLiveDNSDriver
-from libcloud.dns.base import Zone, Record
-from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_GANDI_LIVE
+from libcloud.common.gandi_live import JsonParseError, GandiLiveBaseError, InvalidRequestError
+from libcloud.test.file_fixtures import DNSFileFixtures
+from libcloud.dns.drivers.gandi_live import GandiLiveDNSDriver
 from libcloud.test.common.test_gandi_live import BaseGandiLiveMockHttp
 
 
@@ -160,9 +156,7 @@ class GandiLiveTests(unittest.TestCase):
             )
         self.assertTrue("Record data must be" in str(ctx.exception))
         with self.assertRaises(RecordError) as ctx:
-            self.driver.create_record(
-                "alice", self.test_zone, "AAAA", "::1", extra={"ttl": 10}
-            )
+            self.driver.create_record("alice", self.test_zone, "AAAA", "::1", extra={"ttl": 10})
         self.assertTrue("TTL must be at least" in str(ctx.exception))
         with self.assertRaises(RecordError) as ctx:
             self.driver.create_record(
@@ -310,36 +304,24 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     def _json_api_v5_domains_example_com_records_get(self, method, url, body, headers):
         body = self.fixtures.load("list_records.json")
         resp_headers = {}
-        if (
-            headers is not None
-            and "Accept" in headers
-            and headers["Accept"] == "text/plain"
-        ):
+        if headers is not None and "Accept" in headers and headers["Accept"] == "text/plain":
             body = self.fixtures.load("list_records_bind.txt")
             resp_headers["Content-Type"] = "text/plain"
         return (httplib.OK, body, resp_headers, httplib.responses[httplib.OK])
 
-    def _json_api_v5_domains_example_com_records_bob_A_get(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_example_com_records_bob_A_get(self, method, url, body, headers):
         body = self.fixtures.load("get_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_api_v5_domains_example_com_records_none_A_get(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_example_com_records_none_A_get(self, method, url, body, headers):
         body = self.fixtures.load("get_nonexistent_record.json")
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _json_api_v5_domains_example_com_records_lists_MX_get(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_example_com_records_lists_MX_get(self, method, url, body, headers):
         body = self.fixtures.load("get_mx_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_api_v5_domains_example_com_records_lists_MX_put(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_example_com_records_lists_MX_put(self, method, url, body, headers):
         body = self.fixtures.load("update_mx_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -352,15 +334,11 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
             httplib.responses[httplib.OK],
         )
 
-    def _json_api_v5_domains_badexample_com_records_post(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_badexample_com_records_post(self, method, url, body, headers):
         body = self.fixtures.load("create_existing_record.json")
         return (httplib.CONFLICT, body, {}, httplib.responses[httplib.CONFLICT])
 
-    def _json_api_v5_domains_badexample_com_records_get(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_badexample_com_records_get(self, method, url, body, headers):
         return (
             httplib.INTERNAL_SERVER_ERROR,
             body,
@@ -368,21 +346,15 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
             httplib.responses[httplib.INTERNAL_SERVER_ERROR],
         )
 
-    def _json_api_v5_domains_badexample_com_records_jane_A_put(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_badexample_com_records_jane_A_put(self, method, url, body, headers):
         body = self.fixtures.load("update_bad_record.json")
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
 
-    def _json_api_v5_domains_example_com_records_bob_A_put(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_example_com_records_bob_A_put(self, method, url, body, headers):
         body = self.fixtures.load("update_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_api_v5_domains_example_com_records_bob_A_delete(
-        self, method, url, body, headers
-    ):
+    def _json_api_v5_domains_example_com_records_bob_A_delete(self, method, url, body, headers):
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.OK])
 
 

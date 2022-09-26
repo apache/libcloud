@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.utils.py3 import httplib
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.gandi import BaseObject
+from libcloud.common.types import LibcloudError, InvalidCredsError
 
 __all__ = [
     "API_HOST",
@@ -95,7 +95,7 @@ class LinodeResponse(JsonResponse):
         :keyword response: The raw response returned by urllib
         :return: parsed :class:`LinodeResponse`"""
         self.errors = []
-        super(LinodeResponse, self).__init__(response, connection)
+        super().__init__(response, connection)
 
         self.invalid = LinodeException(0xFF, "Invalid JSON received from server")
 
@@ -114,7 +114,7 @@ class LinodeResponse(JsonResponse):
         None and errorarray will indicate an invalid JSON exception.
 
         :return: ``list`` of objects and ``list`` of errors"""
-        js = super(LinodeResponse, self).parse_body()
+        js = super().parse_body()
 
         try:
             if isinstance(js, dict):
@@ -199,7 +199,7 @@ class LinodeResponseV4(JsonResponse):
     def parse_body(self):
         """Parse the body of the response into JSON objects
         :return: ``dict`` of objects"""
-        return super(LinodeResponseV4, self).parse_body()
+        return super().parse_body()
 
     def parse_error(self):
         """
@@ -214,7 +214,7 @@ class LinodeResponseV4(JsonResponse):
         field = error.get("field")
 
         if field is not None:
-            error_msg = "%s-%s" % (reason, field)
+            error_msg = "{}-{}".format(reason, field)
         else:
             error_msg = reason
 
@@ -265,7 +265,7 @@ class LinodeConnectionV4(ConnectionKey):
 
 class LinodeDisk(BaseObject):
     def __init__(self, id, state, name, filesystem, driver, size, extra=None):
-        super(LinodeDisk, self).__init__(id, state, driver)
+        super().__init__(id, state, driver)
         self.name = name
         self.size = size
         self.filesystem = filesystem
@@ -273,8 +273,7 @@ class LinodeDisk(BaseObject):
 
     def __repr__(self):
         return (
-            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s,"
-            " filesystem=%s, driver=%s ...>"
+            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s," " filesystem=%s, driver=%s ...>"
         ) % (
             self.id,
             self.name,

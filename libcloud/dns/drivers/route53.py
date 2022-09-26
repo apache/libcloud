@@ -15,32 +15,26 @@
 
 __all__ = ["Route53DNSDriver"]
 
-import base64
-import hmac
-import datetime
-import uuid
 import copy
-from libcloud.utils.py3 import httplib
-
+import hmac
+import uuid
+import base64
+import datetime
 from hashlib import sha1
 
-from libcloud.utils.py3 import ET
-from libcloud.utils.py3 import b, urlencode
-
-from libcloud.utils.xml import findtext, findall, fixxpath
-from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.common.types import LibcloudError
+from libcloud.dns.base import Zone, Record, DNSDriver
+from libcloud.dns.types import Provider, RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.utils.py3 import ET, b, httplib, urlencode
+from libcloud.utils.xml import findall, findtext, fixxpath
 from libcloud.common.aws import AWSGenericResponse, AWSTokenConnection
 from libcloud.common.base import ConnectionUserAndKey
-
+from libcloud.common.types import LibcloudError
 
 API_VERSION = "2012-02-29"
 API_HOST = "route53.amazonaws.com"
 API_ROOT = "/%s/" % (API_VERSION)
 
-NAMESPACE = "https://%s/doc%s" % (API_HOST, API_ROOT)
+NAMESPACE = "https://{}/doc{}".format(API_HOST, API_ROOT)
 
 
 class InvalidChangeBatch(LibcloudError):
@@ -78,7 +72,7 @@ class BaseRoute53Connection(ConnectionUserAndKey):
         }
 
         for k, v in auth.items():
-            tmp.append("%s=%s" % (k, v))
+            tmp.append("{}={}".format(k, v))
 
         headers["X-Amzn-Authorization"] = "AWS3-HTTPS " + ",".join(tmp)
 
@@ -117,7 +111,7 @@ class Route53DNSDriver(DNSDriver):
 
     def __init__(self, *args, **kwargs):
         self.token = kwargs.pop("token", None)
-        super(Route53DNSDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def iterate_zones(self):
         return self._get_more("zones")
@@ -312,9 +306,7 @@ class Route53DNSDriver(DNSDriver):
         if deletions:
             self._post_changeset(zone, deletions)
 
-    def _update_single_value_record(
-        self, record, name=None, type=None, data=None, extra=None
-    ):
+    def _update_single_value_record(self, record, name=None, type=None, data=None, extra=None):
         batch = [
             ("DELETE", record.name, record.type, record.data, record.extra),
             ("CREATE", name, type, data, extra),
@@ -322,9 +314,7 @@ class Route53DNSDriver(DNSDriver):
 
         return self._post_changeset(record.zone, batch)
 
-    def _update_multi_value_record(
-        self, record, name=None, type=None, data=None, extra=None
-    ):
+    def _update_multi_value_record(self, record, name=None, type=None, data=None, extra=None):
         other_records = record.extra.get("_other_records", [])
 
         attrs = {"xmlns": NAMESPACE}
@@ -411,7 +401,7 @@ class Route53DNSDriver(DNSDriver):
             rrecs = ET.SubElement(rrs, "ResourceRecords")
             rrec = ET.SubElement(rrecs, "ResourceRecord")
             if "priority" in extra:
-                data = "%s %s" % (extra["priority"], data)
+                data = "{} {}".format(extra["priority"], data)
             ET.SubElement(rrec, "Value").text = data
 
         uri = API_ROOT + "hostedzone/" + zone.id + "/rrset"
@@ -423,18 +413,14 @@ class Route53DNSDriver(DNSDriver):
 
     def _to_zones(self, data):
         zones = []
-        for element in data.findall(
-            fixxpath(xpath="HostedZones/HostedZone", namespace=NAMESPACE)
-        ):
+        for element in data.findall(fixxpath(xpath="HostedZones/HostedZone", namespace=NAMESPACE)):
             zones.append(self._to_zone(element))
 
         return zones
 
     def _to_zone(self, elem):
         name = findtext(element=elem, xpath="Name", namespace=NAMESPACE)
-        id = findtext(element=elem, xpath="Id", namespace=NAMESPACE).replace(
-            "/hostedzone/", ""
-        )
+        id = findtext(element=elem, xpath="Id", namespace=NAMESPACE).replace("/hostedzone/", "")
         comment = findtext(element=elem, xpath="Config/Comment", namespace=NAMESPACE)
         resource_record_count = int(
             findtext(element=elem, xpath="ResourceRecordSetCount", namespace=NAMESPACE)
@@ -543,8 +529,7 @@ class Route53DNSDriver(DNSDriver):
         last_key = None
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
-            for item in items:
-                yield item
+            yield from items
 
     def _get_data(self, rtype, last_key, **kwargs):
         params = {}
@@ -576,11 +561,11 @@ class Route53DNSDriver(DNSDriver):
             return [], None, True
 
     def _ex_connection_class_kwargs(self):
-        kwargs = super(Route53DNSDriver, self)._ex_connection_class_kwargs()
+        kwargs = super()._ex_connection_class_kwargs()
         kwargs["token"] = self.token
         return kwargs
 
     def _quote_data(self, data):
         if data[0] == '"' and data[-1] == '"':
             return data
-        return '"{0}"'.format(data.replace('"', '"'))
+        return '"{}"'.format(data.replace('"', '"'))

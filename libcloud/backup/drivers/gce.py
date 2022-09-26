@@ -15,16 +15,15 @@
 
 __all__ = ["GCEBackupDriver"]
 
-from libcloud.utils.iso8601 import parse_date
 from libcloud.backup.base import (
     BackupDriver,
-    BackupTargetRecoveryPoint,
-    BackupTargetJob,
     BackupTarget,
+    BackupTargetJob,
+    BackupTargetRecoveryPoint,
 )
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
-
 from libcloud.common.google import GoogleResponse, GoogleBaseConnection
+from libcloud.utils.iso8601 import parse_date
 
 API_VERSION = "v1"
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
@@ -71,7 +70,7 @@ class GCEConnection(GoogleBaseConnection):
         project=None,
         **kwargs,
     ):
-        super(GCEConnection, self).__init__(
+        super().__init__(
             user_id,
             key,
             secure=secure,
@@ -79,7 +78,7 @@ class GCEConnection(GoogleBaseConnection):
             credential_file=credential_file,
             **kwargs,
         )
-        self.request_path = "/compute/%s/projects/%s" % (API_VERSION, project)
+        self.request_path = "/compute/{}/projects/{}".format(API_VERSION, project)
         self.gce_params = {}
 
     def pre_connect_hook(self, params, headers):
@@ -88,7 +87,7 @@ class GCEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
-        params, headers = super(GCEConnection, self).pre_connect_hook(params, headers)
+        params, headers = super().pre_connect_hook(params, headers)
         if self.gce_params:
             params.update(self.gce_params)
         return params, headers
@@ -99,7 +98,7 @@ class GCEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
-        response = super(GCEConnection, self).request(*args, **kwargs)
+        response = super().request(*args, **kwargs)
 
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
@@ -159,22 +158,18 @@ class GCEBackupDriver(BackupDriver):
         :type     credential_file: ``str``
         """
         if not project:
-            raise ValueError(
-                "Project name must be specified using " '"project" keyword.'
-            )
+            raise ValueError("Project name must be specified using " '"project" keyword.')
 
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
-        self.credential_file = (
-            credential_file or "~/.gce_libcloud_auth" + "." + self.project
-        )
+        self.credential_file = credential_file or "~/.gce_libcloud_auth" + "." + self.project
 
-        super(GCEBackupDriver, self).__init__(user_id, key, **kwargs)
+        super().__init__(user_id, key, **kwargs)
 
         # Cache Zone and Region information to reduce API calls and
         # increase speed
-        self.base_path = "/compute/%s/projects/%s" % (API_VERSION, self.project)
+        self.base_path = "/compute/{}/projects/{}".format(API_VERSION, self.project)
 
     def get_supported_target_types(self):
         """
@@ -240,9 +235,7 @@ class GCEBackupDriver(BackupDriver):
         else:
             raise RuntimeError("Node does not have any block devices")
 
-    def create_target_from_container(
-        self, container, type=BackupTargetType.OBJECT, extra=None
-    ):
+    def create_target_from_container(self, container, type=BackupTargetType.OBJECT, extra=None):
         """
         Creates a new backup target from an existing storage container
 
@@ -257,9 +250,7 @@ class GCEBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            "create_target_from_container not implemented for this driver"
-        )
+        raise NotImplementedError("create_target_from_container not implemented for this driver")
 
     def update_target(self, target, name, address, extra):
         """
@@ -327,9 +318,7 @@ class GCEBackupDriver(BackupDriver):
         """
         raise NotImplementedError("recover_target not implemented for this driver")
 
-    def recover_target_out_of_place(
-        self, target, recovery_point, recovery_target, path=None
-    ):
+    def recover_target_out_of_place(self, target, recovery_point, recovery_target, path=None):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -347,9 +336,7 @@ class GCEBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            "recover_target_out_of_place not implemented for this driver"
-        )
+        raise NotImplementedError("recover_target_out_of_place not implemented for this driver")
 
     def get_target_job(self, target, id):
         """
@@ -390,7 +377,7 @@ class GCEBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTargetJob`
         """
         name = target.name
-        request = "/zones/%s/disks/%s/createSnapshot" % (
+        request = "/zones/{}/disks/{}/createSnapshot".format(
             target.extra["zone"].name,
             target.name,
         )

@@ -14,13 +14,13 @@
 # limitations under the License.
 import sys
 
-from libcloud.compute.base import NodeImage, NodeAuthPassword, NodeLocation
+from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
-from libcloud.test import unittest, MockHttp
-from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.types import Provider, NodeState
+from libcloud.compute.base import NodeImage, NodeLocation, NodeAuthPassword
 from libcloud.test.secrets import ONEANDONE_PARAMS
+from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class OneAndOneTests(unittest.TestCase):
@@ -93,9 +93,7 @@ class OneAndOneTests(unittest.TestCase):
             name="name",
             image=NodeImage(id="image_id", name=None, driver=self.driver),
             ex_fixed_instance_size_id="instance_id",
-            location=NodeLocation(
-                "datacenter_id", name="name", country="GB", driver=self.driver
-            ),
+            location=NodeLocation("datacenter_id", name="name", country="GB", driver=self.driver),
             auth=NodeAuthPassword("password"),
             ex_ip="1.1.1.1",
             ex_monitoring_policy_id="mp_id",
@@ -115,13 +113,9 @@ class OneAndOneTests(unittest.TestCase):
         self.assertEqual(node.extra["image"]["id"], "B5F778B85C041347BCDCFC3172AB3F3C")
         self.assertEqual(node.extra["image"]["name"], "centos7-64std")
 
-        self.assertEqual(
-            node.extra["datacenter"]["id"], "908DC2072407C94C8054610AD5A53B8C"
-        )
+        self.assertEqual(node.extra["datacenter"]["id"], "908DC2072407C94C8054610AD5A53B8C")
         self.assertEqual(node.extra["datacenter"]["country_code"], "US")
-        self.assertEqual(
-            node.extra["datacenter"]["location"], "United States of America"
-        )
+        self.assertEqual(node.extra["datacenter"]["location"], "United States of America")
 
         self.assertEqual(
             node.extra["hardware"]["fixed_instance_size_id"],
@@ -233,9 +227,7 @@ class OneAndOneTests(unittest.TestCase):
             {"protocol": "TCP", "port_from": 80, "port_to": 80, "source": "0.0.0.0"},
             {"protocol": "TCP", "port_from": 443, "port_to": 443, "source": "0.0.0.0"},
         ]
-        firewall = self.driver.ex_create_firewall_policy(
-            "name", rules, description="desc"
-        )
+        firewall = self.driver.ex_create_firewall_policy("name", rules, description="desc")
 
         self.assertNotEqual(firewall, None)
 
@@ -272,9 +264,7 @@ class OneAndOneTests(unittest.TestCase):
         self.assertEqual(storage["size"], 200)
         self.assertEqual(storage["state"], "ACTIVE")
         self.assertEqual(storage["description"], "My shared storage test description")
-        self.assertEqual(
-            storage["datacenter"]["id"], "D0F6D8C8ED29D3036F94C27BBB7BAD36"
-        )
+        self.assertEqual(storage["datacenter"]["id"], "D0F6D8C8ED29D3036F94C27BBB7BAD36")
         self.assertEqual(storage["datacenter"]["location"], "USA")
         self.assertEqual(storage["datacenter"]["country_code"], "US")
         self.assertEqual(storage["cloudpanel_id"], "vid35780")
@@ -283,16 +273,12 @@ class OneAndOneTests(unittest.TestCase):
         self.assertEqual(storage["nfs_path"], "vid50995.nas1.lan/:vid50995")
         self.assertEqual(storage["name"], "My shared storage test")
         self.assertEqual(storage["creation_date"], "2015-05-06T08:33:25+00:00")
-        self.assertEqual(
-            storage["servers"][0]["id"], "638ED28205B1AFD7ADEF569C725DD85F"
-        )
+        self.assertEqual(storage["servers"][0]["id"], "638ED28205B1AFD7ADEF569C725DD85F")
         self.assertEqual(storage["servers"][0]["name"], "My server 1")
         self.assertEqual(storage["servers"][0]["rights"], "RW")
 
     def test_ex_create_shared_storage(self):
-        storage = self.driver.ex_create_shared_storage(
-            name="TEST", size=2, datacenter_id="dc_id"
-        )
+        storage = self.driver.ex_create_shared_storage(name="TEST", size=2, datacenter_id="dc_id")
         self.assertNotEqual(storage, None)
 
     def test_ex_delete_shared_storage(self):
@@ -300,9 +286,7 @@ class OneAndOneTests(unittest.TestCase):
         self.assertNotEqual(storage, None)
 
     def test_ex_attach_server_to_shared_storage(self):
-        storage = self.driver.ex_attach_server_to_shared_storage(
-            "storage_1", "srv_1", "RW"
-        )
+        storage = self.driver.ex_attach_server_to_shared_storage("storage_1", "srv_1", "RW")
         self.assertNotEqual(storage, None)
 
     def test_ex_get_shared_storage_server(self):
@@ -347,15 +331,11 @@ class OneAndOneTests(unittest.TestCase):
         self.assertNotEqual(load_balancer, None)
 
     def test_ex_add_servers_to_load_balancer(self):
-        load_balancer = self.driver.ex_add_servers_to_load_balancer(
-            "lb_1", server_ips=["1.1.1.1"]
-        )
+        load_balancer = self.driver.ex_add_servers_to_load_balancer("lb_1", server_ips=["1.1.1.1"])
         self.assertNotEqual(load_balancer, None)
 
     def test_ex_remove_server_from_load_balancer(self):
-        load_balancer = self.driver.ex_remove_server_from_load_balancer(
-            "lb_1", server_ip="srv_1"
-        )
+        load_balancer = self.driver.ex_remove_server_from_load_balancer("lb_1", server_ip="srv_1")
         self.assertNotEqual(load_balancer, None)
 
     def test_ex_add_load_balancer_rule(self):
@@ -443,9 +423,7 @@ class OneAndOneTests(unittest.TestCase):
             }
         ]
 
-        processes = [
-            {"process": "test", "alert_if": "NOT_RUNNING", "email_notification": True}
-        ]
+        processes = [{"process": "test", "alert_if": "NOT_RUNNING", "email_notification": True}]
 
         policy = self.driver.ex_create_monitoring_policy(
             name="test_name",

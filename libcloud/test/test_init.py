@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more§
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,8 +15,15 @@
 
 import os
 import sys
-import tempfile
 import logging
+import tempfile
+from unittest.mock import patch
+
+import libcloud
+from libcloud import _init_once
+from libcloud.base import DriverTypeNotFoundError
+from libcloud.test import unittest
+from libcloud.utils.loggingconnection import LoggingConnection
 
 try:
     import paramiko  # NOQA
@@ -25,14 +31,6 @@ try:
     have_paramiko = True
 except ImportError:
     have_paramiko = False
-
-from unittest.mock import patch
-
-import libcloud
-from libcloud import _init_once
-from libcloud.utils.loggingconnection import LoggingConnection
-from libcloud.base import DriverTypeNotFoundError
-from libcloud.test import unittest
 
 
 class TestUtils(unittest.TestCase):
@@ -66,9 +64,7 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(paramiko_log_level, logging.DEBUG)
 
     def test_factory(self):
-        driver = libcloud.get_driver(
-            libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2
-        )
+        driver = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2)
         self.assertEqual(driver.__name__, "EC2NodeDriver")
 
     def test_raises_error(self):

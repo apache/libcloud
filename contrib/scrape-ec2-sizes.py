@@ -26,14 +26,14 @@ Use it as following (run it in the root of the repo directory):
     $ python contrib/scrape-ec2-sizes.py
 """
 
-import re
 import os
+import re
 import json
 import atexit
 
-import requests
 import tqdm  # pylint: disable=import-error
 import ijson  # pylint: disable=import-error
+import requests
 
 FILEPATH = os.environ.get("TMP_JSON", "/tmp/ec.json")
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"
@@ -240,7 +240,7 @@ FILE_HEADER = """
 def download_json():
     if os.path.isfile(FILEPATH):
         print("Using data from existing cached file %s" % (FILEPATH))
-        return open(FILEPATH, "r")
+        return open(FILEPATH)
 
     def remove_partial_cached_file():
         if os.path.isfile(FILEPATH):
@@ -267,7 +267,7 @@ def download_json():
         progress_bar.close()
         atexit.unregister(remove_partial_cached_file)
 
-    return open(FILEPATH, "r")
+    return open(FILEPATH)
 
 
 def get_json():
@@ -275,7 +275,7 @@ def get_json():
         return download_json(), False
 
     print("Using data from existing cached file %s" % (FILEPATH))
-    return open(FILEPATH, "r"), True
+    return open(FILEPATH), True
 
 
 def filter_extras(extras):
@@ -336,17 +336,10 @@ def parse():
                 products_data[sku]["attributes"].pop(field, None)
             # Compute RAM
             ram = int(
-                float(
-                    products_data[sku]["attributes"]["memory"]
-                    .split()[0]
-                    .replace(",", "")
-                )
-                * 1024
+                float(products_data[sku]["attributes"]["memory"].split()[0].replace(",", "")) * 1024
             )
             # Compute bandwdith
-            bw_match = REG_BANDWIDTH.match(
-                products_data[sku]["attributes"]["networkPerformance"]
-            )
+            bw_match = REG_BANDWIDTH.match(products_data[sku]["attributes"]["networkPerformance"])
             if bw_match is not None:
                 bandwidth = int(bw_match.groups()[0])
             else:
@@ -363,9 +356,7 @@ def parse():
                 if match:
                     disk_number, disk_size = match.groups()
                 else:
-                    match = REG2_STORAGE.match(
-                        products_data[sku]["attributes"]["storage"]
-                    )
+                    match = REG2_STORAGE.match(products_data[sku]["attributes"]["storage"])
                     if match:
                         disk_number, disk_size = 1, match.groups()[0]
                     else:
@@ -398,9 +389,9 @@ def dump():
         fp.write("\n")
         fp.write(
             "INSTANCE_TYPES = "
-            + json.dumps(
-                sizes, indent=4, sort_keys=True, separators=separators
-            ).replace("null", "None")
+            + json.dumps(sizes, indent=4, sort_keys=True, separators=separators).replace(
+                "null", "None"
+            )
         )
 
     print("")
@@ -414,9 +405,9 @@ def dump():
         fp.write("\n")
         fp.write(
             "REGION_DETAILS = "
-            + json.dumps(
-                regions, indent=4, sort_keys=True, separators=separators
-            ).replace("null", "None")
+            + json.dumps(regions, indent=4, sort_keys=True, separators=separators).replace(
+                "null", "None"
+            )
         )
 
     print("Data written to %s" % (file_path))
@@ -442,9 +433,9 @@ def dump():
         fp.write("\n")
         fp.write(
             "REGION_DETAILS = "
-            + json.dumps(
-                regions_partial, indent=4, sort_keys=True, separators=separators
-            ).replace("null", "None")
+            + json.dumps(regions_partial, indent=4, sort_keys=True, separators=separators).replace(
+                "null", "None"
+            )
         )
 
     print("Data written to %s" % (file_path))

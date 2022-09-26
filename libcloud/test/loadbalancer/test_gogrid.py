@@ -16,17 +16,14 @@
 import sys
 import unittest
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
-
+from libcloud.test import MockHttp
+from libcloud.utils.py3 import httplib, urlparse
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node
-from libcloud.compute.drivers.dummy import DummyNodeDriver
-from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
-
-from libcloud.test import MockHttp
+from libcloud.loadbalancer.base import Member, Algorithm, LoadBalancer
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.compute.drivers.dummy import DummyNodeDriver
+from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
 
 class GoGridTests(unittest.TestCase):
@@ -83,9 +80,7 @@ class GoGridTests(unittest.TestCase):
             )
         except LibcloudError as e:
             self.assertTrue(
-                str(e).find(
-                    "tried to add a member with an IP address not assigned to your account"
-                )
+                str(e).find("tried to add a member with an IP address not assigned to your account")
                 != -1
             )
         else:
@@ -117,7 +112,7 @@ class GoGridTests(unittest.TestCase):
         self.assertEqual(len(members2), 3)
         self.assertEqual(
             expected_members,
-            set(["%s:%s" % (member.ip, member.port) for member in members1]),
+            {"{}:{}".format(member.ip, member.port) for member in members1},
         )
         self.assertEqual(members1[0].balancer, balancer)
 

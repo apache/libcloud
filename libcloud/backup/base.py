@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionUserAndKey, BaseDriver
+from libcloud.common.base import BaseDriver, ConnectionUserAndKey
 from libcloud.backup.types import BackupTargetType
 
 __all__ = [
@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-class BackupTarget(object):
+class BackupTarget:
     """
     A backup target
     """
@@ -57,9 +57,7 @@ class BackupTarget(object):
         self.extra = extra or {}
 
     def update(self, name=None, address=None, extra=None):
-        return self.driver.update_target(
-            target=self, name=name, address=address, extra=extra
-        )
+        return self.driver.update_target(target=self, name=name, address=address, extra=extra)
 
     def delete(self):
         return self.driver.delete_target(target=self)
@@ -82,7 +80,7 @@ class BackupTarget(object):
         )
 
 
-class BackupTargetJob(object):
+class BackupTargetJob:
     """
     A backup target job
     """
@@ -133,7 +131,7 @@ class BackupTargetJob(object):
         )
 
 
-class BackupTargetRecoveryPoint(object):
+class BackupTargetRecoveryPoint:
     """
     A backup target recovery point
     """
@@ -170,9 +168,7 @@ class BackupTargetRecoveryPoint(object):
 
         :rtype: Instance of :class:`.BackupTargetJob`
         """
-        return self.driver.recover_target(
-            target=self.target, recovery_point=self, path=path
-        )
+        return self.driver.recover_target(target=self.target, recovery_point=self, path=path)
 
     def recover_to(self, recovery_target, path=None):
         """
@@ -233,9 +229,7 @@ class BackupDriver(BaseDriver):
 
         :return: ``None``
         """
-        super(BackupDriver, self).__init__(
-            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
-        )
+        super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
     def get_supported_target_types(self):
         """
@@ -243,9 +237,7 @@ class BackupDriver(BaseDriver):
 
         :return: ``list`` of :class:``BackupTargetType``
         """
-        raise NotImplementedError(
-            "get_supported_target_types not implemented for this driver"
-        )
+        raise NotImplementedError("get_supported_target_types not implemented for this driver")
 
     def list_targets(self):
         """
@@ -291,9 +283,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`.BackupTarget`
         """
-        return self.create_target(
-            name=node.name, address=node.public_ips[0], type=type, extra=None
-        )
+        return self.create_target(name=node.name, address=node.public_ips[0], type=type, extra=None)
 
     def create_target_from_storage_container(
         self, container, type=BackupTargetType.OBJECT, extra=None
@@ -360,9 +350,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.BackupTargetRecoveryPoint`
         """
-        raise NotImplementedError(
-            "list_recovery_points not implemented for this driver"
-        )
+        raise NotImplementedError("list_recovery_points not implemented for this driver")
 
     def recover_target(self, target, recovery_point, path=None):
         """
@@ -381,9 +369,7 @@ class BackupDriver(BaseDriver):
         """
         raise NotImplementedError("recover_target not implemented for this driver")
 
-    def recover_target_out_of_place(
-        self, target, recovery_point, recovery_target, path=None
-    ):
+    def recover_target_out_of_place(self, target, recovery_point, recovery_target, path=None):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -401,9 +387,7 @@ class BackupDriver(BaseDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            "recover_target_out_of_place not implemented for this driver"
-        )
+        raise NotImplementedError("recover_target_out_of_place not implemented for this driver")
 
     def get_target_job(self, target, id):
         """

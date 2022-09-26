@@ -26,6 +26,7 @@ github:
     - cloud
     - libcloud
     - apache
+  del_branch_on_merge: true
   features:
     wiki: false
     issues: true
@@ -45,8 +46,9 @@ github:
           - "Unit Tests (Python 3.8)"
           - "Unit Tests (Python 3.9)"
           - "Unit Tests (Python 3.10)"
-          - "Run Various Lint and Other Checks (3.7)"
-          - "Build and upload Documentation (3.7)"
+          - "Run Various Lint and Other Checks (3.8)"
+          - "Build and upload Documentation (3.8)"
+          - "Dependency Review"
 
 notifications:
   jobs: notifications@libcloud.apache.org

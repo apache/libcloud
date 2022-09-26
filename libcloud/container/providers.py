@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Type
-from typing import Union
 from types import ModuleType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Type, Union
 
 from libcloud.container.types import Provider
 from libcloud.common.providers import get_driver as _get_provider_driver
@@ -48,6 +46,4 @@ def get_driver(provider):
 
 def set_driver(provider, module, klass):
     # type: (Union[Provider, str], ModuleType, type) -> Type[ContainerDriver]
-    return _set_provider_driver(
-        drivers=DRIVERS, provider=provider, module=module, klass=klass
-    )
+    return _set_provider_driver(drivers=DRIVERS, provider=provider, module=module, klass=klass)

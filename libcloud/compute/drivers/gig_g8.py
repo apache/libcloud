@@ -17,11 +17,18 @@ GiG G8 Driver
 
 """
 import json
-from libcloud.compute.base import NodeImage, NodeSize, Node
-from libcloud.compute.base import NodeDriver, UuidMixin
-from libcloud.compute.base import StorageVolume, NodeAuthSSHKey
-from libcloud.compute.types import Provider, NodeState
+
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    UuidMixin,
+    NodeDriver,
+    StorageVolume,
+    NodeAuthSSHKey,
+)
 from libcloud.common.gig_g8 import G8Connection
+from libcloud.compute.types import Provider, NodeState
 from libcloud.common.exceptions import BaseHTTPError
 
 
@@ -67,9 +74,7 @@ class G8Network(UuidMixin):
         we will lazily fetch it with a get request
         """
         if self._cidr is None:
-            networkdata = self.driver._api_request(
-                "/cloudspaces/get", {"cloudspaceId": self.id}
-            )
+            networkdata = self.driver._api_request("/cloudspaces/get", {"cloudspaceId": self.id})
             self._cidr = networkdata["privatenetwork"]
         return self._cidr
 
@@ -83,9 +88,7 @@ class G8Network(UuidMixin):
         return self.driver.ex_list_portforwards(self)
 
     def create_portforward(self, node, publicport, privateport, protocol="tcp"):
-        return self.driver.ex_create_portforward(
-            self, node, publicport, privateport, protocol
-        )
+        return self.driver.ex_create_portforward(self, node, publicport, privateport, protocol)
 
 
 class G8NodeDriver(NodeDriver):
@@ -143,7 +146,7 @@ class G8NodeDriver(NodeDriver):
         :rtype: ``None``
         """
         self._apiurl = api_url.rstrip("/")
-        super(G8NodeDriver, self).__init__(key=key)
+        super().__init__(key=key)
         self._account_id = user_id
         self._location_data = None
 
@@ -357,17 +360,13 @@ class G8NodeDriver(NodeDriver):
 
     def ex_list_portforwards(self, network):
         # type (G8Network) -> List[G8PortForward]
-        data = self._api_request(
-            "/portforwarding/list", {"cloudspaceId": int(network.id)}
-        )
+        data = self._api_request("/portforwarding/list", {"cloudspaceId": int(network.id)})
         forwards = []
         for forward in data:
             forwards.append(self._to_port_forward(forward, network))
         return forwards
 
-    def ex_create_portforward(
-        self, network, node, publicport, privateport, protocol="tcp"
-    ):
+    def ex_create_portforward(self, network, node, publicport, privateport, protocol="tcp"):
         # type (G8Network, Node, int, int, str) -> G8PortForward
         params = {
             "cloudspaceId": int(network.id),
@@ -446,9 +445,7 @@ class G8NodeDriver(NodeDriver):
             networks = self.ex_list_networks()
         nodes = []
         for network in networks:
-            nodes_list = self._api_request(
-                "/machines/list", params={"cloudspaceId": network.id}
-            )
+            nodes_list = self._api_request("/machines/list", params={"cloudspaceId": network.id})
             forwards = network.list_portforwards()
             for nodedata in nodes_list:
                 node = self._to_node(nodedata, network)
@@ -603,9 +600,7 @@ class G8NodeDriver(NodeDriver):
             "min_disk_size": image["bootDiskSize"],
             "min_memory": image["memory"],
         }
-        return NodeImage(
-            id=str(image["id"]), name=image["name"], driver=self, extra=extra
-        )
+        return NodeImage(id=str(image["id"]), name=image["name"], driver=self, extra=extra)
 
     def _to_size(self, size):
         # type (dict) -> Size
