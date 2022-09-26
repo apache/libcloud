@@ -91,6 +91,12 @@ Storage
   (GITHUB-1712)
   [Tomaz Muraus - @Kami]
 
+- [OVH] Add new driver for OVH Storage based on the S3 compatible storage
+  endpoints.
+
+  (GITHUB-1732)
+  [Olivier Picquenot - @pcqnt]
+
 Other / Development
 ~~~~~--------------
 
