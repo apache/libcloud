@@ -16,6 +16,7 @@ Provider                      list containers list objects create container dele
 `Nimbus.io`_                  yes             no           yes              no               no            no                      no              no                         no                        no                                no           
 `Ninefold`_                   yes             yes          yes              yes              yes           yes                     yes             no                         yes                       no                                yes          
 `OpenStack Swift`_            yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
+`Ovh Storage Driver`_         yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3`_                  yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (ap-northeast-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (ap-northeast-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
@@ -53,6 +54,7 @@ Provider                      list containers list objects create container dele
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`OpenStack Swift`: http://www.rackspace.com/
+.. _`Ovh Storage Driver`: https://www.ovhcloud.com/en/public-cloud/object-storage/
 .. _`Amazon S3`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/

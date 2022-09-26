@@ -16,6 +16,7 @@ Provider                      enable container cdn enable object cdn get contain
 `Nimbus.io`_                  no                   no                no                    no                
 `Ninefold`_                   no                   yes               no                    yes               
 `OpenStack Swift`_            yes                  no                yes                   yes               
+`Ovh Storage Driver`_         no                   no                no                    yes               
 `Amazon S3`_                  no                   no                no                    yes               
 `Amazon S3 (ap-northeast-1)`_ no                   no                no                    yes               
 `Amazon S3 (ap-northeast-1)`_ no                   no                no                    yes               
@@ -53,6 +54,7 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`OpenStack Swift`: http://www.rackspace.com/
+.. _`Ovh Storage Driver`: https://www.ovhcloud.com/en/public-cloud/object-storage/
 .. _`Amazon S3`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
