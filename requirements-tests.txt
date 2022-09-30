@@ -1,5 +1,5 @@
 codecov==2.1.12
-coverage==6.4.4; python_version >= '3.8'
+coverage==6.5.0; python_version >= '3.8'
 requests>=2.27.1
 requests_mock==1.10.0
 pytest==7.0.1
