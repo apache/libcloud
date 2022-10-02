@@ -21,7 +21,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.af-south-1.amazonaws.com",
         "id": "af-south-1",
         "instance_types": [],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "ap-east-1": {
         "api_name": "ec2_ap_east",
@@ -205,9 +205,9 @@ REGION_DETAILS = {
             "t4g.small",
             "t4g.xlarge",
             "x1.16xlarge",
-            "x1.32xlarge"
+            "x1.32xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "ap-northeast-1": {
         "api_name": "ec2_ap_northeast",
@@ -660,9 +660,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "ap-northeast-2": {
         "api_name": "ec2_ap_northeast",
@@ -995,9 +995,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "ap-northeast-3": {
         "api_name": "ec2_ap_northeast",
@@ -1005,7 +1005,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.ap-northeast-3.amazonaws.com",
         "id": "ap-northeast-3",
         "instance_types": [],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "ap-south-1": {
         "api_name": "ec2_ap_south_1",
@@ -1355,9 +1355,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "ap-southeast-1": {
         "api_name": "ec2_ap_southeast",
@@ -1757,9 +1757,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "ap-southeast-2": {
         "api_name": "ec2_ap_southeast_2",
@@ -2153,9 +2153,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "ca-central-1": {
         "api_name": "ec2_ca_central_1",
@@ -2479,9 +2479,9 @@ REGION_DETAILS = {
             "x2iedn.32xlarge",
             "x2iedn.4xlarge",
             "x2iedn.8xlarge",
-            "x2iedn.xlarge"
+            "x2iedn.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "cn-north-1": {
         "api_name": "ec2_cn_north",
@@ -2489,7 +2489,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.cn-north-1.amazonaws.com.cn",
         "id": "cn-north-1",
         "instance_types": [],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "cn-northwest-1": {
         "api_name": "ec2_cn_northwest",
@@ -2497,7 +2497,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.cn-northwest-1.amazonaws.com.cn",
         "id": "cn-northwest-1",
         "instance_types": [],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "eu-central-1": {
         "api_name": "ec2_eu_central",
@@ -2941,9 +2941,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "eu-north-1": {
         "api_name": "ec2_eu_north_stockholm",
@@ -3157,9 +3157,9 @@ REGION_DETAILS = {
             "x2iedn.32xlarge",
             "x2iedn.4xlarge",
             "x2iedn.8xlarge",
-            "x2iedn.xlarge"
+            "x2iedn.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "eu-south-1": {
         "api_name": "ec2_eu_south",
@@ -3386,9 +3386,9 @@ REGION_DETAILS = {
             "x2iedn.32xlarge",
             "x2iedn.4xlarge",
             "x2iedn.8xlarge",
-            "x2iedn.xlarge"
+            "x2iedn.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "eu-west-1": {
         "api_name": "ec2_eu_west",
@@ -3908,9 +3908,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "eu-west-2": {
         "api_name": "ec2_eu_west_london",
@@ -4238,9 +4238,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "eu-west-3": {
         "api_name": "ec2_eu_west_paris",
@@ -4515,9 +4515,9 @@ REGION_DETAILS = {
             "x2iedn.32xlarge",
             "x2iedn.4xlarge",
             "x2iedn.8xlarge",
-            "x2iedn.xlarge"
+            "x2iedn.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "sa-east-1": {
         "api_name": "ec2_sa_east",
@@ -4846,9 +4846,9 @@ REGION_DETAILS = {
             "x2iedn.32xlarge",
             "x2iedn.4xlarge",
             "x2iedn.8xlarge",
-            "x2iedn.xlarge"
+            "x2iedn.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "us-east-1": {
         "api_name": "ec2_us_east",
@@ -5375,9 +5375,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "us-east-2": {
         "api_name": "ec2_us_east_ohio",
@@ -5846,9 +5846,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "us-gov-west-1": {
         "api_name": "ec2_us_govwest",
@@ -5856,7 +5856,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.us-gov-west-1.amazonaws.com",
         "id": "us-gov-west-1",
         "instance_types": [],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "us-west-1": {
         "api_name": "ec2_us_west",
@@ -6173,9 +6173,9 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
+        "signature_version": "2",
     },
     "us-west-2": {
         "api_name": "ec2_us_west_oregon",
@@ -6702,8 +6702,8 @@ REGION_DETAILS = {
             "z1d.3xlarge",
             "z1d.6xlarge",
             "z1d.large",
-            "z1d.xlarge"
+            "z1d.xlarge",
         ],
-        "signature_version": "2"
-    }
+        "signature_version": "2",
+    },
 }
