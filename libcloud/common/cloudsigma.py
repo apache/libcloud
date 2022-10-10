@@ -45,12 +45,12 @@ API_ENDPOINTS_2_0 = {
     "sjc": {
         "name": "San Jose, CA",
         "country": "United States",
-        "host": "sjc.cloudsigma.com",
+        "host": "sjc.alpha3cloud.com",
     },
     "wdc": {
         "name": "Washington, DC",
         "country": "United States",
-        "host": "wdc.cloudsigma.com",
+        "host": "wdc.alpha3cloud.com",
     },
     "hnl": {
         "name": "Honolulu, HI",
