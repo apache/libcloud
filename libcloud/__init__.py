@@ -39,7 +39,7 @@ except ImportError:
 
 __all__ = ["__version__", "enable_debug"]
 
-__version__ = "3.6.1"
+__version__ = "3.6.2-dev"
 
 
 def enable_debug(fo):
