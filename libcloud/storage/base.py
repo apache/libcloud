@@ -805,6 +805,7 @@ class StorageDriver(BaseDriver):
         stream=None,
         chunked=False,
         multipart=False,
+        container=None,
     ):
         """
         Helper function for setting common request headers and calling the
@@ -829,6 +830,7 @@ class StorageDriver(BaseDriver):
                 data=stream,
                 headers=headers,
                 raw=True,
+                container=container,
             )
             stream_hash, stream_length = self._hash_buffered_stream(
                 stream, self._get_hash_function()
@@ -841,6 +843,7 @@ class StorageDriver(BaseDriver):
                     data=file_stream,
                     headers=headers,
                     raw=True,
+                    container=container,
                 )
             with open(file_path, "rb") as file_stream:
                 stream_hash, stream_length = self._hash_buffered_stream(
