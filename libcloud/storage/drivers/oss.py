@@ -633,6 +633,7 @@ class OSSStorageDriver(StorageDriver):
             headers=headers,
             file_path=file_path,
             stream=stream,
+            container=container,
         )
 
         response = result_dict["response"]
