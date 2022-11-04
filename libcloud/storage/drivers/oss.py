@@ -642,7 +642,7 @@ class OSSStorageDriver(StorageDriver):
 
         server_hash = headers["etag"].replace('"', "")
 
-        if verify_hash and result_dict["data_hash"] != server_hash:
+        if verify_hash and result_dict["data_hash"].upper() != server_hash.upper():
             raise ObjectHashMismatchError(
                 value="MD5 hash {} checksum does not match {}".format(
                     server_hash, result_dict["data_hash"]
