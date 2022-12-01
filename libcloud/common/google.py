@@ -411,8 +411,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
 
     def get_code(self):
         """
-        Give the user a URL that they can visit to authenticate and obtain a
-        code.  This method will ask for that code that the user can paste in.
+        Give the user a URL that they can visit to authenticate.
 
         Mocked in libcloud.test.common.google.GoogleTestCase.
 
@@ -486,7 +485,14 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         return self.redirect_uri + ":" + str(self.redirect_uri_port)
 
     def _receive_code_through_local_loopback(self):
-        # See https://developers.google.com/identity/protocols/oauth2/native-app#redirect-uri_loopback
+        """
+        Start a local HTTP server that listens to a single GET request that is expected to be made
+        by the loopback in the sign-in process and stops again afterwards.
+        See https://developers.google.com/identity/protocols/oauth2/native-app#redirect-uri_loopback
+
+        :return: The access code that was extracted from the local loopback GET request
+        :rtype: ``str``
+        """
         access_code = None
 
         class AccessCodeReceiver(BaseHTTPRequestHandler):
@@ -522,6 +528,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
             server_address = self.redirect_uri, self.redirect_uri_port
 
         server = HTTPServer(server_address=server_address, RequestHandlerClass=AccessCodeReceiver)
+        # Only waits for a single request and stops afterwards
         server.handle_request()
         if access_code is None:
             raise RuntimeError(
