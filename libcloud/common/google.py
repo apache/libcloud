@@ -64,7 +64,6 @@ Setting up Installed Application authentication:
 
 Please remember to secure your keys and access tokens.
 """
-import contextlib
 import os
 import sys
 import time
