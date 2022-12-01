@@ -64,6 +64,8 @@ Setting up Installed Application authentication:
 
 Please remember to secure your keys and access tokens.
 """
+
+
 import os
 import sys
 import time
@@ -72,8 +74,8 @@ import base64
 import logging
 import datetime
 import urllib.parse
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Optional
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from libcloud.utils.py3 import b, httplib, urlparse, urlencode
 from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
