@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [CloudSigma] Update API URLs for US locations.
+  (GITHUB-1781)
+  [Mohsen Hassani - @ mohsen-hassani-cs]
+
 Changes in Apache Libcloud 3.6.1
 --------------------------------
 
