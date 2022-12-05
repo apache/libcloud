@@ -3,7 +3,7 @@ coverage==6.5.0; python_version >= '3.8'
 requests>=2.27.1
 requests_mock==1.10.0
 pytest==7.0.1
-pytest-xdist==2.5.0
+pytest-xdist==3.1.0
 pytest-benchmark[histogram]==3.4.1
 cryptography==38.0.4
 
