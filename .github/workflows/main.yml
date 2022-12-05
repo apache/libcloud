@@ -57,10 +57,6 @@ jobs:
         os:
           - ubuntu-latest
         include:
-          # python 3.6 is not supported with ubuntu-latest anymore so we need to
-          # use ubuntu 20.04
-          - python_version: 3.6
-            os: ubuntu-20.04
           - python_version: pyjion
             os: ubuntu-20.04
 
