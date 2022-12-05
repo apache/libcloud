@@ -157,7 +157,7 @@ def get_data_files(dname, ignore=None, parent=None):
 # Different versions of python have different requirements.  We can't use
 # libcloud.utils.py3 here because it relies on backports dependency being
 # installed / available
-PY_pre_36 = sys.version_info < (3, 6, 0)
+PY_pre_37 = sys.version_info < (3, 7, 0)
 
 HTML_VIEWSOURCE_BASE = "https://svn.apache.org/viewvc/libcloud/trunk"
 PROJECT_BASE_DIR = "https://libcloud.apache.org"
@@ -179,7 +179,7 @@ DOC_TEST_MODULES = [
     "libcloud.backup.drivers.dummy",
 ]
 
-SUPPORTED_VERSIONS = ["PyPy 3.6+", "Python 3.6+"]
+SUPPORTED_VERSIONS = ["PyPy 3.7+", "Python 3.7+"]
 
 # NOTE: python_version syntax is only supported when build system has
 # setuptools >= 36.2
@@ -209,12 +209,12 @@ TEST_REQUIREMENTS = [
     "pytest-runner",
 ] + INSTALL_REQUIREMENTS
 
-if PY_pre_36:
+if PY_pre_37:
     version = ".".join([str(x) for x in sys.version_info[:3]])
     print(
         "Python version %s is not supported. Supported versions are: %s. "
         "Latest version which supports Python 2.7 and Python 3 < 3.5.0 is "
-        "Libcloud v2.8.2 and Libcloud v3.4.0 for Python 3.5."
+        "Libcloud v2.8.2 and Libcloud v3.5.x for Python 3.5."
         % (version, ", ".join(SUPPORTED_VERSIONS))
     )
     sys.exit(1)
@@ -316,7 +316,6 @@ setup(
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
