@@ -1,5 +1,6 @@
 pep8==1.7.1
-flake8==5.0.4astroid==2.12.13; python_version >= '3.8'
+flake8==5.0.4
+astroid==2.12.13; python_version >= '3.8'
 pylint==2.15.8; python_version >= '3.8'
 bandit==1.7.4; python_version >= '3.7'
 black==22.10.0; python_version >= '3.6' and implementation_name == "cpython"
