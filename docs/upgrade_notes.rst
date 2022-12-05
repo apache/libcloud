@@ -5,6 +5,15 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.7.0
+--------------
+
+* Support for Python 3.6 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.6, you should use an older
+  release which still supports Python 3.6.
+
 Libcloud 3.6.0
 --------------
 
