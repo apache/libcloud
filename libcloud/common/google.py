@@ -355,7 +355,6 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         self.scopes = " ".join(scopes)
         self.redirect_uri = redirect_uri
         self.login_hint = login_hint
-        self._state = "Libcloud Request"
 
         super().__init__(user_id, key, **kwargs)
 
@@ -410,6 +409,8 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
 
 class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
     """Authentication connection for "Installed Application" authentication."""
+
+    _state = "Libcloud Request"
 
     def get_code(self):
         """
