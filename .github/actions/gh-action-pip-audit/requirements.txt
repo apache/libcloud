@@ -1,1 +1,1 @@
-pip-audit==2.4.3
+pip-audit==2.4.4
