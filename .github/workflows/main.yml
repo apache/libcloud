@@ -238,7 +238,7 @@ jobs:
 
   security_checks:
     name: Run Security Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
