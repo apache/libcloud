@@ -1,6 +1,26 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Common
+~~~~~~
+
+- Support for Python 3.6 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.6, you should use an older
+  release which still supports Python 3.6.
+  (GITHUB-1611)
+
+Compute
+~~~~~~~
+
+- [CloudSigma] Update API URLs for US locations.
+  (GITHUB-1781)
+  [Mohsen Hassani - @ mohsen-hassani-cs]
+
 Changes in Apache Libcloud 3.6.1
 --------------------------------
 

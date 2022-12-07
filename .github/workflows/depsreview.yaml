@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v2
+        uses: actions/dependency-review-action@v3
         # TODO: We really want one check for direct prod dependencies where we
         # only allows ASF, MIT, BSD and nother one for testing / dev
         # dependencies where we also allow GPL, etc.

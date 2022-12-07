@@ -20,13 +20,18 @@ jobs:
       fail-fast: false
       matrix:
         python_version:
-          - 3.5
-          - 3.6
           - 3.7
           - 3.8
           - 3.9
           - "3.10"
           - "pypy-3.7"
+        include:
+          # python 3.5 + 3.6 is not supported with ubuntu-latest anymore so we need to
+          # use ubuntu 20.04
+          - python_version: 3.5
+            os: ubuntu-20.04
+          - python_version: 3.6
+            os: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@master
