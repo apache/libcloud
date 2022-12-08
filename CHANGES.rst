@@ -21,6 +21,10 @@ Compute
   (GITHUB-1781)
   [Mohsen Hassani - @ mohsen-hassani-cs]
 
+- [GCP] Fix OAuth2 desktop client login.
+  (GITHUB-1806, GITHUB-1807)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
 Other
 ~~~~~
 
