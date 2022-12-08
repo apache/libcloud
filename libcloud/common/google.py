@@ -501,7 +501,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         class AccessCodeReceiver(BaseHTTPRequestHandler):
 
             # noinspection PyMethodParameters,PyPep8Naming
-            def do_GET(self_):  # pylint: disable=noo-self-argument
+            def do_GET(self_):  # pylint: disable=no-self-argument
                 query = urlparse.urlparse(self_.path).query
                 query_components = dict(qc.split("=") for qc in query.split("&"))
                 if "state" in query_components and query_components["state"] != urllib.parse.quote(
