@@ -26,6 +26,7 @@ Other
 
 - Also run unit tests under Python 3.11 on CI/CD and indicate we also support
   Python 3.11.
+  (GITHUB-1818)
 
 Changes in Apache Libcloud 3.6.1
 --------------------------------
