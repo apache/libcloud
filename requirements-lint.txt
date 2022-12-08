@@ -9,4 +9,4 @@ pyupgrade==3.1.0
 rstcheck==6.1.1; python_version >= '3.7'
 
 requests>=2.27.1
-paramiko==2.11.0; platform_python_implementation != 'PyPy'
+paramiko==2.12.0; platform_python_implementation != 'PyPy'
