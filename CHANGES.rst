@@ -21,6 +21,12 @@ Compute
   (GITHUB-1781)
   [Mohsen Hassani - @ mohsen-hassani-cs]
 
+Other
+~~~~~
+
+- Also run unit tests under Python 3.11 on CI/CD and indicate we also support
+  Python 3.11.
+
 Changes in Apache Libcloud 3.6.1
 --------------------------------
 

@@ -6,23 +6,29 @@
 # is a whitespace-separated list of inputs
 
 import os
+import string
 import subprocess
 import sys
 from base64 import b64encode
 from pathlib import Path
 
-_OUTPUTS = [sys.stderr]
-_SUMMARY = Path(os.getenv("GITHUB_STEP_SUMMARY")).open("a")
+_HERE = Path(__file__).parent.resolve()
+_TEMPLATES = _HERE / "templates"
+
+_GITHUB_STEP_SUMMARY = Path(os.getenv("GITHUB_STEP_SUMMARY")).open("a")
+_GITHUB_OUTPUT = Path(os.getenv("GITHUB_OUTPUT")).open("a")
 _RENDER_SUMMARY = os.getenv("GHA_PIP_AUDIT_SUMMARY", "true") == "true"
 _DEBUG = os.getenv("GHA_PIP_AUDIT_INTERNAL_BE_CAREFUL_DEBUG", "false") != "false"
 
-if _RENDER_SUMMARY:
-    _OUTPUTS.append(_SUMMARY)
+
+def _template(name):
+    path = _TEMPLATES / f"{name}.md"
+    return string.Template(path.read_text())
 
 
 def _summary(msg):
     if _RENDER_SUMMARY:
-        print(msg, file=_SUMMARY)
+        print(msg, file=_GITHUB_STEP_SUMMARY)
 
 
 def _debug(msg):
@@ -31,8 +37,7 @@ def _debug(msg):
 
 
 def _log(msg):
-    for output in _OUTPUTS:
-        print(msg, file=output)
+    print(msg, file=sys.stderr)
 
 
 def _pip_audit(*args):
@@ -45,7 +50,6 @@ def _fatal_help(msg):
 
 
 inputs = [Path(p).resolve() for p in sys.argv[1].split()]
-summary = Path(os.getenv("GITHUB_STEP_SUMMARY")).open("a")
 
 # The arguments we pass into `pip-audit` get built up in this list.
 pip_audit_args = [
@@ -127,38 +131,23 @@ status = subprocess.run(
 _debug(status.stdout)
 
 if status.returncode == 0:
-    _log("🎉 pip-audit exited successfully")
+    _summary("🎉 pip-audit exited successfully")
 else:
-    _log("❌ pip-audit found one or more problems")
+    _summary("❌ pip-audit found one or more problems")
 
     with open("/tmp/pip-audit-output.txt", "r") as io:
         output = io.read()
 
         # This is really nasty: our output contains multiple lines,
-        # so we can't naively stuff it into an output (since this is all done
-        # in-channel as a special command on stdout).
-        print(f"::set-output name=output::{b64encode(output.encode()).decode()}")
+        # so we can't naively stuff it into an output.
+        print(f"output={b64encode(output.encode()).decode()}", file=_GITHUB_OUTPUT)
 
         _log(output)
+        _summary(output)
 
 
-_summary(
-    """
-<details>
-<summary>
-    Raw `pip-audit` output
-</summary>
-
-```
-    """
-)
 _log(status.stdout)
-_summary(
-    """
-```
-</details>
-    """
-)
+_summary(_template("pip-audit").substitute(output=status.stdout))
 
 # Normally, we exit with the same code as `pip-audit`, but the user can
 # explicitly configure the CI to always pass.

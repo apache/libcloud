@@ -1,11 +1,14 @@
 gh-action-pip-audit
 ===================
 
-[![CI](https://github.com/trailofbits/gh-action-pip-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/trailofbits/gh-action-pip-audit/actions/workflows/ci.yml)
-[![Self-test](https://github.com/trailofbits/gh-action-pip-audit/actions/workflows/selftest.yml/badge.svg)](https://github.com/trailofbits/gh-action-pip-audit/actions/workflows/selftest.yml)
+[![CI](https://github.com/pypa/gh-action-pip-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/pypa/gh-action-pip-audit/actions/workflows/ci.yml)
+[![Self-test](https://github.com/pypa/gh-action-pip-audit/actions/workflows/selftest.yml/badge.svg)](https://github.com/pypa/gh-action-pip-audit/actions/workflows/selftest.yml)
 
-A GitHub Action that uses [`pip-audit`](https://github.com/trailofbits/pip-audit)
+A GitHub Action that uses [`pip-audit`](https://github.com/pypa/pip-audit)
 to scan Python dependencies for known vulnerabilities.
+
+This project is maintained in part by [Trail of Bits](https://www.trailofbits.com/)
+with support from Google. This is not an official Google or Trail of Bits product.
 
 ## Index
 
@@ -13,12 +16,13 @@ to scan Python dependencies for known vulnerabilities.
 * [Configuration](#configuration)
   * [⚠️ Internal options ⚠️](#internal-options)
 * [Troubleshooting](#troubleshooting)
+* [Tips and Tricks](#tips-and-tricks)
 * [Licensing](#licensing)
 * [Code of Conduct](#code-of-conduct)
 
 ## Usage
 
-Simply add `trailofbits/gh-action-pip-audit` to one of your workflows:
+Simply add `pypa/gh-action-pip-audit` to one of your workflows:
 
 ```yaml
 jobs:
@@ -28,7 +32,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: install
         run: python -m pip install .
-      - uses: trailofbits/gh-action-pip-audit@v1.0.0
+      - uses: pypa/gh-action-pip-audit@v1.0.1
 ```
 
 Or, with a virtual environment:
@@ -44,7 +48,7 @@ jobs:
           python -m venv env/
           source env/bin/activate
           python -m pip install .
-      - uses: trailofbits/gh-action-pip-audit@v1.0.0
+      - uses: pypa/gh-action-pip-audit@v1.0.1
         with:
           virtual-environment: env/
 ```
@@ -68,7 +72,7 @@ The `inputs` setting controls what sources `pip-audit` runs on.
 To audit one or more requirements-style inputs:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     inputs: requirements.txt dev-requirements.txt
 ```
@@ -76,7 +80,7 @@ To audit one or more requirements-style inputs:
 To audit a project that uses `pyproject.toml` for its dependencies:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     # NOTE: this can be `.`, for the current directory
     inputs: path/to/project/
@@ -104,7 +108,7 @@ Example: use the virtual environment specified at `env/`, relative to the
 current directory:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     virtual-environment: env/
     # Note the absence of `input:`, since we're auditing the environment.
@@ -124,7 +128,7 @@ installed directly into the current environment are included.
 Example:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     local: true
 ```
@@ -141,7 +145,7 @@ It's directly equivalent to `pip-audit --vulnerability-service=...`.
 To audit with OSV instead of PyPI:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     vulnerability-service: osv
 ```
@@ -156,7 +160,7 @@ It's directly equivalent to `pip-audit --require-hashes ...`.
 Example:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     # NOTE: only works with requirements-style inputs
     inputs: requirements.txt
@@ -173,7 +177,7 @@ It's directly equivalent to `pip-audit --no-deps ...`.
 Example:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     # NOTE: only works with requirements-style inputs
     inputs: requirements.txt
@@ -191,7 +195,7 @@ is rendered at the end of the action.
 Example:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     summary: false
   ```
@@ -210,7 +214,7 @@ indices to search (such as a corporate index with private packages), see
 Example:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     index-url: https://example.corporate.local/simple
 ```
@@ -225,7 +229,7 @@ indexes to search when resolving dependencies. Each URL is whitespace-separated.
 Example:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     extra-index-urls: |
       https://example.corporate.local/simple
@@ -242,7 +246,7 @@ ignore (i.e., exclude from the results) if present. Each ID is whitespace-separa
 Example
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     ignore-vulns: |
       GHSA-XXXX-YYYYYY
@@ -272,7 +276,7 @@ Example
   Example:
 
   ```yaml
-  - uses: trailofbits/gh-action-pip-audit@v1.0.0
+  - uses: pypa/gh-action-pip-audit@v1.0.1
     with:
       internal-be-careful-allow-failure: true
   ```
@@ -291,7 +295,7 @@ Example
   Example:
 
   ```yaml
-  - uses: trailofbits/gh-action-pip-audit@v1.0.0
+  - uses: pypa/gh-action-pip-audit@v1.0.1
     with:
       internal-be-careful-debug: true
   ```
@@ -308,7 +312,7 @@ If you're auditing a requirements file, consider setting `no-deps: true` or
 `require-hashes: true`:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     inputs: requirements.txt
     require-hashes: true
@@ -317,14 +321,14 @@ If you're auditing a requirements file, consider setting `no-deps: true` or
 or:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     inputs: requirements.txt
     no-deps: true
 ```
 
 See the
-["`pip-audit` takes longer than I expect!"](https://github.com/trailofbits/pip-audit#pip-audit-takes-longer-than-i-expect)
+["`pip-audit` takes longer than I expect!"](https://github.com/pypa/pip-audit#pip-audit-takes-longer-than-i-expect)
 troubleshooting for more details.
 
 ### The action shows dependencies that aren't in my environment!
@@ -338,7 +342,7 @@ by the host system itself, or other Python projects that happen to be installed.
 To minimize external dependencies, you can opt into a virtual environment:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     # must be populated earlier in the CI
     virtual-environment: env/
@@ -348,11 +352,39 @@ and, more aggressively, specify that only dependencies marked as "local"
 in the virtual environment should be included:
 
 ```yaml
-- uses: trailofbits/gh-action-pip-audit@v1.0.0
+- uses: pypa/gh-action-pip-audit@v1.0.1
   with:
     # must be populated earlier in the CI
     virtual-environment: env/
     local: true
+```
+
+## Tips and Tricks
+
+### Running against a pipenv project
+
+If you are adding `pip-audit` to a pipenv based project, you'll first need
+to convert the `Pipfile[.lock]` to a `requirements.txt` file that `pip-audit`
+can ingest. Use a Python tool, such as
+[`pipfile-requirements`](https://github.com/frostming/pipfile-requirements), to
+convert your `Pipfile[.lock]` to a `requirements.txt` file and then run
+`pip-audit` GitHub Action against the generated requirements file.
+
+```yaml
+jobs:
+  pip-audit:
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9  # change to your required version of Python
+
+      - name: 'Generate requirements.txt'
+        run: |
+          pipx run pipfile-requirements Pipfile.lock > requirements.txt
+
+      - uses: pypa/gh-action-pip-audit@v1.0.1
+        with:
+          inputs: requirements.txt
 ```
 
 ## Licensing

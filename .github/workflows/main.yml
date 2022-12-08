@@ -53,6 +53,7 @@ jobs:
           - 3.8
           - 3.9
           - "3.10"
+          - "3.11"
           - "pypy-3.7"
         os:
           - ubuntu-latest
@@ -237,7 +238,7 @@ jobs:
 
   security_checks:
     name: Run Security Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
