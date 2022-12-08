@@ -4,6 +4,7 @@ requests>=2.27.1
 requests_mock==1.10.0
 pytest==7.2.0
 pytest-xdist==3.1.0
+pytest-timeout==2.1.0
 pytest-benchmark[histogram]==4.0.0
 cryptography==38.0.4
 
