@@ -18,6 +18,7 @@ Tests for Google Connection classes.
 import os
 import sys
 import time
+import random
 import urllib
 import datetime
 import unittest
@@ -283,6 +284,9 @@ class GoogleInstalledAppAuthConnectionFirstLoginTest(LibcloudTestCase):
         self.mock_scopes = ["https://www.googleapis.com/auth/foo"]
         kwargs = {"scopes": self.mock_scopes}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS, **kwargs)
+        # We select random port on which HTTP server binds to, to avoid race conditions when
+        # running multiple tests in parallel
+        self.conn.redirect_uri_port = random.randint(5000, 20000)
 
     def test_it_receives_the_code_that_google_sends_via_local_loopback(self):
         expected_code = "1234ABC"
