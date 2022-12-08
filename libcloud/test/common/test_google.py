@@ -17,6 +17,7 @@ Tests for Google Connection classes.
 """
 import os
 import sys
+import time
 import urllib
 import datetime
 import unittest
@@ -319,6 +320,9 @@ class GoogleInstalledAppAuthConnectionFirstLoginTest(LibcloudTestCase):
         fake_google_response = threading.Thread(target=_send_code)
 
         fake_sign_in_thread.start()
+        # TODO: Do a proper fix for race condition and only start get_code once _send_code
+        # is initialized and up and running
+        time.sleep(0.2)
         fake_google_response.start()
         fake_google_response.join()
         fake_sign_in_thread.join()
