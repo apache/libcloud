@@ -17,10 +17,10 @@ Tests for Google Connection classes.
 """
 import os
 import sys
-import datetime
-import threading
-import unittest
 import urllib
+import datetime
+import unittest
+import threading
 from unittest import mock
 
 import requests

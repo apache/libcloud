@@ -75,7 +75,7 @@ import logging
 import datetime
 import urllib.parse
 from typing import Optional
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from libcloud.utils.py3 import b, httplib, urlparse, urlencode
 from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
@@ -517,8 +517,8 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
                 self_.send_response(200)
                 self_.send_header("Content-type", "text/html")
                 self_.end_headers()
-                self_.wfile.write("<html><head><title>Libcloud Sign-In</title></head>".encode())
-                self_.wfile.write("<body><p>You can now close this tab</p>".encode())
+                self_.wfile.write(b"<html><head><title>Libcloud Sign-In</title></head>")
+                self_.wfile.write(b"<body><p>You can now close this tab</p>")
 
         if (
             "127.0.0.1" in self.redirect_uri
