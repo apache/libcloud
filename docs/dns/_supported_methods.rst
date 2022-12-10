@@ -13,7 +13,6 @@ Provider            list zones list records create zone update zone create recor
 `Gandi LiveDNS`_    yes        yes          yes         no          yes           yes           no          yes          
 `GoDaddy DNS`_      yes        yes          no          no          yes           yes           yes         no           
 `Google DNS`_       yes        yes          yes         no          yes           no            yes         yes          
-`Host Virtual DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
 `Linode DNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
 `Liquidweb DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
 `Luadns`_           yes        yes          yes         no          yes           no            yes         yes          
@@ -25,7 +24,6 @@ Provider            list zones list records create zone update zone create recor
 `Rackspace DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
 `RcodeZero DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
 `Route53 DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
-`Softlayer DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
 `Vultr DNS`_        yes        yes          yes         no          yes           yes           yes         yes          
 `World Wide DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `Zerigo DNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
@@ -42,7 +40,6 @@ Provider            list zones list records create zone update zone create recor
 .. _`Gandi LiveDNS`: http://www.gandi.net/domain
 .. _`GoDaddy DNS`: https://www.godaddy.com/
 .. _`Google DNS`: https://cloud.google.com/
-.. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
 .. _`Luadns`: https://www.luadns.com
@@ -54,7 +51,6 @@ Provider            list zones list records create zone update zone create recor
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`RcodeZero DNS`: https://www.rcodezero.at/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
-.. _`Softlayer DNS`: https://www.softlayer.com
 .. _`Vultr DNS`: https://www.vultr.com
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
