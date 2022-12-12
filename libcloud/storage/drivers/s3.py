@@ -1538,3 +1538,4 @@ class S3CACentralStorageDriver(S3StorageDriver):
     connectionCls = S3CACentralConnection
     ex_location_name = "ca-central-1"
     region_name = "ca-central-1"
+    
