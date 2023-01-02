@@ -1,3 +1,0 @@
-[submodule ".github/actions/skip-duplicate-actions"]
-	path = .github/actions/skip-duplicate-actions
-	url = https://github.com/fkirc/skip-duplicate-actions.git
