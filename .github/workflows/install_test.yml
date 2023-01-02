@@ -19,7 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: "ubuntu-latest"
+        os:
+          - "ubuntu-latest"
         python_version:
           - 3.7
           - 3.8
