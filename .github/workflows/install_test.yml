@@ -13,12 +13,13 @@ permissions:
 jobs:
   install_and_verify:
     name: Install latest stable version
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 2
 
     strategy:
       fail-fast: false
       matrix:
+        os: "ubuntu-latest"
         python_version:
           - 3.7
           - 3.8
