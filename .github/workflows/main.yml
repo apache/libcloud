@@ -284,6 +284,9 @@ jobs:
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           virtual-environment: venv/
+          # setuptools which we don't install or depend on directly
+          ignore-vulns: |
+            GHSA-r9hx-vwmv-q579
 
       - name: Cleanup
         run: |
@@ -293,6 +296,9 @@ jobs:
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           inputs: requirements-tests.txt requirements-lint.txt requirements-mypy.txt requirements-docs.txt
+          # setuptools which we don't install or depend on directly
+          ignore-vulns: |
+            GHSA-r9hx-vwmv-q579
 
       - name: Run Bandit Check
         run: |
