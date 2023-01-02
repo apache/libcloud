@@ -25,6 +25,13 @@ Compute
   (GITHUB-1806, GITHUB-1807)
   [Veith Röthlingshöfer - @RunOrVeith]
 
+Storage
+~~~~~~~
+
+- [Amazon S3] Add support for ``af-south-1`` region.
+  (GITHUB-1821)
+  [@alier350]
+
 Other
 ~~~~~
 
