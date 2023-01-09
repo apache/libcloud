@@ -73,7 +73,9 @@ import errno
 import base64
 import logging
 import datetime
+import urllib.parse
 from typing import Optional
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from libcloud.utils.py3 import b, httplib, urlparse, urlencode
 from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
@@ -314,13 +316,14 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
     name = "Google Auth"
     host = "accounts.google.com"
     auth_path = "/o/oauth2/auth"
+    redirect_uri_port = 8087
 
     def __init__(
         self,
         user_id,
         key=None,
         scopes=None,
-        redirect_uri="urn:ietf:wg:oauth:2.0:oob",
+        redirect_uri="http://127.0.0.1",
         login_hint=None,
         **kwargs,
     ):
@@ -407,10 +410,11 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
 class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
     """Authentication connection for "Installed Application" authentication."""
 
+    _state = "Libcloud Request"
+
     def get_code(self):
         """
-        Give the user a URL that they can visit to authenticate and obtain a
-        code.  This method will ask for that code that the user can paste in.
+        Give the user a URL that they can visit to authenticate.
 
         Mocked in libcloud.test.common.google.GoogleTestCase.
 
@@ -420,9 +424,9 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         auth_params = {
             "response_type": "code",
             "client_id": self.user_id,
-            "redirect_uri": self.redirect_uri,
+            "redirect_uri": self._redirect_uri_with_port,
             "scope": self.scopes,
-            "state": "Libcloud Request",
+            "state": self._state,
         }
         if self.login_hint:
             auth_params["login_hint"] = self.login_hint
@@ -432,7 +436,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         url = "https://{}{}?{}".format(self.host, self.auth_path, data)
         print("\nPlease Go to the following URL and sign in:")
         print(url)
-        code = input("Enter Code: ")
+        code = self._receive_code_through_local_loopback()
         return code
 
     def get_new_token(self):
@@ -443,14 +447,13 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         :return:  Dictionary containing token information
         :rtype:   ``dict``
         """
-        # Ask the user for a code
         code = self.get_code()
 
         token_request = {
             "code": code,
             "client_id": self.user_id,
             "client_secret": self.key,
-            "redirect_uri": self.redirect_uri,
+            "redirect_uri": self._redirect_uri_with_port,
             "grant_type": "authorization_code",
         }
 
@@ -479,6 +482,62 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         if "refresh_token" not in new_token:
             new_token["refresh_token"] = token_info["refresh_token"]
         return new_token
+
+    @property
+    def _redirect_uri_with_port(self):
+        return self.redirect_uri + ":" + str(self.redirect_uri_port)
+
+    def _receive_code_through_local_loopback(self):
+        """
+        Start a local HTTP server that listens to a single GET request that is expected to be made
+        by the loopback in the sign-in process and stops again afterwards.
+        See https://developers.google.com/identity/protocols/oauth2/native-app#redirect-uri_loopback
+
+        :return: The access code that was extracted from the local loopback GET request
+        :rtype: ``str``
+        """
+        access_code = None
+
+        class AccessCodeReceiver(BaseHTTPRequestHandler):
+
+            # noinspection PyMethodParameters,PyPep8Naming
+            def do_GET(self_):  # pylint: disable=no-self-argument
+                query = urlparse.urlparse(self_.path).query
+                query_components = dict(qc.split("=") for qc in query.split("&"))
+                if "state" in query_components and query_components["state"] != urllib.parse.quote(
+                    self._state
+                ):
+                    raise ValueError(
+                        "States do not match: {} != {}, can't trust authentication".format(
+                            self._state, query_components["state"]
+                        )
+                    )
+                nonlocal access_code
+                access_code = query_components["code"]
+                self_.send_response(200)
+                self_.send_header("Content-type", "text/html")
+                self_.end_headers()
+                self_.wfile.write(b"<html><head><title>Libcloud Sign-In</title></head>")
+                self_.wfile.write(b"<body><p>You can now close this tab</p>")
+
+        if (
+            "127.0.0.1" in self.redirect_uri
+            or "[::1]" in self.redirect_uri
+            or "localhost" in self.redirect_uri
+        ):
+            # HTTPServer does not understand localhost unless you explicitly call it so
+            server_address = "localhost", self.redirect_uri_port
+        else:
+            server_address = self.redirect_uri, self.redirect_uri_port
+
+        server = HTTPServer(server_address=server_address, RequestHandlerClass=AccessCodeReceiver)
+        # Only waits for a single request and stops afterwards
+        server.handle_request()
+        if access_code is None:
+            raise RuntimeError(
+                "Could not receive OAuth2 code: could not extract code though loopback"
+            )
+        return access_code
 
 
 class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):

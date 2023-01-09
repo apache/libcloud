@@ -525,6 +525,13 @@
         <revision>v3.6.1</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>3.7.0</name>
+        <created>2023-01-08</created>
+        <revision>v3.7.0</revision>
+      </Version>
+  </release>
 
   <repository>
       <SVNRepository>

@@ -1,0 +1,87 @@
+name: Build & Test
+
+on: # Rebuild any PRs and main branch changes
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build: # Make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run all
+
+  pre_job: # Make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run action
+        uses: ./
+        id: skip_check
+        with:
+          concurrent_skipping: 'never'
+          skip_after_successful_duplicate: 'true'
+          paths_ignore: '["**/README.md", "**/docs/**"]'
+
+  main_job:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate task
+        run: echo "Running slow tests..." && sleep 30
+
+  skip_individual_steps_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run action
+        uses: ./
+        id: skip_check
+        with:
+          cancel_others: 'false'
+          paths: '["src/**", "dist/**"]'
+
+      - name: Simulate task
+        if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        run: |
+          echo "Run only if src/ or dist/ changed..." && sleep 30
+          echo "Do other stuff..."
+
+  private_action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run action
+        uses: ./
+        id: skip_check
+        with:
+          paths_ignore: '["**/*.md"]'
+          cancel_others: 'true'
+          concurrent_skipping: 'outdated_runs'
+          skip_after_successful_duplicate: 'true'
+          # Test 'do_not_skip' with 'pull_request'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
+      - name: Simulate task
+        if: ${{ steps.skip_check.outputs.should_skip == 'false' }}
+        run: |
+          echo "Do stuff..." && sleep 30
