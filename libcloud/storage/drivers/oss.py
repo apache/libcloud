@@ -20,6 +20,7 @@ import time
 import base64
 import codecs
 from hashlib import sha1
+import os
 
 from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
 from libcloud.utils.xml import findtext, fixxpath
@@ -587,6 +588,68 @@ class OSSStorageDriver(StorageDriver):
     def _clean_object_name(self, name):
         name = urlquote(name)
         return name
+
+    def _upload_object(
+        self,
+        object_name,
+        content_type,
+        request_path,
+        request_method="PUT",
+        headers=None,
+        file_path=None,
+        stream=None,
+        chunked=False,
+        multipart=False,
+        container=None,
+    ):
+        """
+        Helper function for setting common request headers and calling the
+        passed in callback which uploads an object.
+        """
+        headers = headers or {}
+
+        if file_path and not os.path.exists(file_path):
+            raise OSError("File %s does not exist" % (file_path))
+
+        if stream is not None and not hasattr(stream, "next") and not hasattr(stream, "__next__"):
+            raise AttributeError("iterator object must implement next() " + "method.")
+
+        headers["Content-Type"] = self._determine_content_type(
+            content_type, object_name, file_path=file_path
+        )
+
+        if stream:
+            response = self.connection.request(
+                request_path,
+                method=request_method,
+                data=stream,
+                headers=headers,
+                raw=True,
+                container=container,
+            )
+            stream_hash, stream_length = self._hash_buffered_stream(
+                stream, self._get_hash_function()
+            )
+        else:
+            with open(file_path, "rb") as file_stream:
+                response = self.connection.request(
+                    request_path,
+                    method=request_method,
+                    data=file_stream,
+                    headers=headers,
+                    raw=True,
+                    container=container,
+                )
+            with open(file_path, "rb") as file_stream:
+                stream_hash, stream_length = self._hash_buffered_stream(
+                    file_stream, self._get_hash_function()
+                )
+
+        return {
+            "response": response,
+            "bytes_transferred": stream_length,
+            "data_hash": stream_hash,
+        }
 
     def _put_object(
         self,
