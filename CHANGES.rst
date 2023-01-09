@@ -1,6 +1,47 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Changes in Apache Libcloud 3.7.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Support for Python 3.6 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.6, you should use an older
+  release which still supports Python 3.6.
+  (GITHUB-1611)
+
+Compute
+~~~~~~~
+
+- [CloudSigma] Update API URLs for US locations.
+  (GITHUB-1781)
+  [Mohsen Hassani - @ mohsen-hassani-cs]
+
+- [GCP] Fix OAuth2 desktop client login.
+  (GITHUB-1806, GITHUB-1807)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+Storage
+~~~~~~~
+
+- [Amazon S3] Add support for ``af-south-1`` region.
+  (GITHUB-1821)
+  [@alier350]
+
+Other
+~~~~~
+
+- Also run unit tests under Python 3.11 on CI/CD and indicate we also support
+  Python 3.11.
+  (GITHUB-1818)
+
 Changes in Apache Libcloud 3.6.1
 --------------------------------
 

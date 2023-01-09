@@ -49,15 +49,17 @@ jobs:
       fail-fast: false
       matrix:
         python_version:
-          - 3.6
           - 3.7
           - 3.8
           - 3.9
           - "3.10"
+          - "3.11"
           - "pypy-3.7"
-          - pyjion
         os:
           - ubuntu-latest
+        include:
+          - python_version: pyjion
+            os: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@master
@@ -93,7 +95,7 @@ jobs:
 
       - name: Setup Dotnet 6
         if: ${{ matrix.python_version == 'pyjion' }}
-        uses: actions/setup-dotnet@v3.0.2
+        uses: actions/setup-dotnet@v3.0.3
         with:
           dotnet-version: "6.0.100"
 
@@ -112,7 +114,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.25.1"
+          pip install "tox==4.1.2"
 
       - name: Run unit tests tox target
         run: |
@@ -159,7 +161,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.25.1"
+          pip install "tox==4.1.2"
 
       - name: Run Checks
         run: |
@@ -201,7 +203,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.25.1"
+          pip install "tox==4.1.2"
 
       - name: Run Checks
         run: |
@@ -236,7 +238,7 @@ jobs:
 
   security_checks:
     name: Run Security Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
@@ -270,7 +272,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.25.1"
+          pip install "tox==4.1.2"
 
       - name: Install Library Into Virtualenv
         run: |
@@ -282,6 +284,9 @@ jobs:
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           virtual-environment: venv/
+          # setuptools which we don't install or depend on directly
+          ignore-vulns: |
+            GHSA-r9hx-vwmv-q579
 
       - name: Cleanup
         run: |
@@ -291,6 +296,9 @@ jobs:
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           inputs: requirements-tests.txt requirements-lint.txt requirements-mypy.txt requirements-docs.txt
+          # setuptools which we don't install or depend on directly
+          ignore-vulns: |
+            GHSA-r9hx-vwmv-q579
 
       - name: Run Bandit Check
         run: |
@@ -332,7 +340,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.25.1"
+          pip install "tox==4.1.2"
 
       - name: Run Micro Benchmarks
         run: |
@@ -379,7 +387,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.25.1"
+          pip install "tox==4.1.2"
 
       - name: Build Docs
         run: |

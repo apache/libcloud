@@ -54,7 +54,7 @@ RUN set -e && \
 RUN python3.8 -m pip install --upgrade pip
 
 RUN set -e && \
-    python3.8 -m pip install --no-cache-dir "tox==3.25.1"
+    python3.8 -m pip install --no-cache-dir "tox==3.27.1"
 
 COPY . /libcloud
 

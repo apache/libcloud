@@ -78,6 +78,7 @@ S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = "s3-sa-east-1.amazonaws.com"
 S3_SA_SOUTHEAST2_HOST = "s3-sa-east-2.amazonaws.com"
 S3_CA_CENTRAL_HOST = "s3-ca-central-1.amazonaws.com"
+S3_AF_SOUTH1_HOST = "s3.af-south-1.amazonaws.com"
 
 # Maps AWS region name to connection hostname
 REGION_TO_HOST_MAP = {
@@ -104,6 +105,7 @@ REGION_TO_HOST_MAP = {
     "sa-east-2": S3_SA_SOUTHEAST2_HOST,
     "ca-central-1": S3_CA_CENTRAL_HOST,
     "me-south-1": "s3.me-south-1.amazonaws.com",
+    "af-south-1": S3_AF_SOUTH1_HOST,
 }
 
 API_VERSION = "2006-03-01"
