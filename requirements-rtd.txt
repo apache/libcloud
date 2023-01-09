@@ -1,2 +1,2 @@
 # Requirements for ReadTheDocs
-sphinx==6.0.0
+sphinx==6.1.2
