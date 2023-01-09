@@ -527,7 +527,6 @@ class Connection:
         stream=False,
         json=None,
         retry_failed=None,
-        container=None,
     ):
         """
         Request a given `action`.
