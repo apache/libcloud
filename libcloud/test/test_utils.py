@@ -215,7 +215,7 @@ class TestUtils(unittest.TestCase):
             iterator(), chunk_size=10, fill_size=True
         ):
             chunk_count += 1
-            self.assertEqual(result, b("aaaaaaaaaa"))
+            self.assertEqual(result, b("a") * 10)
         self.assertEqual(chunk_count, 200)
 
     def test_read_in_chunks_large_iterator_batches(self):
@@ -236,7 +236,7 @@ class TestUtils(unittest.TestCase):
             iterator(), chunk_size=10, fill_size=True
         ):
             chunk_count += 1
-            self.assertEqual(result, b("aaaaaaaaaa"))
+            self.assertEqual(result, b("a") * 10)
         self.assertEqual(chunk_count, 10_000)
 
     def test_read_in_chunks_filelike(self):
