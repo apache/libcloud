@@ -75,7 +75,13 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False, yield_empty=False
             return
 
         if fill_size:
-            if empty or len(data) >= chunk_size:
+            chunk_start = 0
+            while chunk_start + chunk_size < len(data):
+                yield data[chunk_start : chunk_start + chunk_size]
+                chunk_start += chunk_size
+            data = data[chunk_start:]
+            if empty:
+                # Yield last not completely filled chunk
                 yield data[:chunk_size]
                 data = data[chunk_size:]
         else:
