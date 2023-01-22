@@ -487,6 +487,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
             headers=None,
             file_path=None,
             stream=None,
+            container=None,
         ):
             return {
                 "response": make_response(200, headers={"etag": "2345"}),
@@ -525,6 +526,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
             headers=None,
             file_path=None,
             stream=None,
+            container=None,
         ):
             return {
                 "response": make_response(
@@ -563,6 +565,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
             headers=None,
             file_path=None,
             stream=None,
+            container=None,
         ):
             return {
                 "response": make_response(
