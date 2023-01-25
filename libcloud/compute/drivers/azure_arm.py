@@ -25,7 +25,7 @@ import base64
 import binascii
 
 from libcloud.utils import iso8601
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import basestring, urlparse, parse_qs
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (
     Node,
@@ -468,11 +468,17 @@ class AzureNodeDriver(NodeDriver):
             action = "/subscriptions/%s/providers/Microsoft.Compute/" "virtualMachines" % (
                 self.subscription_id
             )
-        r = self.connection.request(action, params={"api-version": VM_API_VERSION})
-        return [
-            self._to_node(n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state)
-            for n in r.object["value"]
-        ]
+        params = {"api-version": VM_API_VERSION}
+        nodes = []
+        while True:
+            r = self.connection.request(action, params=params)
+            nodes.extend(self._to_node(n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state) for n in r.object["value"])
+            if not r.object.get("nextLink"):
+                break
+            parsed_next_link = urlparse.urlparse(r.object["nextLink"])
+            params.update({k: v[0] for k, v in parse_qs(parsed_next_link.query).items()})
+            action = parsed_next_link.path
+        return nodes
 
     def create_node(
         self,
