@@ -14,7 +14,9 @@
 # limitations under the License.
 
 import sys
+import random
 import socket
+import string
 import os.path
 import platform
 import unittest
@@ -266,6 +268,73 @@ class TestUtils(unittest.TestCase):
                 self.assertEqual(result, b("b" * 9))
 
         self.assertEqual(index, 548)
+
+    def test_read_in_chunks_corectness(self):
+        data = "".join(
+            random.choice(string.ascii_lowercase) for i in range(5 * 1024 * 1024)
+        ).encode("utf-8")
+
+        # fill_size = False
+        chunk_size = None
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=False
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=False
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 2 * 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=False
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 5 * 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=False
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 10 * 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=False
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        # fill_size = True
+        chunk_size = None
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=True
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=True
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 2 * 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=True
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 5 * 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=True
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
+
+        chunk_size = 10 * 1024 * 1024
+        iterator = libcloud.utils.files.read_in_chunks(
+            iter([data]), chunk_size=chunk_size, fill_size=True
+        )
+        self.assertEqual(data, libcloud.utils.files.exhaust_iterator(iterator))
 
     def test_exhaust_iterator(self):
         def iterator_func():
