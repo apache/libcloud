@@ -17,6 +17,10 @@ Storage
   (GITHUB-1847)
   [Tobias Biester - @Tobi995]
 
+- [Aliyun OSS] Fix ``upload_object()`` function.
+  (GITHUB-1796)
+  [@shengwubin]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
