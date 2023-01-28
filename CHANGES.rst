@@ -4,6 +4,17 @@ Changelog
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Compute
+~~~~~~~
+
+Remove obsolete compute driver where the provider is either dead or not
+offering those services anymore: Bluebox, bsnlcloud, Cloudwatt, Enomaly,
+ElasticHosts, ElasticStack, GoGrid, Gridspot, HostVirtual, Joyent, Med-1,
+Nephoscale, 1on1, ProfitBricks, ServerLove, SkaliCloud, Softlayer, Voxel.
+
+(GITHUB-1743, GITHUB-1852)
+[Anthony Monthe - @ZuluPro, Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
