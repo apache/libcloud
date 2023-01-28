@@ -11,6 +11,9 @@ Storage
 
   This should result in large performance speedups and lower memory usage when
   uploading or downloading a large file with a mismatching chunk size.
+
+  Keep in mind that this only affects code paths where the function is called
+  with ``fill_size=True`` argument (such as in the S3 driver, etc).
   (GITHUB-1847)
   [Tobias Biester - @Tobi995]
 
