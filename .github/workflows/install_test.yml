@@ -12,18 +12,21 @@ permissions:
 
 jobs:
   install_and_verify:
-    name: Install latest stable version
-    runs-on: ubuntu-latest
+    name: Install
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 2
 
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - "ubuntu-latest"
         python_version:
           - 3.7
           - 3.8
           - 3.9
           - "3.10"
+          - "3.11"
           - "pypy-3.7"
         include:
           # python 3.5 + 3.6 is not supported with ubuntu-latest anymore so we need to

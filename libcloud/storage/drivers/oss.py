@@ -15,6 +15,7 @@
 
 # pylint: disable=unexpected-keyword-arg
 
+import os
 import hmac
 import time
 import base64
@@ -588,6 +589,68 @@ class OSSStorageDriver(StorageDriver):
         name = urlquote(name)
         return name
 
+    def _upload_object(
+        self,
+        object_name,
+        content_type,
+        request_path,
+        request_method="PUT",
+        headers=None,
+        file_path=None,
+        stream=None,
+        chunked=False,
+        multipart=False,
+        container=None,
+    ):
+        """
+        Helper function for setting common request headers and calling the
+        passed in callback which uploads an object.
+        """
+        headers = headers or {}
+
+        if file_path and not os.path.exists(file_path):
+            raise OSError("File %s does not exist" % (file_path))
+
+        if stream is not None and not hasattr(stream, "next") and not hasattr(stream, "__next__"):
+            raise AttributeError("iterator object must implement next() " + "method.")
+
+        headers["Content-Type"] = self._determine_content_type(
+            content_type, object_name, file_path=file_path
+        )
+
+        if stream:
+            response = self.connection.request(
+                request_path,
+                method=request_method,
+                data=stream,
+                headers=headers,
+                raw=True,
+                container=container,
+            )
+            stream_hash, stream_length = self._hash_buffered_stream(
+                stream, self._get_hash_function()
+            )
+        else:
+            with open(file_path, "rb") as file_stream:
+                response = self.connection.request(
+                    request_path,
+                    method=request_method,
+                    data=file_stream,
+                    headers=headers,
+                    raw=True,
+                    container=container,
+                )
+            with open(file_path, "rb") as file_stream:
+                stream_hash, stream_length = self._hash_buffered_stream(
+                    file_stream, self._get_hash_function()
+                )
+
+        return {
+            "response": response,
+            "bytes_transferred": stream_length,
+            "data_hash": stream_hash,
+        }
+
     def _put_object(
         self,
         container,
@@ -633,6 +696,7 @@ class OSSStorageDriver(StorageDriver):
             headers=headers,
             file_path=file_path,
             stream=stream,
+            container=container,
         )
 
         response = result_dict["response"]
@@ -641,7 +705,7 @@ class OSSStorageDriver(StorageDriver):
 
         server_hash = headers["etag"].replace('"', "")
 
-        if verify_hash and result_dict["data_hash"] != server_hash:
+        if verify_hash and result_dict["data_hash"].upper() != server_hash.upper():
             raise ObjectHashMismatchError(
                 value="MD5 hash {} checksum does not match {}".format(
                     server_hash, result_dict["data_hash"]

@@ -4,6 +4,26 @@ Changelog
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Storage
+~~~~~~~
+
+- Optimize ``read_in_chunks()`` function implementation.
+
+  This should result in large performance speedups and lower memory usage when
+  uploading or downloading a large file with a mismatching chunk size.
+
+  Keep in mind that this only affects code paths where the function is called
+  with ``fill_size=True`` argument (such as in the S3 driver, etc).
+  (GITHUB-1847)
+  [Tobias Biester - @Tobi995]
+
+- [Aliyun OSS] Fix ``upload_object()`` function.
+  (GITHUB-1796)
+  [@shengwubin]
+
+Changes in Apache Libcloud 3.7.0
+--------------------------------
+
 Common
 ~~~~~~
 
@@ -24,6 +44,13 @@ Compute
 - [GCP] Fix OAuth2 desktop client login.
   (GITHUB-1806, GITHUB-1807)
   [Veith Röthlingshöfer - @RunOrVeith]
+
+Storage
+~~~~~~~
+
+- [Amazon S3] Add support for ``af-south-1`` region.
+  (GITHUB-1821)
+  [@alier350]
 
 Other
 ~~~~~

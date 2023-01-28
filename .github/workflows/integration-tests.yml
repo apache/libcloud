@@ -76,7 +76,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Run tox target
         run: |

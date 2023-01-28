@@ -114,7 +114,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Run unit tests tox target
         run: |
@@ -161,7 +161,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Run Checks
         run: |
@@ -203,7 +203,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Run Checks
         run: |
@@ -272,7 +272,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Install Library Into Virtualenv
         run: |
@@ -284,6 +284,9 @@ jobs:
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           virtual-environment: venv/
+          # setuptools which we don't install or depend on directly
+          ignore-vulns: |
+            GHSA-r9hx-vwmv-q579
 
       - name: Cleanup
         run: |
@@ -293,6 +296,9 @@ jobs:
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
         with:
           inputs: requirements-tests.txt requirements-lint.txt requirements-mypy.txt requirements-docs.txt
+          # setuptools which we don't install or depend on directly
+          ignore-vulns: |
+            GHSA-r9hx-vwmv-q579
 
       - name: Run Bandit Check
         run: |
@@ -334,7 +340,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Run Micro Benchmarks
         run: |
@@ -381,7 +387,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.27.1"
+          pip install "tox==4.1.2"
 
       - name: Build Docs
         run: |
