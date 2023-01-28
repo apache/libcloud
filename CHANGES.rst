@@ -4,6 +4,16 @@ Changelog
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Storage
+~~~~~~~
+
+- Optimize ``read_in_chunks()`` function implementation.
+
+  This should result in large performance speedups and lower memory usage when
+  uploading or downloading a large file with a mismatching chunk size.
+  (GITHUB-1847)
+  [Tobias Biester - @Tobi995]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
