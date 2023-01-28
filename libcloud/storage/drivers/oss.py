@@ -15,12 +15,12 @@
 
 # pylint: disable=unexpected-keyword-arg
 
+import os
 import hmac
 import time
 import base64
 import codecs
 from hashlib import sha1
-import os
 
 from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
 from libcloud.utils.xml import findtext, fixxpath
