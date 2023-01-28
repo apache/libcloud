@@ -69,9 +69,9 @@ def _old_read_in_chunks(iterator, chunk_size=None, fill_size=False, yield_empty=
 @pytest.mark.parametrize(
     "data_chunk_size_tuple",
     [
-        ("c".encode("utf-8") * (40 * 1024 * 1024), 1 * 1024 * 1024),
-        ("c".encode("utf-8") * (40 * 1024 * 1024), 5 * 1024 * 1024),
-        ("c".encode("utf-8") * (80 * 1024 * 1024), 1 * 1024 * 1024),
+        (b"c" * (40 * 1024 * 1024), 1 * 1024 * 1024),
+        (b"c" * (40 * 1024 * 1024), 5 * 1024 * 1024),
+        (b"c" * (80 * 1024 * 1024), 1 * 1024 * 1024),
     ],
     ids=[
         "40mb_data_1mb_chunk_size",
@@ -110,9 +110,9 @@ def test_scenario_1(
 @pytest.mark.parametrize(
     "data_chunk_size_tuple",
     [
-        ("c".encode("utf-8") * (10 * 1024 * 1024), 8 * 1024),
-        ("c".encode("utf-8") * (20 * 1024 * 1024), 1 * 1024 * 1024),
-        ("c".encode("utf-8") * (30 * 1024 * 1024), 1 * 1024 * 1024),
+        (b"c" * (10 * 1024 * 1024), 8 * 1024),
+        (b"c" * (20 * 1024 * 1024), 1 * 1024 * 1024),
+        (b"c" * (30 * 1024 * 1024), 1 * 1024 * 1024),
     ],
     ids=[
         "10mb_data_8k_chunk_size",
