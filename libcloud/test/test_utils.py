@@ -202,15 +202,42 @@ class TestUtils(unittest.TestCase):
             for x in range(0, 1000):
                 yield "aa"
 
+        chunk_count = 0
         for result in libcloud.utils.files.read_in_chunks(
             iterator(), chunk_size=10, fill_size=False
         ):
+            chunk_count += 1
             self.assertEqual(result, b("aa"))
+        self.assertEqual(chunk_count, 1000)
 
+        chunk_count = 0
         for result in libcloud.utils.files.read_in_chunks(
             iterator(), chunk_size=10, fill_size=True
         ):
-            self.assertEqual(result, b("aaaaaaaaaa"))
+            chunk_count += 1
+            self.assertEqual(result, b("a") * 10)
+        self.assertEqual(chunk_count, 200)
+
+    def test_read_in_chunks_large_iterator_batches(self):
+        def iterator():
+            for x in range(0, 10):
+                yield "a" * 10_000
+
+        chunk_count = 0
+        for result in libcloud.utils.files.read_in_chunks(
+            iterator(), chunk_size=10, fill_size=False
+        ):
+            chunk_count += 1
+            self.assertEqual(result, b("a") * 10_000)
+        self.assertEqual(chunk_count, 10)
+
+        chunk_count = 0
+        for result in libcloud.utils.files.read_in_chunks(
+            iterator(), chunk_size=10, fill_size=True
+        ):
+            chunk_count += 1
+            self.assertEqual(result, b("a") * 10)
+        self.assertEqual(chunk_count, 10_000)
 
     def test_read_in_chunks_filelike(self):
         class FakeFile(file):

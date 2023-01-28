@@ -15,6 +15,7 @@
 
 import os
 import mimetypes
+from typing import Generator
 
 from libcloud.utils.py3 import b, next
 
@@ -75,12 +76,26 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False, yield_empty=False
             return
 
         if fill_size:
-            if empty or len(data) >= chunk_size:
+            data = yield from _optimized_chunked_generator(data=data, chunk_size=chunk_size)
+            if empty:
+                # Yield last not completely filled chunk
                 yield data[:chunk_size]
                 data = data[chunk_size:]
         else:
             yield data
             data = b("")
+
+
+def _optimized_chunked_generator(data: bytes, chunk_size: int) -> Generator[bytes, None, bytes]:
+    # We want to emit chunk_size large chunks, but chunk_size can be larger or smaller than the chunks returned
+    # by get_data. We need to yield in a loop to avoid large amounts of data piling up.
+    # The loop also avoids copying all data #chunks amount of times by keeping the original data as is.
+    chunk_start = 0
+    while chunk_start + chunk_size < len(data):
+        yield data[chunk_start : chunk_start + chunk_size]
+        chunk_start += chunk_size
+    data = data[chunk_start:]
+    return data
 
 
 def exhaust_iterator(iterator):
