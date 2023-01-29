@@ -15,7 +15,7 @@
 
 # Docker image used for running tests the under all the supported Python
 # versions
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 RUN set -e && \
     apt-get update && \
@@ -27,17 +27,17 @@ RUN set -e && \
     add-apt-repository ppa:pypy/ppa && \
     apt-get update && \
     apt-get -y install \
-      python3.6 \
       python3.7 \
       python3.8 \
       python3.9 \
       python3.10 \
+      python3.11 \
       python-dev \
-      python3.6-dev \
       python3.7-dev \
       python3.8-dev \
       python3.9-dev \
       python3.10-dev \
+      python3.11-dev \
       python3.6-distutils \
       python3.7-distutils \
       python3.8-distutils \
@@ -62,4 +62,4 @@ RUN if [ ! -f "/libcloud/README.rst" ]; then echo "libcloud/README.rst file not 
 
 WORKDIR /libcloud
 
-CMD ["tox", "-e", "lint,black-check,bandit,,py3.6,py3.7,py3.8,py3.9,py3.10,pypypy-3.8"]
+CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.7,py3.8,py3.9,py3.10,py3.11,pypypy3.8"]
