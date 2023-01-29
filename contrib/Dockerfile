@@ -15,7 +15,7 @@
 
 # Docker image used for running tests the under all the supported Python
 # versions
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 RUN set -e && \
     apt-get update && \
