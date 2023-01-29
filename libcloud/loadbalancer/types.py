@@ -49,11 +49,9 @@ class Provider:
     DIMENSIONDATA = "dimensiondata"
     ELB = "elb"
     GCE = "gce"
-    GOGRID = "gogrid"
     NINEFOLD = "ninefold"
     NTTCIS = "nttcis"
     RACKSPACE = "rackspace"
-    SOFTLAYER = "softlayer"
 
     # Deprecated
     RACKSPACE_US = "rackspace_us"

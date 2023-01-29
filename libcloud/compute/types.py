@@ -51,28 +51,21 @@ class Provider(Type):
     :cvar AURORACOMPUTE: Aurora Compute driver.
     :cvar AZURE: Azure (classic) driver.
     :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
-    :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSCALE: cloudscale.ch
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
-    :cvar ECP: Enomaly
-    :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
-    :cvar GOGRID: GoGrid
     :cvar GRIDSCALE: gridscale
-    :cvar GRIDSPOT: Gridspot driver
     :cvar IBM: IBM Developer Cloud
     :cvar IKOULA: Ikoula driver.
-    :cvar JOYENT: Joyent driver
     :cvar KAMATERA: Kamatera driver
     :cvar KTUCLOUD: kt ucloud driver
     :cvar KUBEVIRT: kubevirt driver
     :cvar LIBVIRT: Libvirt driver
     :cvar LINODE: Linode.com
-    :cvar NEPHOSCALE: NephoScale driver
     :cvar NIMBUS: Nimbus
     :cvar NINEFOLD: Ninefold
     :cvar NTTC-CIS: NTT Communications CIS
@@ -81,7 +74,6 @@ class Provider(Type):
     :cvar OUTSCALE_INC: Outscale INC driver.
     :cvar OUTSCALE_SAS: Outscale SAS driver.
     :cvar OUTSCALE_SDK: Outscale SDK driver.
-    :cvar PROFIT_BRICKS: ProfitBricks driver.
     :cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     :cvar RIMUHOSTING: RimuHosting.com
@@ -100,9 +92,7 @@ class Provider(Type):
     ABIQUO = "abiquo"
     ALIYUN_ECS = "aliyun_ecs"
     AURORACOMPUTE = "aurora_compute"
-    BLUEBOX = "bluebox"
     BRIGHTBOX = "brightbox"
-    BSNL = "bsnl"
     CISCOCCS = "ciscoccs"
     CLOUDFRAMES = "cloudframes"
     CLOUDSIGMA = "cloudsigma"
@@ -111,36 +101,26 @@ class Provider(Type):
     DIGITAL_OCEAN = "digitalocean"
     DIMENSIONDATA = "dimensiondata"
     EC2 = "ec2"
-    ECP = "ecp"
-    ELASTICHOSTS = "elastichosts"
     EQUINIXMETAL = "equinixmetal"
     EUCALYPTUS = "eucalyptus"
     EXOSCALE = "exoscale"
     GANDI = "gandi"
     GCE = "gce"
     GIG_G8 = "gig_g8"
-    GOGRID = "gogrid"
     GRIDSCALE = "gridscale"
-    GRIDSPOT = "gridspot"
-    HOSTVIRTUAL = "hostvirtual"
     IBM = "ibm"
     IKOULA = "ikoula"
-    INDOSAT = "indosat"
     INTERNETSOLUTIONS = "internetsolutions"
-    JOYENT = "joyent"
     KAMATERA = "kamatera"
     KTUCLOUD = "ktucloud"
     KUBEVIRT = "kubevirt"
     LIBVIRT = "libvirt"
     LINODE = "linode"
     MAXIHOST = "maxihost"
-    MEDONE = "medone"
-    NEPHOSCALE = "nephoscale"
     NIMBUS = "nimbus"
     NINEFOLD = "ninefold"
     NTTA = "ntta"
     NTTCIS = "nttcis"
-    ONEANDONE = "oneandone"
     OPENNEBULA = "opennebula"
     OPENSTACK = "openstack"
     OPSOURCE = "opsource"
@@ -148,28 +128,21 @@ class Provider(Type):
     OUTSCALE_SAS = "outscale_sas"
     OUTSCALE = "outscale"
     OVH = "ovh"
-    PROFIT_BRICKS = "profitbricks"
     RACKSPACE = "rackspace"
     RACKSPACE_FIRST_GEN = "rackspace_first_gen"
     RIMUHOSTING = "rimuhosting"
     RUNABOVE = "runabove"
     SCALEWAY = "scaleway"
-    SERVERLOVE = "serverlove"
-    SKALICLOUD = "skalicloud"
-    SOFTLAYER = "softlayer"
     TERREMARK = "terremark"
     UPCLOUD = "upcloud"
     VCL = "vcl"
     VCLOUD = "vcloud"
-    VOXEL = "voxel"
     VPSNET = "vpsnet"
     VSPHERE = "vsphere"
     VULTR = "vultr"
 
     # OpenStack based providers
-    CLOUDWATT = "cloudwatt"
     HPCLOUD = "hpcloud"
-    KILI = "kili"
     ONAPP = "onapp"
 
     # Deprecated constants which aren't supported anymore
@@ -193,15 +166,6 @@ class Provider(Type):
     EC2_SA_EAST = "ec2_sa_east"
     EC2_AP_SOUTHEAST2 = "ec2_ap_southeast_2"
     EC2_CA_CENTRAL1 = "ec2_ca_central_1"
-
-    ELASTICHOSTS_UK1 = "elastichosts_uk1"
-    ELASTICHOSTS_UK2 = "elastichosts_uk2"
-    ELASTICHOSTS_US1 = "elastichosts_us1"
-    ELASTICHOSTS_US2 = "elastichosts_us2"
-    ELASTICHOSTS_US3 = "elastichosts_us3"
-    ELASTICHOSTS_CA1 = "elastichosts_ca1"
-    ELASTICHOSTS_AU1 = "elastichosts_au1"
-    ELASTICHOSTS_CN1 = "elastichosts_cn1"
 
     CLOUDSIGMA_US = "cloudsigma_us"
 
@@ -238,15 +202,6 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
     Provider.EC2_CA_CENTRAL1: Provider.EC2,
-    # ElasticHosts
-    Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_UK2: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_US1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_US2: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_US3: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_CA1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_AU1: Provider.ELASTICHOSTS,
-    Provider.ELASTICHOSTS_CN1: Provider.ELASTICHOSTS,
 }
 
 
