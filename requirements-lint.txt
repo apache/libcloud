@@ -3,7 +3,7 @@ flake8==5.0.4
 astroid==2.13.3; python_version >= '3.8'
 pylint==2.15.10; python_version >= '3.8'
 bandit==1.7.4; python_version >= '3.7'
-black==22.12.0; python_version >= '3.6' and implementation_name == "cpython"
+black==23.1.0; python_version >= '3.6' and implementation_name == "cpython"
 isort[pyproject]==5.12.0; python_version >= '3.8'
 pyupgrade==3.3.1
 rstcheck==6.1.1; python_version >= '3.7'
