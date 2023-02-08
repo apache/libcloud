@@ -6,7 +6,7 @@ pytest==7.2.1
 pytest-xdist==3.1.0
 pytest-timeout==2.1.0
 pytest-benchmark[histogram]==4.0.0
-cryptography==39.0.0
+cryptography==39.0.1
 
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==23.0.0
