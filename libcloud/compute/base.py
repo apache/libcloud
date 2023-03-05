@@ -328,14 +328,15 @@ class Node(UuidMixin):
         state = NodeState.tostring(self.state)
 
         return (
-            "<Node: uuid=%s, name=%s, state=%s, public_ips=%s, " "private_ips=%s, provider=%s ...>"
-        ) % (
-            self.uuid,
-            self.name,
-            state,
-            self.public_ips,
-            self.private_ips,
-            self.driver.name,
+            "<Node: uuid={}, name={}, state={}, public_ips={}, "
+            "private_ips={}, provider={} ...>".format(
+                self.uuid,
+                self.name,
+                state,
+                self.public_ips,
+                self.private_ips,
+                self.driver.name,
+            )
         )
 
 
@@ -412,15 +413,16 @@ class NodeSize(UuidMixin):
 
     def __repr__(self):
         return (
-            "<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s " "price=%s driver=%s ...>"
-        ) % (
-            self.id,
-            self.name,
-            self.ram,
-            self.disk,
-            self.bandwidth,
-            self.price,
-            self.driver.name,
+            "<NodeSize: id={}, name={}, ram={} disk={} bandwidth={} "
+            "price={} driver={} ...>".format(
+                self.id,
+                self.name,
+                self.ram,
+                self.disk,
+                self.bandwidth,
+                self.price,
+                self.driver.name,
+            )
         )
 
 
@@ -474,7 +476,7 @@ class NodeImage(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return ("<NodeImage: id=%s, name=%s, driver=%s  ...>") % (
+        return "<NodeImage: id={}, name={}, driver={}  ...>".format(
             self.id,
             self.name,
             self.driver.name,
@@ -535,7 +537,7 @@ class NodeImageMember(UuidMixin):
         UuidMixin.__init__(self)
 
     def __repr__(self):
-        return ("<NodeImageMember: id=%s, image_id=%s, " "state=%s, driver=%s  ...>") % (
+        return "<NodeImageMember: id={}, image_id={}, " "state={}, driver={}  ...>".format(
             self.id,
             self.image_id,
             self.state,
@@ -586,7 +588,7 @@ class NodeLocation:
         self.extra = extra or {}
 
     def __repr__(self):
-        return ("<NodeLocation: id=%s, name=%s, country=%s, driver=%s>") % (
+        return "<NodeLocation: id={}, name={}, country={}, driver={}>".format(
             self.id,
             self.name,
             self.country,
@@ -1702,8 +1704,8 @@ class NodeDriver(BaseDriver):
                 found_uuids = [node.uuid for node in matching_nodes]
                 msg = (
                     "Unable to match specified uuids "
-                    + "(%s) with existing nodes. Found " % (uuids)
-                    + "multiple nodes with same uuid: (%s)" % (found_uuids)
+                    "({}) with existing nodes. Found "
+                    "multiple nodes with same uuid: ({})".format(uuids, found_uuids)
                 )
                 raise LibcloudError(value=msg, driver=self)
 
@@ -1720,7 +1722,7 @@ class NodeDriver(BaseDriver):
                 time.sleep(wait_period)
                 continue
 
-        raise LibcloudError(value="Timed out after %s seconds" % (timeout), driver=self)
+        raise LibcloudError(value="Timed out after {} seconds".format(timeout), driver=self)
 
     def _get_and_check_auth(self, auth):
         # type: (T_Auth) -> T_Auth
@@ -1842,7 +1844,7 @@ class NodeDriver(BaseDriver):
                 return ssh_client
 
         raise LibcloudError(
-            value="Could not connect to the remote SSH " + "server. Giving up.",
+            value="Could not connect to the remote SSH server. Giving up.",
             driver=self,
         )
 
@@ -1925,7 +1927,7 @@ class NodeDriver(BaseDriver):
                     try:
                         ssh_client.close()
                     except Exception:
-                        # Non fatal since connection is most likely already
+                        # Non-fatal since connection is most likely already
                         # closed at this point
                         pass
 
@@ -1935,7 +1937,7 @@ class NodeDriver(BaseDriver):
                 if tries >= max_tries:
                     tb = traceback.format_exc()
                     raise LibcloudError(
-                        value="Failed after %d tries: %s.\n%s" % (max_tries, str(e), tb),
+                        value="Failed after {:d} tries: {}.\n{}".format(max_tries, str(e), tb),
                         driver=self,
                     )
             else:

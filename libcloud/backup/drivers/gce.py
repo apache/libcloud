@@ -15,6 +15,8 @@
 
 __all__ = ["GCEBackupDriver"]
 
+import os
+
 from libcloud.backup.base import (
     BackupDriver,
     BackupTarget,
@@ -114,7 +116,7 @@ class GCEConnection(GoogleBaseConnection):
 
 class GCEBackupDriver(BackupDriver):
     name = "Google Compute Engine Backup Driver"
-    website = "http://cloud.google.com/"
+    website = "https://cloud.google.com/"
     connectionCls = GCEConnection
 
     def __init__(
@@ -163,7 +165,9 @@ class GCEBackupDriver(BackupDriver):
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
-        self.credential_file = credential_file or "~/.gce_libcloud_auth" + "." + self.project
+        self.credential_file = credential_file or os.path.join(
+            os.path.expanduser("~"), ".gce_libcloud_auth.{}".format(self.project)
+        )
 
         super().__init__(user_id, key, **kwargs)
 
@@ -458,7 +462,7 @@ class GCEBackupDriver(BackupDriver):
         return job
 
     def ex_get_snapshot(self, name):
-        request = "/global/snapshots/%s" % (name)
+        request = "/global/snapshots/{}".format(name)
         response = self.connection.request(request, method="GET").object
         return response
 

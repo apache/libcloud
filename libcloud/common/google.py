@@ -74,18 +74,19 @@ import base64
 import logging
 import datetime
 import urllib.parse
+import sqlite3
+from collections import OrderedDict
 from typing import Optional
 from http.server import HTTPServer, BaseHTTPRequestHandler
+
+from offutils import pp
 
 from libcloud.utils.py3 import b, httplib, urlparse, urlencode
 from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError, ProviderError
 from libcloud.utils.connection import get_response_object
 
-try:
-    import simplejson as json
-except ImportError:
-    import json  # type: ignore
+import json
 
 
 try:
@@ -486,7 +487,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
 
     @property
     def _redirect_uri_with_port(self):
-        return self.redirect_uri + ":" + str(self.redirect_uri_port)
+        return "{0}:{1}".format(self.redirect_uri, self.redirect_uri_port)
 
     def _receive_code_through_local_loopback(self):
         """
@@ -517,8 +518,10 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
                 self_.send_response(200)
                 self_.send_header("Content-type", "text/html")
                 self_.end_headers()
-                self_.wfile.write(b"<html><head><title>Libcloud Sign-In</title></head>")
-                self_.wfile.write(b"<body><p>You can now close this tab</p>")
+                self_.wfile.write(
+                    b"<html><head><title>Libcloud Sign-In</title></head>"
+                    b"<body><p>You can now close this tab</p>"
+                )
 
         if (
             "127.0.0.1" in self.redirect_uri
@@ -575,7 +578,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                     with open(key_path) as f:
                         key_content = f.read()
                 except OSError:
-                    raise GoogleAuthError("Missing (or unreadable) key " "file: '%s'" % key)
+                    raise GoogleAuthError("Missing (or unreadable) key " "file: '{}'".format(key))
             else:
                 # assume it's a PEM str or serialized JSON str
                 key_content = key
@@ -599,11 +602,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         try:
             # check if the key is actually a PEM encoded private key
             serialization.load_pem_private_key(b(key), password=None, backend=default_backend())
-        except ValueError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
-        except TypeError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
-        except exceptions.UnsupportedAlgorithm as e:
+        except (ValueError, TypeError, exceptions.UnsupportedAlgorithm) as e:
             raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
 
         super().__init__(user_id, key, *args, **kwargs)
@@ -665,7 +664,7 @@ class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
         if http_code == httplib.NOT_FOUND:
             raise ValueError("Service Accounts are not enabled for this " "GCE instance.")
         elif http_code != httplib.OK:
-            raise ValueError("Internal GCE Authorization failed: " "'%s'" % str(http_reason))
+            raise ValueError("Internal GCE Authorization failed: " "'{}'".format(http_reason))
         token_info = json.loads(token_info)
         if "expires_in" in token_info:
             expire_time = _utcnow() + datetime.timedelta(seconds=token_info["expires_in"])
@@ -736,22 +735,24 @@ class GoogleAuthType:
 
     @staticmethod
     def _is_sa(user_id):
+        print("_is_sa(user_id):", repr(user_id), ";")
         return user_id.endswith(".gserviceaccount.com")
 
 
 class GoogleOAuth2Credential:
-    default_credential_file = "~/.google_libcloud_auth"
+    default_credential_file = os.path.join(os.path.expanduser("~"), ".google_libcloud_auth")
+    credentials_filetype = None
 
     def __init__(self, user_id, key, auth_type=None, credential_file=None, scopes=None, **kwargs):
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if self.auth_type not in GoogleAuthType.ALL_TYPES:
-            raise GoogleAuthError("Invalid auth type: %s" % self.auth_type)
+            raise GoogleAuthError("Invalid auth type: {}".format(self.auth_type))
         elif not GoogleAuthType.is_oauth2(self.auth_type):
-            raise GoogleAuthError("Auth type %s cannot be used with OAuth2" % self.auth_type)
+            raise GoogleAuthError("Auth type {} cannot be used with OAuth2".format(self.auth_type))
         self.user_id = user_id
         self.key = key
 
-        default_credential_file = ".".join([self.default_credential_file, user_id])
+        default_credential_file = ".".join((self.default_credential_file, user_id))
         self.credential_file = credential_file or default_credential_file
         # Default scopes to read/write for compute, storage, and dns.
         self.scopes = scopes or [
@@ -783,7 +784,7 @@ class GoogleOAuth2Credential:
 
     @property
     def access_token(self):
-        if self.token_expire_utc_datetime < _utcnow():
+        if "expire_time" not in self.token or self.token_expire_utc_datetime < _utcnow():
             self._refresh_token()
         return self.token["access_token"]
 
@@ -807,9 +808,36 @@ class GoogleOAuth2Credential:
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
 
         try:
-            with open(filename) as f:
-                data = f.read()
-            token = json.loads(data)
+            ext = os.path.splitext(filename)[1]
+            if ext == "{}json".format(os.path.extsep):
+                self.credentials_filetype = "json"
+                with open(filename) as f:
+                    data = f.read()
+                token = json.loads(data)
+            elif ext == "{}db".format(os.path.extsep):
+                self.credentials_filetype = "sqlite3"
+                con = sqlite3.connect(filename)
+                cur = con.cursor("SELECT * FROM access_tokens " "ORDER BY token_expiry " "LIMIT 1")
+                res = cur.fetchone()
+                cur.close()
+                con.close()
+                if res is not None:
+                    self.token = OrderedDict(
+                        {
+                            "account_id": res[0],
+                            "access_token": res[1],
+                            "token_expiry": res[2],
+                            # rapt_token (Optional [ str ]) – The reauth Proof Token.
+                            "rapt_token": res[3],
+                            # id_token (str) – The Open ID Connect ID Token.
+                            "id_token": res[4],
+                        }
+                    )
+                    pp({"self.token now": self.token, "keys": tuple(self.token.keys())})
+                else:
+                    raise GoogleAuthError("access token not found in {}".format(filename))
+            else:
+                raise NotImplementedError(ext)
         except (OSError, ValueError) as e:
             # Note: File related errors (IOError) and errors related to json
             # parsing of the data (ValueError) are not fatal.
@@ -822,14 +850,23 @@ class GoogleOAuth2Credential:
         Write token to credential file.
         Mocked in libcloud.test.common.google.GoogleTestCase.
         """
-        filename = os.path.expanduser(self.credential_file)
-        filename = os.path.realpath(filename)
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
 
         try:
-            data = json.dumps(self.token)
-            write_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
-            with os.fdopen(os.open(filename, write_flags, int("600", 8)), "w") as f:
-                f.write(data)
+            if self.credentials_filetype == "json":
+                data = json.dumps(self.token)
+                write_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+                with os.fdopen(os.open(filename, write_flags, int("600", 8)), "w") as f:
+                    f.write(data)
+            elif self.credentials_filetype == "sqlite3":
+                con = sqlite3.connect(filename)
+                cur = con.cursor()
+                cur.execute(
+                    "INSERT INTO access_token VALUES(?, ?, ?, ?, ?)", tuple(self.token.values())
+                )
+                con.commit()
+                cur.close()
+                con.close()
         except Exception as e:
             # Note: Failure to write (cache) token in a file is not fatal. It
             # simply means degraded performance since we will need to acquire a
@@ -885,6 +922,18 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         super().__init__(user_id, key, **kwargs)
 
+        from offutils import pp
+
+        pp(
+            {
+                "user_id": user_id,
+                "key": key,
+                "auth_type": auth_type,
+                "credential_file": credential_file,
+                "scopes": scopes,
+                "kwargs": kwargs,
+            }
+        )
         self.oauth2_credential = GoogleOAuth2Credential(
             user_id, key, auth_type, credential_file, scopes, **kwargs
         )
@@ -907,7 +956,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         @inherits: :class:`Connection.pre_connect_hook`
         """
-        headers["Authorization"] = "Bearer " + self.oauth2_credential.access_token
+        headers["Authorization"] = "Bearer {}".format(self.oauth2_credential.access_token)
         return params, headers
 
     def encode_data(self, data):
