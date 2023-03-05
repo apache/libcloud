@@ -31,18 +31,19 @@ from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.exceptions import exception_from_message
 
 __all__ = [
-    "RETRY_FAILED_HTTP_REQUESTS",
     "BaseDriver",
+    "CertificateConnection",
     "Connection",
-    "PollingConnection",
     "ConnectionKey",
     "ConnectionUserAndKey",
-    "CertificateConnection",
-    "Response",
     "HTTPResponse",
     "JsonResponse",
-    "XmlResponse",
+    "LazyObject",
+    "PollingConnection",
+    "RETRY_FAILED_HTTP_REQUESTS",
     "RawResponse",
+    "Response",
+    "XmlResponse",
 ]
 
 # Module level variable indicates if the failed HTTP requests should be retried
@@ -1132,6 +1133,7 @@ class BaseDriver:
 
         if self.secret is not None:
             args.append(self.secret)
+            conn_kwargs["secret"] = self.secret
 
         args.append(secure)
 
@@ -1143,6 +1145,10 @@ class BaseDriver:
         if port is not None:
             args.append(port)
 
+        from offutils import pp
+
+        pp({"connectionCls": self.connectionCls, "args": args, "conn_kwargs": conn_kwargs})
+
         self.connection = self.connectionCls(*args, **conn_kwargs)
         self.connection.driver = self
         self.connection.connect()
@@ -1152,4 +1158,4 @@ class BaseDriver:
         Return extra connection keyword arguments which are passed to the
         Connection class constructor.
         """
-        return {}
+        return {"secure": self.secure}

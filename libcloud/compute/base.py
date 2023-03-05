@@ -106,6 +106,7 @@ __all__ = [
     "NodeDriver",
     "StorageVolume",
     "StorageVolumeState",
+    "UuidMixin",
     "VolumeSnapshot",
     # Deprecated, moved to libcloud.utils.networking
     "is_private_subnet",

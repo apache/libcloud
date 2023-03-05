@@ -168,10 +168,10 @@ class ResourceNotFoundError(GoogleBaseError):
             and value["message"].count("projects/") == 1
         ):
             value["message"] = (
-                value["message"] + ". A missing project "
+                "{}. A missing project "
                 "error may be an authentication issue. "
                 "Please  ensure your auth credentials match "
-                "your project. "
+                "your project. ".format(value["message"])
             )
         super().__init__(value, http_code, driver)
 
@@ -230,7 +230,7 @@ class GoogleResponse(JsonResponse):
                 code = err.get("reason")
             message = body.get("error_description", err)
 
-        return (code, message)
+        return code, message
 
     def parse_body(self):
         """
@@ -245,40 +245,43 @@ class GoogleResponse(JsonResponse):
         json_error = False
         try:
             body = json.loads(self.body)
-        except Exception:
+        except TypeError:
             # If there is both a JSON parsing error and an unsuccessful http
             # response (like a 404), we want to raise the http error and not
             # the JSON one, so don't raise JsonParseError here.
             body = self.body
             json_error = True
 
-        valid_http_codes = [
-            httplib.OK,
-            httplib.CREATED,
-            httplib.ACCEPTED,
-            httplib.CONFLICT,
-        ]
+        valid_http_codes = frozenset(
+            (
+                httplib.OK,
+                httplib.CREATED,
+                httplib.ACCEPTED,
+                httplib.CONFLICT,
+            )
+        )
         if self.status in valid_http_codes:
             if json_error:
                 raise JsonParseError(body, self.status, None)
             elif "error" in body:
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
                 if code == "QUOTA_EXCEEDED":
-                    raise QuotaExceededError(message, self.status, code)
+                    exception = QuotaExceededError
                 elif code == "RESOURCE_ALREADY_EXISTS":
-                    raise ResourceExistsError(message, self.status, code)
+                    exception = ResourceExistsError
                 elif code == "alreadyExists":
-                    raise ResourceExistsError(message, self.status, code)
+                    exception = ResourceExistsError
                 elif code.startswith("RESOURCE_IN_USE"):
-                    raise ResourceInUseError(message, self.status, code)
+                    exception = ResourceInUseError
                 else:
-                    raise GoogleBaseError(message, self.status, code)
+                    exception = GoogleBaseError
+                raise exception(message, self.status, code)
             else:
                 return body
 
         elif self.status == httplib.NOT_FOUND:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -286,7 +289,7 @@ class GoogleResponse(JsonResponse):
 
         elif self.status == httplib.BAD_REQUEST:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -294,7 +297,7 @@ class GoogleResponse(JsonResponse):
 
         else:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -362,8 +365,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         """
         Add defaults for 'Content-Type' and 'Host' headers.
         """
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-        headers["Host"] = self.host
+        headers.update({"Content-Type": "application/x-www-form-urlencoded", "Host": self.host})
         return headers
 
     def _token_request(self, request_body):
@@ -434,8 +436,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         data = urlencode(auth_params)
 
         url = "https://{}{}?{}".format(self.host, self.auth_path, data)
-        print("\nPlease Go to the following URL and sign in:")
-        print(url)
+        print("\nPlease Go to the following URL and sign in:\n", url, sep="")
         code = self._receive_code_through_local_loopback()
         return code
 
@@ -499,7 +500,6 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         access_code = None
 
         class AccessCodeReceiver(BaseHTTPRequestHandler):
-
             # noinspection PyMethodParameters,PyPep8Naming
             def do_GET(self_):  # pylint: disable=no-self-argument
                 query = urlparse.urlparse(self_.path).query
@@ -600,11 +600,11 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
             # check if the key is actually a PEM encoded private key
             serialization.load_pem_private_key(b(key), password=None, backend=default_backend())
         except ValueError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
+            raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
         except TypeError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
+            raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
         except exceptions.UnsupportedAlgorithm as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
+            raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
 
         super().__init__(user_id, key, *args, **kwargs)
 
@@ -664,7 +664,7 @@ class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
         http_code, http_reason, token_info = _get_gce_metadata(path)
         if http_code == httplib.NOT_FOUND:
             raise ValueError("Service Accounts are not enabled for this " "GCE instance.")
-        if http_code != httplib.OK:
+        elif http_code != httplib.OK:
             raise ValueError("Internal GCE Authorization failed: " "'%s'" % str(http_reason))
         token_info = json.loads(token_info)
         if "expires_in" in token_info:
@@ -725,9 +725,7 @@ class GoogleAuthType:
         # this will slow down the driver instantiation when retrying failed
         # requests is enabled globally.
         http_code, http_reason, body = _get_gce_metadata(retry_failed=False)
-        if http_code == httplib.OK and body:
-            return True
-        return False
+        return http_code == httplib.OK and body
 
     @staticmethod
     def _is_gcs_s3(user_id):
@@ -748,7 +746,7 @@ class GoogleOAuth2Credential:
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if self.auth_type not in GoogleAuthType.ALL_TYPES:
             raise GoogleAuthError("Invalid auth type: %s" % self.auth_type)
-        if not GoogleAuthType.is_oauth2(self.auth_type):
+        elif not GoogleAuthType.is_oauth2(self.auth_type):
             raise GoogleAuthError("Auth type %s cannot be used with OAuth2" % self.auth_type)
         self.user_id = user_id
         self.key = key
@@ -777,7 +775,7 @@ class GoogleOAuth2Credential:
                 self.user_id, self.key, self.scopes, **kwargs
             )
         else:
-            raise GoogleAuthError("Invalid auth_type: %s" % str(self.auth_type))
+            raise GoogleAuthError("Invalid auth_type: {}".format(str(self.auth_type)))
 
         if self.token is None:
             self.token = self.oauth2_conn.get_new_token()
@@ -891,11 +889,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             user_id, key, auth_type, credential_file, scopes, **kwargs
         )
 
-        python_ver = "{}.{}.{}".format(
-            sys.version_info[0],
-            sys.version_info[1],
-            sys.version_info[2],
-        )
+        python_ver = ".".join(map(str, sys.version_info[:3]))
         ver_platform = "Python {}/{}".format(python_ver, sys.platform)
         self.user_agent_append(ver_platform)
 
@@ -903,8 +897,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         @inherits: :class:`Connection.add_default_headers`
         """
-        headers["Content-Type"] = "application/json"
-        headers["Host"] = self.host
+        headers.update({"Content-Type": "application/json", "Host": self.host})
         return headers
 
     def pre_connect_hook(self, params, headers):
@@ -934,7 +927,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                 return super().request(*args, **kwargs)
             except OSError as e:
                 if e.errno == errno.ECONNRESET:
-                    tries = tries + 1
+                    tries += 1
                 else:
                     raise e
         # One more time, then give up.
@@ -950,10 +943,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         :return:  True if complete, False otherwise
         :rtype:   ``bool``
         """
-        if response.object["status"] == "DONE":
-            return True
-        else:
-            return False
+        return response.object["status"] == "DONE"
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         """
