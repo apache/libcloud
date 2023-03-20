@@ -1088,6 +1088,24 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.name, object_name)
         self.assertEqual(obj.size, 3)
 
+    def test_upload_small_object_with_glacier_ir(self):
+        if self.driver.supports_s3_multipart_upload:
+            self.mock_response_klass.type = "MULTIPART"
+        else:
+            self.mock_response_klass.type = None
+
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+        object_name = "foo_test_stream_data"
+        storage_class="glacier_ir",
+        iterator = BytesIO(b("234"))
+        extra = {"content_type": "text/plain"}
+        obj = self.driver.upload_object_via_stream(
+            container=container, object_name=object_name, iterator=iterator, extra=extra, ex_storage_class=storage_class
+        )
+
+        self.assertEqual(obj.name, object_name)
+        self.assertEqual(obj.size, 3)
+
     def test_upload_big_object_via_stream(self):
         if self.driver.supports_s3_multipart_upload:
             self.mock_response_klass.type = "MULTIPART"
