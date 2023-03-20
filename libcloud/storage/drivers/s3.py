@@ -1107,7 +1107,7 @@ class BaseS3StorageDriver(StorageDriver):
         """
         headers = {}
         storage_class = storage_class or "standard"
-        if storage_class not in ["standard", "reduced_redundancy"]:
+        if storage_class not in ["standard", "reduced_redundancy", "standard_ia", "onezone_ia", "intelligent_tiering", "glacier", "deep_archive", "glacier_ir"]:
             raise ValueError("Invalid storage class value: %s" % (storage_class))
 
         key = self.http_vendor_prefix + "-storage-class"
