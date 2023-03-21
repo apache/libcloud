@@ -7747,18 +7747,16 @@ class OutscaleNodeDriver(NodeDriver):
 
     def _to_node(self, vm):
         name = ""
-        private_ips = []
+        private_ips = [vm["PrivateIp"]]
         for tag in vm["Tags"]:
             if tag["Key"] == "Name":
                 name = tag["Value"]
-        if "Nics" in vm:
-            private_ips = vm["Nics"]["PrivateIps"]
 
         return Node(
             id=vm["VmId"],
             name=name,
             state=self.NODE_STATE[vm["State"]],
-            public_ips=[],
+            public_ips=[vm["PublicIp"]],
             private_ips=private_ips,
             driver=self,
             extra=vm,
