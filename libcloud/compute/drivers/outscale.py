@@ -7743,7 +7743,7 @@ class OutscaleNodeDriver(NodeDriver):
         )
 
     def _to_volumes(self, volumes):
-        return [self._to_volumes(volume) for volume in volumes]
+        return [self._to_volume(volume) for volume in volumes]
 
     def _to_node(self, vm):
         name = ""
