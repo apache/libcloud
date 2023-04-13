@@ -20,7 +20,7 @@ from datetime import datetime
 from unittest import mock
 
 from libcloud.test import MockHttp, LibcloudTestCase, unittest
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, urlparse, parse_qs, urlunquote
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeSize, NodeLocation, StorageVolume, VolumeSnapshot
 from libcloud.compute.types import Provider, NodeState, StorageVolumeState, VolumeSnapshotState
@@ -445,12 +445,17 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_list_nodes(self, fps_mock):
         nodes = self.driver.list_nodes()
 
-        self.assertEqual(len(nodes), 1)
+        self.assertEqual(len(nodes), 2)
 
         self.assertEqual(nodes[0].name, "test-node-1")
         self.assertEqual(nodes[0].state, NodeState.UPDATING)
         self.assertEqual(nodes[0].private_ips, ["10.0.0.1"])
         self.assertEqual(nodes[0].public_ips, [])
+
+        self.assertEqual(nodes[1].name, "test-node-2")
+        self.assertEqual(nodes[1].state, NodeState.UPDATING)
+        self.assertEqual(nodes[1].private_ips, ["10.0.0.2"])
+        self.assertEqual(nodes[1].public_ips, [])
 
         fps_mock.assert_called()
 
@@ -461,12 +466,17 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_list_nodes__no_fetch_power_state(self, fps_mock):
         nodes = self.driver.list_nodes(ex_fetch_power_state=False)
 
-        self.assertEqual(len(nodes), 1)
+        self.assertEqual(len(nodes), 2)
 
         self.assertEqual(nodes[0].name, "test-node-1")
         self.assertNotEqual(nodes[0].state, NodeState.UPDATING)
         self.assertEqual(nodes[0].private_ips, ["10.0.0.1"])
         self.assertEqual(nodes[0].public_ips, [])
+
+        self.assertEqual(nodes[1].name, "test-node-2")
+        self.assertNotEqual(nodes[1].state, NodeState.UPDATING)
+        self.assertEqual(nodes[1].private_ips, ["10.0.0.2"])
+        self.assertEqual(nodes[1].public_ips, [])
 
         fps_mock.assert_not_called()
 
@@ -815,6 +825,11 @@ class AzureMockHttp(MockHttp):
                 "99999999_9999_9999_9999_999999999999",
                 AzureNodeDriverTests.SUBSCRIPTION_ID,
             )
+            unquoted_url = urlunquote(url)
+            if "$skiptoken=" in unquoted_url:
+                parsed_url = urlparse.urlparse(unquoted_url)
+                params = parse_qs(parsed_url.query)
+                file_name += "_" + params["$skiptoken"][0].split("!")[0]
             fixture = self.fixtures.load(file_name + ".json")
 
             if method in ("POST", "PUT"):

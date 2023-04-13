@@ -2,7 +2,7 @@
   "value": [
     {
       "properties": {
-        "vmId": "CCEEBF63-E92B-4A50-9949-6E44BFC61D3F",
+        "vmId": "DDFEBF64-E92B-4A50-9949-6E44BFC61D4G",
         "additionalCapabilities": {
           "ultraSSDEnabled": "False",
           "hibernationEnabled": "False"
@@ -24,13 +24,13 @@
             "caching": "ReadWrite",
             "managedDisk": {
               "storageAccountType": "Standard_LRS",
-              "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/disks/test-node-disk-1"
+              "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/disks/test-node-disk-2"
             }
           },
           "dataDisks": []
         },
         "osProfile": {
-          "computerName": "test-node-1",
+          "computerName": "test-node-2",
           "adminUsername": "user",
           "linuxConfiguration": {
             "disablePasswordAuthentication": false
@@ -40,7 +40,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Network/networkInterfaces/test-node-1-nic"
+              "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Network/networkInterfaces/test-node-2-nic"
             }
           ]
         },
@@ -49,9 +49,8 @@
       "type": "Microsoft.Compute/virtualMachines",
       "location": "eastus",
       "tags": {},
-      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/virtualMachines/test-node-1",
-      "name": "test-node-1"
+      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/virtualMachines/test-node-2",
+      "name": "test-node-2"
     }
-  ],
-  "nextLink": "https://management.azure.com:443/subscriptions/99999999-9999-9999-9999-999999999999/providers/Microsoft.Compute/virtualMachines?api-version=2021-11-01&$skiptoken=1!/Subscriptions/99999999-9999-9999-9999-999999999999/ResourceGroups/000000/VMs/DDFEBF64-E92B-4A50-9949-6E44BFC61D4G"
+  ]
 }
