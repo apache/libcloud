@@ -13,7 +13,6 @@ Provider            Documentation                             Provider Constant 
 `Gandi LiveDNS`_                                              GANDI_LIVE        single region driver :mod:`libcloud.dns.drivers.gandi_live`   :class:`GandiLiveDNSDriver`   
 `GoDaddy DNS`_      :doc:`Click </dns/drivers/godaddy>`       GODADDY           single region driver :mod:`libcloud.dns.drivers.godaddy`      :class:`GoDaddyDNSDriver`     
 `Google DNS`_       :doc:`Click </dns/drivers/google>`        GOOGLE            single region driver :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
-`Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                 LINODE            single region driver :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
 `Liquidweb DNS`_    :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         single region driver :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   
 `Luadns`_           :doc:`Click </dns/drivers/luadns>`        LUADNS            single region driver :mod:`libcloud.dns.drivers.luadns`       :class:`LuadnsDNSDriver`      
@@ -25,7 +24,6 @@ Provider            Documentation                             Provider Constant 
 `Rackspace DNS`_                                              RACKSPACE         uk, us               :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
 `RcodeZero DNS`_    :doc:`Click </dns/drivers/rcodezero>`     RCODEZERO         single region driver :mod:`libcloud.dns.drivers.rcodezero`    :class:`RcodeZeroDNSDriver`   
 `Route53 DNS`_                                                ROUTE53           single region driver :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
-`Softlayer DNS`_                                              SOFTLAYER         single region driver :mod:`libcloud.dns.drivers.softlayer`    :class:`SoftLayerDNSDriver`   
 `Vultr DNS`_        :doc:`Click </dns/drivers/vultr>`         VULTR             single region driver :mod:`libcloud.dns.drivers.vultr`        :class:`VultrDNSDriver`       
 `World Wide DNS`_   :doc:`Click </dns/drivers/worldwidedns>`  WORLDWIDEDNS      single region driver :mod:`libcloud.dns.drivers.worldwidedns` :class:`WorldWideDNSDriver`   
 `Zerigo DNS`_                                                 ZERIGO            single region driver :mod:`libcloud.dns.drivers.zerigo`       :class:`ZerigoDNSDriver`      
@@ -42,7 +40,6 @@ Provider            Documentation                             Provider Constant 
 .. _`Gandi LiveDNS`: http://www.gandi.net/domain
 .. _`GoDaddy DNS`: https://www.godaddy.com/
 .. _`Google DNS`: https://cloud.google.com/
-.. _`Host Virtual DNS`: https://www.hostvirtual.com/
 .. _`Linode DNS`: http://www.linode.com/
 .. _`Liquidweb DNS`: https://www.liquidweb.com
 .. _`Luadns`: https://www.luadns.com
@@ -54,7 +51,6 @@ Provider            Documentation                             Provider Constant 
 .. _`Rackspace DNS`: http://www.rackspace.com/
 .. _`RcodeZero DNS`: https://www.rcodezero.at/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
-.. _`Softlayer DNS`: https://www.softlayer.com
 .. _`Vultr DNS`: https://www.vultr.com
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/

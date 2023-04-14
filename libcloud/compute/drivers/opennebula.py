@@ -261,10 +261,10 @@ class OpenNebulaNetwork:
 
         The hash is a function of an SHA1 hash of the network's ID and
         its driver which means that it should be unique between all
-        networks. In some subclasses (e.g. GoGrid) there is no ID
-        available so the public IP address is used. This means that,
-        unlike a properly done system UUID, the same UUID may mean a
-        different system install at a different time
+        networks. In some subclasses there is no ID available so the
+        public IP address is used. This means that, unlike a properly
+        done system UUID, the same UUID may mean a different system
+        install at a different time
 
         >>> from libcloud.network.drivers.dummy import DummyNetworkDriver
         >>> driver = DummyNetworkDriver()

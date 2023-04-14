@@ -23,7 +23,7 @@ Resource you can manage with Libcloud are divided in the following categories:
   Rackspace CloudServers
 * :doc:`Cloud Object Storage and CDN </storage/index>` - services such as Amazon S3 and
   Rackspace CloudFiles
-* :doc:`Load Balancers as a Service </loadbalancer/index>` - services such as Amazon Elastic Load Balancer and GoGrid LoadBalancers
+* :doc:`Load Balancers as a Service </loadbalancer/index>` - services such as Amazon Elastic Load Balancer
 * :doc:`DNS as a Service </dns/index>` - services such as Amazon Route 53 and Zerigo
 * :doc:`Container Services </container/index>` - container virtualization like Docker and Rkt as well as container based services
 * :doc:`Backup as a Service </backup/index>` - services such as Amazon EBS and OpenStack Freezer
