@@ -73,5 +73,6 @@
       "name": "test-disk-3",
       "zones": ["1", "2", "3"]
     }
-  ]
+  ],
+  "nextLink": "https://management.azure.com:443/subscriptions/99999999-9999-9999-9999-999999999999/providers/Microsoft.Compute/disks?api-version=2018-06-01&$skiptoken=1!/Subscriptions/99999999-9999-9999-9999-999999999999/ResourceGroups/000000/Disks/test-disk-4"
 }
