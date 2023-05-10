@@ -46,7 +46,7 @@ from libcloud.compute.providers import Provider
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 
 RESOURCE_API_VERSION = "2016-04-30-preview"
-DISK_API_VERSION = "2018-06-01"
+DISK_API_VERSION = "2023-01-02"
 IMAGES_API_VERSION = "2015-06-15"
 INSTANCE_VIEW_API_VERSION = "2015-06-15"
 IP_API_VERSION = "2019-06-01"
