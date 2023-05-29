@@ -95,7 +95,7 @@ jobs:
 
       - name: Setup Dotnet 6
         if: ${{ matrix.python_version == 'pyjion' }}
-        uses: actions/setup-dotnet@v3.0.3
+        uses: actions/setup-dotnet@v3.2.0
         with:
           dotnet-version: "6.0.100"
 
