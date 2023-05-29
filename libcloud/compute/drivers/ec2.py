@@ -2352,6 +2352,10 @@ class BaseEC2NodeDriver(NodeDriver):
         ena_support=None,
         billing_products=None,
         sriov_net_support=None,
+        boot_mode: str = None,
+        tpm_support: str = None,
+        uefi_data: str = None,
+        imds_support: str = None,
     ):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
@@ -2404,6 +2408,21 @@ class BaseEC2NodeDriver(NodeDriver):
                                        Function interface
         :type       sriov_net_support: ``str``
 
+        :param      boot_mode: desired boot mode for the AMI.
+        :type       boot_mode: ``str``
+
+        :param      tpm_support: set to ``v2.0`` to enable TPM support.
+        :type       tpm_support: ``str``
+
+        :param      uefi_data: base64 representation of the non-volatile UEFI
+                               variable store.
+        :type       uefi_data: ``str``
+
+        :param      imds_support: set to ``v2.0`` to require HTTP tokens when
+                                  accessing the IMDS on instances launched
+                                  from the resulting image.
+        :type       imds_support: ``str``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -2441,6 +2460,18 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if sriov_net_support is not None:
             params["SriovNetSupport"] = sriov_net_support
+
+        if boot_mode is not None:
+            params["BootMode"] = boot_mode
+
+        if tpm_support is not None:
+            params["TpmSupport"] = tpm_support
+
+        if uefi_data is not None:
+            params["UefiData"] = uefi_data
+
+        if imds_support is not None:
+            params["ImdsSupport"] = imds_support
 
         image = self._to_image(self.connection.request(self.path, params=params).object)
         return image
