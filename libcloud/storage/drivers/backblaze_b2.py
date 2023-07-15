@@ -554,7 +554,6 @@ class BackblazeB2StorageDriver(StorageDriver):
     def _perform_upload(
         self, data, container, object_name, extra=None, verify_hash=True, headers=None
     ):
-
         if isinstance(data, str):
             data = bytearray(data)
 
@@ -575,7 +574,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         headers["X-Bz-Content-Sha1"] = sha1.hexdigest()
 
         # Include optional meta-data (up to 10 items)
-        for key, value in meta_data:
+        for key, value in meta_data.items():
             # TODO: Encode / escape key
             headers["X-Bz-Info-%s" % (key)] = value
 
