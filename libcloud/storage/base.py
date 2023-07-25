@@ -593,8 +593,8 @@ class StorageDriver(BaseDriver):
         """
         raise NotImplementedError("upload_object not implemented for this driver")
 
-    def upload_object_via_stream(self, iterator, container, object_name, extra=None, headers=None):
-        # type: (Iterator[bytes], Container, str, Optional[dict], Optional[Dict[str, str]]) -> Object  # noqa: E501
+    def upload_object_via_stream(self, iterator, container, object_name, worker_count=1, extra=None, headers=None):
+        # type: (Iterator[bytes], Container, str, Optional[int], Optional[dict], Optional[Dict[str, str]]) -> Object  # noqa: E501
         """
         Upload an object using an iterator.
 
@@ -620,6 +620,9 @@ class StorageDriver(BaseDriver):
 
         :param object_name: Object name.
         :type object_name: ``str``
+
+        :param worker_count: Number of workers to use when uploading a multipart object
+        :type worker_count: ``int``
 
         :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents

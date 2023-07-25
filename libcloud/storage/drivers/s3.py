@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import aiohttp
+import asyncio
 import os
 import hmac
 import time
@@ -21,6 +23,7 @@ from typing import Dict, Optional
 from hashlib import sha1
 from datetime import datetime
 
+from libcloud.aiohttp_s3_client import S3Client
 import libcloud.utils.py3
 from libcloud.utils.py3 import b, httplib, tostring, urlquote, urlencode
 from libcloud.utils.xml import findtext, fixxpath
@@ -580,6 +583,7 @@ class BaseS3StorageDriver(StorageDriver):
         file_path,
         container,
         object_name,
+        worker_count=1,
         extra=None,
         verify_hash=True,
         headers=None,
@@ -596,6 +600,7 @@ class BaseS3StorageDriver(StorageDriver):
             object_name=object_name,
             extra=extra,
             file_path=file_path,
+            worker_count=worker_count,
             verify_hash=verify_hash,
             headers=headers,
             storage_class=ex_storage_class,
@@ -632,7 +637,7 @@ class BaseS3StorageDriver(StorageDriver):
         return findtext(element=response.object, xpath="UploadId", namespace=self.namespace)
 
     def _upload_multipart_chunks(
-        self, container, object_name, upload_id, stream, calculate_hash=True
+        self, container, object_name, upload_id, stream, worker_count, calculate_hash
     ):
         """
         Uploads data from an iterator in fixed sized chunks to S3
@@ -649,22 +654,34 @@ class BaseS3StorageDriver(StorageDriver):
         :param stream: The generator for fetching the upload data
         :type stream: ``generator``
 
+        :param worker_count: The number of workers to use for the upload
+        :type worker_count: ``int``
+
         :keyword calculate_hash: Indicates if we must calculate the data hash
         :type calculate_hash: ``bool``
 
         :return: A tuple of (chunk info, checksum, bytes transferred)
         :rtype: ``tuple``
         """
+
+        if worker_count == 1:
+            return self._upload_multipart_chunks_sequential(container, object_name, upload_id, stream, calculate_hash)
+        elif worker_count > 1:
+            return self._upload_multipart_chunks_parallel(container, object_name, upload_id, stream, worker_count)
+        else:
+            raise LibcloudError('Cannot upload with 0 workers')
+
+    def _upload_multipart_chunks_sequential(self, container, object_name, upload_id, stream, calculate_hash):
+
+        bytes_transferred = 0
+        chunks = []
         data_hash = None
+        count = 1
         if calculate_hash:
             data_hash = self._get_hash_function()
 
-        bytes_transferred = 0
-        count = 1
-        chunks = []
-        params = {"uploadId": upload_id}
-
         request_path = self._get_object_path(container, object_name)
+        params = {"uploadId": upload_id}
 
         # Read the input data in chunk sizes suitable for AWS
         for data in read_in_chunks(stream, chunk_size=CHUNK_SIZE, fill_size=True, yield_empty=True):
@@ -778,11 +795,66 @@ class BaseS3StorageDriver(StorageDriver):
                 "Error in multipart abort. status_code=%d" % (resp.status), driver=self
             )
 
+    def _upload_multipart_chunks_parallel(
+        self,
+        container,
+        object_name,
+        upload_id,
+        stream,
+        worker_count,
+    ):
+
+        loop = asyncio.get_event_loop()
+        parts = loop.run_until_complete(
+            self._upload_parallel(container.name, object_name, stream, upload_id, worker_count)
+        )
+        loop.close()
+
+        bytes_transferred = 0
+        chunks = []
+        for part_no, part_etag, part_len in parts:
+            bytes_transferred += part_len
+            chunks.append((part_no, part_etag))
+
+        # Cant find where we consume this, so not going to bother
+        data_hash = None
+
+        # chunks is (count, etag) tuples
+        # data_hash is the final etag from commit
+        return chunks, data_hash, bytes_transferred
+
+    @staticmethod
+    def chunked_reader(stream):
+        while True:
+            chunk = stream.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            yield chunk
+
+    async def _upload_parallel(self, container_name, object_name, stream, upload_id, workers):
+        session = aiohttp.ClientSession()
+        client = S3Client(
+            url=f"https://{container_name}.s3.amazonaws.com",
+            session=session,
+            access_key_id=self.connection.user_id,
+            secret_access_key=self.connection.key,
+            region=self.region
+        )
+        parts = await client.put_multipart_libcloud(
+            object_name,
+            BaseS3StorageDriver.chunked_reader(stream),
+            upload_id,
+            workers_count=workers
+        )
+        await session.close()
+        return parts
+
     def upload_object_via_stream(
         self,
         iterator,
         container,
         object_name,
+        worker_count=1,
         extra=None,
         headers=None,
         ex_storage_class=None,
@@ -806,6 +878,7 @@ class BaseS3StorageDriver(StorageDriver):
                 object_name=object_name,
                 extra=extra,
                 stream=iterator,
+                worker_count=worker_count,
                 verify_hash=False,
                 headers=headers,
                 storage_class=ex_storage_class,
@@ -1019,6 +1092,7 @@ class BaseS3StorageDriver(StorageDriver):
         container,
         object_name,
         stream,
+        worker_count,
         extra=None,
         verify_hash=False,
         headers=None,
@@ -1035,6 +1109,9 @@ class BaseS3StorageDriver(StorageDriver):
 
         :param stream: The generator for fetching the upload data
         :type stream: ``generator``
+
+        :param worker_count: The number of workers to use when uploading in parallel
+        :param worker_count: ``int``
 
         :keyword verify_hash: Indicates if we must calculate the data hash
         :type verify_hash: ``bool``
@@ -1074,7 +1151,7 @@ class BaseS3StorageDriver(StorageDriver):
 
         try:
             result = self._upload_multipart_chunks(
-                container, object_name, upload_id, stream, calculate_hash=verify_hash
+                container, object_name, upload_id, stream, worker_count, calculate_hash=verify_hash
             )
             chunks, data_hash, bytes_transferred = result
 

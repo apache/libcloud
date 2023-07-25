@@ -1,4 +1,6 @@
-codecov==2.1.12
+aiohttp==3.8.5
+aiohttp-s3-client==0.8.17
+codecov==2.1.13
 coverage==7.1.0; python_version >= '3.8'
 requests>=2.27.1
 requests_mock==1.10.0
