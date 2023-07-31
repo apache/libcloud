@@ -54,6 +54,7 @@ jobs:
           - 3.9
           - "3.10"
           - "3.11"
+          - "3.12-dev"
           # TODO: Investigate why it started failing with cryptic error on CI
           #- "pypy-3.7"
         os:
