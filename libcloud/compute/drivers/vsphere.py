@@ -1623,7 +1623,9 @@ class VSphere_REST_NodeDriver(NodeDriver):
             return result["value"]
         except BaseHTTPError:
             logger.error(
-                "Library was cannot be accesed, " " most probably the VCenter service " "is stopped"
+                "Library was cannot be accessed, "
+                " most probably the VCenter service "
+                "is stopped"
             )
             return []
 
@@ -1662,7 +1664,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def ex_update_memory(self, node, ram):
         """
-        :param ram: The ammount of ram in MB.
+        :param ram: The amount of ram in MB.
         :type ram: `str` or `int`
         """
         if isinstance(node, str):
@@ -1698,7 +1700,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def ex_add_nic(self, node, network):
         """
-        Creates a network adapater that will connect to the specified network
+        Creates a network adapter that will connect to the specified network
         for the given node. Returns a boolean indicating success or not.
         """
         if isinstance(node, str):

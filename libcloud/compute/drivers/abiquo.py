@@ -486,7 +486,7 @@ class AbiquoNodeDriver(NodeDriver):
 
         If you call the method :class:`AbiquoNodeDriver.create_node` with the
         size informed, it will just override the 'ram' value of the 'image'
-        template. So it is no too much usefull work with sizes...
+        template. So it is no too much useful work with sizes...
 
         :return: The list of sizes
         :rtype:  ``list`` of :class:`NodeSizes`
@@ -546,7 +546,7 @@ class AbiquoNodeDriver(NodeDriver):
         return res.async_success()  # pylint: disable=maybe-no-member
 
     # -------------------------
-    # Extenstion methods
+    # Extension methods
     # -------------------------
 
     def _ex_connection_class_kwargs(self):

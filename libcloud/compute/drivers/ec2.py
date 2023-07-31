@@ -2270,7 +2270,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param timeout: Timeout value for snapshot generation
         :type timeout: ``float``
 
-        :param interval: Time interval for repetative describe
+        :param interval: Time interval for repetitive describe
                          import snapshot tasks requests
         :type interval: ``float``
 
@@ -3868,7 +3868,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                  returned.
         :type       gateway_ids: ``list``
 
-        :param      filters: The filters so the list returned inclues
+        :param      filters: The filters so the list returned includes
                              information for certain gateways only.
         :type       filters: ``dict``
 
@@ -5277,7 +5277,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _get_security_groups(self, element):
         """
         Parse security groups from the provided element and return a
-        list of security groups with the id ane name key/value pairs.
+        list of security groups with the id and name key/value pairs.
 
         :rtype: ``list`` of ``dict``
         """

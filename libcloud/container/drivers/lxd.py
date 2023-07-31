@@ -532,7 +532,7 @@ class LXDContainerDriver(ContainerDriver):
 
         :param parameters: Container Image parameters.
         This parameter should represent the
-        the ``source`` dictioanry expected by the  LXD API call. For more
+        the ``source`` dictionary expected by the  LXD API call. For more
         information how this parameter should be structured see
         https://github.com/lxc/lxd/blob/master/doc/rest-api.md
         :type  parameters: ``str``

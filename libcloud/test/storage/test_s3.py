@@ -699,7 +699,7 @@ class S3Tests(unittest.TestCase):
         # Test case which verifies that response.body attribute is not accessed
         # and as such, whole body response is not buffered into RAM
 
-        # If content is consumed and response.content attribute accessed execption
+        # If content is consumed and response.content attribute accessed exception
         # will be thrown and test will fail
         mock_response = Mock(name="mock response")
         mock_response.headers = {}

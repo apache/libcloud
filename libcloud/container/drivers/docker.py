@@ -798,7 +798,7 @@ class DockerContainerDriver(ContainerDriver):
 
 def ts_to_str(timestamp):
     """
-    Return a timestamp as a nicely formated datetime string.
+    Return a timestamp as a nicely formatted datetime string.
     """
     date = datetime.datetime.fromtimestamp(timestamp)
     date_string = date.strftime("%d/%m/%Y %H:%M %Z")

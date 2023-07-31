@@ -116,7 +116,7 @@ class DigitalOceanSpacesDoubleInstanceTests(LibcloudTestCase):
         res = self.driver_v4.connectionCls is DOSpacesConnectionAWS4
         self.assertTrue(res, "driver.connectionCls does not match!")
 
-        # Verify again that connection class hasn't been overriden when
+        # Verify again that connection class hasn't been overridden when
         # instantiating a second driver class
         res = self.driver_v2.connectionCls is DOSpacesConnectionAWS2
         self.assertTrue(res, "driver.connectionCls does not match!")

@@ -62,7 +62,7 @@ class NonExistentDomain(WorldWideDNSException):
 
 class CouldntRemoveDomain(WorldWideDNSException):
     def __init__(self, http_code, driver=None):
-        value = "Error occured removing domain from name server, try again"
+        value = "Error occurred removing domain from name server, try again"
         super().__init__(value, http_code, 406, driver)
 
 
