@@ -4,7 +4,7 @@ include example_*.py
 include CHANGES.rst
 include README.rst
 include tox.ini
-include .pylintrc
+include pyproject.toml
 include requirements-tests.txt
 include requirements-lint.txt
 include libcloud/data/pricing.json

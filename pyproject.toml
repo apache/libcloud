@@ -8,13 +8,14 @@ target_version = ['py37', 'py38', 'py39', 'py310']
 include = '\.pyi?$'
 extended_exclude = '''
 (
-  /(
-    | \.git
-    | \.virtualenv
-    | __pycache__
-  )/
+    /(
+        | \.git
+        | \.virtualenv
+        | __pycache__
+    )/
 )
 '''
+
 
 [tool.isort]
 profile = "black"
@@ -23,3 +24,92 @@ line_length = 99
 src_paths = ["libcloud", "contrib", "docs", "demos", "pylint_plugins", "integration"]
 skip_glob = [".venv/*", ".tox/*", ".github/actions/*"]
 length_sort = true
+
+
+[tool.pytest.ini_options]
+# Set options for pytest
+python_classes = "*Test"
+testpaths = "libcloud/test"
+# Show slowest 10 tests in the output
+addopts = "--durations=10"
+# Ignore UserWarning's
+filterwarnings = ["ignore::UserWarning"]
+
+
+[tool.bandit]
+exclude_dirs = [".tox", ".git", "build", "dist", "venv", "tests/*"]
+skips = ["B411"]
+
+
+[tool.pylint.MASTER]
+ignore = "test,constants"
+persistent = "yes"
+load-plugins = ""
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "redefined-builtin,too-many-arguments,too-few-public-methods,missing-docstring,invalid-name,abstract-method"
+
+[tool.pylint.TYPECHECK]
+generated-members = "async_request,objects"
+
+[tool.pylint.VARIABLES]
+init-import = "no"
+dummy-variables-rgx = "_|dummy"
+additional-builtins = ""
+
+[tool.pylint.FORMAT]
+max-line-length = 100
+max-module-lines = 1000
+indent-string = "    "
+
+
+[tool.mypy]
+python_version = 3.7
+platform = "linux"
+show_error_context = true
+show_column_numbers = true
+
+[tool.mypy.overrides]
+module = [
+    "lxml",
+    "xml.dom",
+    "xmlrpc",
+    "paramiko",
+    "cryptography",
+    "lockfile",
+    "libcloud.utils.py3",
+    "libcloud.compute.drivers",
+    "libcloud.storage.drivers",
+    "libcloud.dns.drivers",
+    "libcloud.container.drivers",
+]
+ignore_missing_imports = true
+
+
+[tool.coverage.run]
+branch = true
+source = "libcloud"
+
+[tool.coverage.report]
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "def __str__",
+    "if self\\.debug",
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "__all__",
+    "import",
+    "deprecated_warning",
+    "in_development_warning",
+]
+ignore_errors = true
+
+[tool.coverage.html]
+directory = "coverage_html_report"
