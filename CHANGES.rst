@@ -19,6 +19,11 @@ Compute
   (GITHUB-1877)
   [Matthias Gatto - @outscale-mgo]
 
+- [Azure ARM] Implement pagination in the ``list_nodes()`` method. This fixes a
+  bug which would result in sometimes not all nodes being returned.
+  (GITHUB-1824, GITHUB-1850)
+  [Jan Müller - @ojan-mue]
+
 Storage
 ~~~~~~~
 
