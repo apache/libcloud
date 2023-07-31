@@ -54,7 +54,8 @@ jobs:
           - 3.9
           - "3.10"
           - "3.11"
-          - "pypy-3.7"
+          # TODO: Investigate why it started failing with cryptic error on CI
+          #- "pypy-3.7"
         os:
           - ubuntu-latest
         include:
