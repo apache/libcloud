@@ -463,8 +463,10 @@ class AzureNodeDriver(NodeDriver):
 
         :return:  list of node objects
         :rtype: ``list`` of :class:`.Node`
-        """
 
+        NOTE: With the default arguments, the function may result in M * (1 + (N * 3)) HTTP
+        requests where M is number of API pages and N is number of nodes returned per page.
+        """
         if ex_resource_group:
             action = (
                 "/subscriptions/%s/resourceGroups/%s/"
