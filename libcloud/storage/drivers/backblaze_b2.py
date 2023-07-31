@@ -554,7 +554,6 @@ class BackblazeB2StorageDriver(StorageDriver):
     def _perform_upload(
         self, data, container, object_name, extra=None, verify_hash=True, headers=None
     ):
-
         if isinstance(data, str):
             data = bytearray(data)
 

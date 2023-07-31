@@ -164,7 +164,6 @@ class BaseRackspaceNovaTestCase:
 
 
 class RackspaceNovaDfwTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
-
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
@@ -174,7 +173,6 @@ class RackspaceNovaDfwTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
 
 class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
-
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
@@ -184,7 +182,6 @@ class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
 
 class RackspaceNovaIadTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
-
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
@@ -194,7 +191,6 @@ class RackspaceNovaIadTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
 
 class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
-
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
@@ -207,7 +203,6 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
 
 class RackspaceNovaSydTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
-
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
@@ -217,7 +212,6 @@ class RackspaceNovaSydTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
 
 class RackspaceNovaHkgTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
-
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS

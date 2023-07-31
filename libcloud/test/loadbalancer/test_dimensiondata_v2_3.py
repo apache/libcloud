@@ -490,7 +490,6 @@ class DimensionData_v2_3_Tests(unittest.TestCase):
 
 
 class DimensionDataMockHttp(MockHttp):
-
     fixtures = LoadBalancerFileFixtures("dimensiondata")
 
     def _oec_0_9_myaccount_UNAUTHORIZED(self, method, url, body, headers):

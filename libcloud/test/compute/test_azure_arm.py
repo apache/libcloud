@@ -20,7 +20,7 @@ from datetime import datetime
 from unittest import mock
 
 from libcloud.test import MockHttp, LibcloudTestCase, unittest
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, parse_qs, urlparse, urlunquote
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeSize, NodeLocation, StorageVolume, VolumeSnapshot
 from libcloud.compute.types import Provider, NodeState, StorageVolumeState, VolumeSnapshotState
@@ -36,13 +36,13 @@ from libcloud.compute.drivers.azure_arm import (
 
 
 class AzureNodeDriverTests(LibcloudTestCase):
-
     TENANT_ID = "77777777-7777-7777-7777-777777777777"
     SUBSCRIPTION_ID = "99999999"
     APPLICATION_ID = "55555555-5555-5555-5555-555555555555"
     APPLICATION_PASS = "p4ssw0rd"
 
     def setUp(self):
+        AzureMockHttp.type = None
         Azure = get_driver(Provider.AZURE_ARM)
         Azure.connectionCls.conn_class = AzureMockHttp
         self.driver = Azure(
@@ -445,14 +445,31 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_list_nodes(self, fps_mock):
         nodes = self.driver.list_nodes()
 
-        self.assertEqual(len(nodes), 1)
+        self.assertEqual(len(nodes), 2)
 
         self.assertEqual(nodes[0].name, "test-node-1")
         self.assertEqual(nodes[0].state, NodeState.UPDATING)
         self.assertEqual(nodes[0].private_ips, ["10.0.0.1"])
         self.assertEqual(nodes[0].public_ips, [])
 
+        self.assertEqual(nodes[1].name, "test-node-2")
+        self.assertEqual(nodes[1].state, NodeState.UPDATING)
+        self.assertEqual(nodes[1].private_ips, ["10.0.0.2"])
+        self.assertEqual(nodes[1].public_ips, [])
+
         fps_mock.assert_called()
+
+    @mock.patch(
+        "libcloud.compute.drivers.azure_arm.AzureNodeDriver._fetch_power_state",
+        return_value=NodeState.UPDATING,
+    )
+    @mock.patch("libcloud.compute.drivers.azure_arm.LIST_NODES_PAGINATION_TIMEOUT", 1)
+    def test_list_nodes_pagination_timeout_reached(self, fps_mock):
+        # Verify we don't end up in an infinite loop in case server returns a bad response or
+        # similar
+        AzureMockHttp.type = "PAGINATION_INFINITE_LOOP"
+        nodes = self.driver.list_nodes()
+        self.assertTrue(len(nodes) >= 1)
 
     @mock.patch(
         "libcloud.compute.drivers.azure_arm.AzureNodeDriver" "._fetch_power_state",
@@ -461,12 +478,17 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_list_nodes__no_fetch_power_state(self, fps_mock):
         nodes = self.driver.list_nodes(ex_fetch_power_state=False)
 
-        self.assertEqual(len(nodes), 1)
+        self.assertEqual(len(nodes), 2)
 
         self.assertEqual(nodes[0].name, "test-node-1")
         self.assertNotEqual(nodes[0].state, NodeState.UPDATING)
         self.assertEqual(nodes[0].private_ips, ["10.0.0.1"])
         self.assertEqual(nodes[0].public_ips, [])
+
+        self.assertEqual(nodes[1].name, "test-node-2")
+        self.assertNotEqual(nodes[1].state, NodeState.UPDATING)
+        self.assertEqual(nodes[1].private_ips, ["10.0.0.2"])
+        self.assertEqual(nodes[1].public_ips, [])
 
         fps_mock.assert_not_called()
 
@@ -677,7 +699,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertTrue(isinstance(snaps[3].created, datetime))
 
     def test_list_snapshots_in_resource_group(self):
-
         snaps = self.driver.list_snapshots(ex_resource_group="111111")
         self.assertEqual(len(snaps), 2)
 
@@ -815,6 +836,11 @@ class AzureMockHttp(MockHttp):
                 "99999999_9999_9999_9999_999999999999",
                 AzureNodeDriverTests.SUBSCRIPTION_ID,
             )
+            unquoted_url = urlunquote(url)
+            if "$skiptoken=" in unquoted_url and self.type != "PAGINATION_INFINITE_LOOP":
+                parsed_url = urlparse.urlparse(unquoted_url)
+                params = parse_qs(parsed_url.query)
+                file_name += "_" + params["$skiptoken"][0].split("!")[0]
             fixture = self.fixtures.load(file_name + ".json")
 
             if method in ("POST", "PUT"):

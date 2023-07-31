@@ -66,7 +66,6 @@ class RancherException(Exception):
 
 
 class RancherConnection(ConnectionUserAndKey):
-
     responseCls = RancherResponse
     timeout = 30
 

@@ -1221,7 +1221,6 @@ class AzureBlobsStorageDriver(StorageDriver):
         file_path,
         headers,
     ):
-
         headers = headers or {}
         lease.update_headers(headers)
 

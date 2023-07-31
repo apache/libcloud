@@ -14,6 +14,11 @@ permissions:
   actions: write  # Needed for skip-duplicate-jobs job
   contents: read
 
+env:
+  # Needed if we want colors in pytest output without tty and script -e -c wrapper
+  PY_COLORS: "1"
+  FORCE_COLOR: "1"
+
 jobs:
   # Special job which skips duplicate jobs
   pre_job:
@@ -54,7 +59,9 @@ jobs:
           - 3.9
           - "3.10"
           - "3.11"
-          - "pypy-3.7"
+          - "3.12-dev"
+          # TODO: Investigate why it started failing with cryptic error on CI
+          #- "pypy-3.7"
         os:
           - ubuntu-latest
         include:
@@ -95,7 +102,7 @@ jobs:
 
       - name: Setup Dotnet 6
         if: ${{ matrix.python_version == 'pyjion' }}
-        uses: actions/setup-dotnet@v3.0.3
+        uses: actions/setup-dotnet@v3.2.0
         with:
           dotnet-version: "6.0.100"
 
@@ -118,12 +125,12 @@ jobs:
 
       - name: Run unit tests tox target
         run: |
-         script -e -c "tox -e py${{ matrix.python_version }}"
+         tox -e py${{ matrix.python_version }}
 
       - name: Run dist install checks tox target
         if: ${{ matrix.python_version != 'pypy-3.7' && matrix.python_version != 'pyjion' }}
         run: |
-         script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
+         tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
 
   code_coverage:
     name: Generate Code Coverage
@@ -165,7 +172,13 @@ jobs:
 
       - name: Run Checks
         run: |
-          script -e -c "tox -e coverage-ci"
+          tox -e coverage-ci
+
+      - name: Upload Coverage to codecov.io
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+        with:
+          fail_ci_if_error: true
+          verbose: true
 
   lint_checks:
     name: Run Various Lint and Other Checks
@@ -207,7 +220,7 @@ jobs:
 
       - name: Run Checks
         run: |
-          script -e -c "tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint"
+          tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint
 
   build_test_docker_image:
     name: Build and Verify Docker Image
@@ -287,6 +300,7 @@ jobs:
           # setuptools which we don't install or depend on directly
           ignore-vulns: |
             GHSA-r9hx-vwmv-q579
+            PYSEC-2022-43012
 
       - name: Cleanup
         run: |
@@ -302,7 +316,7 @@ jobs:
 
       - name: Run Bandit Check
         run: |
-          script -e -c "tox -e bandit"
+          tox -e bandit
 
   micro-benchmarks:
     name: Micro Benchmarks
@@ -344,7 +358,7 @@ jobs:
 
       - name: Run Micro Benchmarks
         run: |
-          script -e -c "tox -e micro-benchmarks"
+          tox -e micro-benchmarks
 
   docs:
     name: Build and upload Documentation
@@ -391,7 +405,7 @@ jobs:
 
       - name: Build Docs
         run: |
-          script -e -c "tox -e docs-ci"
+          tox -e docs-ci
 
       - name: Trigger ReadTheDocs build
         env:

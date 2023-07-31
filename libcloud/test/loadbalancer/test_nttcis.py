@@ -628,7 +628,6 @@ def test_delete_ssl_domain_certificate(driver):
 
 
 class NttCisMockHttp(MockHttp):
-
     fixtures = LoadBalancerFileFixtures("nttcis")
 
     def _oec_0_9_myaccount_UNAUTHORIZED(self, method, url, body, headers):
@@ -737,7 +736,6 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node(
         self, method, url, body, headers
     ):
-
         body = self.fixtures.load("networkDomainVip_node.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

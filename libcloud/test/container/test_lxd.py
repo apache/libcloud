@@ -201,7 +201,6 @@ class LXDMockHttp(MockHttp):
         )
 
     def _linux_124_containers(self, method, url, body, headers):
-
         if method == "GET":
             return (
                 httplib.OK,
@@ -228,7 +227,6 @@ class LXDMockHttp(MockHttp):
         )
 
     def _linux_124_containers_second_lxd_container(self, method, url, body, headers):
-
         if method == "PUT" or method == "DELETE":
             json = self.fixtures.load("linux_124/background_op.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
@@ -241,7 +239,6 @@ class LXDMockHttp(MockHttp):
             )
 
     def _linux_124_containers_first_lxd_container_state(self, method, url, body, headers):
-
         if method == "PUT" or method == "DELETE":
             json = self.fixtures.load("linux_124/background_op.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
@@ -250,7 +247,6 @@ class LXDMockHttp(MockHttp):
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
 
     def _linux_124_containers_second_lxd_container_state(self, method, url, body, headers):
-
         if method == "PUT" or method == "DELETE":
             json = self.fixtures.load("linux_124/background_op.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
@@ -267,13 +263,11 @@ class LXDMockHttp(MockHttp):
         )
 
     def _linux_124_storage_pools(self, method, url, body, header):
-
         if method == "GET":
             json = self.fixtures.load("linux_124/storage_pools.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
 
     def _linux_124_storage_pools_pool1(self, method, url, body, header):
-
         if method == "GET":
             json = self.fixtures.load("linux_124/storage_pool_1.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
@@ -286,7 +280,6 @@ class LXDMockHttp(MockHttp):
             )
 
     def _linux_124_storage_pools_pool2(self, method, url, body, header):
-
         if method == "GET":
             json = self.fixtures.load("linux_124/storage_pool_2.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
@@ -299,7 +292,6 @@ class LXDMockHttp(MockHttp):
             )
 
     def _linux_124_storage_pools_pool3(self, method, url, body, header):
-
         if method == "GET":
             json = self.fixtures.load("linux_124/no_meta_pool.json")
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])

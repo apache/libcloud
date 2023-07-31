@@ -545,7 +545,6 @@ class OSSStorageDriver(StorageDriver):
             body = response.parse_body()
             # pylint: disable=maybe-no-member
             for node in body.findall(fixxpath(xpath="Upload", namespace=self.namespace)):
-
                 key = finder(node, "Key")
                 upload_id = finder(node, "UploadId")
                 initiated = finder(node, "Initiated")
@@ -884,7 +883,7 @@ class OSSStorageDriver(StorageDriver):
 
         root = Element("CompleteMultipartUpload")
 
-        for (count, etag) in chunks:
+        for count, etag in chunks:
             part = SubElement(root, "Part")
             part_no = SubElement(part, "PartNumber")
             part_no.text = str(count)

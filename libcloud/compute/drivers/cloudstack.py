@@ -44,7 +44,6 @@ def transform_int_or_unlimited(value):
     try:
         return int(value)
     except ValueError as e:
-
         if str(value).lower() == "unlimited":
             return -1
 
@@ -467,7 +466,6 @@ class CloudStackFirewallRule:
         start_port=None,
         end_port=None,
     ):
-
         """
         A Firewall rule.
 
@@ -530,7 +528,6 @@ class CloudStackEgressFirewallRule:
         start_port=None,
         end_port=None,
     ):
-
         """
         A egress firewall rule.
 
@@ -1383,7 +1380,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         imgs = self._sync_request(command="listTemplates", params=args, method="GET")
         images = []
         for img in imgs.get("template", []):
-
             extra = {
                 "hypervisor": img["hypervisor"],
                 "format": img["format"],
@@ -2114,7 +2110,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         networks = []
         for vpc in vpcs:
-
             networks.append(
                 CloudStackVPC(
                     vpc["name"],
@@ -2146,7 +2141,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         routers = []
         for router in rts:
-
             routers.append(
                 CloudStackRouter(
                     router["id"],
@@ -4206,7 +4200,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return True
 
     def ex_detach_nic_from_node(self, nic, node):
-
         """
         Remove Nic from a VM
 

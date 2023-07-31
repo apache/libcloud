@@ -40,7 +40,6 @@ def get_azure_prices():
     result = {"windows": {}, "linux": {}}
     parsed_sizes = {"lowpriority", "basic", "standard"}
     for offer, value in prices_raw["offers"].items():
-
         size_raw = offer.split("-")
         #  Servers that go by the core with global price are not yet added
         if len(size_raw) != 3 or size_raw[2] not in parsed_sizes:

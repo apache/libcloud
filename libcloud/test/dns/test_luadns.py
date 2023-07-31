@@ -278,7 +278,6 @@ class LuadnsMockHttp(MockHttp):
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _v1_zones_31_GET_RECORD_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-
         body = self.fixtures.load("get_zone.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]

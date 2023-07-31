@@ -44,7 +44,6 @@ from libcloud.storage.drivers.azure_blobs import (
 
 
 class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
-
     fixtures = StorageFileFixtures("azure_blobs")
     base_headers = {}
 

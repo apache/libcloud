@@ -341,7 +341,6 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(network.extra["project_id"], fixture_network["projectid"])
 
     def test_ex_delete_network(self):
-
         network = self.driver.ex_list_networks()[0]
 
         result = self.driver.ex_delete_network(network=network)
@@ -364,7 +363,6 @@ class CloudStackCommonTestCase(TestCaseMixin):
             self.assertEqual(nic.mac_address, fixture_nic[i]["macaddress"])
 
     def test_ex_add_nic_to_node(self):
-
         vm = self.driver.list_nodes()[0]
         network = self.driver.ex_list_networks()[0]
         ip = "10.1.4.123"
@@ -373,7 +371,6 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertTrue(result)
 
     def test_ex_remove_nic_from_node(self):
-
         vm = self.driver.list_nodes()[0]
         nic = self.driver.ex_list_nics(node=vm)[0]
 
@@ -436,7 +433,6 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(vpc.id, fixture_vpc["id"])
 
     def test_ex_delete_vpc(self):
-
         vpc = self.driver.ex_list_vpcs()[0]
 
         result = self.driver.ex_delete_vpc(vpc=vpc)

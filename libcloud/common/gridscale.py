@@ -96,7 +96,6 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
         return r
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
-
         endpoint_url = "requests/{}".format(response.object["request_uuid"])
         kwargs = {"action": endpoint_url}
         return kwargs

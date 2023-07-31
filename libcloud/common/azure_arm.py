@@ -209,7 +209,6 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         return super().connect(**kwargs)
 
     def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):
-
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).
         if (time.time() + 300) >= int(self.expires_on):

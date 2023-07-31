@@ -209,7 +209,6 @@ class KamateraTestDriver(KamateraNodeDriver):
 
 
 class KamateraMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("kamatera")
 
     def _service_server(self, method, url, body, headers):

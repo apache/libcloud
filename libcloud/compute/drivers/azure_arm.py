@@ -25,7 +25,7 @@ import base64
 import binascii
 
 from libcloud.utils import iso8601
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import parse_qs, urlparse, basestring
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (
     Node,
@@ -63,6 +63,13 @@ VIRTUAL_NETWORK_API_VERSION = "2018-06-01"
 VM_API_VERSION = "2021-11-01"
 VM_EXTENSION_API_VERSION = "2015-06-15"
 VM_SIZE_API_VERSION = "2015-06-15"  # this API is deprecated
+
+# If pagination code in the list_nodes() method has still not completed after this mount of
+# seconds, we will break early from while True loop to avoid infinite loop under edge conditions.
+# Keep in mind that we want this timeout relatively high since each `_to_node()` method call which
+# is called for each node can result in additional HTTP requests (to retrieve power state, nics,
+# etc).
+LIST_NODES_PAGINATION_TIMEOUT = 300
 
 
 class AzureImage(NodeImage):
@@ -456,8 +463,10 @@ class AzureNodeDriver(NodeDriver):
 
         :return:  list of node objects
         :rtype: ``list`` of :class:`.Node`
-        """
 
+        NOTE: With the default arguments, the function may result in M * (1 + (N * 3)) HTTP
+        requests where M is number of API pages and N is number of nodes returned per page.
+        """
         if ex_resource_group:
             action = (
                 "/subscriptions/%s/resourceGroups/%s/"
@@ -468,11 +477,25 @@ class AzureNodeDriver(NodeDriver):
             action = "/subscriptions/%s/providers/Microsoft.Compute/" "virtualMachines" % (
                 self.subscription_id
             )
-        r = self.connection.request(action, params={"api-version": VM_API_VERSION})
-        return [
-            self._to_node(n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state)
-            for n in r.object["value"]
-        ]
+        params = {"api-version": VM_API_VERSION}
+
+        now_ts = int(time.time())
+        deadline_ts = now_ts + LIST_NODES_PAGINATION_TIMEOUT
+
+        nodes = []
+        while time.time() < deadline_ts:
+            r = self.connection.request(action, params=params)
+            nodes.extend(
+                self._to_node(n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state)
+                for n in r.object["value"]
+            )
+            if not r.object.get("nextLink"):
+                # No next page
+                break
+            parsed_next_link = urlparse.urlparse(r.object["nextLink"])
+            params.update({k: v[0] for k, v in parse_qs(parsed_next_link.query).items()})
+            action = parsed_next_link.path
+        return nodes
 
     def create_node(
         self,

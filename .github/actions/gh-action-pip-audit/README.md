@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: install
         run: python -m pip install .
-      - uses: pypa/gh-action-pip-audit@v1.0.5
+      - uses: pypa/gh-action-pip-audit@v1.0.8
 ```
 
 Or, with a virtual environment:
@@ -48,7 +48,7 @@ jobs:
           python -m venv env/
           source env/bin/activate
           python -m pip install .
-      - uses: pypa/gh-action-pip-audit@v1.0.5
+      - uses: pypa/gh-action-pip-audit@v1.0.8
         with:
           virtual-environment: env/
 ```
@@ -72,7 +72,7 @@ The `inputs` setting controls what sources `pip-audit` runs on.
 To audit one or more requirements-style inputs:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     inputs: requirements.txt dev-requirements.txt
 ```
@@ -80,7 +80,7 @@ To audit one or more requirements-style inputs:
 To audit a project that uses `pyproject.toml` for its dependencies:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     # NOTE: this can be `.`, for the current directory
     inputs: path/to/project/
@@ -108,7 +108,7 @@ Example: use the virtual environment specified at `env/`, relative to the
 current directory:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     virtual-environment: env/
     # Note the absence of `input:`, since we're auditing the environment.
@@ -128,7 +128,7 @@ installed directly into the current environment are included.
 Example:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     local: true
 ```
@@ -145,7 +145,7 @@ It's directly equivalent to `pip-audit --vulnerability-service=...`.
 To audit with OSV instead of PyPI:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     vulnerability-service: osv
 ```
@@ -160,7 +160,7 @@ It's directly equivalent to `pip-audit --require-hashes ...`.
 Example:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     # NOTE: only works with requirements-style inputs
     inputs: requirements.txt
@@ -177,7 +177,7 @@ It's directly equivalent to `pip-audit --no-deps ...`.
 Example:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     # NOTE: only works with requirements-style inputs
     inputs: requirements.txt
@@ -195,7 +195,7 @@ is rendered at the end of the action.
 Example:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     summary: false
   ```
@@ -214,7 +214,7 @@ indices to search (such as a corporate index with private packages), see
 Example:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     index-url: https://example.corporate.local/simple
 ```
@@ -229,7 +229,7 @@ indexes to search when resolving dependencies. Each URL is whitespace-separated.
 Example:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     extra-index-urls: |
       https://example.corporate.local/simple
@@ -246,7 +246,7 @@ ignore (i.e., exclude from the results) if present. Each ID is whitespace-separa
 Example
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     ignore-vulns: |
       GHSA-XXXX-YYYYYY
@@ -276,29 +276,24 @@ Example
   Example:
 
   ```yaml
-  - uses: pypa/gh-action-pip-audit@v1.0.5
+  - uses: pypa/gh-action-pip-audit@v1.0.8
     with:
       internal-be-careful-allow-failure: true
   ```
 
-  #### `internal-be-careful-debug`
+#### `internal-be-careful-extra-flags`
+**Default**: `""`
 
-  **Default**: `false`
+The `internal-be-careful-extra-flags` setting passes the specified flags
+to `pip-audit`.
 
-  The `internal-be-careful-debug` setting enables additional debug logs,
-  both within `pip-audit` itself and the action's harness code. You can
-  use it to debug troublesome configurations.
+Example:
 
-  Be mindful that `pip-audit`'s own debug logs contain HTTP requests,
-  which may or may not be sensitive in your use case.
-
-  Example:
-
-  ```yaml
-  - uses: pypa/gh-action-pip-audit@v1.0.5
-    with:
-      internal-be-careful-debug: true
-  ```
+```yaml
+- uses: pypa/gh-action-pip-audit@v1.0.8
+  with:
+    internal-be-careful-extra-flags: --not-a-real-pip-audit-flag
+```
 
 </details>
 
@@ -312,7 +307,7 @@ If you're auditing a requirements file, consider setting `no-deps: true` or
 `require-hashes: true`:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     inputs: requirements.txt
     require-hashes: true
@@ -321,7 +316,7 @@ If you're auditing a requirements file, consider setting `no-deps: true` or
 or:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     inputs: requirements.txt
     no-deps: true
@@ -342,7 +337,7 @@ by the host system itself, or other Python projects that happen to be installed.
 To minimize external dependencies, you can opt into a virtual environment:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     # must be populated earlier in the CI
     virtual-environment: env/
@@ -352,12 +347,18 @@ and, more aggressively, specify that only dependencies marked as "local"
 in the virtual environment should be included:
 
 ```yaml
-- uses: pypa/gh-action-pip-audit@v1.0.5
+- uses: pypa/gh-action-pip-audit@v1.0.8
   with:
     # must be populated earlier in the CI
     virtual-environment: env/
     local: true
 ```
+
+### There's an issue with the action and I want to enable debug logging!
+
+The action prints debug information when the `ACTIONS_STEP_DEBUG` secret is set
+to `true``. You should be able to enable this behavior by
+[following these instructions](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs#re-running-all-the-jobs-in-a-workflow).
 
 ## Tips and Tricks
 
@@ -382,7 +383,7 @@ jobs:
         run: |
           pipx run pipfile-requirements Pipfile.lock > requirements.txt
 
-      - uses: pypa/gh-action-pip-audit@v1.0.5
+      - uses: pypa/gh-action-pip-audit@v1.0.8
         with:
           inputs: requirements.txt
 ```

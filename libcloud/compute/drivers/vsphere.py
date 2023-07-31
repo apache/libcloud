@@ -1200,7 +1200,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
     ]
 
     def __init__(self, key, secret=None, secure=True, host=None, port=443, ca_cert=None):
-
         if not key or not secret:
             raise InvalidCredsError("Please provide both username " "(key) and password (secret).")
         super().__init__(key=key, secure=secure, host=host, port=port)
@@ -1550,7 +1549,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
         ex_filter_datacenters=None,
         ex_filter_connection_states=None,
     ):
-
         kwargs = {
             "filter.folders": ex_filter_folders,
             "filter.names": ex_filter_names,
@@ -1782,7 +1780,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
         return images
 
     def ex_list_networks(self):
-
         request = "/rest/vcenter/network"
         response = self._request(request).object["value"]
         networks = []
@@ -1950,7 +1947,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
             )
 
         elif image.extra["type"] == "vm-template":
-
             tp_request = "/rest/vcenter/vm-template/library-items/" + image.id
             template = self._request(tp_request).object["value"]
             spec = {}

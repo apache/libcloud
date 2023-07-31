@@ -7,13 +7,22 @@ Changes in Apache Libcloud in development
 Compute
 ~~~~~~~
 
-Remove obsolete compute driver where the provider is either dead or not
-offering those services anymore: Bluebox, bsnlcloud, Cloudwatt, Enomaly,
-ElasticHosts, ElasticStack, GoGrid, Gridspot, HostVirtual, Joyent, Med-1,
-Nephoscale, 1on1, ProfitBricks, ServerLove, SkaliCloud, Softlayer, Voxel.
+- Remove obsolete compute driver where the provider is either dead or not
+  offering those services anymore: Bluebox, bsnlcloud, Cloudwatt, Enomaly,
+  ElasticHosts, ElasticStack, GoGrid, Gridspot, HostVirtual, Joyent, Med-1,
+  Nephoscale, 1on1, ProfitBricks, ServerLove, SkaliCloud, Softlayer, Voxel.
 
-(GITHUB-1743, GITHUB-1852)
-[Anthony Monthe - @ZuluPro, Tomaz Muraus - @Kami]
+  (GITHUB-1743, GITHUB-1852)
+  [Anthony Monthe - @ZuluPro, Tomaz Muraus - @Kami]
+
+- [Outscale] Fix ``list_nodes()`` and ``list_volumes()`` method.
+  (GITHUB-1877)
+  [Matthias Gatto - @outscale-mgo]
+
+- [Azure ARM] Implement pagination in the ``list_nodes()`` method. This fixes a
+  bug which would result in sometimes not all nodes being returned.
+  (GITHUB-1824, GITHUB-1850)
+  [Jan Müller - @ojan-mue]
 
 Storage
 ~~~~~~~
@@ -31,6 +40,26 @@ Storage
 - [Aliyun OSS] Fix ``upload_object()`` function.
   (GITHUB-1796)
   [@shengwubin]
+
+- [S3] Support all available storage classes. Previously only "standard" and
+  "reduced_redundancy" were supported.
+  (GITHUB-1875)
+  [Mohammad Aburadeh - @mohammad-aburadeh]
+
+- [CloudFiles] Fix ``get_endpoint_url()`` throwing an exception when being used
+  with ``use_internal_url=True`` argument.
+  (GITHUB-1883, GITHUB-1884)
+  [Marcus T - @llamasoft]
+
+Other
+~~~~~
+
+- Move Python tooling (pytest, bandit, pylint, mypy, coverage) config options
+  from separate config files into single pyproject.yaml config files.
+
+  NOTE: This change only affects development process and nothing else.
+  (GITHUB-1901)
+  [RS Nikhil Krishna - @rsnk96]
 
 Changes in Apache Libcloud 3.7.0
 --------------------------------

@@ -87,7 +87,6 @@ class LinodeDNSDriver(DNSDriver):
         api_version=DEFAULT_API_VERSION,
         **kwargs,
     ):
-
         if cls is LinodeDNSDriver:
             if api_version == "3.0":
                 cls = LinodeDNSDriverV3

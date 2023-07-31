@@ -82,7 +82,6 @@ class NttCisLBDriver(Driver):
         region=DEFAULT_REGION,
         **kwargs,
     ):
-
         self.network_domain_id = network_domain_id
 
         if region not in API_ENDPOINTS and host is None:
