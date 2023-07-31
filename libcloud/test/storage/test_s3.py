@@ -1096,11 +1096,15 @@ class S3Tests(unittest.TestCase):
 
         container = Container(name="foo_bar_container", extra={}, driver=self.driver)
         object_name = "foo_test_stream_data"
-        storage_class="glacier_ir",
+        storage_class = "glacier_ir"
         iterator = BytesIO(b("234"))
         extra = {"content_type": "text/plain"}
         obj = self.driver.upload_object_via_stream(
-            container=container, object_name=object_name, iterator=iterator, extra=extra, ex_storage_class=storage_class
+            container=container,
+            object_name=object_name,
+            iterator=iterator,
+            extra=extra,
+            ex_storage_class=storage_class,
         )
 
         self.assertEqual(obj.name, object_name)
