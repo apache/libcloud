@@ -62,7 +62,6 @@ class KubernetesException(Exception):
 
 
 class KubernetesResponse(JsonResponse):
-
     valid_response_codes = [
         httplib.OK,
         httplib.ACCEPTED,
@@ -93,7 +92,6 @@ class KubernetesTLSAuthConnection(KeyCertificateConnection):
         cert_file=None,
         **kwargs,
     ):
-
         super().__init__(
             key_file=key_file,
             cert_file=cert_file,

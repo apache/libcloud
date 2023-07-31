@@ -118,7 +118,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
             self.driver.list_nodes(ex_cloud_service_name="dcoddkinztest04")
 
     def test_restart_node_success(self):
-
         node = Node(
             id="dc03",
             name="dc03",
@@ -137,7 +136,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
     #  simulating attempting to reboot a node that is already rebooting
     def test_restart_node_fail_no_deployment(self):
-
         node = Node(
             id="dc03",
             name="dc03",
@@ -155,7 +153,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
             )
 
     def test_restart_node_fail_no_cloud_service(self):
-
         node = Node(
             id="dc03",
             name="dc03",
@@ -173,7 +170,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
             )
 
     def test_restart_node_fail_node_not_found(self):
-
         node = Node(
             id="dc13",
             name="dc13",
@@ -191,7 +187,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertFalse(result)
 
     def test_destroy_node_success_single_node_in_cloud_service(self):
-
         node = Node(
             id="oddkinz1",
             name="oddkinz1",
@@ -207,7 +202,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertTrue(result)
 
     def test_destroy_node_success_multiple_nodes_in_cloud_service(self):
-
         node = Node(
             id="oddkinz1",
             name="oddkinz1",
@@ -223,7 +217,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertTrue(result)
 
     def test_destroy_node_fail_node_does_not_exist(self):
-
         node = Node(
             id="oddkinz2",
             name="oddkinz2",
@@ -241,7 +234,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
             )
 
     def test_destroy_node_success_cloud_service_not_found(self):
-
         node = Node(
             id="cloudredis",
             name="cloudredis",
@@ -354,7 +346,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
 
 class AzureMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("azure")
 
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_oddkinz1_deploymentslots_Production(
@@ -584,7 +575,6 @@ class AzureMockHttp(MockHttp):
     def _3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production(
         self, method, url, body, headers
     ):
-
         if method == "GET":
             body = self.fixtures.load(
                 "_3761b98b_673d_526c_8d55_fee918758e6e_services_hostedservices_testdcabc2_deploymentslots_Production.xml"
@@ -601,7 +591,6 @@ class AzureMockHttp(MockHttp):
     def _3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3(
         self, method, url, body, headers
     ):
-
         if method == "GET":
             body = self.fixtures.load(
                 "_3761b98b_673d_526c_8d55_fee918758e6e_operations_acc33f6756cda6fd96826394fce4c9f3.xml"

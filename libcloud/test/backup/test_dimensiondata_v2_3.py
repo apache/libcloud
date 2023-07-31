@@ -303,7 +303,6 @@ class InvalidRequestError(Exception):
 
 
 class DimensionDataMockHttp(MockHttp):
-
     fixtures = BackupFileFixtures("dimensiondata")
 
     def _oec_0_9_myaccount_UNAUTHORIZED(self, method, url, body, headers):

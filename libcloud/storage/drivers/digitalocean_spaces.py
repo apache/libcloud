@@ -49,7 +49,6 @@ class DOSpacesConnectionAWS4(SignedAWSConnection, BaseS3Connection):
         backoff=None,
         **kwargs,
     ):
-
         super().__init__(
             user_id,
             key,
@@ -82,7 +81,6 @@ class DOSpacesConnectionAWS2(S3Connection):
         backoff=None,
         **kwargs,
     ):
-
         super().__init__(
             user_id,
             key,
@@ -115,7 +113,6 @@ class DigitalOceanSpacesStorageDriver(BaseS3StorageDriver):
         region=DO_SPACES_DEFAULT_REGION,
         **kwargs,
     ):
-
         if region not in DO_SPACES_HOSTS_BY_REGION:
             raise LibcloudError("Unknown region (%s)" % (region), driver=self)
 

@@ -799,7 +799,6 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
 
 class LinodeNodeDriverV4(LinodeNodeDriver):
-
     connectionCls = LinodeConnectionV4
     _linode_disk_filesystems = LINODE_DISK_FILESYSTEMS_V4
 

@@ -36,7 +36,6 @@ from libcloud.compute.drivers.azure_arm import (
 
 
 class AzureNodeDriverTests(LibcloudTestCase):
-
     TENANT_ID = "77777777-7777-7777-7777-777777777777"
     SUBSCRIPTION_ID = "99999999"
     APPLICATION_ID = "55555555-5555-5555-5555-555555555555"
@@ -677,7 +676,6 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertTrue(isinstance(snaps[3].created, datetime))
 
     def test_list_snapshots_in_resource_group(self):
-
         snaps = self.driver.list_snapshots(ex_resource_group="111111")
         self.assertEqual(len(snaps), 2)
 

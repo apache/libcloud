@@ -438,7 +438,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         data = json.dumps(vm)
         req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/"
         try:
-
             self.connection.request(req, method=method, data=data)
 
         except Exception:
@@ -486,7 +485,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         return namespaces
 
     def list_sizes(self, location=None):
-
         namespace = ""
         if location:
             namespace = location.name
@@ -678,7 +676,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
         if result.object["status"]["phase"] != "Bound":
             for _ in range(3):
-
                 req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + name
                 try:
                     result = self.connection.request(req).object
@@ -861,7 +858,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
 
     def ex_list_persistent_volume_claims(self, namespace="default"):
-
         pvc_req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims"
         try:
             result = self.connection.request(pvc_req).object
@@ -871,7 +867,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         return pvcs
 
     def ex_list_storage_classes(self):
-
         # sc = storage class
         sc_req = "/apis/storage.k8s.io/v1/storageclasses"
         try:
@@ -940,7 +935,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             if "memory" in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]:
                 memory = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"]
         elif vm["spec"]["template"]["spec"]["domain"]["resources"].get("requests", None):
-
             if vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"].get(
                 "memory", None
             ):

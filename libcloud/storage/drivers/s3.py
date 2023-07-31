@@ -725,7 +725,7 @@ class BaseS3StorageDriver(StorageDriver):
         """
         root = Element("CompleteMultipartUpload")
 
-        for (count, etag) in chunks:
+        for count, etag in chunks:
             part = SubElement(root, "Part")
             part_no = SubElement(part, "PartNumber")
             part_no.text = str(count)

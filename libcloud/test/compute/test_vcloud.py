@@ -636,7 +636,13 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
     def test_change_vm_script_text_and_file_logic(self, _):
         assertion_error = False
 
-        for (vm_script_file, vm_script_text, open_succeeds, open_call_count, returned_early,) in (
+        for (
+            vm_script_file,
+            vm_script_text,
+            open_succeeds,
+            open_call_count,
+            returned_early,
+        ) in (
             (None, None, True, 0, True),
             (None, None, False, 0, True),
             (None, "script text", True, 0, False),
@@ -994,7 +1000,6 @@ class VCloud_5_5_Tests(unittest.TestCase, TestCaseMixin):
 
 
 class TerremarkMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("terremark")
 
     def _api_v0_8_login(self, method, url, body, headers):
@@ -1072,7 +1077,6 @@ class AnotherError(Exception):
 
 
 class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
-
     fixtures = ComputeFileFixtures("vcloud_1_5")
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):

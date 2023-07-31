@@ -72,7 +72,6 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
 
 
 class RimuHostingMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("rimuhosting")
 
     def _r_orders(self, method, url, body, headers):

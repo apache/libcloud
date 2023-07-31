@@ -41,7 +41,6 @@ VALID_RESPONSE_CODES = [
 
 
 class DockerResponse(JsonResponse):
-
     valid_response_codes = [
         httplib.OK,
         httplib.ACCEPTED,
@@ -102,7 +101,6 @@ class DockerException(Exception):
 
 
 class DockerConnection(ConnectionUserAndKey):
-
     responseCls = DockerResponse
     timeout = 60
 
@@ -120,7 +118,6 @@ class DockerConnection(ConnectionUserAndKey):
 
 
 class DockertlsConnection(KeyCertificateConnection):
-
     responseCls = DockerResponse
 
     def __init__(
@@ -134,7 +131,6 @@ class DockertlsConnection(KeyCertificateConnection):
         cert_file="",
         **kwargs,
     ):
-
         super().__init__(
             key_file=key_file,
             cert_file=cert_file,
@@ -167,7 +163,6 @@ class DockertlsConnection(KeyCertificateConnection):
             self.cert_file = cert_file
 
     def add_default_headers(self, headers):
-
         headers["Content-Type"] = "application/json"
         return headers
 

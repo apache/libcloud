@@ -76,7 +76,6 @@ class ObjectTestCase(unittest.TestCase):
 
 
 class OSSMockHttp(MockHttp, unittest.TestCase):
-
     fixtures = StorageFileFixtures("oss")
     base_headers = {}
 

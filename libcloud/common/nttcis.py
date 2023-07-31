@@ -2293,7 +2293,6 @@ class XmlDictConfig(dict):
                 # It is possible to have duplicate element tags.
                 # If so, convert to a dict of lists
                 if element.tag.split("}")[1] in self:
-
                     if isinstance(self[element.tag.split("}")[1]], list):
                         self[element.tag.split("}")[1]].append(dict(element.items()))
                     else:

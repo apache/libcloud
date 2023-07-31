@@ -39,7 +39,6 @@ class MinIOConnectionAWS4(SignedAWSConnection, BaseS3Connection):
         backoff=None,
         **kwargs,
     ):
-
         super().__init__(
             user_id,
             key,

@@ -650,7 +650,6 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             return True
 
         else:
-
             return False
 
     def import_key_pair_from_string(self, name, key_material):

@@ -160,7 +160,6 @@ class DurableDNSException(Exception):
 
 
 class DurableResponse(XmlResponse):
-
     errors = []  # type: List[Dict]
     objects = []  # type: List[Dict]
 

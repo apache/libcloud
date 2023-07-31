@@ -722,7 +722,6 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_shared_ip_groups(self, method, url, body, headers):
-
         fixture = (
             "v1_slug_shared_ip_group.xml" if method == "POST" else "v1_slug_shared_ip_groups.xml"
         )
@@ -1102,7 +1101,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(sizes[0].vcpus, 8)
 
     def test_list_sizes_with_specified_pricing(self):
-
         pricing = {str(i): i * 5.0 for i in range(1, 9)}
 
         set_pricing(driver_type="compute", driver_name=self.driver.api_name, pricing=pricing)

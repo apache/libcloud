@@ -68,7 +68,6 @@ class ALBTargetGroup:
         balancers=[],
         members=[],
     ):
-
         self.id = target_group_id
         self.name = name
         self.protocol = protocol
@@ -135,7 +134,6 @@ class ALBListener:
         ssl_certificate="",
         rules=[],
     ):
-
         self.id = listener_id
         self.protocol = protocol
         self.port = port
@@ -186,7 +184,6 @@ class ALBRule:
         conditions={},
         listener=None,
     ):
-
         self.id = rule_id
         self.is_default = is_default
         self.priority = priority
@@ -882,7 +879,6 @@ class ApplicationLBDriver(Driver):
         ]
 
     def _to_target_group(self, el):
-
         target_group = ALBTargetGroup(
             target_group_id=findtext(element=el, xpath="TargetGroupArn", namespace=NS),
             name=findtext(element=el, xpath="TargetGroupName", namespace=NS),

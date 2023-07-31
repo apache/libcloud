@@ -51,7 +51,6 @@ from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-m
 
 
 class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
-
     fixtures = StorageFileFixtures("s3")
     base_headers = {}
 

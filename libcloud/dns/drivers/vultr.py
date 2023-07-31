@@ -93,7 +93,6 @@ class VultrDNSDriver(DNSDriver):
 
 
 class VultrDNSDriverV1(VultrDNSDriver):
-
     connectionCls = VultrDNSConnection
 
     RECORD_TYPE_MAP = {

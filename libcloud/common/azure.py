@@ -191,7 +191,6 @@ class AzureActiveDirectoryConnection(ConnectionUserAndKey):
         retry_failed=None,
         *kwargs,
     ):
-
         # Log in again if the token has expired or is going to expire soon
         # (next 5 minutes).
         if (time.time() + 300) >= int(self.expires_on):

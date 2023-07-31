@@ -496,7 +496,6 @@ class GCEBackend(UuidMixin):
         capacity_scaler=1,
         description=None,
     ):
-
         if isinstance(instance_group, GCEInstanceGroup):
             self.instance_group = instance_group
         elif isinstance(instance_group, GCEInstanceGroupManager):

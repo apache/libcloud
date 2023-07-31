@@ -167,7 +167,6 @@ class AliyunConnection(ConnectionUserAndKey):
 
 
 class SignedAliyunConnection(AliyunConnection):
-
     api_version = None
 
     def __init__(
