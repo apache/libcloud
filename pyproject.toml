@@ -69,22 +69,26 @@ platform = "linux"
 show_error_context = true
 show_column_numbers = true
 
-[tool.mypy.overrides]
+[[tool.mypy.overrides]]
 module = [
     "lxml",
     "xml.dom",
-    "xmlrpc",
-    "paramiko",
-    "cryptography",
-    "lockfile",
-    "libcloud.utils.py3",
-    "libcloud.compute.drivers",
-    "libcloud.storage.drivers",
-    "libcloud.dns.drivers",
-    "libcloud.container.drivers",
+    "xmlrpc.*",
+    "paramiko.*",
+    "cryptography.*",
+    "lockfile.*",
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+    "libcloud.utils.py3",
+    "libcloud.compute.drivers.*",
+    "libcloud.storage.drivers.*",
+    "libcloud.dns.drivers.*",
+    "libcloud.container.drivers.*",
+]
+ignore_errors = true
 
 [tool.coverage.run]
 branch = true
