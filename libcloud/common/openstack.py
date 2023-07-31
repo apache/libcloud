@@ -362,6 +362,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         (self.host, self.port, self.secure, self.request_path) = result
         new_conn = (self.host, self.port, self.secure)
         if new_conn != prev_conn:
+            # We only call connect in case connection details have changed - this way we correctly
+            # re-use connection in case nothing has changed
             self.connect()
 
     def _populate_hosts_and_request_paths(self):
