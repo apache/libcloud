@@ -20,7 +20,7 @@ from datetime import datetime
 from unittest import mock
 
 from libcloud.test import MockHttp, LibcloudTestCase, unittest
-from libcloud.utils.py3 import httplib, urlparse, parse_qs, urlunquote
+from libcloud.utils.py3 import httplib, parse_qs, urlparse, urlunquote
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import NodeSize, NodeLocation, StorageVolume, VolumeSnapshot
 from libcloud.compute.types import Provider, NodeState, StorageVolumeState, VolumeSnapshotState
@@ -42,6 +42,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
     APPLICATION_PASS = "p4ssw0rd"
 
     def setUp(self):
+        AzureMockHttp.type = None
         Azure = get_driver(Provider.AZURE_ARM)
         Azure.connectionCls.conn_class = AzureMockHttp
         self.driver = Azure(
@@ -459,6 +460,18 @@ class AzureNodeDriverTests(LibcloudTestCase):
         fps_mock.assert_called()
 
     @mock.patch(
+        "libcloud.compute.drivers.azure_arm.AzureNodeDriver._fetch_power_state",
+        return_value=NodeState.UPDATING,
+    )
+    @mock.patch("libcloud.compute.drivers.azure_arm.LIST_NODES_PAGINATION_TIMEOUT", 1)
+    def test_list_nodes_pagination_timeout_reached(self, fps_mock):
+        # Verify we don't end up in an infinite loop in case server returns a bad response or
+        # similar
+        AzureMockHttp.type = "PAGINATION_INFINITE_LOOP"
+        nodes = self.driver.list_nodes()
+        self.assertTrue(len(nodes) >= 1)
+
+    @mock.patch(
         "libcloud.compute.drivers.azure_arm.AzureNodeDriver" "._fetch_power_state",
         return_value=NodeState.UPDATING,
     )
@@ -824,7 +837,7 @@ class AzureMockHttp(MockHttp):
                 AzureNodeDriverTests.SUBSCRIPTION_ID,
             )
             unquoted_url = urlunquote(url)
-            if "$skiptoken=" in unquoted_url:
+            if "$skiptoken=" in unquoted_url and self.type != "PAGINATION_INFINITE_LOOP":
                 parsed_url = urlparse.urlparse(unquoted_url)
                 params = parse_qs(parsed_url.query)
                 file_name += "_" + params["$skiptoken"][0].split("!")[0]
