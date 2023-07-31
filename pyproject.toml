@@ -92,7 +92,7 @@ ignore_errors = true
 
 [tool.coverage.run]
 branch = true
-source = "libcloud"
+source = ["libcloud"]
 
 [tool.coverage.report]
 exclude_lines = [
