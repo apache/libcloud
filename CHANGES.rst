@@ -41,6 +41,11 @@ Storage
   (GITHUB-1875)
   [Mohammad Aburadeh - @mohammad-aburadeh]
 
+- [CloudFiles] Fix ``get_endpoint_url()`` throwing an exception when being used
+  with ``use_internal_url=True`` argument.
+  (GITHUB-1883, GITHUB-1884)
+  [Marcus T - @llamasoft]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
