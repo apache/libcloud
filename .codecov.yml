@@ -1,7 +1,3 @@
-codecov:
-  #notify:
-    #require_ci_to_pass: yes
-
 coverage:
   precision: 2         # decimal places to display: 0 <= value <= 4
   round: nearest
