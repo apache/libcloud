@@ -46,10 +46,10 @@ inputs:
     description: "don't fail the job if the audit fails (default false)"
     required: false
     default: false
-  internal-be-careful-debug:
-    description: "run with debug logs (default false)"
+  internal-be-careful-extra-flags:
+    description: "extra flags to be passed in to pip-audit"
     required: false
-    default: false
+    default: ""
 outputs:
   internal-be-careful-output:
     description: "the column-formatted output from pip-audit, wrapped as base64"
@@ -83,5 +83,5 @@ runs:
         GHA_PIP_AUDIT_EXTRA_INDEX_URLS: "${{ inputs.extra-index-urls }}"
         GHA_PIP_AUDIT_IGNORE_VULNS: "${{ inputs.ignore-vulns }}"
         GHA_PIP_AUDIT_INTERNAL_BE_CAREFUL_ALLOW_FAILURE: "${{ inputs.internal-be-careful-allow-failure }}"
-        GHA_PIP_AUDIT_INTERNAL_BE_CAREFUL_DEBUG: "${{ inputs.internal-be-careful-debug }}"
+        GHA_PIP_AUDIT_INTERNAL_BE_CAREFUL_EXTRA_FLAGS: "${{ inputs.internal-be-careful-extra-flags }}"
       shell: bash

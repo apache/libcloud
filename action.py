@@ -18,7 +18,7 @@ _TEMPLATES = _HERE / "templates"
 _GITHUB_STEP_SUMMARY = Path(os.getenv("GITHUB_STEP_SUMMARY")).open("a")
 _GITHUB_OUTPUT = Path(os.getenv("GITHUB_OUTPUT")).open("a")
 _RENDER_SUMMARY = os.getenv("GHA_PIP_AUDIT_SUMMARY", "true") == "true"
-_DEBUG = os.getenv("GHA_PIP_AUDIT_INTERNAL_BE_CAREFUL_DEBUG", "false") != "false"
+_DEBUG = os.getenv("RUNNER_DEBUG") is not None
 
 
 def _template(name):
@@ -33,7 +33,7 @@ def _summary(msg):
 
 def _debug(msg):
     if _DEBUG:
-        print(f"\033[93mDEBUG: {msg}\033[0m", file=sys.stderr)
+        print(f"::debug::{msg}")
 
 
 def _log(msg):
@@ -64,7 +64,7 @@ pip_audit_args = [
     "--desc",
     # Write the output to this logfile, which we'll turn into the step summary (if configured).
     "--output=/tmp/pip-audit-output.txt",
-]
+] + os.getenv("GHA_PIP_AUDIT_INTERNAL_BE_CAREFUL_EXTRA_FLAGS").split()
 
 if _DEBUG:
     pip_audit_args.append("--verbose")
@@ -135,15 +135,19 @@ if status.returncode == 0:
 else:
     _summary("❌ pip-audit found one or more problems")
 
-    with open("/tmp/pip-audit-output.txt", "r") as io:
-        output = io.read()
+    output = "⚠️ pip-audit did not return any output"
+    try:
+        with open("/tmp/pip-audit-output.txt", "r") as io:
+            output = io.read()
+    except OSError as ex:
+        _log(ex)
 
-        # This is really nasty: our output contains multiple lines,
-        # so we can't naively stuff it into an output.
-        print(f"output={b64encode(output.encode()).decode()}", file=_GITHUB_OUTPUT)
+    # This is really nasty: our output contains multiple lines,
+    # so we can't naively stuff it into an output.
+    print(f"output={b64encode(output.encode()).decode()}", file=_GITHUB_OUTPUT)
 
-        _log(output)
-        _summary(output)
+    _log(output)
+    _summary(output)
 
 
 _log(status.stdout)
