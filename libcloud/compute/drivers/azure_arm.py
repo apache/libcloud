@@ -66,7 +66,7 @@ VM_SIZE_API_VERSION = "2015-06-15"  # this API is deprecated
 
 # If pagination code in the list_nodes() method has still not completed after this mount of
 # seconds, we will break early from while True loop to avoid infinite loop under edge conditions.
-LIST_NODES_PAGINATION_TIMEOUT = 60
+LIST_NODES_PAGINATION_TIMEOUT = 300
 
 
 class AzureImage(NodeImage):
