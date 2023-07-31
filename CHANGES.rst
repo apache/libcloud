@@ -74,6 +74,10 @@ Other
   (GITHUB-1923)
   [Tomaz Muraus - @Kami]
 
+- Indicate we also support Python 3.12 (beta).
+  (GITHUB-1920)
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
