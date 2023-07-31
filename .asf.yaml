@@ -35,6 +35,8 @@ github:
     squash: true
     merge: true
     rebase: false
+  autolink_jira:
+    - LIBCLOUD
   protected_branches:
     trunk:
       required_status_checks:
