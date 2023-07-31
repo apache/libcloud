@@ -51,6 +51,14 @@ Storage
   (GITHUB-1883, GITHUB-1884)
   [Marcus T - @llamasoft]
 
+- [CloudFiles] Update OpenStack connection handling code to only re-connect in
+  case connection details (scheme, host, port) have changed.
+
+  This should result in significant performance improvements when downloading
+  objects since the underlying HTTP connection will be properly re-used.
+  (GITHUB-1885, GITHUB-1886)
+  [Marcus T - @llamasoft]
+
 Other
 ~~~~~
 
