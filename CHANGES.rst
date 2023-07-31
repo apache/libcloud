@@ -32,6 +32,11 @@ Storage
   (GITHUB-1796)
   [@shengwubin]
 
+- [S3] Support all available storage classes. Previously only "standard" and 
+  "reduced_redundancy" were supported.
+  (GITHUB-1875)
+  [Mohammad Aburadeh - @mohammad-aburadeh]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
