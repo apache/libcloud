@@ -66,6 +66,9 @@ VM_SIZE_API_VERSION = "2015-06-15"  # this API is deprecated
 
 # If pagination code in the list_nodes() method has still not completed after this mount of
 # seconds, we will break early from while True loop to avoid infinite loop under edge conditions.
+# Keep in mind that we want this timeout relatively high since each `_to_node()` method call which
+# is called for each node can result in additional HTTP requests (to retrieve power state, nics,
+# etc).
 LIST_NODES_PAGINATION_TIMEOUT = 300
 
 
