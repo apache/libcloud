@@ -123,6 +123,14 @@ class CloudFilesTests(unittest.TestCase):
         )
         self.driver.connection.cdn_request = False
 
+    def test_get_endpoint_internalurl(self):
+        self.driver.connection.use_internal_url = True
+        url = (
+            "https://snet-storage101.%s1.clouddrive.com/v1/MossoCloudFS_11111-111111111-1111111111-1111111"
+            % (self.region)
+        )
+        self.assertEqual(url, self.driver.connection.get_endpoint())
+
     def test_list_containers(self):
         CloudFilesMockHttp.type = "EMPTY"
         containers = self.driver.list_containers()
