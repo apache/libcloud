@@ -14,5 +14,5 @@ more-itertools==9.0.0
 
 # Required by subset of tests
 fasteners
-paramiko==3.0.0; platform_python_implementation != 'PyPy'
+paramiko==3.3.1; platform_python_implementation != 'PyPy'
 libvirt-python==9.0.0
