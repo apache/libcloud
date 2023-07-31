@@ -109,7 +109,7 @@ class Provider:
     SCALEWAY = "scaleway"
     OVH = "ovh"
 
-    # Deperecated
+    # Deprecated
     CLOUDFILES_US = "cloudfiles_us"
     CLOUDFILES_UK = "cloudfiles_uk"
     CLOUDFILES_SWIFT = "cloudfiles_swift"

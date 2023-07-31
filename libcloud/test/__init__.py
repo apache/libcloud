@@ -104,7 +104,7 @@ class MockHttp(LibcloudConnection):
     proxy_url = None
 
     def __init__(self, *args, **kwargs):
-        # Load assertion methods into the class, incase people want to assert
+        # Load assertion methods into the class, in case people want to assert
         # within a response
         if isinstance(self, unittest.TestCase):
             unittest.TestCase.__init__(self, "__init__")
@@ -193,7 +193,7 @@ class MockHttp(LibcloudConnection):
     def _example_fail(self, method, url, body, headers):
         return (
             httplib.FORBIDDEN,
-            "Oh Noes!",
+            "Oh No!",
             {"X-Foo": "fail"},
             httplib.responses[httplib.FORBIDDEN],
         )

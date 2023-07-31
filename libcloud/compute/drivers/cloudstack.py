@@ -419,7 +419,7 @@ class CloudStackAddress:
     :param      vpc_id: VPC the ip belongs to
     :type       vpc_id: ``str``
 
-    :param      virtualmachine_id: The ID of virutal machine this address
+    :param      virtualmachine_id: The ID of virtual machine this address
                                    is assigned to
     :type       virtualmachine_id: ``str``
     """

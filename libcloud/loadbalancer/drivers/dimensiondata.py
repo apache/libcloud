@@ -624,7 +624,7 @@ class DimensionDataLBDriver(Driver):
 
         :param protocol: For STANDARD type, ANY, TCP or UDP
                          for PERFORMANCE_LAYER_4 choice of ANY, TCP, UDP, HTTP
-        :type  protcol: ``str``
+        :type  protocol: ``str``
 
         :param connection_limit: Maximum number
                                 of concurrent connections per sec

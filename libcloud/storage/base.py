@@ -872,7 +872,7 @@ class StorageDriver(BaseDriver):
         total_len = 0
 
         if hasattr(stream, "__next__") or hasattr(stream, "next"):
-            # Ensure we start from the begining of a stream in case stream is
+            # Ensure we start from the beginning of a stream in case stream is
             # not at the beginning
             if hasattr(stream, "seek"):
                 try:

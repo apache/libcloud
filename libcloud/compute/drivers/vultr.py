@@ -1179,7 +1179,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                  Mutually exclusive with image,
         :type    ex_snapshot: :class: `VultrNodeSnapshot` or ``str``
 
-        :keyword ex_enable_ipv6: Wheteher to enable IPv6.
+        :keyword ex_enable_ipv6: Whether to enable IPv6.
         :type    ex_enable_ipv6: ``bool``
 
         :keyword ex_backups: Enable automatic backups for the node. (VPS only)

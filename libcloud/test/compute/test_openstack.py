@@ -1988,7 +1988,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_list_images_with_pagination_invalid_response_no_infinite_loop(self):
         # "next" attribute matches the current page, but it shouldn't result in
-        # an infite loop
+        # an infinite loop
         OpenStack_2_0_MockHttp.type = "invalid_next"
         ret = self.driver.list_images()
         self.assertEqual(len(ret), 2)
@@ -3857,7 +3857,7 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Lazy import to avoid cyclic depedency issue
+        # Lazy import to avoid cyclic dependency issue
         from libcloud.test.common.test_openstack_identity import (
             OpenStackIdentity_2_0_MockHttp,
             OpenStackIdentity_3_0_MockHttp,

@@ -207,7 +207,7 @@ class G8NodeDriver(NodeDriver):
         :param network: G8 Network to place vm in
         :type  size: :class:`G8Network`
 
-        :param ex_description: Descripton of vm
+        :param ex_description: Description of vm
         :type  size: : ``str``
 
         :param auth: an SSH key
@@ -321,7 +321,7 @@ class G8NodeDriver(NodeDriver):
         """
         Create network also known as cloudspace
 
-        :param name: the name to assing to the network
+        :param name: the name to assign to the network
         :type  name: ``str``
 
         :param private_network: subnet used as private network
@@ -507,7 +507,7 @@ class G8NodeDriver(NodeDriver):
         :param name: Name of the volume
         :type  name: ``str``
 
-        :param description: Descripton of the volume
+        :param description: Description of the volume
         :type  description: ``str``
 
         :param disk_type: Type of the disk depending on the G8

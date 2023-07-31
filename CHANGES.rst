@@ -69,6 +69,15 @@ Other
   (GITHUB-1901)
   [RS Nikhil Krishna - @rsnk96]
 
+- Fix minor typos in the code using codespell package and enforce this check as
+  part of our GHA CI system.
+  (GITHUB-1923)
+  [Tomaz Muraus - @Kami]
+
+- Indicate we also support Python 3.12 (beta).
+  (GITHUB-1920)
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 

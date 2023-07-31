@@ -2728,7 +2728,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :param tag_key: The tag key you want to modify (required)
         :type  tag_key: :class:`DimensionDataTagKey` or ``str``
 
-        :param name: Set to modifiy the name of the tag key
+        :param name: Set to modify the name of the tag key
         :type  name: ``str``
 
         :param description: Set to modify the description of the tag key

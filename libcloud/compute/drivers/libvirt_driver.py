@@ -422,7 +422,7 @@ class LibvirtNodeDriver(NodeDriver):
         Sets up the regexp for parsing out IP addresses from the 'arp -an'
         command and pass it along to the parser function.
 
-        :return: Dictionary from the parsing funtion
+        :return: Dictionary from the parsing function
         :rtype: ``dict``
         """
         arp_regex = re.compile(r".*?\((.*?)\) at (.*?)\s+")

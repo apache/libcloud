@@ -83,7 +83,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=Fals
 
     We intentionally only cache data for the requested driver and not all the
     pricing data since the whole pricing data is quite large (~2 MB). This
-    way we avoid unncessary memory overhead.
+    way we avoid unnecessary memory overhead.
 
     :type driver_type: ``str``
     :param driver_type: Driver type ('compute' or 'storage')

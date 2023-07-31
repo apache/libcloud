@@ -70,7 +70,7 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
         """
         add parameters that are necessary for each request to be successful
 
-        :param headers: Authentification token
+        :param headers: Authentication token
         :type headers: ``str``
         :return: None
         """

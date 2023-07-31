@@ -334,7 +334,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         headers[AUTH_TOKEN_HEADER] = self.auth_token
         headers["Accept"] = self.accept_format
         if self._ex_force_microversion:
-            # If service not set in microversion, asume compute
+            # If service not set in microversion, assume compute
             microversion = self._ex_force_microversion.strip().split()
             if len(microversion) == 2:
                 service_type = microversion[0]

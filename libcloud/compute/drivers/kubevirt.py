@@ -215,7 +215,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param ex_memory: The RAM in MB to be allocated to the VM
         :type ex_memory: ``int``
 
-        :param ex_cpu: The ammount of cpu to be allocated in miliCPUs
+        :param ex_cpu: The amount of cpu to be allocated in miliCPUs
                     ie: 400 will mean 0.4 of a core, 1000 will mean 1 core
                     and 3000 will mean 3 cores.
         :type ex_cpu: ``int``
@@ -262,9 +262,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param ex_network: Only the pod type is supported, and in the
                                configuration masquerade or bridge are the
                                accepted values.
-                               The parameter must be a tupple or list with
+                               The parameter must be a tuple or list with
                                (network_type, interface, name)
-        :type ex_network: `iterable` (tupple or list) [network_type, inteface, name]
+        :type ex_network: `iterable` (tuple or list) [network_type, interface, name]
                       network_type: `str` | only "pod" is accepted atm
                       interface: `str` | "masquerade" or "bridge"
                       name: `str`
@@ -574,7 +574,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 msg = (
                     "An ex_volume_type must be provided from the list "
                     "of supported clouds, as well as the ex_volume_params "
-                    "necessesary for your volume type choice."
+                    "necessary for your volume type choice."
                 )
                 raise ValueError(msg)
 
@@ -627,7 +627,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param name: The name of the pvc an arbitrary string of lower letters
         :type name: `str`
 
-        :param size: An int of the ammount of gigabytes desired
+        :param size: An int of the amount of gigabytes desired
         :type size: `int`
 
         :param namespace: The namespace where the claim will live

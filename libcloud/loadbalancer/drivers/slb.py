@@ -437,7 +437,7 @@ class SLBDriver(Driver):
             # NOTE(samsong8610): Use http listener as default
             protocol = "http"
         if protocol not in PROTOCOL_TO_LISTENER_MAP:
-            raise AttributeError("unsupport protocol %s" % protocol)
+            raise AttributeError("unsupported protocol %s" % protocol)
 
         # Bandwidth in range [1, 1000] Mbps
         bandwidth = -1
