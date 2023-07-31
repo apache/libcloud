@@ -41,7 +41,7 @@ Storage
   (GITHUB-1796)
   [@shengwubin]
 
-- [S3] Support all available storage classes. Previously only "standard" and 
+- [S3] Support all available storage classes. Previously only "standard" and
   "reduced_redundancy" were supported.
   (GITHUB-1875)
   [Mohammad Aburadeh - @mohammad-aburadeh]
@@ -50,6 +50,16 @@ Storage
   with ``use_internal_url=True`` argument.
   (GITHUB-1883, GITHUB-1884)
   [Marcus T - @llamasoft]
+
+Other
+~~~~~
+
+- Move Python tooling (pytest, bandit, pylint, mypy, coverage) config options
+  from separate config files into single pyproject.yaml config files.
+
+  NOTE: This change only affects development process and nothing else.
+  (GITHUB-1901)
+  [RS Nikhil Krishna - @rsnk96]
 
 Changes in Apache Libcloud 3.7.0
 --------------------------------
