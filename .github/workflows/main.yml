@@ -293,6 +293,7 @@ jobs:
           # setuptools which we don't install or depend on directly
           ignore-vulns: |
             GHSA-r9hx-vwmv-q579
+            PYSEC-2022-43012
 
       - name: Cleanup
         run: |
