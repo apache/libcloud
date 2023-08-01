@@ -17,17 +17,9 @@ import os
 import re
 import sys
 import fnmatch
-from distutils.core import Command
 
 import setuptools
 from setuptools import setup
-
-try:
-    import epydoc  # NOQA
-
-    has_epydoc = True
-except ImportError:
-    has_epydoc = False
 
 # NOTE: Those functions are intentionally moved in-line to prevent setup.py dependening on any
 # Libcloud code which depends on libraries such as typing, enum, requests, etc.
@@ -250,31 +242,6 @@ def forbid_publish():
         sys.exit(1)
 
 
-class ApiDocsCommand(Command):
-    description = "generate API documentation"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        if not has_epydoc:
-            raise RuntimeError('Missing "epydoc" package!')
-
-        os.system(
-            "pydoctor"
-            " --add-package=libcloud"
-            " --project-name=libcloud"
-            " --make-html"
-            ' --html-viewsource-base="%s"'
-            " --project-base-dir=`pwd`"
-            ' --project-url="%s"' % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR)
-        )
-
-
 forbid_publish()
 
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
@@ -302,9 +269,6 @@ setup(
     url="https://libcloud.apache.org/",
     setup_requires=pytest_runner,
     tests_require=TEST_REQUIREMENTS,
-    cmdclass={
-        "apidocs": ApiDocsCommand,
-    },
     zip_safe=False,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
