@@ -21,13 +21,6 @@ import fnmatch
 import setuptools
 from setuptools import setup
 
-try:
-    import epydoc  # NOQA
-
-    has_epydoc = True
-except ImportError:
-    has_epydoc = False
-
 # NOTE: Those functions are intentionally moved in-line to prevent setup.py dependening on any
 # Libcloud code which depends on libraries such as typing, enum, requests, etc.
 # START: Taken From Twisted Python which licensed under MIT license
