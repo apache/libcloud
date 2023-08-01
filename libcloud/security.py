@@ -26,11 +26,9 @@ Usage:
 import os
 import ssl
 
-__all__ = ["VERIFY_SSL_CERT", "SSL_VERSION", "CA_CERTS_PATH"]
+__all__ = ["VERIFY_SSL_CERT", "CA_CERTS_PATH"]
 
 VERIFY_SSL_CERT = True
-
-SSL_VERSION = ssl.PROTOCOL_TLSv1
 
 # True to use certifi CA bundle path when certifi library is available
 USE_CERTIFI = os.environ.get("LIBCLOUD_SSL_USE_CERTIFI", True)

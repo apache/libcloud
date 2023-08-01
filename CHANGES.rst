@@ -97,6 +97,12 @@ Other
   (GITHUB-1920)
   [Tomaz Muraus - @Kami]
 
+- Remove unused ``libcloud.security.SSL_VERSION`` constant / module level
+  variable. This variable has been unused and had no affect on the behavior
+  since we switched to the ``requests`` library for making HTTP(s) requests in
+  2016.
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
