@@ -78,7 +78,7 @@ class S3RGWOutscaleDoubleInstanceTests(S3RGWTests):
         res = self.driver_v4.connectionCls is S3RGWConnectionAWS4
         self.assertTrue(res, "driver.connectionCls does not match!")
 
-        # Verify again that connection class hasn't been overriden when
+        # Verify again that connection class hasn't been overridden when
         # instantiating a second driver class
         res = self.driver_v2.connectionCls is S3RGWConnectionAWS2
         self.assertTrue(res, "driver.connectionCls does not match!")

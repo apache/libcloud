@@ -482,7 +482,7 @@ class Connection:
             kwargs.update({"proxy_url": self.proxy_url})
 
         connection = self.conn_class(**kwargs)
-        # You can uncoment this line, if you setup a reverse proxy server
+        # You can uncomment this line, if you setup a reverse proxy server
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
         # for you
@@ -714,11 +714,11 @@ class Connection:
 
     def morph_action_hook(self, action):
         """
-        Here we strip any duplicated leading or traling slashes to
+        Here we strip any duplicated leading or trailing slashes to
         prevent typos and other issues where some APIs don't correctly
         handle double slashes.
 
-        Keep in mind that in some situations, "/" is a vallid path name
+        Keep in mind that in some situations, "/" is a valid path name
         so we have a module flag which disables this behavior
         (https://github.com/apache/libcloud/issues/1529).
         """

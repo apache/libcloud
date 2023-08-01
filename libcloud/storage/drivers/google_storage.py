@@ -221,7 +221,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         """
         # Try OWNER permissions first: try listing the bucket ACL.
         # FORBIDDEN -> exists, but not an OWNER.
-        # NOT_FOUND -> bucket DNE, return NONE.
+        # NOT_FOUND -> bucket DONE, return NONE.
         try:
             self.json_connection.request("/storage/v1/b/%s/acl" % container_name)
             return ContainerPermissions.OWNER

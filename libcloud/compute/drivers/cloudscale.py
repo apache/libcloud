@@ -177,7 +177,7 @@ class CloudscaleNodeDriver(NodeDriver):
 
     def ex_node_by_uuid(self, uuid):
         """
-        :param str ex_user_data: A valid uuid that references your exisiting
+        :param str ex_user_data: A valid uuid that references your existing
             cloudscale.ch server.
         :type       ex_user_data:  ``str``
 

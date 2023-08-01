@@ -140,7 +140,7 @@ class RimuHostingNodeDriver(NodeDriver):
         self.connection.connect()
 
     def _order_uri(self, node, resource):
-        # Returns the order uri with its resourse appended.
+        # Returns the order uri with its resource appended.
         return "/orders/{}/{}".format(node.id, resource)
 
     # TODO: Get the node state.

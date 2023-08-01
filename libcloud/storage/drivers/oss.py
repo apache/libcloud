@@ -511,7 +511,7 @@ class OSSStorageDriver(StorageDriver):
             being split by this delimiter
         :type delimiter: ``str``
 
-        :keyword max_uploads: The max uplod items returned for one request
+        :keyword max_uploads: The max upload items returned for one request
         :type max_uploads: ``int``
 
         :return: A generator of OSSMultipartUpload instances.
@@ -791,7 +791,7 @@ class OSSStorageDriver(StorageDriver):
         self, iterator, object_path, upload_id, calculate_hash=True, container=None
     ):
         """
-        Uploads data from an interator in fixed sized chunks to OSS
+        Uploads data from an iterator in fixed sized chunks to OSS
 
         :param iterator: The generator for fetching the upload data
         :type iterator: ``generator``
@@ -990,7 +990,7 @@ class OSSStorageDriver(StorageDriver):
 
     def _safe_decode(self, encoded):
         """
-        Decode it as an escaped string and then treate the content as
+        Decode it as an escaped string and then treat the content as
         UTF-8 encoded.
         """
         try:

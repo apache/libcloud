@@ -110,7 +110,7 @@ class UpcloudDriver(NodeDriver):
         """
         List available plans
 
-        :param location: Location of the deployement. Price depends on
+        :param location: Location of the deployment. Price depends on
         location. lf location is not given or price not found for
         location, price will be None (optional)
         :type location: :class:`.NodeLocation`
@@ -192,7 +192,7 @@ class UpcloudDriver(NodeDriver):
         )
         response = self.connection.request("1.2/server", method="POST", data=body.to_json())
         server = response.object["server"]
-        # Upcloud server's are in maintenace state when goind
+        # Upcloud server's are in maintenance state when going
         # from state to other, it is safe to assume STARTING state
         return self._to_node(server, state=NodeState.STARTING)
 

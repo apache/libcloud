@@ -4812,7 +4812,7 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  accelerator_count: Support for passing in the number of
                                      requested 'accelerator_type' accelerators
-                                     attached to the VM. Will only pay atention
+                                     attached to the VM. Will only pay attention
                                      to this field if 'accelerator_type' is not
                                      None.
         :type     accelerator_count: ``int`` or ``None``
@@ -10110,7 +10110,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:  ``dict``
         """
         if metadata is None:
-            # User wants to delete metdata, but if 'force' is False
+            # User wants to delete metadata, but if 'force' is False
             # and we already have sshKeys, we should retain them.
             # Otherwise, delete ALL THE THINGS!
             if not force and current_keys:

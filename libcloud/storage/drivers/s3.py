@@ -1275,7 +1275,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         """
         Return a "presigned URL" for read-only access to object
 
-        AWS only - requires AWS signature V4 authenticaiton.
+        AWS only - requires AWS signature V4 authentication.
 
         :param obj: Object instance.
         :type  obj: :class:`Object`
