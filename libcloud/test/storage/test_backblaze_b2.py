@@ -127,8 +127,10 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         file_path = os.path.abspath(__file__)
         container = self.driver.list_containers()[0]
         obj = self.driver.upload_object(
-            file_path=file_path, container=container, object_name="test0007.txt",
-            extra={"meta_data": {"foo": "bar", "baz": 1}}
+            file_path=file_path,
+            container=container,
+            object_name="test0007.txt",
+            extra={"meta_data": {"foo": "bar", "baz": 1}},
         )
         self.assertEqual(obj.name, "test0007.txt")
         self.assertEqual(obj.size, 24)

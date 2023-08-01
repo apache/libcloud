@@ -31,10 +31,10 @@ Compute
 
 - [AWS EC2] Add support for the following new arguments to the
   ``ex_register_image()`` method:
-    * ``boot_mode`` - control bios vs uefi boot
-    * ``tpm_support`` - enable a tpm
-    * ``uefi_data`` - provide NV UEFI vars
-    * ``imds_support`` - require IMDSv2.
+  * ``boot_mode`` - control bios vs uefi boot
+  * ``tpm_support`` - enable a tpm
+  * ``uefi_data`` - provide NV UEFI vars
+  * ``imds_support`` - require IMDSv2.
   (GITHUB-1906)
   [Ross Vandegrift - @rvandegrift]
 
