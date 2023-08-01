@@ -192,23 +192,19 @@ class CloudFilesConnection(OpenStackSwiftConnection):
     def get_endpoint(self):
         region = self._ex_force_service_region.upper()
 
-        if self.use_internal_url:
-            endpoint_type = "internal"
-        else:
-            endpoint_type = "external"
-
         if "2.0" in self._auth_version:
             ep = self.service_catalog.get_endpoint(
                 service_type="object-store",
                 name="cloudFiles",
                 region=region,
-                endpoint_type=endpoint_type,
+                endpoint_type="internal" if self.use_internal_url else "external",
             )
             cdn_ep = self.service_catalog.get_endpoint(
                 service_type="rax:object-cdn",
                 name="cloudFilesCDN",
                 region=region,
-                endpoint_type=endpoint_type,
+                # Cloud Files has no concept of an "internal" CDN.
+                endpoint_type="external",
             )
         else:
             raise LibcloudError('Auth version "%s" not supported' % (self._auth_version))

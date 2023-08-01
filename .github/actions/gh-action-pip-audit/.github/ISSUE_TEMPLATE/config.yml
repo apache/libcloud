@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: pip-audit's issue tracker
+    url: https://github.com/pypa/pip-audit/issues/new/choose
+    about: >-
+      You may want to file a report on pip-audit instead if your issue is not
+      directly related to this GitHub Action
+  - name: Troubleshooting guide
+    url: https://github.com/pypa/gh-action-pip-audit#troubleshooting
+    about: >-
+      Learn how to fix some common issues or enable debug logging here

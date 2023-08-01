@@ -36,7 +36,7 @@ class Zone:
         type,  # type: str
         ttl,  # type: int
         driver,  # type: DNSDriver
-        extra=None,  # type: dict
+        extra=None,  # type: Optional[dict]
     ):
         """
         :param id: Zone id.
@@ -116,8 +116,8 @@ class Record:
         data,  # type: str
         zone,  # type: Zone
         driver,  # type: DNSDriver
-        ttl=None,  # type: int
-        extra=None,  # type: dict
+        ttl=None,  # type: Optional[int]
+        extra=None,  # type: Optional[dict]
     ):
         """
         :param id: Record id

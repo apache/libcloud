@@ -78,7 +78,6 @@ class DimensionDataLBDriver(Driver):
         region=DEFAULT_REGION,
         **kwargs,
     ):
-
         if region not in API_ENDPOINTS and host is None:
             raise ValueError("Invalid region: %s, no host specified" % (region))
         if region is not None:
@@ -625,7 +624,7 @@ class DimensionDataLBDriver(Driver):
 
         :param protocol: For STANDARD type, ANY, TCP or UDP
                          for PERFORMANCE_LAYER_4 choice of ANY, TCP, UDP, HTTP
-        :type  protcol: ``str``
+        :type  protocol: ``str``
 
         :param connection_limit: Maximum number
                                 of concurrent connections per sec

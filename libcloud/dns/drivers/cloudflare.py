@@ -200,7 +200,6 @@ class CloudFlareDNSDriver(DNSDriver):
     MEMBERSHIPS_PAGE_SIZE = 50
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
-
         if secret is None:
             self.connectionCls = TokenDNSConnection
 

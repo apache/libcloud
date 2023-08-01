@@ -36,7 +36,6 @@ class GCELBDriver(Driver):
     _VALUE_TO_ALGORITHM_MAP = {"RANDOM": Algorithm.RANDOM}
 
     def __init__(self, *args, **kwargs):
-
         if kwargs.get("gce_driver"):
             self.gce = kwargs["gce_driver"]
         else:

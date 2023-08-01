@@ -56,7 +56,6 @@ class S3RGWConnectionAWS4(SignedAWSConnection, BaseS3Connection):
         backoff=None,
         **kwargs,
     ):
-
         super().__init__(
             user_id,
             key,
@@ -89,7 +88,6 @@ class S3RGWConnectionAWS2(S3Connection):
         backoff=None,
         **kwargs,
     ):
-
         super().__init__(
             user_id,
             key,
@@ -120,7 +118,6 @@ class S3RGWStorageDriver(BaseS3StorageDriver):
         region=S3_RGW_DEFAULT_REGION,
         **kwargs,
     ):
-
         if host is None:
             raise LibcloudError("host required", driver=self)
 

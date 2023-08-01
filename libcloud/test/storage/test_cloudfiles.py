@@ -123,6 +123,14 @@ class CloudFilesTests(unittest.TestCase):
         )
         self.driver.connection.cdn_request = False
 
+    def test_get_endpoint_internalurl(self):
+        self.driver.connection.use_internal_url = True
+        url = (
+            "https://snet-storage101.%s1.clouddrive.com/v1/MossoCloudFS_11111-111111111-1111111111-1111111"
+            % (self.region)
+        )
+        self.assertEqual(url, self.driver.connection.get_endpoint())
+
     def test_list_containers(self):
         CloudFilesMockHttp.type = "EMPTY"
         containers = self.driver.list_containers()
@@ -801,7 +809,6 @@ class CloudFilesTests(unittest.TestCase):
         expected_headers.update(cors_headers)
 
         def intercept_request(request_path, method=None, data=None, headers=None, raw=True):
-
             # What we're actually testing
             self.assertDictEqual(expected_headers, headers)
 
@@ -841,7 +848,6 @@ class CloudFilesTests(unittest.TestCase):
 
     @unittest.skip("Skipping as chunking is disabled in 2.0rc1")
     def test_upload_object_via_stream_chunked_encoding(self):
-
         # Create enough bytes it should get split into two chunks
         bytes_blob = "".join(["\0" for _ in range(CHUNK_SIZE + 1)])
         hex_chunk_size = ("%X" % CHUNK_SIZE).encode("utf8")
@@ -1055,7 +1061,6 @@ class CloudFilesDeprecatedUKTests(CloudFilesTests):
 
 
 class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
-
     fixtures = StorageFileFixtures("cloudfiles")
     base_headers = {"content-type": "application/json; charset=UTF-8"}
 
@@ -1255,7 +1260,6 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS(self, method, url, body, headers):
-
         if method == "DELETE":
             # test_ex_purge_from_cdn
             headers = self.base_headers
@@ -1265,7 +1269,6 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
     def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS_EMAIL(
         self, method, url, body, headers
     ):
-
         if method == "DELETE":
             # test_ex_purge_from_cdn_with_email
             self.assertEqual(headers["X-Purge-Email"], "test@test.com")
@@ -1274,7 +1277,6 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_NOT_FOUND(self, method, url, body, headers):
-
         if method == "DELETE":
             # test_delete_container_not_found
             body = self.fixtures.load("list_container_objects_empty.json")
@@ -1283,7 +1285,6 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_NOT_EMPTY(self, method, url, body, headers):
-
         if method == "DELETE":
             # test_delete_container_not_empty
             body = self.fixtures.load("list_container_objects_empty.json")
@@ -1292,7 +1293,6 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object(self, method, url, body, headers):
-
         if method == "DELETE":
             # test_delete_object_success
             body = self.fixtures.load("list_container_objects_empty.json")
@@ -1398,7 +1398,6 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
     def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data_seek(
         self, method, url, body, headers
     ):
-
         # test_upload_object_via_stream_stream_seek_at_end
         hasher = hashlib.md5()
         hasher.update(b"123456789")

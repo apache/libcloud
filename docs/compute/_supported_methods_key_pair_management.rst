@@ -1,57 +1,57 @@
 .. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
 
-===================================== ============== ============ =============== ============================= =========================== ===============
-Provider                              list key pairs get key pair create key pair import public key from string import public key from file delete key pair
-===================================== ============== ============ =============== ============================= =========================== ===============
-`Abiquo`_                             no             no           no              no                            no                          no             
-`Aliyun ECS`_                         no             no           no              no                            no                          no             
-`PCextreme AuroraCompute`_            yes            yes          yes             yes                           no                          yes            
-`Azure Virtual machines`_             no             no           no              no                            no                          no             
-`Azure Virtual machines`_             no             no           no              no                            no                          no             
-`Brightbox`_                          no             no           no              no                            no                          no             
-`Cloudscale`_                         no             no           no              no                            no                          no             
-`CloudSigma (API v2.0)`_              yes            yes          yes             yes                           no                          yes            
-`CloudStack`_                         yes            yes          yes             yes                           no                          yes            
-`DigitalOcean`_                       yes            yes          yes             no                            no                          yes            
-`DimensionData`_                      no             no           no              no                            no                          no             
-`Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
-`EquinixMetal`_                       yes            no           yes             no                            no                          yes            
-`Eucalyptus`_                         yes            yes          yes             yes                           no                          yes            
-`Exoscale`_                           yes            yes          yes             yes                           no                          yes            
-`Gandi`_                              yes            yes          no              yes                           no                          yes            
-`Google Compute Engine`_              no             no           no              no                            no                          no             
-`GiG G8 Node Provider`_               no             no           no              no                            no                          no             
-`Gridscale`_                          yes            no           no              yes                           no                          no             
-`Ikoula`_                             yes            yes          yes             yes                           no                          yes            
-`InternetSolutions`_                  no             no           no              no                            no                          no             
-`Kamatera`_                           no             no           no              no                            no                          no             
-`KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
-`kubevirt`_                           no             no           no              no                            no                          no             
-`Libvirt`_                            no             no           no              no                            no                          no             
-`Linode`_                             no             no           no              no                            no                          no             
-`Maxihost`_                           yes            no           yes             no                            no                          no             
-`Nimbus`_                             yes            yes          yes             yes                           no                          yes            
-`NTTAmerica`_                         no             no           no              no                            no                          no             
-`NTTC-CIS`_                           no             no           no              no                            no                          no             
-`OnApp`_                              yes            yes          no              yes                           no                          yes            
-`OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
-`OpenStack`_                          no             no           no              no                            no                          no             
-`Outscale API`_                       yes            yes          yes             no                            no                          yes            
-`Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
-`Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
-`Ovh`_                                yes            yes          no              yes                           no                          yes            
-`Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
-`Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
-`RimuHosting`_                        no             no           no              no                            no                          no             
-`Scaleway`_                           yes            no           no              yes                           no                          yes            
-`vCloud`_                             no             no           no              no                            no                          no             
-`Upcloud`_                            no             no           no              no                            no                          no             
-`VCL`_                                no             no           no              no                            no                          no             
-`vCloud`_                             no             no           no              no                            no                          no             
-`vps.net`_                            no             no           no              no                            no                          no             
-`VMware vSphere`_                     no             no           no              no                            no                          no             
-`Vultr`_                              yes            yes          no              yes                           no                          yes            
-===================================== ============== ============ =============== ============================= =========================== ===============
+============================== ============== ============ =============== ============================= =========================== ===============
+Provider                       list key pairs get key pair create key pair import public key from string import public key from file delete key pair
+============================== ============== ============ =============== ============================= =========================== ===============
+`Abiquo`_                      no             no           no              no                            no                          no             
+`Aliyun ECS`_                  no             no           no              no                            no                          no             
+`PCextreme AuroraCompute`_     yes            yes          yes             yes                           no                          yes            
+`Azure Virtual machines`_      no             no           no              no                            no                          no             
+`Azure Virtual machines`_      no             no           no              no                            no                          no             
+`Brightbox`_                   no             no           no              no                            no                          no             
+`Cloudscale`_                  no             no           no              no                            no                          no             
+`CloudSigma (API v2.0)`_       yes            yes          yes             yes                           no                          yes            
+`CloudStack`_                  yes            yes          yes             yes                           no                          yes            
+`DigitalOcean`_                yes            yes          yes             no                            no                          yes            
+`DimensionData`_               no             no           no              no                            no                          no             
+`Amazon EC2`_                  yes            yes          yes             yes                           no                          yes            
+`EquinixMetal`_                yes            no           yes             no                            no                          yes            
+`Eucalyptus`_                  yes            yes          yes             yes                           no                          yes            
+`Exoscale`_                    yes            yes          yes             yes                           no                          yes            
+`Gandi`_                       yes            yes          no              yes                           no                          yes            
+`Google Compute Engine`_       no             no           no              no                            no                          no             
+`GiG G8 Node Provider`_        no             no           no              no                            no                          no             
+`Gridscale`_                   yes            no           no              yes                           no                          no             
+`Ikoula`_                      yes            yes          yes             yes                           no                          yes            
+`InternetSolutions`_           no             no           no              no                            no                          no             
+`Kamatera`_                    no             no           no              no                            no                          no             
+`KTUCloud`_                    yes            yes          yes             yes                           no                          yes            
+`kubevirt`_                    no             no           no              no                            no                          no             
+`Libvirt`_                     no             no           no              no                            no                          no             
+`Linode`_                      no             no           no              no                            no                          no             
+`Maxihost`_                    yes            no           yes             no                            no                          no             
+`Nimbus`_                      yes            yes          yes             yes                           no                          yes            
+`NTTAmerica`_                  no             no           no              no                            no                          no             
+`NTTC-CIS`_                    no             no           no              no                            no                          no             
+`OnApp`_                       yes            yes          no              yes                           no                          yes            
+`OpenNebula (v3.8)`_           no             no           no              no                            no                          no             
+`OpenStack`_                   no             no           no              no                            no                          no             
+`Outscale API`_                yes            yes          yes             no                            no                          yes            
+`Outscale INC`_                yes            yes          yes             yes                           no                          yes            
+`Outscale SAS`_                yes            yes          yes             yes                           no                          yes            
+`Ovh`_                         yes            yes          no              yes                           no                          yes            
+`Rackspace Cloud (Next Gen)`_  yes            yes          yes             yes                           no                          yes            
+`Rackspace Cloud (First Gen)`_ no             no           no              no                            no                          no             
+`RimuHosting`_                 no             no           no              no                            no                          no             
+`Scaleway`_                    yes            no           no              yes                           no                          yes            
+`vCloud`_                      no             no           no              no                            no                          no             
+`Upcloud`_                     no             no           no              no                            no                          no             
+`VCL`_                         no             no           no              no                            no                          no             
+`vCloud`_                      no             no           no              no                            no                          no             
+`vps.net`_                     no             no           no              no                            no                          no             
+`VMware vSphere`_              no             no           no              no                            no                          no             
+`Vultr`_                       yes            yes          no              yes                           no                          yes            
+============================== ============== ============ =============== ============================= =========================== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs

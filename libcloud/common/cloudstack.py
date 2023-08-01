@@ -175,7 +175,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         command = command.lower()
 
-        # Work around for older verions which don't return "response" suffix
+        # Work around for older versions which don't return "response" suffix
         # in delete ingress rule response command name
         if (
             command == "revokesecuritygroupingress"

@@ -61,8 +61,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     Please note that the Libcloud paradigm of one zone per domain does not
     match exactly with Gandi LiveDNS.  For Gandi, a "zone" can apply to
     multiple domains.  This driver behaves as if the domain is a zone, but be
-    warned that modifying a domain means modifying the zone.  Iif you have a
-    zone associated with mutiple domains, all of those domains will be
+    warned that modifying a domain means modifying the zone.  If you have a
+    zone associated with multiple domains, all of those domains will be
     modified as well.
     """
 
@@ -324,7 +324,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return True
 
     """
-    Change the Gandi zone a domain is asociated with.
+    Change the Gandi zone a domain is associated with.
 
     :param domain: Domain name to switch zones.
     :type  domain: ``str``

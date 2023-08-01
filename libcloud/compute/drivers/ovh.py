@@ -184,7 +184,7 @@ class OvhNodeDriver(NodeDriver):
         :keyword location: Location (region) used as filter
         :type    location: :class:`NodeLocation`
 
-        :keyword ex_size: Exclude images which are uncompatible with given size
+        :keyword ex_size: Exclude images which are incompatible with given size
         :type    ex_size: :class:`NodeImage`
 
         :return: List of images
@@ -300,7 +300,7 @@ class OvhNodeDriver(NodeDriver):
         :keyword ex_volume_type: ``'classic'`` or ``'high-speed'``
         :type ex_volume_type: ``str``
 
-        :keyword ex_description: Optionnal description of volume
+        :keyword ex_description: Optional description of volume
         :type ex_description: str
 
         :return:  Storage Volume object
@@ -364,7 +364,7 @@ class OvhNodeDriver(NodeDriver):
         :param volume: The ID of the volume
         :type volume: :class:`StorageVolume`
 
-        :param device: Unsed parameter
+        :param device: Unused parameter
 
         :return: True or False representing operation successful
         :rtype:   ``bool``
@@ -381,7 +381,7 @@ class OvhNodeDriver(NodeDriver):
         :param volume: The ID of the volume
         :type volume: :class:`StorageVolume`
 
-        :param ex_node: Node to detach from (optionnal if volume is attached
+        :param ex_node: Node to detach from (optional if volume is attached
                         to only one node)
         :type ex_node: :class:`Node`
 

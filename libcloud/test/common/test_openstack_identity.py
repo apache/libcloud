@@ -98,8 +98,8 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
-        for (auth_version, mock_http_class, kwargs) in tuples:
-            for (url, url_path) in auth_urls:
+        for auth_version, mock_http_class, kwargs in tuples:
+            for url, url_path in auth_urls:
                 connection = self._get_mock_connection(
                     mock_http_class=mock_http_class, auth_url=url
                 )
@@ -167,7 +167,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
-        for (auth_version, mock_http_class, kwargs) in tuples:
+        for auth_version, mock_http_class, kwargs in tuples:
             connection = self._get_mock_connection(mock_http_class=mock_http_class)
             auth_url = connection.auth_url
 
@@ -313,7 +313,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
-        for (auth_version, mock_http_class, kwargs) in tuples:
+        for auth_version, mock_http_class, kwargs in tuples:
             mock_http_class.type = None
             connection = self._get_mock_connection(mock_http_class=mock_http_class)
             auth_url = connection.auth_url

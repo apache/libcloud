@@ -82,7 +82,6 @@ class NttCisLBDriver(Driver):
         region=DEFAULT_REGION,
         **kwargs,
     ):
-
         self.network_domain_id = network_domain_id
 
         if region not in API_ENDPOINTS and host is None:
@@ -151,7 +150,7 @@ class NttCisLBDriver(Driver):
                                      an optimization type of TCP, LAN_OPT,
                                      WAN_OPT, MOBILE_OPT, or TCP_LEGACY is
                                      required. Default is TCP
-        :type  protcol: ``str``
+        :type  protocol: ``str``
 
         :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
                                        notation (x.x.x.x).
@@ -682,14 +681,14 @@ class NttCisLBDriver(Driver):
 
         :param protocol: For STANDARD type, ANY, TCP or UDP
                          for PERFORMANCE_LAYER_4 choice of ANY, TCP, UDP, HTTP
-        :type  protcol: ``str``
+        :type  protocol: ``str``
 
         :param optimization_profile: For STANDARD type and protocol
                                      TCP an optimization type of TCP,
                                      LAN_OPT, WAN_OPT, MOBILE_OPT,
                                      or TCP_LEGACY is required.
                                      Default is 'TCP'.
-        :type  protcol: ``str``
+        :type  protocol: ``str``
 
         :param connection_limit: Maximum number
                                 of concurrent connections per sec

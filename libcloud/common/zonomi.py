@@ -71,10 +71,10 @@ class ZonomiResponse(XmlResponse):
             errors.append(error_dict)
 
         # Data handling
-        childrens = list(xml_body)
-        if len(childrens) == 3:
-            result_counts = childrens[1]
-            actions = childrens[2]
+        children = list(xml_body)
+        if len(children) == 3:
+            result_counts = children[1]
+            actions = children[2]
 
         if actions is not None:
             actions_childrens = list(actions)

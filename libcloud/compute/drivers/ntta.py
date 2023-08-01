@@ -47,7 +47,6 @@ class NTTAmericaNodeDriver(DimensionDataNodeDriver):
         region=DEFAULT_REGION,
         **kwargs,
     ):
-
         if region not in API_ENDPOINTS:
             raise ValueError("Invalid region: %s" % (region))
 

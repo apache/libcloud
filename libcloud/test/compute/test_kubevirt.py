@@ -24,7 +24,6 @@ from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 
 
 class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
-
     driver_cls = KubeVirtNodeDriver
     fixtures = ComputeFileFixtures("kubevirt")
 
@@ -84,7 +83,6 @@ class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
 
 
 class KubeVirtMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("kubevirt")
 
     def _api_v1_namespaces(self, method, url, body, headers):
@@ -199,7 +197,6 @@ class KubeVirtMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_v1_namespaces_default_pods(self, method, url, body, headers):
-
         if method == "GET":
             body = self.fixtures.load("get_pods.json")
         else:

@@ -471,7 +471,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         # 1. Delete the server itself
         result = self._sync_request(endpoint="objects/servers/{}".format(node.id), method="DELETE")
 
-        # 2. Destroy associated resouces (if requested)
+        # 2. Destroy associated resources (if requested)
         if ex_destroy_associated_resources:
             for volume in associated_volumes:
                 self.destroy_volume(volume=volume)
@@ -650,7 +650,6 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             return True
 
         else:
-
             return False
 
     def import_key_pair_from_string(self, name, key_material):
@@ -753,7 +752,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :param network: Network you want to link.
         :type network: :class:`.GridscaleNetwork`
 
-        :return: ``True`` if linked sucessfully, otherwise ``False``
+        :return: ``True`` if linked successfully, otherwise ``False``
         :rtype: ``bool``
         """
         result = self._sync_request(

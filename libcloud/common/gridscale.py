@@ -70,7 +70,7 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
         """
         add parameters that are necessary for each request to be successful
 
-        :param headers: Authentification token
+        :param headers: Authentication token
         :type headers: ``str``
         :return: None
         """
@@ -96,7 +96,6 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
         return r
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
-
         endpoint_url = "requests/{}".format(response.object["request_uuid"])
         kwargs = {"action": endpoint_url}
         return kwargs

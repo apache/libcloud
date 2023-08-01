@@ -664,7 +664,6 @@ class AzureNodeDriver(NodeDriver):
             )
 
             if self._is_storage_service_unique(service_name=ex_storage_service_name):
-
                 self._create_storage_account(
                     service_name=ex_storage_service_name,
                     location=_storage_location.service_location,
@@ -888,7 +887,6 @@ class AzureNodeDriver(NodeDriver):
         return result
 
     def ex_set_instance_endpoints(self, node, endpoints, ex_deployment_slot="Production"):
-
         """
         For example::
 
@@ -1895,7 +1893,6 @@ class AzureXmlSerializer:
         affinity_group,
         extended_properties=None,
     ):
-
         return AzureXmlSerializer.doc_from_data(
             "CreateStorageServiceInput",
             [
@@ -2249,7 +2246,6 @@ class AzureXmlSerializer:
                 or endpoint.load_balancer_probe.port
                 or endpoint.load_balancer_probe.protocol
             ):
-
                 load_balancer_probe = ET.Element("LoadBalancerProbe")
                 input_endpoint.append(load_balancer_probe)
                 AzureXmlSerializer.data_to_xml(
@@ -2295,7 +2291,6 @@ class AzureXmlSerializer:
         system_configuration_set,
         xml,
     ):
-
         AzureXmlSerializer.data_to_xml([("RoleName", role_name)], xml)
         AzureXmlSerializer.data_to_xml([("RoleType", role_type)], xml)
 
@@ -2396,7 +2391,6 @@ class AzureXmlSerializer:
         vm_image_name,
         role_size,
     ):
-
         doc = AzureXmlSerializer.doc_from_xml("PersistentVMRole")
         AzureXmlSerializer.role_to_xml(
             availability_set_name,
@@ -2459,7 +2453,6 @@ class AzureXmlSerializer:
         virtual_network_name,
         vm_image_name,
     ):
-
         doc = AzureXmlSerializer.doc_from_xml("Deployment")
         AzureXmlSerializer.data_to_xml([("Name", deployment_name)], doc)
         AzureXmlSerializer.data_to_xml([("DeploymentSlot", deployment_slot)], doc)
@@ -2560,7 +2553,6 @@ class AzureXmlSerializer:
 
     @staticmethod
     def extended_properties_dict_to_xml_fragment(extended_properties):
-
         if extended_properties is not None and len(extended_properties) > 0:
             xml = ET.Element("ExtendedProperties")
             for key, val in extended_properties.items():
@@ -2595,7 +2587,6 @@ class WindowsAzureData:
 
 
 class WindowsAzureDataTypedList(WindowsAzureData):
-
     list_type = None
     xml_element_name = None
 

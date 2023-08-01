@@ -123,7 +123,6 @@ def work_with_containers():
 
 
 def work_with_images():
-
     print("Working with images...")
 
     # LXD host change accordingly

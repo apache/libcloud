@@ -34,7 +34,6 @@ def wrap_non_libcloud_exceptions(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-
             if isinstance(e, LibcloudError):
                 raise e
 

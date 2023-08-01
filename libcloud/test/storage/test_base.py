@@ -52,7 +52,6 @@ class BaseStorageTests(unittest.TestCase):
         self.driver1.strict_mode = False
 
     def test__upload_object_iterator_must_have_next_method(self):
-
         valid_iterators = [BytesIO(b("134")), StringIO("bar")]
         invalid_iterators = ["foobar", "", False, True, 1, object()]
 

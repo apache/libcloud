@@ -618,7 +618,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
     def destroy_volume(self, volume):
         """
         Destroys disk volume for the Linode. Linode id is to be provided as
-        extra["LinodeId"] whithin :class:`StorageVolume`. It can be retrieved
+        extra["LinodeId"] within :class:`StorageVolume`. It can be retrieved
         by :meth:`libcloud.compute.drivers.linode.LinodeNodeDriver\
                  .ex_list_volumes`.
 
@@ -730,7 +730,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
     def _to_volumes(self, objs):
         """
-        Covert returned JSON volumes into StorageVolume instances
+        Convert returned JSON volumes into StorageVolume instances
 
         :keyword    objs: ``list`` of JSON dictionaries representing the
                          StorageVolumes
@@ -799,7 +799,6 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
 
 
 class LinodeNodeDriverV4(LinodeNodeDriver):
-
     connectionCls = LinodeConnectionV4
     _linode_disk_filesystems = LINODE_DISK_FILESYSTEMS_V4
 
@@ -1253,7 +1252,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :param volume: Volume to be attached (required)
         :type volume: :class:`StorageVolume`
 
-        :keyword persist_across_boots: Wether volume should be \
+        :keyword persist_across_boots: Whether volume should be \
         attached to node across boots
         :type persist_across_boots: `bool`
 

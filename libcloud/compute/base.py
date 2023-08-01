@@ -118,8 +118,8 @@ class UuidMixin:
     Mixin class for get_uuid function.
     """
 
-    def __init__(self):
-        self._uuid = None  # type: str
+    def __init__(self) -> None:
+        self._uuid = None  # type: Optional[str]
 
     def get_uuid(self):
         """
@@ -208,10 +208,10 @@ class Node(UuidMixin):
         public_ips,  # type: List[str]
         private_ips,  # type: List[str]
         driver,
-        size=None,  # type: NodeSize
-        image=None,  # type: NodeImage
-        extra=None,  # type: dict
-        created_at=None,  # type: datetime.datetime
+        size=None,  # type: Optional[NodeSize]
+        image=None,  # type: Optional[NodeImage]
+        extra=None,  # type: Optional[dict]
+        created_at=None,  # type: Optional[datetime.datetime]
     ):
         """
         :param id: Node ID.
@@ -500,7 +500,7 @@ class NodeImageMember(UuidMixin):
         image_id,  # type: str
         state,  # type: NodeImageMemberState
         driver,  # type: NodeDriver
-        created=None,  # type: datetime.datetime
+        created=None,  # type: Optional[datetime.datetime]
         extra=None,  # type: Optional[dict]
     ):
         """
@@ -755,10 +755,10 @@ class VolumeSnapshot:
         self,
         id,  # type: str
         driver,  # type: NodeDriver
-        size=None,  # type: int
+        size=None,  # type: Optional[int]
         extra=None,  # type: Optional[Dict]
         created=None,  # type: Optional[datetime.datetime]
-        state=None,  # type: StorageVolumeState
+        state=None,  # type: Optional[StorageVolumeState]
         name=None,  # type: Optional[str]
     ):
         # type: (...) -> None
@@ -935,7 +935,7 @@ class NodeDriver(BaseDriver):
         size,  # type: NodeSize
         image,  # type: NodeImage
         location=None,  # type: Optional[NodeLocation]
-        auth=None,  # type: T_Auth
+        auth=None,  # type: Optional[T_Auth]
     ):
         # type: (...) -> Node
         """
@@ -1028,11 +1028,11 @@ class NodeDriver(BaseDriver):
         ssh_timeout=10,  # type: int
         ssh_key=None,  # type: Optional[T_Ssh_key]
         ssh_key_password=None,  # type: Optional[str]
-        auth=None,  # type: T_Auth
+        auth=None,  # type: Optional[T_Auth]
         timeout=SSH_CONNECT_TIMEOUT,  # type: int
         max_tries=3,  # type: int
         ssh_interface="public_ips",  # type: str
-        at_exit_func=None,  # type: Callable
+        at_exit_func=None,  # type: Optional[Callable]
         wait_period=5,  # type: int
         **create_node_kwargs,
     ):

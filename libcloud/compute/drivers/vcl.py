@@ -115,7 +115,7 @@ class VCLNodeDriver(NodeDriver):
         :type       length: ``str``
         """
 
-        # Special case for xmlrpclib not handling 64 bit integers when writting
+        # Special case for xmlrpclib not handling 64 bit integers when writing
         # XML - we always  cast value to string.
         start = start or str(time.time())
         length = length or "60"

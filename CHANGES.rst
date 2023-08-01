@@ -7,13 +7,36 @@ Changes in Apache Libcloud in development
 Compute
 ~~~~~~~
 
-Remove obsolete compute driver where the provider is either dead or not
-offering those services anymore: Bluebox, bsnlcloud, Cloudwatt, Enomaly,
-ElasticHosts, ElasticStack, GoGrid, Gridspot, HostVirtual, Joyent, Med-1,
-Nephoscale, 1on1, ProfitBricks, ServerLove, SkaliCloud, Softlayer, Voxel.
+- Remove obsolete compute driver where the provider is either dead or not
+  offering those services anymore: Bluebox, bsnlcloud, Cloudwatt, Enomaly,
+  ElasticHosts, ElasticStack, GoGrid, Gridspot, HostVirtual, Joyent, Med-1,
+  Nephoscale, 1on1, ProfitBricks, ServerLove, SkaliCloud, Softlayer, Voxel.
 
-(GITHUB-1743, GITHUB-1852)
-[Anthony Monthe - @ZuluPro, Tomaz Muraus - @Kami]
+  (GITHUB-1743, GITHUB-1852)
+  [Anthony Monthe - @ZuluPro, Tomaz Muraus - @Kami]
+
+- [Outscale] Fix ``list_nodes()`` and ``list_volumes()`` method.
+  (GITHUB-1877)
+  [Matthias Gatto - @outscale-mgo]
+
+- [Azure ARM] Implement pagination in the ``list_nodes()`` method. This fixes a
+  bug which would result in sometimes not all nodes being returned.
+  (GITHUB-1824, GITHUB-1850)
+  [Jan Müller - @ojan-mue]
+
+- [Azure ARM] Bump DISK_API_VERSION from ``2018-06-01`` to ``2023-01-02`` to
+  support premium v2 SSDs.
+  (GITHUB-1904)
+  [John Wren Kennedy - @jwk404]
+
+- [AWS EC2] Add support for the following new arguments to the
+  ``ex_register_image()`` method:
+    * ``boot_mode`` - control bios vs uefi boot
+    * ``tpm_support`` - enable a tpm
+    * ``uefi_data`` - provide NV UEFI vars
+    * ``imds_support`` - require IMDSv2.
+  (GITHUB-1906)
+  [Ross Vandegrift - @rvandegrift]
 
 Storage
 ~~~~~~~
@@ -31,6 +54,43 @@ Storage
 - [Aliyun OSS] Fix ``upload_object()`` function.
   (GITHUB-1796)
   [@shengwubin]
+
+- [S3] Support all available storage classes. Previously only "standard" and
+  "reduced_redundancy" were supported.
+  (GITHUB-1875)
+  [Mohammad Aburadeh - @mohammad-aburadeh]
+
+- [CloudFiles] Fix ``get_endpoint_url()`` throwing an exception when being used
+  with ``use_internal_url=True`` argument.
+  (GITHUB-1883, GITHUB-1884)
+  [Marcus T - @llamasoft]
+
+- [CloudFiles] Update OpenStack connection handling code to only re-connect in
+  case connection details (scheme, host, port) have changed.
+
+  This should result in significant performance improvements when downloading
+  objects since the underlying HTTP connection will be properly re-used.
+  (GITHUB-1885, GITHUB-1886)
+  [Marcus T - @llamasoft]
+
+Other
+~~~~~
+
+- Move Python tooling (pytest, bandit, pylint, mypy, coverage) config options
+  from separate config files into single pyproject.yaml config files.
+
+  NOTE: This change only affects development process and nothing else.
+  (GITHUB-1901)
+  [RS Nikhil Krishna - @rsnk96]
+
+- Fix minor typos in the code using codespell package and enforce this check as
+  part of our GHA CI system.
+  (GITHUB-1923)
+  [Tomaz Muraus - @Kami]
+
+- Indicate we also support Python 3.12 (beta).
+  (GITHUB-1920)
+  [Tomaz Muraus - @Kami]
 
 Changes in Apache Libcloud 3.7.0
 --------------------------------

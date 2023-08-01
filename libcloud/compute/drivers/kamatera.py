@@ -114,7 +114,7 @@ class KamateraNodeDriver(NodeDriver):
         """
         List available disk images.
 
-        :param location: Location of the deployement.
+        :param location: Location of the deployment.
                          Available disk images depend on location.
         :type location: :class:`.NodeLocation`
 

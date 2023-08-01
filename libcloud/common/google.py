@@ -499,7 +499,6 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         access_code = None
 
         class AccessCodeReceiver(BaseHTTPRequestHandler):
-
             # noinspection PyMethodParameters,PyPep8Naming
             def do_GET(self_):  # pylint: disable=no-self-argument
                 query = urlparse.urlparse(self_.path).query

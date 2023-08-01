@@ -1,57 +1,57 @@
 .. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
 
-===================================== =========== ========= ============ ============ ==========
-Provider                              list images get image create image delete image copy image
-===================================== =========== ========= ============ ============ ==========
-`Abiquo`_                             yes         no        no           no           no        
-`Aliyun ECS`_                         yes         yes       yes          yes          yes       
-`PCextreme AuroraCompute`_            yes         no        no           no           no        
-`Azure Virtual machines`_             yes         no        no           no           no        
-`Azure Virtual machines`_             yes         yes       no           no           no        
-`Brightbox`_                          yes         no        no           no           no        
-`Cloudscale`_                         yes         no        no           no           no        
-`CloudSigma (API v2.0)`_              yes         no        no           no           no        
-`CloudStack`_                         yes         no        no           no           no        
-`DigitalOcean`_                       yes         yes       yes          yes          no        
-`DimensionData`_                      yes         no        no           no           no        
-`Amazon EC2`_                         yes         yes       yes          yes          yes       
-`EquinixMetal`_                       yes         no        no           no           no        
-`Eucalyptus`_                         yes         yes       yes          yes          yes       
-`Exoscale`_                           yes         no        no           no           no        
-`Gandi`_                              yes         no        no           no           no        
-`Google Compute Engine`_              yes         no        no           no           no        
-`GiG G8 Node Provider`_               yes         no        no           no           no        
-`Gridscale`_                          yes         yes       yes          yes          no        
-`Ikoula`_                             yes         no        no           no           no        
-`InternetSolutions`_                  yes         no        no           no           no        
-`Kamatera`_                           yes         no        no           no           no        
-`KTUCloud`_                           yes         no        no           no           no        
-`kubevirt`_                           yes         no        no           no           no        
-`Libvirt`_                            no          no        no           no           no        
-`Linode`_                             yes         no        yes          yes          no        
-`Maxihost`_                           yes         no        no           no           no        
-`Nimbus`_                             yes         yes       yes          yes          yes       
-`NTTAmerica`_                         yes         no        no           no           no        
-`NTTC-CIS`_                           yes         no        no           no           no        
-`OnApp`_                              yes         no        no           no           no        
-`OpenNebula (v3.8)`_                  yes         no        no           no           no        
-`OpenStack`_                          yes         yes       no           no           no        
-`Outscale API`_                       yes         yes       yes          yes          no        
-`Outscale INC`_                       yes         yes       yes          yes          yes       
-`Outscale SAS`_                       yes         yes       yes          yes          yes       
-`Ovh`_                                yes         yes       no           no           no        
-`Rackspace Cloud (Next Gen)`_         yes         yes       yes          yes          no        
-`Rackspace Cloud (First Gen)`_        yes         yes       yes          yes          no        
-`RimuHosting`_                        yes         no        no           no           no        
-`Scaleway`_                           yes         yes       yes          yes          no        
-`vCloud`_                             yes         no        no           no           no        
-`Upcloud`_                            yes         no        no           no           no        
-`VCL`_                                yes         no        no           no           no        
-`vCloud`_                             yes         no        no           no           no        
-`vps.net`_                            yes         no        no           no           no        
-`VMware vSphere`_                     yes         no        no           no           no        
-`Vultr`_                              yes         no        no           no           no        
-===================================== =========== ========= ============ ============ ==========
+============================== =========== ========= ============ ============ ==========
+Provider                       list images get image create image delete image copy image
+============================== =========== ========= ============ ============ ==========
+`Abiquo`_                      yes         no        no           no           no        
+`Aliyun ECS`_                  yes         yes       yes          yes          yes       
+`PCextreme AuroraCompute`_     yes         no        no           no           no        
+`Azure Virtual machines`_      yes         no        no           no           no        
+`Azure Virtual machines`_      yes         yes       no           no           no        
+`Brightbox`_                   yes         no        no           no           no        
+`Cloudscale`_                  yes         no        no           no           no        
+`CloudSigma (API v2.0)`_       yes         no        no           no           no        
+`CloudStack`_                  yes         no        no           no           no        
+`DigitalOcean`_                yes         yes       yes          yes          no        
+`DimensionData`_               yes         no        no           no           no        
+`Amazon EC2`_                  yes         yes       yes          yes          yes       
+`EquinixMetal`_                yes         no        no           no           no        
+`Eucalyptus`_                  yes         yes       yes          yes          yes       
+`Exoscale`_                    yes         no        no           no           no        
+`Gandi`_                       yes         no        no           no           no        
+`Google Compute Engine`_       yes         no        no           no           no        
+`GiG G8 Node Provider`_        yes         no        no           no           no        
+`Gridscale`_                   yes         yes       yes          yes          no        
+`Ikoula`_                      yes         no        no           no           no        
+`InternetSolutions`_           yes         no        no           no           no        
+`Kamatera`_                    yes         no        no           no           no        
+`KTUCloud`_                    yes         no        no           no           no        
+`kubevirt`_                    yes         no        no           no           no        
+`Libvirt`_                     no          no        no           no           no        
+`Linode`_                      yes         no        yes          yes          no        
+`Maxihost`_                    yes         no        no           no           no        
+`Nimbus`_                      yes         yes       yes          yes          yes       
+`NTTAmerica`_                  yes         no        no           no           no        
+`NTTC-CIS`_                    yes         no        no           no           no        
+`OnApp`_                       yes         no        no           no           no        
+`OpenNebula (v3.8)`_           yes         no        no           no           no        
+`OpenStack`_                   yes         yes       no           no           no        
+`Outscale API`_                yes         yes       yes          yes          no        
+`Outscale INC`_                yes         yes       yes          yes          yes       
+`Outscale SAS`_                yes         yes       yes          yes          yes       
+`Ovh`_                         yes         yes       no           no           no        
+`Rackspace Cloud (Next Gen)`_  yes         yes       yes          yes          no        
+`Rackspace Cloud (First Gen)`_ yes         yes       yes          yes          no        
+`RimuHosting`_                 yes         no        no           no           no        
+`Scaleway`_                    yes         yes       yes          yes          no        
+`vCloud`_                      yes         no        no           no           no        
+`Upcloud`_                     yes         no        no           no           no        
+`VCL`_                         yes         no        no           no           no        
+`vCloud`_                      yes         no        no           no           no        
+`vps.net`_                     yes         no        no           no           no        
+`VMware vSphere`_              yes         no        no           no           no        
+`Vultr`_                       yes         no        no           no           no        
+============================== =========== ========= ============ ============ ==========
 
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs

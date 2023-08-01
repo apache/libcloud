@@ -112,7 +112,7 @@ class DurableDNSDriver(DNSDriver):
         response = self.connection.request(
             action=action, params=params, data=req_data, method="POST", headers=headers
         )
-        # listZones method doens't return full data in zones as getZone
+        # listZones method doesn't return full data in zones as getZone
         # method does.
         zones = []
         for data in response.objects:
@@ -157,7 +157,7 @@ class DurableDNSDriver(DNSDriver):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
 
-        # listRecords method doens't return full data in records as getRecord
+        # listRecords method doesn't return full data in records as getRecord
         # method does.
         records = []
         for data in response.objects:

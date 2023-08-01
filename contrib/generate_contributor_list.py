@@ -106,7 +106,6 @@ def parse_changes_file(file_path, versions=None):
 
 
 def convert_to_markdown(contributors_map, include_tickets=False):
-
     # Contributors are sorted in ascending lexiographical order based on their
     # last name
     def compare(item1, item2):

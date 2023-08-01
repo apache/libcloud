@@ -2270,7 +2270,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param timeout: Timeout value for snapshot generation
         :type timeout: ``float``
 
-        :param interval: Time interval for repetative describe
+        :param interval: Time interval for repetitive describe
                          import snapshot tasks requests
         :type interval: ``float``
 
@@ -2352,6 +2352,10 @@ class BaseEC2NodeDriver(NodeDriver):
         ena_support=None,
         billing_products=None,
         sriov_net_support=None,
+        boot_mode: str = None,
+        tpm_support: str = None,
+        uefi_data: str = None,
+        imds_support: str = None,
     ):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
@@ -2404,6 +2408,21 @@ class BaseEC2NodeDriver(NodeDriver):
                                        Function interface
         :type       sriov_net_support: ``str``
 
+        :param      boot_mode: desired boot mode for the AMI.
+        :type       boot_mode: ``str``
+
+        :param      tpm_support: set to ``v2.0`` to enable TPM support.
+        :type       tpm_support: ``str``
+
+        :param      uefi_data: base64 representation of the non-volatile UEFI
+                               variable store.
+        :type       uefi_data: ``str``
+
+        :param      imds_support: set to ``v2.0`` to require HTTP tokens when
+                                  accessing the IMDS on instances launched
+                                  from the resulting image.
+        :type       imds_support: ``str``
+
         :rtype:     :class:`NodeImage`
         """
 
@@ -2441,6 +2460,18 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if sriov_net_support is not None:
             params["SriovNetSupport"] = sriov_net_support
+
+        if boot_mode is not None:
+            params["BootMode"] = boot_mode
+
+        if tpm_support is not None:
+            params["TpmSupport"] = tpm_support
+
+        if uefi_data is not None:
+            params["UefiData"] = uefi_data
+
+        if imds_support is not None:
+            params["ImdsSupport"] = imds_support
 
         image = self._to_image(self.connection.request(self.path, params=params).object)
         return image
@@ -3048,7 +3079,6 @@ class BaseEC2NodeDriver(NodeDriver):
         try:
             results.append(self.connection.request(self.path, params=params.copy()).object)
         except Exception as e:
-
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         return results
@@ -3346,7 +3376,6 @@ class BaseEC2NodeDriver(NodeDriver):
         for node_id in node_instance_ids:
             nodes_elastic_ip_mappings.setdefault(node_id, [])
             for addr in self._to_addresses(result, only_associated):
-
                 instance_id = addr.instance_id
 
                 if node_id == instance_id:
@@ -3870,7 +3899,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                  returned.
         :type       gateway_ids: ``list``
 
-        :param      filters: The filters so the list returned inclues
+        :param      filters: The filters so the list returned includes
                              information for certain gateways only.
         :type       filters: ``dict``
 
@@ -4397,7 +4426,6 @@ class BaseEC2NodeDriver(NodeDriver):
         ]
 
     def _to_image(self, element):
-
         id = findtext(element=element, xpath="imageId", namespace=NAMESPACE)
         name = findtext(element=element, xpath="name", namespace=NAMESPACE)
 
@@ -4410,7 +4438,6 @@ class BaseEC2NodeDriver(NodeDriver):
             xpath="billingProducts/item/billingProduct",
             namespace=NAMESPACE,
         ):
-
             billing_products.append(p.text)
 
         # Get our tags
@@ -4764,7 +4791,6 @@ class BaseEC2NodeDriver(NodeDriver):
         for item in findall(
             element=element, xpath="privateIpAddressesSet/item", namespace=NAMESPACE
         ):
-
             priv_ips.append(
                 {
                     "private_ip": findtext(
@@ -5282,7 +5308,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def _get_security_groups(self, element):
         """
         Parse security groups from the provided element and return a
-        list of security groups with the id ane name key/value pairs.
+        list of security groups with the id and name key/value pairs.
 
         :rtype: ``list`` of ``dict``
         """
@@ -5968,7 +5994,6 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         return is_truncated, quota
 
     def _to_product_type(self, elem):
-
         productTypeId = findtext(element=elem, xpath="productTypeId", namespace=OUTSCALE_NAMESPACE)
         description = findtext(element=elem, xpath="description", namespace=OUTSCALE_NAMESPACE)
 
@@ -6001,7 +6026,6 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         return product_type
 
     def _to_product_types(self, elem):
-
         product_types = []
         for product_types_item in findall(
             element=elem, xpath="productTypeSet/item", namespace=OUTSCALE_NAMESPACE
@@ -6044,7 +6068,6 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         return product_types
 
     def _to_instance_types(self, elem):
-
         instance_types = []
         for instance_types_item in findall(
             element=elem, xpath="instanceTypeSet/item", namespace=OUTSCALE_NAMESPACE

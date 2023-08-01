@@ -2862,7 +2862,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     network_connectionCls = OpenStack_2_NetworkConnection
     network_connection = None
 
-    # Similarly all image operations are noe exposed through the block-storage
+    # Similarly all image operations are not exposed through the block-storage
     # API of the cinder service:
     # https://developer.openstack.org/api-ref/block-storage/
     volumev2_connectionCls = OpenStack_2_VolumeV2Connection
@@ -4735,7 +4735,7 @@ class OpenStack_2_QuotaSetItem:
 
 class OpenStack_2_QuotaSet:
     """
-    Quota Set info. To get the informatio about quotas and used resources.
+    Quota Set info. To get the information about quotas and used resources.
 
     See:
     https://docs.openstack.org/api-ref/compute/?expanded=show-the-detail-of-quota-detail#show-a-quota

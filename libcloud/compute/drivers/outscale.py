@@ -705,7 +705,7 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return: list the status of one ore more vms
+        :return: list the status of one or more vms
         :rtype: ``list`` of ``dict``
         """
         action = "ReadVmsState"
@@ -2571,7 +2571,7 @@ class OutscaleNodeDriver(NodeDriver):
         client gateways.
         :type       tag_values: ``list`` of ``str``
 
-        :param      tags: TThe key/value combination of the tags
+        :param      tags: the key/value combination of the tags
         associated with the client gateways, in the following
         format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
         :type       tags: ``list`` of ``str``
@@ -2980,7 +2980,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         Deletes a specified DirectLink interface.
 
-        :param      direct_link_interface_id: TThe ID of the DirectLink
+        :param      direct_link_interface_id: the ID of the DirectLink
         interface you want to delete. (required)
         :type       direct_link_interface_id: ``str``
 
@@ -4495,7 +4495,7 @@ class OutscaleNodeDriver(NodeDriver):
         service, but does not release this EIP from your account. However, it
         does not delete any NAT service routes in your route tables.
 
-        :param      nat_service_id: TThe ID of the NAT service you want to
+        :param      nat_service_id: the ID of the NAT service you want to
         delete. (required)
         :type       nat_service_id: ``str``
 
@@ -5164,7 +5164,7 @@ class OutscaleNodeDriver(NodeDriver):
         peering connections.
         :type       tag_keys: ``list`` of ``str``
 
-        :param      tag_values: TThe values of the tags associated with the
+        :param      tag_values: the values of the tags associated with the
         Net peering connections.
         :type       tag_values: ``list`` of ``str``
 
@@ -6360,7 +6360,7 @@ class OutscaleNodeDriver(NodeDriver):
         to delete.
         :type       security_group_id: ``str``
 
-        :param      security_group_name: TThe name of the security group.
+        :param      security_group_name: the name of the security group.
         :type       security_group_name: ``str``
 
         :param      dry_run: If true, checks whether you have the required
@@ -6410,7 +6410,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      security_group_names: The names of the security groups.
         :type       security_group_names: ``list`` of ``str``
 
-        :param      tag_keys: TThe keys of the tags associated with the
+        :param      tag_keys: the keys of the tags associated with the
         security groups.
         :type       tag_keys: ``list`` of ``str``
 
@@ -6418,7 +6418,7 @@ class OutscaleNodeDriver(NodeDriver):
         security groups.
         :type       tag_values: ``list`` of ``str``
 
-        :param      tags: TThe key/value combination of the tags associated
+        :param      tags: the key/value combination of the tags associated
         with the security groups, in the following format:
         "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
         :type       tags: ``list`` of ``str``
@@ -6518,7 +6518,7 @@ class OutscaleNodeDriver(NodeDriver):
         of the source security group.
         :type       sg_name_to_link: ``str``
 
-        :param      to_port_range: TThe end of the port range for the TCP and
+        :param      to_port_range: the end of the port range for the TCP and
         UDP protocols, or an ICMP type number.
         :type       to_port_range: ``int``
 
@@ -6611,7 +6611,7 @@ class OutscaleNodeDriver(NodeDriver):
         of the source security group.
         :type       sg_name_to_unlink: ``str``
 
-        :param      to_port_range: TThe end of the port range for the TCP and
+        :param      to_port_range: the end of the port range for the TCP and
         UDP protocols, or an ICMP type number.
         :type       to_port_range: ``int``
 
@@ -6934,7 +6934,7 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      map_public_ip_on_launch: If true, a public IP address is
         assigned to the network interface cards (NICs) created in the s
-        pecified Subnet. (required)
+        specified Subnet. (required)
         :type       map_public_ip_on_launch: ``bool``
 
         :param      dry_run: If true, checks whether you have the required
@@ -6994,7 +6994,7 @@ class OutscaleNodeDriver(NodeDriver):
         Subnets are located.
         :type       subregion_names: ``str``
 
-        :param      tag_keys: TThe keys of the tags associated with the
+        :param      tag_keys: the keys of the tags associated with the
         subnets.
         :type       tag_keys: ``list`` of ``str``
 
@@ -7002,7 +7002,7 @@ class OutscaleNodeDriver(NodeDriver):
         subnets.
         :type       tag_values: ``list`` of ``str``
 
-        :param      tags: TThe key/value combination of the tags associated
+        :param      tags: the key/value combination of the tags associated
         with the subnets, in the following format:
         "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
         :type       tags: ``list`` of ``str``
@@ -7065,7 +7065,7 @@ class OutscaleNodeDriver(NodeDriver):
         Subnet. (required)
         :type       net_id: ``str``
 
-        :param      subregion_name: TThe name of the Subregion in which you
+        :param      subregion_name: the name of the Subregion in which you
         want to create the Subnet.
         :type       subregion_name: ``str``
 
@@ -7224,7 +7224,7 @@ class OutscaleNodeDriver(NodeDriver):
         deleting the VPN connection. This enables you to delete the Net
         without waiting for the VPN connection to be deleted.
 
-        :param      vpn_connection_id: TThe ID of the VPN connection you want
+        :param      vpn_connection_id: the ID of the VPN connection you want
         to delete.
         (required)
         :type       vpn_connection_id: ``str``
@@ -7258,7 +7258,7 @@ class OutscaleNodeDriver(NodeDriver):
         deleting the VPN connection. This enables you to delete the Net
         without waiting for the VPN connection to be deleted.
 
-        :param      vpn_connection_id: TThe ID of the VPN connection you want
+        :param      vpn_connection_id: the ID of the VPN connection you want
         to delete.
         (required)
         :type       vpn_connection_id: ``str``
@@ -7328,7 +7328,7 @@ class OutscaleNodeDriver(NodeDriver):
         https://docs.outscale.com/api#deletevpnconnectionroute
         :type       static_routes_only: ``bool``
 
-        :param      tag_keys: TThe keys of the tags associated with the
+        :param      tag_keys: the keys of the tags associated with the
         subnets.
         :type       tag_keys: ``list`` of ``str``
 
@@ -7336,7 +7336,7 @@ class OutscaleNodeDriver(NodeDriver):
         subnets.
         :type       tag_values: ``list`` of ``str``
 
-        :param      tags: TThe key/value combination of the tags associated
+        :param      tags: the key/value combination of the tags associated
         with the subnets, in the following format:
         "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
         :type       tags: ``list`` of ``str``
@@ -7560,7 +7560,7 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return: true if successfull.
+        :return: true if successful.
         :rtype: ``bool`` if successful or  ``dict``
         """
         action = "DeleteApiAccessRule"
@@ -7605,7 +7605,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: a List of API access rules.
-        :rtype: ``List`` of ``dict`` if successfull or  ``dict``
+        :rtype: ``List`` of ``dict`` if successful or  ``dict``
         """
 
         action = "ReadApiAccessRules"
@@ -7666,7 +7666,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: a List of API access rules.
-        :rtype: ``List`` of ``dict`` if successfull or  ``dict``
+        :rtype: ``List`` of ``dict`` if successful or  ``dict``
         """
 
         action = "UpdateApiAccessRule"
@@ -7743,22 +7743,25 @@ class OutscaleNodeDriver(NodeDriver):
         )
 
     def _to_volumes(self, volumes):
-        return [self._to_volumes(volume) for volume in volumes]
+        return [self._to_volume(volume) for volume in volumes]
 
     def _to_node(self, vm):
         name = ""
         private_ips = []
+        if "PrivateIp" in vm:
+            private_ips = [vm["PrivateIp"]]
+        public_ips = []
+        if "PublicIp" in vm:
+            public_ips = [vm["PublicIp"]]
         for tag in vm["Tags"]:
             if tag["Key"] == "Name":
                 name = tag["Value"]
-        if "Nics" in vm:
-            private_ips = vm["Nics"]["PrivateIps"]
 
         return Node(
             id=vm["VmId"],
             name=name,
             state=self.NODE_STATE[vm["State"]],
-            public_ips=[],
+            public_ips=public_ips,
             private_ips=private_ips,
             driver=self,
             extra=vm,
