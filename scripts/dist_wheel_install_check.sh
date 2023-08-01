@@ -17,6 +17,7 @@
 #  under the License.
 
 # Verify library installs without any dependencies when using built wheel
+set -e
 
 echo "Running dist wheel install checks"
 python --version
@@ -26,7 +27,7 @@ python --version
 pip show requests && exit 1
 pip show typing && exit 1
 pip show enum34 && exit 1
-pip show apache-libcloud
+pip show apache-libcloud && exit 1
 rm -rf dist/apache_libcloud-*.whl
 
 pip install wheel
