@@ -8,7 +8,5 @@ using the following commands:
 
 ```bash
 # Those commands need to run from the repository root
-git subtree pull --prefix .github/actions/skip-duplicate-actions https://github.com/fkirc/skip-duplicate-actions.git master --squash
-
 git subtree pull --prefix .github/actions/gh-action-pip-audit/ https://github.com/pypa/gh-action-pip-audit.git main --squash
 ```

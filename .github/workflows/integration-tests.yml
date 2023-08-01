@@ -13,8 +13,11 @@ on:
     - cron: '0 1 * * *'
 
 permissions:
-  actions: write  # Needed for skip-duplicate-jobs job
-  contents: read
+  contents: read  # for actions/checkout to fetch code
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 env:
   # Needed if we want colors in pytest output without tty and script -e -c wrapper
@@ -22,35 +25,10 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
-  # Special job which skips duplicate jobs
-  pre_job:
-    name: Skip Duplicate Jobs Pre Job
-    runs-on: ubuntu-latest
-    # Map a step output to a job output
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-        with:
-          persist-credentials: false
-          submodules: recursive
-
-      - id: skip_check
-        # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
-        # actions
-        uses: ./.github/actions/skip-duplicate-actions # v4.0.0
-        with:
-          cancel_others: 'true'
-          github_token: ${{ github.token }}
-
   integration_tests:
     name: Run Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
-    needs: pre_job
-    if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
 
     strategy:
       matrix:

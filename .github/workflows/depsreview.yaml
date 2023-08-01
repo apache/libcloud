@@ -6,38 +6,16 @@ on:
       - trunk
 
 permissions:
-  actions: write  # Needed for skip-duplicate-jobs job
-  contents: read
+  contents: read  # for actions/checkout to fetch code
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
-  # Special job which skips duplicate jobs
-  pre_job:
-    name: Skip Duplicate Jobs Pre Job
-    runs-on: ubuntu-latest
-    # Map a step output to a job output
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-        with:
-          persist-credentials: false
-          submodules: recursive
-
-      - id: skip_check
-        # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
-        # actions
-        uses: ./.github/actions/skip-duplicate-actions # v4.0.0
-        with:
-          cancel_others: 'true'
-          github_token: ${{ github.token }}
-
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
-
-    needs: pre_job
-    if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
 
     steps:
       - name: 'Checkout Repository'

@@ -14,7 +14,7 @@ on:
       - completed
 
 permissions:
-  contents: read
+  contents: read  # for actions/checkout to fetch code
 
 jobs:
   generate_and_publish_dev_release_artifacts:

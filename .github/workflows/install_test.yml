@@ -8,7 +8,7 @@ on:
     - cron: '0 2 * * *'
 
 permissions:
-  contents: read
+  contents: read  # for actions/checkout to fetch code
 
 jobs:
   install_and_verify:
