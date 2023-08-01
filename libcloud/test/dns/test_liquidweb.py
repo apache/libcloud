@@ -330,7 +330,6 @@ class LiquidWebMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_Network_DNS_Record_update(self, method, url, body, headers):
-
         body = self.fixtures.load("update_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

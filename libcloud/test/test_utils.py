@@ -479,7 +479,6 @@ class NetworkingUtilsTestCase(unittest.TestCase):
 
 
 class TestPublicKeyUtils(unittest.TestCase):
-
     PUBKEY = (
         "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOfbWSXOlqvYjZmRO84/lIoV4gvuX+"
         "P1lLg50MMg6jZjLZIlYY081XPRmuom0xY0+BO++J2KgLl7gxJ6xMsKK2VQ+TakdfAH20"

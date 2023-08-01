@@ -123,7 +123,6 @@ class NttCisNodeDriver(NodeDriver):
         region=DEFAULT_REGION,
         **kwargs,
     ):
-
         if region not in API_ENDPOINTS and host is None:
             raise ValueError("Invalid region: %s, no host specified" % (region))
         if region is not None:
@@ -796,7 +795,7 @@ class NttCisNodeDriver(NodeDriver):
         node_list = []
         # This is a generator so we changed from the original
         # and if nodes is not empty, ie, the stop iteration confdition
-        # Then set node_list to nodes and retrn.
+        # Then set node_list to nodes and return.
         for nodes in self.ex_list_nodes_paginated(
             location=ex_location,
             name=ex_name,
@@ -1379,7 +1378,7 @@ class NttCisNodeDriver(NodeDriver):
         :param name: optional name of server
         :type name: ``str``
 
-        :param server_id: optinal parameter to use instead of name
+        :param server_id: optional parameter to use instead of name
         :type `server_id`str``
 
         :return: True of False
@@ -3256,14 +3255,13 @@ class NttCisNodeDriver(NodeDriver):
         value_required=None,
         display_on_report=None,
     ):
-
         """
         Modify a specific tag key
 
         :param tag_key: The tag key you want to modify (required)
         :type  tag_key: :class:`NttCisTagKey` or ``str``
 
-        :param name: Set to modifiy the name of the tag key
+        :param name: Set to modify the name of the tag key
         :type  name: ``str``
 
         :param description: Set to modify the description of the tag key
@@ -4282,7 +4280,6 @@ class NttCisNodeDriver(NodeDriver):
         ex_tagid_value_pairs=None,
         ex_tagname_value_pairs=None,
     ):
-
         """
         This MCP 2.0 only function deploys a new Cloud Server from a
         CloudControl compatible Server Image, which does not utilize
@@ -4618,7 +4615,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_consistency_group(self, consistency_group_id):
         """
-        Retrieves a Consistency by it's id and is more efficient thatn listing
+        Retrieves a Consistency by it's id and is more efficient than listing
         all consistency groups and filtering that result.
 
         :param consistency_group_id: An id of a consistency group

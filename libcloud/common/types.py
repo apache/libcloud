@@ -89,7 +89,7 @@ class LibcloudError(Exception):
     """The base class for other libcloud exceptions"""
 
     def __init__(self, value, driver=None):
-        # type: (str, BaseDriver) -> None
+        # type: (str, Optional[BaseDriver]) -> None
         super().__init__(value)
         self.value = value
         self.driver = driver

@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a bug with pip-audit's GitHub Action
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Thank you for reporting a potential bug in `gh-action-pip-audit`! Please
+        read the following carefully:
+
+
+        **IMPORTANT:** This issue tracker is for `pip-audit`'s
+        **GitHub Action**, the scaffolding that integrates `pip-audit` with your
+        CI. If the buggy behavior you are experiencing appears to be in
+        `pip-audit`, please file an issue
+        [against the `pip-audit` repo](https://github.com/pypa/pip-audit/issues/new/choose).
+
+
+        **IMPORTANT:** Please fill out every section below. Bug reports with
+        missing information will be given a lower priority or closed outright.
+
+
+        Before filing an issue, check out our
+        [troubleshooting guide](https://github.com/pypa/gh-action-pip-audit#troubleshooting) :)
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current behavior
+      description: >-
+        What issue are you having with the action? What were you trying to do
+        when the issue occurred?
+      placeholder: The action run succeeds when I ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What should've happened instead?
+      placeholder: I expected the action run to fail.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: What are the detailed steps we can follow to trigger this issue?
+      placeholder: |-
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Relevant context
+      description: >-
+        Please include a link to an action run, as well as any logs that you think might
+        be helpful! You can
+        [follow these instructions](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs#re-running-all-the-jobs-in-a-workflow)
+        to re-run the action with debug logging.
+    validations:
+      required: true

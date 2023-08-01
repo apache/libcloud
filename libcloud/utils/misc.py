@@ -173,9 +173,9 @@ def str2list(data):
             continue
 
         try:
-            splitted = line.split(" ")
-            # key = splitted[0]
-            value = splitted[1]
+            split = line.split(" ")
+            # key = split[0]
+            value = split[1]
         except Exception:
             continue
 

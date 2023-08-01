@@ -76,6 +76,47 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
             raw=False,
         )
 
+    @patch("libcloud.test.common.test_openstack.OpenStackBaseConnection.connect", Mock())
+    def test_connection_is_reused_when_details_dont_change(self):
+        url = "https://example.com"
+
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 1)
+
+        for index in range(0, 10):
+            self.connection._set_up_connection_info(url=url)
+            self.assertEqual(self.connection.connect.call_count, 1)
+
+    @patch("libcloud.test.common.test_openstack.OpenStackBaseConnection.connect", Mock())
+    def test_connection_is_not_reused_when_details_change(self):
+        url = "https://example.com"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 1)
+
+        url = "https://example.com"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 1)
+
+        url = "https://example.com:80"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 2)
+
+        url = "http://example.com:80"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 3)
+
+        url = "http://exxample.com:80"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 4)
+
+        url = "http://exxample.com:81"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 5)
+
+        url = "http://exxample.com:81"
+        self.connection._set_up_connection_info(url=url)
+        self.assertEqual(self.connection.connect.call_count, 5)
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

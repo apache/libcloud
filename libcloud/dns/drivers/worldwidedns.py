@@ -292,7 +292,7 @@ class WorldWideDNSDriver(DNSDriver):
 
         :param extra: Extra attributes (driver specific). (optional). Possible
                       parameter in here should be *DYN* which values should be
-                      1 for standart and 2 for dynamic. Default is 1.
+                      1 for standard and 2 for dynamic. Default is 1.
         :type extra: ``dict``
 
         :rtype: :class:`Zone`

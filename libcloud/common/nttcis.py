@@ -25,7 +25,7 @@ from base64 import b64encode
 from typing import Dict
 from functools import wraps
 
-# TODO: use disutils.version when Travis CI fixed the pylint issue with version
+# TODO: use distutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
 from libcloud.utils.py3 import b, httplib, basestring
 from libcloud.utils.xml import findtext
@@ -251,7 +251,7 @@ def dd_object_to_id(obj, obj_type, id_value="id"):
         )
 
 
-# TODO: use disutils.version when Travis CI fixed the pylint issue with version
+# TODO: use distutils.version when Travis CI fixed the pylint issue with version
 #       This is a temporary workaround.
 def LooseVersion(version):
     return float(version)
@@ -803,7 +803,7 @@ class NttCisScsiController:
         :param bus_number: The bus number occupied on the virtual hardware
         :type  bus_nubmer: ``str``
 
-        :param state: Curent state (i.e. NORMAL)
+        :param state: Current state (i.e. NORMAL)
         :type  speed: ``str``
 
         :param state: State of the disk (i.e. PENDING)
@@ -1614,7 +1614,7 @@ class NttCisBackupClientRunningJob:
         """
         Initialize an instance of :class:`NttCisBackupClientRunningJob`
 
-        :param id: The unqiue ID of the job
+        :param id: The unique ID of the job
         :type  id: ``str``
 
         :param status: The status of the job i.e. Waiting
@@ -1640,7 +1640,7 @@ class NttCisBackupClientType:
         """
         Initialize an instance of :class:`NttCisBackupClientType`
 
-        :param type: The type of client i.e. (FA.Linux, MySQL, ect.)
+        :param type: The type of client i.e. (FA.Linux, MySQL, etc.)
         :type  type: ``str``
 
         :param is_file_system: The name of the iRule
@@ -2293,7 +2293,6 @@ class XmlDictConfig(dict):
                 # It is possible to have duplicate element tags.
                 # If so, convert to a dict of lists
                 if element.tag.split("}")[1] in self:
-
                     if isinstance(self[element.tag.split("}")[1]], list):
                         self[element.tag.split("}")[1]].append(dict(element.items()))
                     else:

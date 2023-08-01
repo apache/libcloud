@@ -722,7 +722,6 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_shared_ip_groups(self, method, url, body, headers):
-
         fixture = (
             "v1_slug_shared_ip_group.xml" if method == "POST" else "v1_slug_shared_ip_groups.xml"
         )
@@ -1102,7 +1101,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(sizes[0].vcpus, 8)
 
     def test_list_sizes_with_specified_pricing(self):
-
         pricing = {str(i): i * 5.0 for i in range(1, 9)}
 
         set_pricing(driver_type="compute", driver_name=self.driver.api_name, pricing=pricing)
@@ -1990,7 +1988,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_list_images_with_pagination_invalid_response_no_infinite_loop(self):
         # "next" attribute matches the current page, but it shouldn't result in
-        # an infite loop
+        # an infinite loop
         OpenStack_2_0_MockHttp.type = "invalid_next"
         ret = self.driver.list_images()
         self.assertEqual(len(ret), 2)
@@ -3859,7 +3857,7 @@ class OpenStack_AllAuthVersions_MockHttp(MockHttp):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Lazy import to avoid cyclic depedency issue
+        # Lazy import to avoid cyclic dependency issue
         from libcloud.test.common.test_openstack_identity import (
             OpenStackIdentity_2_0_MockHttp,
             OpenStackIdentity_3_0_MockHttp,

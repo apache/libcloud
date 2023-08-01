@@ -855,7 +855,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         headers,
     ):
         """
-        Uploads data from an interator in fixed sized chunks to Azure Storage
+        Uploads data from an iterator in fixed sized chunks to Azure Storage
         """
 
         data_hash = None
@@ -1221,7 +1221,6 @@ class AzureBlobsStorageDriver(StorageDriver):
         file_path,
         headers,
     ):
-
         headers = headers or {}
         lease.update_headers(headers)
 

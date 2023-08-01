@@ -238,7 +238,7 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         node = self.driver.list_nodes()[0]
         # Node is by default in NodeState.TERMINATED and AbiquoState ==
         # 'NOT_ALLOCATED'
-        # so it is available to be runned
+        # so it is available to be ran
         self.driver.ex_run_node(node)
 
     def test_run_node_invalid_state(self):
@@ -251,7 +251,7 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         self.driver = AbiquoNodeDriver("go", "trunks", "http://dummy.host.com/api")
         node = self.driver.list_nodes()[0]
         # Node is by default in AbiquoState = 'ON' for user 'go:trunks'
-        # so is not available to be runned
+        # so is not available to be ran
         self.assertRaises(LibcloudError, self.driver.ex_run_node, node)
 
     def test_run_node_failed(self):
@@ -292,7 +292,7 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
 class AbiquoMockHttp(MockHttp):
 
     """
-    Mock the functionallity of the remote Abiquo API.
+    Mock the functionality of the remote Abiquo API.
     """
 
     fixtures = ComputeFileFixtures("abiquo")
@@ -415,7 +415,6 @@ class AbiquoMockHttp(MockHttp):
     def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_tasks_b44fe278_6b0f_4dfb_be81_7c03006a93cb(
         self, method, url, body, headers
     ):
-
         if headers["Authorization"] == "Basic dGVuOnNoaW4=":
             # User 'ten:shin' failed task
             response = self.fixtures.load("vdc_4_vapp_6_vm_3_deploy_task_failed.xml")

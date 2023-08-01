@@ -1200,7 +1200,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
     ]
 
     def __init__(self, key, secret=None, secure=True, host=None, port=443, ca_cert=None):
-
         if not key or not secret:
             raise InvalidCredsError("Please provide both username " "(key) and password (secret).")
         super().__init__(key=key, secure=secure, host=host, port=port)
@@ -1550,7 +1549,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
         ex_filter_datacenters=None,
         ex_filter_connection_states=None,
     ):
-
         kwargs = {
             "filter.folders": ex_filter_folders,
             "filter.names": ex_filter_names,
@@ -1625,7 +1623,9 @@ class VSphere_REST_NodeDriver(NodeDriver):
             return result["value"]
         except BaseHTTPError:
             logger.error(
-                "Library was cannot be accesed, " " most probably the VCenter service " "is stopped"
+                "Library was cannot be accessed, "
+                " most probably the VCenter service "
+                "is stopped"
             )
             return []
 
@@ -1664,7 +1664,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def ex_update_memory(self, node, ram):
         """
-        :param ram: The ammount of ram in MB.
+        :param ram: The amount of ram in MB.
         :type ram: `str` or `int`
         """
         if isinstance(node, str):
@@ -1700,7 +1700,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def ex_add_nic(self, node, network):
         """
-        Creates a network adapater that will connect to the specified network
+        Creates a network adapter that will connect to the specified network
         for the given node. Returns a boolean indicating success or not.
         """
         if isinstance(node, str):
@@ -1782,7 +1782,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
         return images
 
     def ex_list_networks(self):
-
         request = "/rest/vcenter/network"
         response = self._request(request).object["value"]
         networks = []
@@ -1950,7 +1949,6 @@ class VSphere_REST_NodeDriver(NodeDriver):
             )
 
         elif image.extra["type"] == "vm-template":
-
             tp_request = "/rest/vcenter/vm-template/library-items/" + image.id
             template = self._request(tp_request).object["value"]
             spec = {}

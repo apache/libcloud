@@ -136,7 +136,7 @@ class UpcloudNodeDestroyer:
                 self._sleep()
             return self._do_destroy_node(node_id)
         elif state == "maintenance":
-            # Lets wait maintenace state to go away and retry destroy
+            # Lets wait maintenance state to go away and retry destroy
             self._sleep()
             return self._do_destroy_node(node_id)
         elif state is None:  # Server not found any more
@@ -153,7 +153,7 @@ class UpcloudNodeOperations:
     """
     Helper class to start and stop node.
 
-    :param  conneciton: Connection instance
+    :param  connection: Connection instance
     :type   connection: :class:`.UpcloudConnection`
     """
 

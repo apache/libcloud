@@ -38,7 +38,6 @@ DEFAULT_API_VERSION = "2"
 
 
 class VultrResponse(JsonResponse):
-
     objects = None
     error_dict = {}  # type: Dict[str, str]
     errors = None
@@ -55,7 +54,6 @@ class VultrResponse(JsonResponse):
     }
 
     def __init__(self, response, connection):
-
         self.errors = []
         super().__init__(response=response, connection=connection)
         self.objects, self.errors = self.parse_body_and_errors()
@@ -90,7 +88,6 @@ class VultrResponse(JsonResponse):
         return VultrException(error["ERRORCODE"], error["ERRORMESSAGE"])
 
     def success(self):
-
         return len(self.errors) == 0
 
 

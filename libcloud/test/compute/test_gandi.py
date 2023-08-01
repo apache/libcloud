@@ -28,7 +28,6 @@ from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 
 class GandiTests(unittest.TestCase):
-
     node_name = "test2"
 
     def setUp(self):
@@ -212,7 +211,6 @@ class GandiRatingTests(unittest.TestCase):
 
 
 class GandiMockHttp(BaseGandiMockHttp):
-
     fixtures = ComputeFileFixtures("gandi")
 
     def _xmlrpc__hosting_datacenter_list(self, method, url, body, headers):

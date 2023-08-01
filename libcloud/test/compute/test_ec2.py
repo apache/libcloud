@@ -131,7 +131,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         driver = EC2NodeDriver(*EC2_PARAMS, region="eu-south-1")
         self.assertEqual(driver.signature_version, "4")
 
-        # Verify that signature_version can be overriden via constructor argument
+        # Verify that signature_version can be overridden via constructor argument
         driver = EC2NodeDriver(*EC2_PARAMS, region="us-east-1", signature_version="2")
         self.assertEqual(driver.signature_version, "2")
 

@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest an idea for pip-audit's GitHub Action
+labels: enhancement
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Thank you for filing a feature request for `gh-action-pip-audit`! Please
+        read the following carefully:
+
+
+        **IMPORTANT:** This form is for `pip-audit`'s **GitHub Action**, the
+        scaffolding that integrates `pip-audit` with your CI. If you would like
+        a new feature in `pip-audit` itself, please go to
+        [the `pip-audit` repo](https://github.com/pypa/pip-audit/issues/new/choose).
+
+
+        **IMPORTANT:** Please fill out every required section below to the best
+        of your ability. Feature requests with missing information may be given
+        a lower priority or closed outright.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: Describe how the current solution is deficient.
+      placeholder: I am frustrated when ...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description:
+      placeholder: I think gh-action-pip-audit would benefit from ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternative solutions or features you've considered
+      description:
+      placeholder:
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any context or screenshots related to the feature request.
+      placeholder:

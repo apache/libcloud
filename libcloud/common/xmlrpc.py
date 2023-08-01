@@ -53,7 +53,6 @@ class ErrorCodeMixin:
 
 
 class XMLRPCResponse(ErrorCodeMixin, Response):
-
     defaultExceptionCls = Exception  # type: Type[Exception]
 
     def success(self):

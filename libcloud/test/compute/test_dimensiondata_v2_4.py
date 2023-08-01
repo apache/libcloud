@@ -2294,7 +2294,6 @@ class InvalidRequestError(Exception):
 
 
 class DimensionDataMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("dimensiondata")
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_report_usage(
@@ -3572,7 +3571,6 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createPortList(
         self, method, url, body, headers
     ):
-
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}" "createPortList":
             raise InvalidRequestError(request.tag)
@@ -3599,7 +3597,6 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editPortList(
         self, method, url, body, headers
     ):
-
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}" "editPortList":
             raise InvalidRequestError(request.tag)

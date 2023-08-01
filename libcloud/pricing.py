@@ -83,7 +83,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=Fals
 
     We intentionally only cache data for the requested driver and not all the
     pricing data since the whole pricing data is quite large (~2 MB). This
-    way we avoid unncessary memory overhead.
+    way we avoid unnecessary memory overhead.
 
     :type driver_type: ``str``
     :param driver_type: Driver type ('compute' or 'storage')
@@ -193,7 +193,6 @@ def get_size_price(driver_type, driver_name, size_id, region=None):
 
 
 def get_image_price(driver_name, image_name, size_name=None, cores=1):
-
     # for now only images of GCE have pricing data
     if driver_name == "gce_images":
         return _get_gce_image_price(image_name=image_name, size_name=size_name, cores=cores)
@@ -221,6 +220,7 @@ def _get_gce_image_price(image_name, size_name, cores=1):
     :rtype: ``float``
     :return: Image price
     """
+
     # helper function to get image family for gce images
     def _get_gce_image_family(image_name):
         image_family = None

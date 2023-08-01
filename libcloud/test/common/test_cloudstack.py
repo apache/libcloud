@@ -117,7 +117,6 @@ class CloudStackCommonTest(unittest.TestCase):
 
 
 class CloudStackMockHttp(MockHttp, unittest.TestCase):
-
     ERROR_TEXT = "ERROR TEXT"
 
     def _response(self, status, result, response):

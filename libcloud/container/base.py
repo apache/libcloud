@@ -41,8 +41,8 @@ class Container:
         state,  # type: ContainerState
         ip_addresses,  # type: List[str]
         driver,  # type: ContainerDriver
-        extra=None,  # type: dict
-        created_at=None,  # type: str
+        extra=None,  # type: Optional[dict]
+        created_at=None,  # type: Optional[str]
     ):
         """
         :param id: Container id.
@@ -112,7 +112,7 @@ class ContainerImage:
         path,  # type: str
         version,  # type: str
         driver,  # type: ContainerDriver
-        extra=None,  # type: dict
+        extra=None,  # type: Optional[dict]
     ):
         """
         :param id: Container Image id.
@@ -164,7 +164,7 @@ class ContainerCluster:
         id,  # type: str
         name,  # type: str
         driver,  # type: ContainerDriver
-        extra=None,  # type: dict
+        extra=None,  # type: Optional[dict]
     ):
         """
         :param id: Container Image id.

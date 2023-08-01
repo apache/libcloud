@@ -215,7 +215,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param ex_memory: The RAM in MB to be allocated to the VM
         :type ex_memory: ``int``
 
-        :param ex_cpu: The ammount of cpu to be allocated in miliCPUs
+        :param ex_cpu: The amount of cpu to be allocated in miliCPUs
                     ie: 400 will mean 0.4 of a core, 1000 will mean 1 core
                     and 3000 will mean 3 cores.
         :type ex_cpu: ``int``
@@ -262,9 +262,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param ex_network: Only the pod type is supported, and in the
                                configuration masquerade or bridge are the
                                accepted values.
-                               The parameter must be a tupple or list with
+                               The parameter must be a tuple or list with
                                (network_type, interface, name)
-        :type ex_network: `iterable` (tupple or list) [network_type, inteface, name]
+        :type ex_network: `iterable` (tuple or list) [network_type, interface, name]
                       network_type: `str` | only "pod" is accepted atm
                       interface: `str` | "masquerade" or "bridge"
                       name: `str`
@@ -438,7 +438,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         data = json.dumps(vm)
         req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/"
         try:
-
             self.connection.request(req, method=method, data=data)
 
         except Exception:
@@ -486,7 +485,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         return namespaces
 
     def list_sizes(self, location=None):
-
         namespace = ""
         if location:
             namespace = location.name
@@ -576,7 +574,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 msg = (
                     "An ex_volume_type must be provided from the list "
                     "of supported clouds, as well as the ex_volume_params "
-                    "necessesary for your volume type choice."
+                    "necessary for your volume type choice."
                 )
                 raise ValueError(msg)
 
@@ -629,7 +627,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param name: The name of the pvc an arbitrary string of lower letters
         :type name: `str`
 
-        :param size: An int of the ammount of gigabytes desired
+        :param size: An int of the amount of gigabytes desired
         :type size: `int`
 
         :param namespace: The namespace where the claim will live
@@ -678,7 +676,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
         if result.object["status"]["phase"] != "Bound":
             for _ in range(3):
-
                 req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + name
                 try:
                     result = self.connection.request(req).object
@@ -861,7 +858,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
 
     def ex_list_persistent_volume_claims(self, namespace="default"):
-
         pvc_req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims"
         try:
             result = self.connection.request(pvc_req).object
@@ -871,7 +867,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         return pvcs
 
     def ex_list_storage_classes(self):
-
         # sc = storage class
         sc_req = "/apis/storage.k8s.io/v1/storageclasses"
         try:
@@ -940,7 +935,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             if "memory" in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]:
                 memory = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"]
         elif vm["spec"]["template"]["spec"]["domain"]["resources"].get("requests", None):
-
             if vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"].get(
                 "memory", None
             ):

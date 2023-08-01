@@ -725,7 +725,7 @@ class BaseS3StorageDriver(StorageDriver):
         """
         root = Element("CompleteMultipartUpload")
 
-        for (count, etag) in chunks:
+        for count, etag in chunks:
             part = SubElement(root, "Part")
             part_no = SubElement(part, "PartNumber")
             part_no.text = str(count)
@@ -1107,7 +1107,16 @@ class BaseS3StorageDriver(StorageDriver):
         """
         headers = {}
         storage_class = storage_class or "standard"
-        if storage_class not in ["standard", "reduced_redundancy"]:
+        if storage_class not in [
+            "standard",
+            "reduced_redundancy",
+            "standard_ia",
+            "onezone_ia",
+            "intelligent_tiering",
+            "glacier",
+            "deep_archive",
+            "glacier_ir",
+        ]:
             raise ValueError("Invalid storage class value: %s" % (storage_class))
 
         key = self.http_vendor_prefix + "-storage-class"
@@ -1266,7 +1275,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         """
         Return a "presigned URL" for read-only access to object
 
-        AWS only - requires AWS signature V4 authenticaiton.
+        AWS only - requires AWS signature V4 authentication.
 
         :param obj: Object instance.
         :type  obj: :class:`Object`

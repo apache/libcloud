@@ -1344,7 +1344,6 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
 
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "POST":
-
             json_body = json.loads(body)
             access_list = json_body["accessList"]
             self.assertEqual("ALLOW", access_list[0]["type"])

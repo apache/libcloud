@@ -152,24 +152,19 @@ class CloudSigmaHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_start(self, method, url, body, headers):
-
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_stop(self, method, url, body, headers):
-
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.OK])
 
     def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_destroy(self, method, url, body, headers):
-
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _drives_d18119ce_7afa_474a_9242_e0384b160220_clone(self, method, url, body, headers):
-
         body = self.fixtures.load("drives_clone.txt")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _drives_a814def5_1789_49a0_bf88_7abe7bb1682a_info(self, method, url, body, headers):
-
         body = self.fixtures.load("drives_single_info.txt")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -197,11 +192,9 @@ class CloudSigmaHttp(MockHttp):
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.OK])
 
     def _drives_d18119ce_7afa_474a_9242_e0384b160220_destroy(self, method, url, body, headers):
-
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.OK])
 
     def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_set(self, method, url, body, headers):
-
         body = self.fixtures.load("servers_set.txt")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

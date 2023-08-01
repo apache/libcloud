@@ -131,7 +131,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         super().__init__(*args, **kwargs)
 
         # Stores info retrieved after authentication (auth token, api url,
-        # dowload url).
+        # download url).
         self._auth_conn = self.authCls(*args, **kwargs)
 
     def download_request(self, action, params=None):
@@ -554,7 +554,6 @@ class BackblazeB2StorageDriver(StorageDriver):
     def _perform_upload(
         self, data, container, object_name, extra=None, verify_hash=True, headers=None
     ):
-
         if isinstance(data, str):
             data = bytearray(data)
 

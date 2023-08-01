@@ -63,7 +63,6 @@ class DimensionDataBackupDriver(BackupDriver):
         region=DEFAULT_REGION,
         **kwargs,
     ):
-
         if region not in API_ENDPOINTS and host is None:
             raise ValueError("Invalid region: %s, no host specified" % (region))
         if region is not None:

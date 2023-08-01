@@ -358,7 +358,7 @@ class ECSDriver(NodeDriver):
                                will be returned.
         :type   ex_node_ids: ``list`` of ``str``
         :keyword  ex_filters: node attribute and value pairs to filter nodes.
-                              Only the nodes which matchs all the pairs will
+                              Only the nodes which matches all the pairs will
                               be returned.
                               If the filter attribute need a json array value,
                               use ``list`` object, the driver will convert it.
@@ -850,7 +850,7 @@ class ECSDriver(NodeDriver):
         :type ex_volume_ids: ``list`` of ``str``
 
         :keyword ex_filters: volume attribute and value pairs to filter
-                             volumes. Only the volumes which matchs all will
+                             volumes. Only the volumes which matches all will
                              be returned.
                              If the filter attribute need a json array value,
                              use ``list`` object, the driver will convert it.
@@ -889,7 +889,7 @@ class ECSDriver(NodeDriver):
         :type ex_snapshot_ids: ``list`` of ``str``
 
         :keyword ex_filters: snapshot attribute and value pairs to filter
-                             snapshots. Only the snapshot which matchs all
+                             snapshots. Only the snapshot which matches all
                              the pairs will be returned.
                              If the filter attribute need a json array value,
                              use ``list`` object, the driver will convert it.
@@ -1086,7 +1086,7 @@ class ECSDriver(NodeDriver):
         :type ex_image_ids: ``list`` of ``str``
 
         :keyword ex_filters: image attribute and value pairs to filter
-                             images. Only the image which matchs all
+                             images. Only the image which matches all
                              the pairs will be returned.
                              If the filter attribute need a json array value,
                              use ``list`` object, the driver will convert it.

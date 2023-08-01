@@ -88,3 +88,21 @@ jobs:
           PIP_AUDIT_OUTPUT: "${{ steps.pip-audit.outputs.internal-be-careful-output }}"
         run: |
           grep -E 'pyyaml\s+\|\s+5.1' <<< $(base64 -d <<< "${PIP_AUDIT_OUTPUT}")
+  selftest-pipaudit-fail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        id: pip-audit
+        with:
+          # we do not care about pip-audit's actual output in this test, we just need a file to pass
+          # in so as to not exercise `pip list` mode.
+          inputs: ./test/empty.txt
+          # pass in a fake flag here to reliably trigger the failure we're looking for.
+          internal-be-careful-extra-flags: --not-a-real-pip-audit-flag
+          internal-be-careful-allow-failure: true
+      - name: assert expected output
+        env:
+          PIP_AUDIT_OUTPUT: "${{ steps.pip-audit.outputs.internal-be-careful-output }}"
+        run: |
+          grep 'pip-audit did not return any output' <<< $(base64 -d <<< "${PIP_AUDIT_OUTPUT}")

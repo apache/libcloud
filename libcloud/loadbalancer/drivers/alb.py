@@ -68,7 +68,6 @@ class ALBTargetGroup:
         balancers=[],
         members=[],
     ):
-
         self.id = target_group_id
         self.name = name
         self.protocol = protocol
@@ -135,7 +134,6 @@ class ALBListener:
         ssl_certificate="",
         rules=[],
     ):
-
         self.id = listener_id
         self.protocol = protocol
         self.port = port
@@ -186,7 +184,6 @@ class ALBRule:
         conditions={},
         listener=None,
     ):
-
         self.id = rule_id
         self.is_default = is_default
         self.priority = priority
@@ -304,7 +301,7 @@ class ApplicationLBDriver(Driver):
         :type algorithm: :class:`Algorithm` or ``None``
 
         :param members: List of Members to attach to the balancer. If 'port'
-                        attribute is set for the memeber - load balancer will
+                        attribute is set for the member - load balancer will
                         send traffic there. Otherwise - load balancer port is
                         used on the memeber's side. 'ip' attribute is ignored.
         :type members: ``list`` of :class:`Member`
@@ -560,7 +557,7 @@ class ApplicationLBDriver(Driver):
         :type target_group: ``dict``
 
         :param members: List of Members to attach to the balancer. If 'port'
-                        attribute is set for the memeber - load balancer will
+                        attribute is set for the member - load balancer will
                         send traffic there. Otherwise - load balancer port is
                         used on the memeber's side. 'ip' attribute is ignored.
         :type members: ``list`` of :class:`Member`
@@ -882,7 +879,6 @@ class ApplicationLBDriver(Driver):
         ]
 
     def _to_target_group(self, el):
-
         target_group = ALBTargetGroup(
             target_group_id=findtext(element=el, xpath="TargetGroupArn", namespace=NS),
             name=findtext(element=el, xpath="TargetGroupName", namespace=NS),
@@ -1020,7 +1016,7 @@ class ApplicationLBDriver(Driver):
 #
 #    def balancer_list_members(self, balancer):
 #         """
-#         List memebers of load balancer
+#         List members of load balancer
 #
 #         :param balancer: LoadBalancer to list members for
 #         :type  balancer: :class:`LoadBalancer`
@@ -1033,7 +1029,7 @@ class ApplicationLBDriver(Driver):
 #        """
 #        Fetch members across all listeners/rules/target groups
 #
-#         :param balancer: load balancer to fetch memebers for
+#         :param balancer: load balancer to fetch members for
 #         :type balancer: :class:`LoadBalancer`
 #
 #         :return: list of load balancer members across all target groups
@@ -1042,7 +1038,7 @@ class ApplicationLBDriver(Driver):
 #         balancer_members = []
 #         for listener in balancer.extra.get('listeners', []):
 #             for rule in listener.rules:
-#                 for tg_member in rule.target_group.memebers:
+#                 for tg_member in rule.target_group.members:
 #                     tg_member.balancer = balancer
 #                     tg_member.extra['target_group'] = rule.target_group
 #                     balancer_members.append(tg_member)

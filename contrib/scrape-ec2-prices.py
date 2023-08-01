@@ -305,7 +305,7 @@ def sort_key_by_numeric_other(key_value):
     """
     result = []
 
-    for (numeric, alpha, other) in RE_NUMERIC_OTHER.findall(key_value[0]):
+    for numeric, alpha, other in RE_NUMERIC_OTHER.findall(key_value[0]):
         numeric = int(numeric) if numeric else -1
         alpha = INSTANCE_SIZES.index(alpha) if alpha in INSTANCE_SIZES else alpha
         alpha = str(alpha)

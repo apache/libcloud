@@ -51,7 +51,6 @@ from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-m
 
 
 class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
-
     fixtures = StorageFileFixtures("s3")
     base_headers = {}
 
@@ -700,7 +699,7 @@ class S3Tests(unittest.TestCase):
         # Test case which verifies that response.body attribute is not accessed
         # and as such, whole body response is not buffered into RAM
 
-        # If content is consumed and response.content attribute accessed execption
+        # If content is consumed and response.content attribute accessed exception
         # will be thrown and test will fail
         mock_response = Mock(name="mock response")
         mock_response.headers = {}
@@ -1083,6 +1082,28 @@ class S3Tests(unittest.TestCase):
         extra = {"content_type": "text/plain"}
         obj = self.driver.upload_object_via_stream(
             container=container, object_name=object_name, iterator=iterator, extra=extra
+        )
+
+        self.assertEqual(obj.name, object_name)
+        self.assertEqual(obj.size, 3)
+
+    def test_upload_small_object_with_glacier_ir(self):
+        if self.driver.supports_s3_multipart_upload:
+            self.mock_response_klass.type = "MULTIPART"
+        else:
+            self.mock_response_klass.type = None
+
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+        object_name = "foo_test_stream_data"
+        storage_class = "glacier_ir"
+        iterator = BytesIO(b("234"))
+        extra = {"content_type": "text/plain"}
+        obj = self.driver.upload_object_via_stream(
+            container=container,
+            object_name=object_name,
+            iterator=iterator,
+            extra=extra,
+            ex_storage_class=storage_class,
         )
 
         self.assertEqual(obj.name, object_name)

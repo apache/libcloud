@@ -158,7 +158,6 @@ class LXDStoragePool:
     """
 
     def __init__(self, name, driver, used_by, config, managed):
-
         # the name of the storage pool
         self.name = name
 
@@ -216,7 +215,6 @@ class LXDServerInfo:
 
     @classmethod
     def build_from_response(cls, metadata):
-
         server_info = LXDServerInfo()
         server_info.api_extensions = metadata.get("api_extensions", None)
         server_info.api_status = metadata.get("api_status", None)
@@ -228,7 +226,6 @@ class LXDServerInfo:
         return server_info
 
     def __init__(self):
-
         # List of API extensions added after
         # the API was marked stable
         self.api_extensions = None
@@ -278,7 +275,6 @@ class LXDResponse(JsonResponse):
     ]
 
     def parse_body(self):
-
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
 
@@ -334,7 +330,6 @@ class LXDConnection(ConnectionUserAndKey):
 
 
 class LXDtlsConnection(KeyCertificateConnection):
-
     responseCls = LXDResponse
 
     def __init__(
@@ -350,7 +345,6 @@ class LXDtlsConnection(KeyCertificateConnection):
         certificate_validator=None,
         **kwargs,
     ):
-
         if certificate_validator is not None:
             certificate_validator(key_file=key_file, cert_file=cert_file)
         else:
@@ -419,9 +413,7 @@ class LXDContainerDriver(ContainerDriver):
         ca_cert=None,
         certificate_validator=check_certificates,
     ):
-
         if key_file:
-
             if not cert_file:
                 # LXD tls authentication-
                 # We pass two files, a key_file with the
@@ -467,7 +459,6 @@ class LXDContainerDriver(ContainerDriver):
         self.version = self._get_api_version()
 
     def build_operation_websocket_url(self, uuid, w_secret):
-
         uri = "wss://%s:%s/%s/operations/%s/" "websocket?secret=%s" % (
             self.connection.host,
             self.connection.port,
@@ -524,7 +515,6 @@ class LXDContainerDriver(ContainerDriver):
         ex_instance_type=None,
         ex_timeout=default_time_out,
     ):
-
         """
         Create a new container
         Authentication: trusted
@@ -542,7 +532,7 @@ class LXDContainerDriver(ContainerDriver):
 
         :param parameters: Container Image parameters.
         This parameter should represent the
-        the ``source`` dictioanry expected by the  LXD API call. For more
+        the ``source`` dictionary expected by the  LXD API call. For more
         information how this parameter should be structured see
         https://github.com/lxc/lxd/blob/master/doc/rest-api.md
         :type  parameters: ``str``
@@ -579,7 +569,6 @@ class LXDContainerDriver(ContainerDriver):
             parameters = json.loads(parameters)
 
             if parameters["source"].get("mode", None) == "pull":
-
                 try:
                     # this means the image must be downloaded
                     image = self.install_image(path=None, ex_timeout=ex_timeout, **parameters)
@@ -623,7 +612,6 @@ class LXDContainerDriver(ContainerDriver):
         return container
 
     def get_container(self, id, ex_get_ip_addr=True):
-
         """
         Get a container by ID
 
@@ -748,7 +736,6 @@ class LXDContainerDriver(ContainerDriver):
         )
 
     def ex_freeze_container(self, container, ex_timeout=default_time_out):
-
         """
         Set the given container into a freeze state
 
@@ -770,7 +757,6 @@ class LXDContainerDriver(ContainerDriver):
         )
 
     def ex_unfreeze_container(self, container, ex_timeout=default_time_out):
-
         """
         Set the given container into  unfreeze state
 
@@ -819,14 +805,12 @@ class LXDContainerDriver(ContainerDriver):
             raise self._get_lxd_api_exception_for_error(err)
 
         try:
-
             # wait until the timeout...but util getting here the operation
             # may have finished already
             id = response_dict["metadata"]["id"]
             req = "/{}/operations/{}/wait?timeout={}".format(self.version, id, ex_timeout)
             response = self.connection.request(req)
         except BaseHTTPError as err:
-
             lxd_exception = self._get_lxd_api_exception_for_error(err)
             # if not found assume the operation completed
             if lxd_exception.message != "not found":
@@ -952,7 +936,6 @@ class LXDContainerDriver(ContainerDriver):
             )
 
         elif input["wait-for-websocket"] is True and input["interactive"] is True:
-
             return LXDContainerExecuteResult(
                 uuid=uuid,
                 secret_0=fds["0"],
@@ -964,7 +947,6 @@ class LXDContainerDriver(ContainerDriver):
             )
 
         elif input["interactive"] is False and input["record-output"] is True:
-
             output = response_dict["metadata"]["metadata"]["output"]
             result = response_dict["metadata"]["metadata"]["result"]
             return LXDContainerExecuteResult(
@@ -978,7 +960,6 @@ class LXDContainerDriver(ContainerDriver):
             )
 
         else:
-
             result = response_dict["metadata"]["metadata"]["result"]
             return LXDContainerExecuteResult(
                 uuid=uuid,
@@ -1054,7 +1035,6 @@ class LXDContainerDriver(ContainerDriver):
         return self._to_image(metadata=response_dict["metadata"])
 
     def install_image(self, path, ex_timeout=default_time_out, **ex_img_data):
-
         """
         Install a container image from a remote path. Not that the
         path currently is not used. Image data should be provided
@@ -1101,14 +1081,12 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict, status_code=100)
 
         try:
-
             # wait until the timeout...but until getting here the operation
             # may have finished already
             id = response_dict["metadata"]["id"]
             req = "/{}/operations/{}/wait?timeout={}".format(self.version, id, ex_timeout)
             response = self.connection.request(req)
         except BaseHTTPError as err:
-
             lxd_exception = self._get_lxd_api_exception_for_error(err)
             # if not found assume the operation completed
             if lxd_exception.message != "not found":
@@ -1234,7 +1212,6 @@ class LXDContainerDriver(ContainerDriver):
         return self._to_storage_pool(data=response_dict["metadata"])
 
     def ex_create_storage_pool(self, definition):
-
         """
         Create a storage_pool from definition.
 
@@ -1338,7 +1315,6 @@ class LXDContainerDriver(ContainerDriver):
             type = volume[-2]
 
             if not detailed:
-
                 metadata = {
                     "config": {"size": None},
                     "name": name,
@@ -1393,7 +1369,6 @@ class LXDContainerDriver(ContainerDriver):
         pools = response_dict["metadata"]
 
         for pool in pools:
-
             pool_id = pool.split("/")[-1]
 
             volumes = self.ex_list_storage_pool_volumes(pool_id=pool_id)
@@ -1405,7 +1380,6 @@ class LXDContainerDriver(ContainerDriver):
         return None
 
     def create_volume(self, pool_id, definition, **kwargs):
-
         """
         Create a new storage volume on a given storage pool
         Operation: sync or async (when copying an existing volume)
@@ -1460,14 +1434,12 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict, status_code=100)
 
         try:
-
             # wait until the timeout...but util getting here the operation
             # may have finished already
             oid = response_dict["metadata"]["id"]
             req = "/{}/operations/{}/wait?timeout={}".format(self.version, oid, ex_timeout)
             response = self.connection.request(req)
         except BaseHTTPError as err:
-
             lxd_exception = self._get_lxd_api_exception_for_error(err)
             # if not found assume the operation completed
             if lxd_exception.message != "not found":
@@ -1517,7 +1489,6 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         try:
-
             req = "/{}/storage-pools/{}/volumes/{}/{}".format(
                 self.version,
                 pool_id,

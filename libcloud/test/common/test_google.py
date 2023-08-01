@@ -357,7 +357,6 @@ class GoogleAuthTypeTest(GoogleTestCase):
 
 
 class GoogleOAuth2CredentialTest(GoogleTestCase):
-
     _ia_get_code_patcher = mock.patch(
         "libcloud.common.google.GoogleInstalledAppAuthConnection.get_code",
         return_value=1234,

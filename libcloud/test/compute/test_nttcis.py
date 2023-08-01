@@ -2107,7 +2107,6 @@ class InvalidRequestError(Exception):
 
 
 class NttCisMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures("nttcis")
 
     def _oec_0_9_myaccount_UNAUTHORIZED(self, method, url, body, headers):
@@ -3263,7 +3262,6 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_createPortList(
         self, method, url, body, headers
     ):
-
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}" "createPortList":
             raise InvalidRequestError(request.tag)
@@ -3290,7 +3288,6 @@ class NttCisMockHttp(MockHttp):
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_editPortList(
         self, method, url, body, headers
     ):
-
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}" "editPortList":
             raise InvalidRequestError(request.tag)

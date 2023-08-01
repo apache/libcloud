@@ -1,34 +1,34 @@
 .. NOTE: This file has been generated automatically using generate_provider_feature_matrix_table.py script, don't manually edit it
 
-=================== ========== ============ =========== =========== ============= ============= =========== =============
-Provider            list zones list records create zone update zone create record update record delete zone delete record
-=================== ========== ============ =========== =========== ============= ============= =========== =============
-`AuroraDNS`_        yes        yes          yes         no          yes           yes           yes         yes          
-`BuddyNS DNS`_      yes        no           yes         no          no            no            yes         no           
-`CloudFlare DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
-`DigitalOcean`_     yes        yes          yes         no          yes           yes           yes         yes          
-`DNSimple`_         yes        yes          yes         no          yes           yes           yes         yes          
-`DurableDNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
-`Gandi DNS`_        yes        yes          yes         yes         yes           yes           yes         yes          
-`Gandi LiveDNS`_    yes        yes          yes         no          yes           yes           no          yes          
-`GoDaddy DNS`_      yes        yes          no          no          yes           yes           yes         no           
-`Google DNS`_       yes        yes          yes         no          yes           no            yes         yes          
-`Linode DNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
-`Liquidweb DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
-`Luadns`_           yes        yes          yes         no          yes           no            yes         yes          
-`NFSN DNS`_         no         yes          no          no          yes           no            no          yes          
-`NS1 DNS`_          yes        yes          yes         no          yes           yes           yes         yes          
-`OnApp`_            yes        yes          yes         no          yes           yes           yes         yes          
-`Point DNS`_        yes        yes          yes         yes         yes           yes           yes         yes          
-`PowerDNS`_         yes        yes          yes         no          yes           yes           yes         yes          
-`Rackspace DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
-`RcodeZero DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
-`Route53 DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
-`Vultr DNS`_        yes        yes          yes         no          yes           yes           yes         yes          
-`World Wide DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
-`Zerigo DNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
-`Zonomi DNS`_       yes        yes          yes         no          yes           no            yes         yes          
-=================== ========== ============ =========== =========== ============= ============= =========== =============
+================= ========== ============ =========== =========== ============= ============= =========== =============
+Provider          list zones list records create zone update zone create record update record delete zone delete record
+================= ========== ============ =========== =========== ============= ============= =========== =============
+`AuroraDNS`_      yes        yes          yes         no          yes           yes           yes         yes          
+`BuddyNS DNS`_    yes        no           yes         no          no            no            yes         no           
+`CloudFlare DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
+`DigitalOcean`_   yes        yes          yes         no          yes           yes           yes         yes          
+`DNSimple`_       yes        yes          yes         no          yes           yes           yes         yes          
+`DurableDNS`_     yes        yes          yes         yes         yes           yes           yes         yes          
+`Gandi DNS`_      yes        yes          yes         yes         yes           yes           yes         yes          
+`Gandi LiveDNS`_  yes        yes          yes         no          yes           yes           no          yes          
+`GoDaddy DNS`_    yes        yes          no          no          yes           yes           yes         no           
+`Google DNS`_     yes        yes          yes         no          yes           no            yes         yes          
+`Linode DNS`_     yes        yes          yes         yes         yes           yes           yes         yes          
+`Liquidweb DNS`_  yes        yes          yes         no          yes           yes           yes         yes          
+`Luadns`_         yes        yes          yes         no          yes           no            yes         yes          
+`NFSN DNS`_       no         yes          no          no          yes           no            no          yes          
+`NS1 DNS`_        yes        yes          yes         no          yes           yes           yes         yes          
+`OnApp`_          yes        yes          yes         no          yes           yes           yes         yes          
+`Point DNS`_      yes        yes          yes         yes         yes           yes           yes         yes          
+`PowerDNS`_       yes        yes          yes         no          yes           yes           yes         yes          
+`Rackspace DNS`_  yes        yes          yes         yes         yes           yes           yes         yes          
+`RcodeZero DNS`_  yes        yes          yes         yes         yes           yes           yes         yes          
+`Route53 DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
+`Vultr DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
+`World Wide DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
+`Zerigo DNS`_     yes        yes          yes         yes         yes           yes           yes         yes          
+`Zonomi DNS`_     yes        yes          yes         no          yes           no            yes         yes          
+================= ========== ============ =========== =========== ============= ============= =========== =============
 
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`BuddyNS DNS`: https://www.buddyns.com

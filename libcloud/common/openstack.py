@@ -334,7 +334,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         headers[AUTH_TOKEN_HEADER] = self.auth_token
         headers["Accept"] = self.accept_format
         if self._ex_force_microversion:
-            # If service not set in microversion, asume compute
+            # If service not set in microversion, assume compute
             microversion = self._ex_force_microversion.strip().split()
             if len(microversion) == 2:
                 service_type = microversion[0]
@@ -357,9 +357,14 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         return super().morph_action_hook(action)
 
     def _set_up_connection_info(self, url):
+        prev_conn = (self.host, self.port, self.secure)
         result = self._tuple_from_url(url)
         (self.host, self.port, self.secure, self.request_path) = result
-        self.connect()
+        new_conn = (self.host, self.port, self.secure)
+        if new_conn != prev_conn:
+            # We only call connect in case connection details have changed - this way we correctly
+            # re-use connection in case nothing has changed
+            self.connect()
 
     def _populate_hosts_and_request_paths(self):
         """
