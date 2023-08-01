@@ -73,6 +73,11 @@ Storage
   (GITHUB-1885, GITHUB-1886)
   [Marcus T - @llamasoft]
 
+- [Backblaze B2] Fix a bug which would result in an exception when passing
+  ``extra={"meta_data": {}}`` argument to the ``upload_object()`` method.
+  (GITHUB-1916)
+  [Shepilov Vladislav - @shepilov-vladislav]
+
 Other
 ~~~~~
 
