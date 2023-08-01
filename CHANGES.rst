@@ -24,6 +24,11 @@ Compute
   (GITHUB-1824, GITHUB-1850)
   [Jan Müller - @ojan-mue]
 
+- [Azure ARM] Bump DISK_API_VERSION from ``2018-06-01`` to ``2023-01-02`` to
+  support premium v2 SSDs.
+  (GITHUB-1904)
+  [John Wren Kennedy - @jwk404]
+
 Storage
 ~~~~~~~
 
