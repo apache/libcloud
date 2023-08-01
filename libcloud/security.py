@@ -24,7 +24,6 @@ Usage:
 """
 
 import os
-import ssl
 
 __all__ = ["VERIFY_SSL_CERT", "CA_CERTS_PATH"]
 
