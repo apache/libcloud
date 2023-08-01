@@ -123,6 +123,17 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
         self.assertEqual(obj.size, 24)
         self.assertEqual(obj.extra["fileId"], "abcde")
 
+    def test_upload_object_with_metadata(self):
+        file_path = os.path.abspath(__file__)
+        container = self.driver.list_containers()[0]
+        obj = self.driver.upload_object(
+            file_path=file_path, container=container, object_name="test0007.txt",
+            extra={"meta_data": {"foo": "bar", "baz": 1}}
+        )
+        self.assertEqual(obj.name, "test0007.txt")
+        self.assertEqual(obj.size, 24)
+        self.assertEqual(obj.extra["fileId"], "abcde")
+
     def test_delete_object(self):
         container = self.driver.list_containers()[0]
         obj = self.driver.list_container_objects(container=container)[0]
