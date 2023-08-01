@@ -13,14 +13,14 @@ on:
 permissions:
   contents: read  # for actions/checkout to fetch code
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 env:
   # Needed if we want colors in pytest output without tty and script -e -c wrapper
   PY_COLORS: "1"
   FORCE_COLOR: "1"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
 
 jobs:
   unit_tests:
