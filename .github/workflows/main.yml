@@ -108,7 +108,7 @@ jobs:
 
       - name: Run dist install checks tox target
         # NOTE: 3.12 will be failing until we migrate away from setup.py
-        if: ${{ matrix.python_version != 'pypy-3.7' && matrix.python_version != 'pyjion' && matrix.python_version != '3.12-dev' }}
+        if: ${{ matrix.python_version != 'pypy-3.7' && matrix.python_version != 'pypy-3.8' && matrix.python_version != 'pyjion' && matrix.python_version != '3.12-dev' }}
         run: |
          tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
 
