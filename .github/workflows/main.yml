@@ -38,8 +38,9 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12-dev"
-          # TODO: Investigate why it started failing with cryptic error on CI
+          # cryptography is not compatible with older PyPy versions
           #- "pypy-3.7"
+          - "pypy-3.8"
         os:
           - ubuntu-latest
         include:
@@ -62,7 +63,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
-      - name: Use Python 3.10
+      - name: Use Python 3.10 (pyjion)
         if: ${{ matrix.python_version == 'pyjion' }}
         uses: actions/setup-python@v4
         with:
@@ -99,7 +100,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Run unit tests tox target
         run: |
@@ -107,7 +108,7 @@ jobs:
 
       - name: Run dist install checks tox target
         # NOTE: 3.12 will be failing until we migrate away from setup.py
-        if: ${{ matrix.python_version != 'pypy-3.7' && matrix.python_version != 'pyjion' && matrix.python_version != '3.12-dev' }}
+        if: ${{ matrix.python_version != 'pypy-3.7' && matrix.python_version != 'pypy-3.8' && matrix.python_version != 'pyjion' && matrix.python_version != '3.12-dev' }}
         run: |
          tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
 
@@ -144,7 +145,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Run Checks
         run: |
@@ -189,7 +190,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Run Checks
         run: |
@@ -252,7 +253,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Install Library Into Virtualenv
         run: |
@@ -318,7 +319,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Run Micro Benchmarks
         run: |
@@ -362,7 +363,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Build Docs
         run: |

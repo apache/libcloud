@@ -36,7 +36,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==4.4.2"
+          pip install -r requirements-ci.txt
 
       - name: Generate and publish pricing data
         env:

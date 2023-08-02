@@ -87,14 +87,12 @@ Note on Python Version Compatibility
 
 Libcloud supports Python >= 3.7 and PyPy >= 3.7.
 
-Support for Python 3.6 has been dropped in v3.7.0 release.
-Last release series which supports Python 3.6 is v3.6.x.
-
-Support for Python 3.5 has been dropped in v3.5.0 release.
-Last release series which supports Python 3.5 is v3.4.x.
-
-Support for Python 2.7 and 3.4 has been dropped in Libcloud v3.0.0 (last
-release series which support Python 2.7 and Python 3.4 is v2.8.x).
+* Support for Python 3.6 has been dropped in v3.7.0 release.
+  Last release series which supports Python 3.6 is v3.6.x.
+* Support for Python 3.5 has been dropped in v3.5.0 release.
+* Last release series which supports Python 3.5 is v3.4.x.
+* Support for Python 2.7 and 3.4 has been dropped in Libcloud v3.0.0 (last
+  release series which support Python 2.7 and Python 3.4 is v2.8.x).
 
 Feedback
 ========
@@ -109,10 +107,17 @@ For information on how to contribute, please see the Contributing
 chapter in our documentation
 <https://libcloud.readthedocs.org/en/latest/development.html#contributing>
 
+Website
+=======
+
+Source code for the website is available at
+<https://github.com/apache/libcloud-site>.
+
 License
 =======
 
-Apache Libcloud is licensed under the Apache 2.0 license. For more information, please see LICENSE_ and NOTICE_  file.
+Apache Libcloud is licensed under the Apache 2.0 license. For more information,
+please see LICENSE_ and NOTICE_ file.
 
 .. _LICENSE: https://github.com/apache/libcloud/blob/trunk/LICENSE
 .. _NOTICE: https://github.com/apache/libcloud/blob/trunk/NOTICE
