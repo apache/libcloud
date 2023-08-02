@@ -154,6 +154,9 @@ jobs:
       - name: Upload Coverage to codecov.io
         uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
         with:
+          # We utilize secret for more realiable builds. Without secret being set, upload step
+          # fails fairly often.
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
 
