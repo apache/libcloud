@@ -38,8 +38,8 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12-dev"
-          # TODO: Investigate why it started failing with cryptic error on CI
-          - "pypy-3.7"
+          # cryptography is not compatible with older PyPy versions
+          #- "pypy-3.7"
           - "pypy-3.8"
         os:
           - ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
-      - name: Use Python 3.10
+      - name: Use Python 3.10 (pyjion)
         if: ${{ matrix.python_version == 'pyjion' }}
         uses: actions/setup-python@v4
         with:
