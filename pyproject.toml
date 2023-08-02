@@ -1,10 +1,93 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 [build-system]
-requires = ["setuptools~=66.1", "wheel~=0.37.1"]
+requires = [
+    "setuptools~=66.1",
+    "wheel~=0.37.1"
+]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "apache-libcloud"
+description = "A standard Python library that abstracts away differences among multiple cloud provider APIs. For more information and documentation, please see https://libcloud.apache.org"
+authors = [
+    {name = "Apache Software Foundation", email = "dev@libcloud.apache.org"},
+]
+keywords = [
+    "cloud",
+    "libcloud",
+    "apache",
+    "aws",
+    "ec2",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "requests>=2.26.0",
+]
+license = {text = "Apache License (2.0)"}
+dynamic = ["version", "readme"]
+
+[project.urls]
+homepage = "https://libcloud.apache.org"
+documentation = "https://libcloud.readthedocs.io"
+source = "https://github.com/apache/libcloud"
+issues = "https://github.com/apache/libcloud/issues"
+changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
+
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "requests_mock",
+]
+
+[tool.setuptools.packages.find]
+where = ["./"]
+include = ["libcloud"]
+
+[tool.setuptools]
+exclude-package-data = { "*" = ["secrets.py"], "libcloud.test" = ["secrets.py"] }
+
+[tool.setuptools.dynamic]
+version = {attr = "libcloud.__version__"}
+readme = {file = ["README.rst"]}
+
 
 [tool.black]
 line_length = 100
-target_version = ['py37', 'py38', 'py39', 'py310']
+target_version = ['py37', 'py38', 'py39', 'py310', 'py311']
 include = '\.pyi?$'
 extended_exclude = '''
 (
