@@ -32,10 +32,9 @@ fi
 
 cd ..
 
-python setup.py sdist --formats=bztar,zip,gztar
-python setup.py bdist_wheel
+python -m build
 
 cd dist
 
-./hash.py *.tar.bz2 *.tar.gz *.zip *.whl
-./sign.sh -u ${user} *.tar.bz2 *.tar.gz *.zip *.whl
+./hash.py *.tar.gz *.whl
+./sign.sh -u ${user} *.tar.gz *.whl

@@ -62,12 +62,16 @@ dynamic = ["version", "readme"]
 [project.urls]
 homepage = "https://libcloud.apache.org"
 documentation = "https://libcloud.readthedocs.io"
+security = "https://libcloud.apache.org/security.html"
 source = "https://github.com/apache/libcloud"
 issues = "https://github.com/apache/libcloud/issues"
 changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
 
 
 [project.optional-dependencies]
+build = [
+    "build==0.10.0"
+]
 test = [
     "pytest",
     "requests_mock",
