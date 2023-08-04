@@ -378,6 +378,7 @@ jobs:
           echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
 
       - name: Trigger ReadTheDocs build
+        if: ${{ github.ref_name == "trunk" }}
         env:
           RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
