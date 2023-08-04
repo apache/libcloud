@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import os
+import sys
 
 import requests
 
@@ -26,3 +27,7 @@ print(f"Using branch: {branch}")
 url = "https://readthedocs.org/api/v2/webhook/libcloud/87656/"
 r = requests.post(url, data={"token": token, "branches": branch})
 print(r.text)
+
+if r.status_code != 200:
+    print("Triggering RTD build failed")
+    sys.exit(1)
