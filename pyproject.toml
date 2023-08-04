@@ -72,6 +72,9 @@ changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
 build = [
     "build==0.10.0"
 ]
+publish = [
+    "twine==4.0.2"
+]
 test = [
     "pytest",
     "requests_mock",
