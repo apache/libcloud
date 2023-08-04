@@ -103,6 +103,16 @@ Other
   2016.
   [Tomaz Muraus - @Kami]
 
+- Packaging related metadata has been migrated from ``setup.py`` to
+  ``pyproject.yaml`` file.
+  (GITHUB-1929)
+  [Tomaz Muraus - @Kami]
+
+- Deprecated and unsafe ``setup.py test`` convenience alias for running tests
+  using pytest has been removed in favor of running pytest directly.
+  (GITHUB-1929)
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
