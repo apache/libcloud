@@ -1031,11 +1031,17 @@ class AzureNodeDriver(NodeDriver):
         action = action.format(
             subscription_id=self.subscription_id, resource_group=ex_resource_group
         )
-
-        response = self.connection.request(
-            action, method="GET", params={"api-version": DISK_API_VERSION}
-        )
-        return [self._to_volume(volume) for volume in response.object["value"]]
+        params = {"api-version": DISK_API_VERSION}
+        volumes = []
+        while True:
+            response = self.connection.request(action, method="GET", params=params)
+            volumes.extend(self._to_volume(volume) for volume in response.object["value"])
+            if not response.object.get("nextLink"):
+                break
+            parsed_next_link = urlparse.urlparse(response.object["nextLink"])
+            params.update({k: v[0] for k, v in parse_qs(parsed_next_link.query).items()})
+            action = parsed_next_link.path
+        return volumes
 
     def attach_volume(
         self,

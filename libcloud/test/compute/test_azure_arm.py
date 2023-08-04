@@ -554,7 +554,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
 
-        self.assertEqual(len(volumes), 3)
+        self.assertEqual(len(volumes), 4)
 
         self.assertEqual(volumes[0].name, "test-disk-1")
         self.assertEqual(volumes[0].size, 31)
@@ -573,6 +573,12 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(volumes[2].extra["properties"]["provisioningState"], "Succeeded")
         self.assertEqual(volumes[2].extra["properties"]["diskState"], "Unattached")
         self.assertEqual(StorageVolumeState.AVAILABLE, volumes[2].state)
+
+        self.assertEqual(volumes[3].name, "test-disk-4")
+        self.assertEqual(volumes[3].size, 1500)
+        self.assertEqual(volumes[3].extra["properties"]["provisioningState"], "Succeeded")
+        self.assertEqual(volumes[3].extra["properties"]["diskState"], "Attached")
+        self.assertEqual(StorageVolumeState.INUSE, volumes[3].state)
 
     def test_list_volumes__with_resource_group(self):
         volumes = self.driver.list_volumes(ex_resource_group="111111")
