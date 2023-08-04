@@ -372,9 +372,15 @@ jobs:
         run: |
           tox -e docs-ci
 
+      - name: Extract branch name
+        id: extract_branch
+        run: |
+          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
       - name: Trigger ReadTheDocs build
         env:
           RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
         run: |
           pip install requests
           python ./contrib/trigger_rtd_build.py
