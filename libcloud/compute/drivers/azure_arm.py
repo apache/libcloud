@@ -71,6 +71,9 @@ VM_SIZE_API_VERSION = "2015-06-15"  # this API is deprecated
 # etc).
 LIST_NODES_PAGINATION_TIMEOUT = 300
 
+# Pagination timeout for list_volumes() method.
+LIST_VOLUMES_PAGINATION_TIMEOUT = 300
+
 
 class AzureImage(NodeImage):
     """Represents a Marketplace node image that an Azure VM can boot from."""
@@ -1032,11 +1035,16 @@ class AzureNodeDriver(NodeDriver):
             subscription_id=self.subscription_id, resource_group=ex_resource_group
         )
         params = {"api-version": DISK_API_VERSION}
+
+        now_ts = int(time.time())
+        deadline_ts = now_ts + LIST_VOLUMES_PAGINATION_TIMEOUT
+
         volumes = []
-        while True:
+        while time.time() < deadline_ts:
             response = self.connection.request(action, method="GET", params=params)
             volumes.extend(self._to_volume(volume) for volume in response.object["value"])
             if not response.object.get("nextLink"):
+                # No next page
                 break
             parsed_next_link = urlparse.urlparse(response.object["nextLink"])
             params.update({k: v[0] for k, v in parse_qs(parsed_next_link.query).items()})

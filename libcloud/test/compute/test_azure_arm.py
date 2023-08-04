@@ -591,6 +591,14 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(volumes[0].extra["properties"]["diskState"], "Unattached")
         self.assertEqual(volumes[0].state, StorageVolumeState.AVAILABLE)
 
+    @mock.patch("libcloud.compute.drivers.azure_arm.LIST_NODES_PAGINATION_TIMEOUT", 1)
+    def test_list_volumes_pagination_timeout(self):
+        # Verify we don't end up in an infinite loop in case server returns a bad response or
+        # similar
+        AzureMockHttp.type = "PAGINATION_INFINITE_LOOP"
+        volumes = self.driver.list_volumes()
+        self.assertTrue(len(volumes) >= 1)
+
     def test_attach_volume(self):
         volumes = self.driver.list_volumes()
         node = self.driver.list_nodes()[0]
