@@ -40,12 +40,16 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install wheel
+          pip install build
 
       - name: Create Dev Artifacts
         run: |
-          python setup.py sdist --formats=bztar,zip,gztar
-          python setup.py bdist_wheel
+          python -m build
+          ls -la dist
+
+          # Ensure artifacts have been created
+          ls -la dist | grep .tar.gz
+          ls -la dist | grep .whl
 
       - name: Store dev artifacts
         uses: actions/upload-artifact@v3
