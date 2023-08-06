@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@
 #
 # USAGE: sign.sh -u user file1 file2 ...
 #
+set -e
 
 user=""
 case "$1" in
@@ -32,8 +33,8 @@ allfiles=$*
 
 
 
-gpg="`which gpg 2> /dev/null | head -1`"
-pgp="`which pgp 2> /dev/null | head -1`"
+gpg=$(which gpg 2> /dev/null | head -1)
+pgp=$(which pgp 2> /dev/null | head -1)
 
 echo "---------------------------------------------------------------------"
 echo ""
@@ -48,7 +49,8 @@ if test -x "${pgp}"; then
   for file in ${allfiles}; do
     if test -f "${file}"; then
       echo "pgp: creating asc signature file for ${file} ..."
-      ${pgp} -sba ${file} ${args}
+      # shellcheck disable=SC2086
+      "${pgp}" -sba "${file}" ${args}
     fi
   done
 # no pgp found - check for gpg
@@ -61,7 +63,8 @@ elif test -x "${gpg}"; then
   for file in ${allfiles}; do
     if test -f "${file}"; then
       echo "gpg: creating asc signature file for ${file} ..."
-      ${gpg} --armor ${args} --detach-sign ${file}
+      # shellcheck disable=SC2086
+      "${gpg}" --armor ${args} --detach-sign "${file}"
     fi
   done
 else
