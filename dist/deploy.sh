@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ pushd "${SCRIPT_DIR}/../"
 
 # We redirect stderr to /dev/null since sometimes setuptools may print pyproject
 # related warning
-VERSION=`python setup.py --version 2> /dev/null`
+VERSION=$(python setup.py --version 2> /dev/null)
 popd
 
 pushd "${SCRIPT_DIR}"
