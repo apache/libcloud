@@ -197,7 +197,7 @@ jobs:
 
       - name: Run shellcheck
         run: |
-          shellcheck dist/*.sh
+          shellcheck dist/*.sh contrib/*.sh
 
       - name: Run Python Checks
         run: |
