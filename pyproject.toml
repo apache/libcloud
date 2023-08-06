@@ -90,7 +90,7 @@ exclude-package-data = { "*" = ["secrets.py"], "libcloud.test" = ["secrets.py"] 
 
 [tool.setuptools.dynamic]
 version = {attr = "libcloud.__version__"}
-readme = {file = ["README.rst"]}
+readme = {file = ["README.rst"], content-type = "text/x-rst"}
 
 
 [tool.black]
