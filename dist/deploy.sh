@@ -17,7 +17,9 @@
 
 cd ..
 
-VERSION=`python setup.py --version`
+# We redirect stderr to /dev/null since sometimes setuptools may print pyproject
+# related warning
+VERSION=`python setup.py --version 2> /dev/null`
 
 cd dist
 
