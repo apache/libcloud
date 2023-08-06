@@ -195,7 +195,11 @@ jobs:
         run: |
           pip install -r requirements-ci.txt
 
-      - name: Run Checks
+      - name: Run shellcheck
+        run: |
+          shellcheck dist/*.sh
+
+      - name: Run Python Checks
         run: |
           tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint
 
