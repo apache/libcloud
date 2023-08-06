@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import re
-import sys
-import fnmatch
+# Project utilized pyproject.toml for setup and packaging metadata, this file is only left in place
+# so we can still utilize setup.py --versioni
 
-import setuptools
 from setuptools import setup
 
 setup()
