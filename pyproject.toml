@@ -60,6 +60,7 @@ license = {text = "Apache License (2.0)"}
 dynamic = ["version", "readme"]
 
 [project.urls]
+# Threre seems to be known bug with homepage and pyproject.yaml https://github.com/pypa/packaging-problems/issues/606
 homepage = "https://libcloud.apache.org"
 documentation = "https://libcloud.readthedocs.io"
 security = "https://libcloud.apache.org/security.html"
