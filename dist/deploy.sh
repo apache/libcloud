@@ -13,17 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+set -e
 
-cd ..
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+pushd "${SCRIPT_DIR}/../"
 
 # We redirect stderr to /dev/null since sometimes setuptools may print pyproject
 # related warning
 VERSION=`python setup.py --version 2> /dev/null`
+popd
 
-cd dist
+pushd "${SCRIPT_DIR}"
 
 echo "Uploading packages"
 ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
-
 twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+
+popd

@@ -13,8 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -e
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 user=""
 case "$1" in
@@ -30,11 +31,15 @@ if test -z "${user}"; then
   exit 1
 fi
 
-cd ..
+pushd "${SCRIPT_DIR}/../"
 
 python -m build
 
-cd dist
+popd
 
-./hash.py *.tar.gz *.whl
-./sign.sh -u ${user} *.tar.gz *.whl
+pushd "${SCRIPT_DIR}"
+
+./hash.py ./*.tar.gz ./*.whl
+./sign.sh -u "${user}" ./*.tar.gz ./*.whl
+
+popd
