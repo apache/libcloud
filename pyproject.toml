@@ -61,12 +61,16 @@ dynamic = ["version", "readme"]
 
 [project.urls]
 # Threre seems to be known bug with homepage and pyproject.yaml https://github.com/pypa/packaging-problems/issues/606
-homepage = "https://libcloud.apache.org"
-documentation = "https://libcloud.readthedocs.io"
-security = "https://libcloud.apache.org/security.html"
-source = "https://github.com/apache/libcloud"
-issues = "https://github.com/apache/libcloud/issues"
-changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
+Homepage = "https://libcloud.apache.org"
+Documentation = "https://libcloud.readthedocs.io"
+"Mailing list" = "https://libcloud.apache.org/community.html#mailing-lists"
+Security = "https://libcloud.apache.org/security.html"
+Repository = "https://github.com/apache/libcloud"
+Tests = "https://github.com/apache/libcloud/tree/trunk/libcloud/test"
+Coverage = "https://app.codecov.io/github/apache/libcloud"
+Issues = "https://github.com/apache/libcloud/issues"
+Distribution = "https://pypi.org/project/apache-libcloud"
+Changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
 
 
 [project.optional-dependencies]
