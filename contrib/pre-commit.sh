@@ -15,15 +15,18 @@
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
+set -e
 
 files=$(git diff --cached --name-status | grep -v ^D | awk '$1 $2 { print $2}' | grep -e .py$)
+# shellcheck disable=SC2206
 array=(${files/// })
 
 for file in "${array[@]}"
 do
+    echo "Processing: ${file}"
     if [[ ${file} =~ "libcloud/test/" ]]; then
-        flake8 --max-line-length=160 ${file}
+        flake8 --max-line-length=160 "${file}"
     else
-        flake8 ${file}
+        flake8 "${file}"
     fi
 done

@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Project utilized pyproject.toml for setup and packaging metadata, this file is only left in place
-# so we can still utilize setup.py --versioni
+# so we can still utilize setup.py --version
 
 from setuptools import setup
 
