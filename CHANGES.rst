@@ -118,6 +118,12 @@ Other
   (GITHUB-1929)
   [Tomaz Muraus - @Kami]
 
+- Script for building release artifacts has been updated to utilize ``build``
+  Python package to build release artifacts (sdist + wheel) in an isolated
+  environment.
+  (GITHUB-1929)
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
