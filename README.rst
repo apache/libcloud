@@ -105,7 +105,7 @@ Contributing
 
 For information on how to contribute, please see the Contributing
 chapter in our documentation
-<https://libcloud.readthedocs.org/en/latest/development.html#contributing>
+<https://libcloud.readthedocs.org/en/latest/development.html#contributing>.
 
 Website
 =======
@@ -118,6 +118,19 @@ License
 
 Apache Libcloud is licensed under the Apache 2.0 license. For more information,
 please see LICENSE_ and NOTICE_ file.
+
+Security
+========
+
+This is a project of the `Apache Software Foundation <https://apache.org>`_ and
+follows the ASF
+`vulnerability handling process <https://apache.org/security/#vulnerability-handling>`_.
+
+Reporting a Vulnerability
+-------------------------
+
+To report a new vulnerability you have discovered please follow the
+`ASF vulnerability reporting process <https://apache.org/security/#reporting-a-vulnerability>`_.
 
 .. _LICENSE: https://github.com/apache/libcloud/blob/trunk/LICENSE
 .. _NOTICE: https://github.com/apache/libcloud/blob/trunk/NOTICE

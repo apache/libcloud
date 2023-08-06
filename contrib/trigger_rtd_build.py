@@ -15,17 +15,19 @@
 # limitations under the License.
 
 import os
+import sys
 
 import requests
 
-# Old deprecated API
-url = "https://readthedocs.org/build/8284/"
-r = requests.post(url)
-print(r.text)
-
-# New API (which doesn't apear to be working)
 token = os.environ["RTD_TOKEN"]
+branch = os.environ["BRANCH_NAME"]
+
+print(f"Using branch: {branch}")
 
 url = "https://readthedocs.org/api/v2/webhook/libcloud/87656/"
-r = requests.post(url, data={"token": token, "branches": "trunk"})
+r = requests.post(url, data={"token": token, "branches": branch})
 print(r.text)
+
+if r.status_code != 200:
+    print("Triggering RTD build failed")
+    sys.exit(1)

@@ -373,8 +373,10 @@ jobs:
           tox -e docs-ci
 
       - name: Trigger ReadTheDocs build
+        if: ${{ github.ref_name == 'trunk' }}
         env:
           RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
+          BRANCH_NAME: "trunk"
         run: |
           pip install requests
           python ./contrib/trigger_rtd_build.py
