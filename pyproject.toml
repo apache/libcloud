@@ -96,6 +96,9 @@ exclude-package-data = { "*" = ["secrets.py"], "libcloud.test" = ["secrets.py"] 
 version = {attr = "libcloud.__version__"}
 readme = {file = ["README.rst"], content-type = "text/x-rst"}
 
+[tool.distutils.bdist_wheel]
+universal = true
+
 
 [tool.black]
 line_length = 100
