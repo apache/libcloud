@@ -17,6 +17,7 @@ dependencies installed:
 
 * ``tox`` (``pip install tox``) - you only need this library if you want to
   use tox to run the tests with all the supported Python versions
+* ``pytest`` (``pip install pytest``) - test runner we use to run the tests
 * ``fasteners`` (``pip install fasteners``) - only used in the local storage
   driver
 * ``coverage`` (``pip install coverage``) - you only need this library if you
@@ -44,7 +45,7 @@ following command:
 
 .. sourcecode:: bash
 
-    PYTHONPATH=. python setup.py test
+    pytest -s -vvv
 
 Running a Single Test File
 --------------------------
@@ -54,13 +55,20 @@ repository and run the following command:
 
 .. sourcecode:: bash
 
-    PYTHONPATH=. python libcloud/test/<path to test file>
+    pytest -s -vvv libcloud/test/<path to test file>
 
 For example:
 
 .. sourcecode:: bash
 
-    PYTHONPATH=. python libcloud/test/compute/test_ec2.py
+    pytest -s -vvv libcloud/test/compute/test_ec2.py
+
+You can also run single test in a test file by using ``-k`` flag as shown
+below:
+
+.. sourcecode:: bash
+
+    pytest -s -vvv libcloud/test/compute/test_ec2.py  -k "test_list_nodes"
 
 Generating Test Coverage Report
 -------------------------------

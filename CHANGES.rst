@@ -108,6 +108,22 @@ Other
   2016.
   [Tomaz Muraus - @Kami]
 
+- Packaging related metadata has been migrated from ``setup.py`` to
+  ``pyproject.yaml`` file.
+  (GITHUB-1929)
+  [Tomaz Muraus - @Kami]
+
+- Deprecated and unsafe ``setup.py test`` convenience alias for running tests
+  using pytest has been removed in favor of running pytest directly.
+  (GITHUB-1929)
+  [Tomaz Muraus - @Kami]
+
+- Script for building release artifacts has been updated to utilize ``build``
+  Python package to build release artifacts (sdist + wheel) in an isolated
+  environment.
+  (GITHUB-1929)
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.7.0
 --------------------------------
 
@@ -126,7 +142,7 @@ Compute
 
 - [CloudSigma] Update API URLs for US locations.
   (GITHUB-1781)
-  [Mohsen Hassani - @ mohsen-hassani-cs]
+  [Mohsen Hassani - @mohsen-hassani-cs]
 
 - [GCP] Fix OAuth2 desktop client login.
   (GITHUB-1806, GITHUB-1807)

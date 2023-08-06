@@ -21,7 +21,7 @@ VERSION=$1
 
 if [ ! "${VERSION}" ]; then
     echo "Usage: ${0} <version name>"
-    echo "For example: ${0} apache-libcloud-3.4.0"
+    echo "For example: ${0} apache-libcloud-3.7.0"
     exit 1
 fi
 
@@ -70,7 +70,8 @@ do
     file_name="${VERSION}${extension}"
 
     if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
-        file_name=$(echo ${file_name} | sed "s/apache-libcloud/apache_libcloud/g")
+        # shellcheck disable=SC2001
+        file_name=$(echo "${file_name}" | sed "s/apache-libcloud/apache_libcloud/g")
     fi
 
     apache_url="${APACHE_MIRROR_URL}/${file_name}"
@@ -97,6 +98,7 @@ do
     echo "Downloading file from Apache mirror..."
     wget --quiet "${apache_url}" -O "${file_path_apache}"
 
+    # shellcheck disable=SC2181
     if [ $? -ne 0 ]; then
         echo "[ERR] Failed to download file: ${apache_url}"
         exit 2
@@ -105,6 +107,7 @@ do
     echo "Downloading file from PyPi mirror..."
     wget --quiet "${pypi_url}" -O "${file_path_pypi}"
 
+    # shellcheck disable=SC2181
     if [ $? -ne 0 ]; then
         echo "[ERR] Failed to download file: ${pypi_url}"
         exit 2
@@ -113,8 +116,8 @@ do
     sha512sum_apache=$(sha512sum "${file_path_apache}" | awk '{ print $1 }')
     sha512sum_pypi=$(sha512sum "${file_path_pypi}"| awk '{ print $1 }')
 
-    if [ ${sha512sum_apache} != ${sha512sum_pypi} ]; then
-       echo "[ERROR] SHA512 sum for file ${file_name} doesn\'t match"
+    if [ "${sha512sum_apache}" != "${sha512sum_pypi}" ]; then
+       echo "[ERROR] SHA512 sum for file ${file_name} doesn't match"
        echo ""
        echo "${file_name_apache}: ${sha512sum_apache}"
        echo "${file_name_pypi}: ${sha512sum_pypi}"

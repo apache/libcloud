@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,8 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -e
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 user=""
 case "$1" in
@@ -30,12 +31,15 @@ if test -z "${user}"; then
   exit 1
 fi
 
-cd ..
+pushd "${SCRIPT_DIR}/../"
 
-python setup.py sdist --formats=bztar,zip,gztar
-python setup.py bdist_wheel
+python -m build
 
-cd dist
+popd
 
-./hash.py *.tar.bz2 *.tar.gz *.zip *.whl
-./sign.sh -u ${user} *.tar.bz2 *.tar.gz *.zip *.whl
+pushd "${SCRIPT_DIR}"
+
+./hash.py ./*.tar.gz ./*.whl
+./sign.sh -u "${user}" ./*.tar.gz ./*.whl
+
+popd

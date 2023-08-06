@@ -17,6 +17,14 @@
 #  under the License.
 set -e
 
+function cleanup() {
+    rm -f dist/apache*libcloud*.*
+}
+
+cleanup
+
+trap cleanup EXIT
+
 # Verify library installs without any dependencies when using python setup.py
 # install
 echo "Running dist install checks"
@@ -30,7 +38,7 @@ pip show enum34 && exit 1
 pip show apache-libcloud && exit 1
 
 # Install the library
-python setup.py install
+pip install .
 pip show apache-libcloud
 
 # Verify all dependencies were installed

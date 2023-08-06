@@ -97,15 +97,18 @@ preparing a release.
 
 .. note::
 
-  It's important that you have the latest versions of ``setuptools``, ``wheel``
-  and ``pip`` installed to ensure the generated wheel files contain correct
-  metadata.
+  It's important that you have the latest versions of ``build`` package
+  installed to ensure the generated wheel files contain correct metadata.
 
-We have a script that runs the required setup.py commands and then hashes
-and signs the files. You will need the latest version of ``pip`` and the ``wheel``
-package. To run it:
+We have a script that runs the required commands and then hashes and signs the
+files. You will need the latest version of ``build`` package.
+
+To run it:
 
 .. sourcecode:: bash
+
+    # Install build dependencies
+    pip install -e ".[build]"
 
     cd dist
     ./release.sh -u <yourusername>@apache.org
@@ -114,7 +117,7 @@ package. To run it:
 your local GPG database.
 
 This should result in a set of
-``apache-libcloud-${VERSION}.{tar.bz2,tar.gz,zip,whl}{,asc,md5,sha1}`` files that
+``apache-libcloud-${VERSION}.{tar.gz,whl}{,asc,md5,sha1}`` files that
 are suitable to be uploaded for a release.
 
 Copy the artifacts in another directory, unpack one of them and test it with ``tox``.
@@ -173,10 +176,14 @@ key.
 7. Publishing package to PyPi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We have a script that runs uploads the signed Python source files to PyPi. It uses twine, so ensure
-you have twine available in your path `which twine` before running. Twine can be downloaded from https://pypi.python.org/pypi/twine
+We have a script that runs uploads the signed Python source files to PyPi. It
+uses twine, so ensure you have twine available in your path `which twine`
+before running. Twine can be downloaded from https://pypi.python.org/pypi/twine
 
 .. sourcecode:: bash
+
+    # Install publish dependencies
+    pip install -e ".[publish]"
 
     cd dist
     ./deploy.sh

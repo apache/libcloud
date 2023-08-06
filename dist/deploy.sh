@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,15 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+set -e
 
-cd ..
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-VERSION=`python setup.py --version`
+pushd "${SCRIPT_DIR}/../"
 
-cd dist
+# We redirect stderr to /dev/null since sometimes setuptools may print pyproject
+# related warning
+VERSION=$(python setup.py --version 2> /dev/null)
+popd
+
+pushd "${SCRIPT_DIR}"
 
 echo "Uploading packages"
-ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+# shellcheck disable=SC2086
+ls ./*$VERSION*.tar.gz ./*$VERSION*.whl ./*$VERSION*.tar.gz.asc
+# shellcheck disable=SC2086
+twine upload ./*$VERSION*.tar.gz ./*$VERSION*.whl ./*$VERSION*.tar.gz.asc
 
-twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
+popd
