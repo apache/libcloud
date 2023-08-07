@@ -28,7 +28,7 @@ Provider                       list images get image create image delete image c
 `KTUCloud`_                    yes         no        no           no           no        
 `kubevirt`_                    yes         no        no           no           no        
 `Libvirt`_                     no          no        no           no           no        
-`Linode`_                      yes         no        yes          yes          no        
+`Linode`_                      yes         yes       yes          yes          no        
 `Maxihost`_                    yes         no        no           no           no        
 `Nimbus`_                      yes         yes       yes          yes          yes       
 `NTTAmerica`_                  yes         no        no           no           no        

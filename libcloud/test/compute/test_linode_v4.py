@@ -20,7 +20,7 @@ from datetime import datetime
 from libcloud.test import MockHttp
 from libcloud.utils.py3 import httplib
 from libcloud.common.types import LibcloudError, InvalidCredsError
-from libcloud.compute.base import Node, NodeImage, NodeState, StorageVolume
+from libcloud.compute.base import Node, KeyPair, NodeImage, NodeState, StorageVolume
 from libcloud.test.compute import TestCaseMixin
 from libcloud.common.linode import LinodeDisk, LinodeIPAddress, LinodeExceptionV4
 from libcloud.test.file_fixtures import ComputeFileFixtures
@@ -64,6 +64,19 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
             self.assertIsInstance(image.extra["size"], int)
             self.assertTrue(image.extra["is_public"])
 
+    def test_list_key_pairs(self):
+        keypairs = self.driver.list_key_pairs()
+        self.assertIsInstance(keypairs, list)
+        self.assertEqual(len(keypairs), 1)
+        self.assertEqual(keypairs[0].extra["id"], 42)
+
+    def test_create_key_pair(self):
+        keypair = self.driver.create_key_pair(
+            "mykey", public_key="ssh-rsa AAAA_valid_public_ssh_key_123456785== user@their-computer"
+        )
+        self.assertIsInstance(keypair, KeyPair)
+        self.assertEqual(keypair.extra["id"], 42)
+
     def test_list_locations(self):
         locations = self.driver.list_locations()
         self.assertEqual(len(locations), 10)
@@ -78,11 +91,11 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
         node = self.driver.create_node(
-            location=location,
-            name="node-name",
+            location,
+            "node-name",
+            size=size,
             image=image,
             root_pass="test123456",
-            size=size,
         )
         self.assertTrue(isinstance(node, Node))
 
@@ -114,9 +127,9 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
         node = self.driver.create_node(
             location,
+            "TestNode",
             size,
             image=image,
-            name="TestNode",
             root_pass="test123456",
             ex_backups_enabled=True,
             ex_tags=["testing123"],
@@ -134,13 +147,13 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, size, image=image, name="TestNode")
+            self.driver.create_node(location, "TestNode", size, image=image)
 
     def test_create_node_no_image(self):
         size = self.driver.list_sizes()[0]
         location = self.driver.list_locations()[0]
         LinodeMockHttpV4.type = "NO_IMAGE"
-        node = self.driver.create_node(location, size, name="TestNode", ex_tags=["testing123"])
+        node = self.driver.create_node(location, "TestNode", size, None, ex_tags=["testing123"])
 
         self.assertIsNone(node.image)
         self.assertEqual(node.name, "TestNode")
@@ -153,13 +166,13 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, size, name="Test__Node")
+            self.driver.create_node(location, "Test__Node", size, None)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, size, name="Test Node")
+            self.driver.create_node(location, "Test Node", size, None)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, size, name="Test--Node")
+            self.driver.create_node(location, "Test--Node", size, None)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, size, name="Test..Node")
+            self.driver.create_node(location, "Test..Node", size, None)
 
     def test_reboot_node(self):
         node = Node("22344420", None, None, None, None, driver=self.driver)
@@ -423,6 +436,14 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
 class LinodeMockHttpV4(MockHttp):
     fixtures = ComputeFileFixtures("linode_v4")
+
+    def _v4_profile_sshkeys(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("list_key_pairs.json")
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == "POST":
+            body = self.fixtures.load("create_key_pair.json")
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_regions(self, method, url, body, headers):
         body = self.fixtures.load("list_locations.json")
