@@ -1,3 +1,4 @@
 rstcheck==6.1.2; python_version >= '3.7'
 fasteners
+sphinx_rtd_theme==1.2.2
 sphinx==6.2.1
