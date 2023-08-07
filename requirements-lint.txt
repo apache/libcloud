@@ -2,7 +2,7 @@ pep8==1.7.1
 flake8==5.0.4
 astroid==2.15.6; python_version >= '3.8'
 pylint==2.17.5; python_version >= '3.8'
-bandit[toml]==1.7.4; python_version >= '3.7'
+bandit[toml]==1.7.5; python_version >= '3.7'
 black==23.7.0; python_version >= '3.7' and implementation_name == "cpython"
 isort[pyproject]==5.12.0; python_version >= '3.8'
 pyupgrade==3.3.1
