@@ -12,11 +12,13 @@
 # serve to show the default.
 
 import os
+import re
 import sys
 import datetime
 import subprocess
 
 from sphinx.domains.python import PythonDomain
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(BASE_DIR)
@@ -284,3 +286,32 @@ suppress_warnings = [
     'autodoc.*',
     'misc.highlighting_failure',
 ]
+
+
+# Taken and based from code in the sphinx project (BSD 2.0 license)
+# https://github.com/sphinx-doc/sphinx/blob/master/doc/conf.py
+def linkify_issues_in_changelog(app, docname, source):
+    """ Linkify issue references like #123 in changelog to GitHub. """
+
+    if docname == 'changelog':
+        changelog_path = os.path.join(BASE_DIR, "../CHANGES.rst")
+
+        with open(changelog_path, encoding="utf-8") as f:
+            changelog = f.read()
+
+        def linkify_github_issues(match):
+            url = 'https://github.com/apache/libcloud/issues/' + match[1]
+            return f'`{match[0]} <{url}>`_'
+
+        def linkify_jira_issues(match):
+            url = 'https://issues.apache.org/jira/browse/LIBCLOUD-' + match[1]
+            return f'`{match[0]} <{url}>`_'
+
+        linkified_changelog = re.sub(r'(?:PR)?#([0-9]+)\b', linkify_github_issues, changelog)
+        linkified_changelog = re.sub(r'GITHUB-([0-9]+)\b', linkify_github_issues, linkified_changelog)
+        linkified_changelog = re.sub(r'LIBCLOUD-([0-9]+)\b', linkify_jira_issues, linkified_changelog)
+
+        source[0] = source[0].replace('.. include:: ../CHANGES.rst', linkified_changelog)
+
+def setup(app):
+    app.connect('source-read', linkify_issues_in_changelog)
