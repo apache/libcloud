@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import glob
+import shutil
 import datetime
 
 from sphinx.ext import apidoc
@@ -337,6 +338,10 @@ def run_apidoc(_):
     ignore_paths = glob.glob("../libcloud/test/**/*.py", recursive=True)
     # Problematic driver with hundreds of issues
     ignore_paths += ["../libcloud/compute/drivers/outscale.py"]
+
+    # Remove existing api docs directory if it exists so we start with a clean environment
+    apidocs_dir = os.path.abspath(os.path.join(BASE_DIR, "apidocs/"))
+    shutil.rmtree(apidocs_dir, ignore_errors=True)
 
     argv = [
         "--force",  # Overwrite output files
