@@ -16,7 +16,6 @@ import re
 import sys
 import glob
 import datetime
-import subprocess
 
 from sphinx.ext import apidoc
 from sphinx.domains.python import PythonDomain
