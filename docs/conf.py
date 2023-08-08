@@ -303,10 +303,21 @@ suppress_warnings = [
 ]
 
 
+def add_orphan_tag_to_apidocs(app, docname, source):
+    """
+    Add :orphan: tag to apidocs/modules.rst file to avoid errors during docs build.
+    """
+
+    if docname == "apidocs/modules":
+        source[0] = ":orphan:" + "\n\n" + source[0]
+
+
 # Taken and based from code in the sphinx project (BSD 2.0 license)
 # https://github.com/sphinx-doc/sphinx/blob/master/doc/conf.py
 def linkify_issues_in_changelog(app, docname, source):
-    """Linkify issue references like #123 in changelog to GitHub."""
+    """
+    Linkify issue references in changelog to GitHub and Jira.
+    """
 
     if docname == "changelog":
         changelog_path = os.path.join(BASE_DIR, "../CHANGES.rst")
@@ -361,3 +372,4 @@ def run_apidoc(_):
 def setup(app):
     app.connect("builder-inited", run_apidoc)
     app.connect("source-read", linkify_issues_in_changelog)
+    app.connect("source-read", add_orphan_tag_to_apidocs)
