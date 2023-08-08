@@ -14,9 +14,11 @@
 import os
 import re
 import sys
+import glob
+import shutil
 import datetime
-import subprocess
 
+from sphinx.ext import apidoc
 from sphinx.domains.python import PythonDomain
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -24,10 +26,6 @@ BASE_DIR = os.path.abspath(BASE_DIR)
 
 # Detect if we are running on read the docs
 on_rtd = os.environ.get("READTHEDOCS", "").lower() == "true"
-
-if on_rtd:
-    cmd = "sphinx-apidoc -d 4 -o apidocs/ ../libcloud/"
-    subprocess.call(cmd, shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -305,10 +303,21 @@ suppress_warnings = [
 ]
 
 
+def add_orphan_tag_to_apidocs(app, docname, source):
+    """
+    Add :orphan: tag to apidocs/modules.rst file to avoid errors during docs build.
+    """
+
+    if docname == "apidocs/modules":
+        source[0] = ":orphan:" + "\n\n" + source[0]
+
+
 # Taken and based from code in the sphinx project (BSD 2.0 license)
 # https://github.com/sphinx-doc/sphinx/blob/master/doc/conf.py
 def linkify_issues_in_changelog(app, docname, source):
-    """Linkify issue references like #123 in changelog to GitHub."""
+    """
+    Linkify issue references in changelog to GitHub and Jira.
+    """
 
     if docname == "changelog":
         changelog_path = os.path.join(BASE_DIR, "../CHANGES.rst")
@@ -335,5 +344,32 @@ def linkify_issues_in_changelog(app, docname, source):
         source[0] = source[0].replace(".. include:: ../CHANGES.rst", linkified_changelog)
 
 
+def run_apidoc(_):
+    # ignore test modules
+    ignore_paths = glob.glob("../libcloud/test/**/*.py", recursive=True)
+    # Problematic driver with hundreds of issues
+    ignore_paths += ["../libcloud/compute/drivers/outscale.py"]
+
+    # Remove existing api docs directory if it exists so we start with a clean environment
+    apidocs_dir = os.path.abspath(os.path.join(BASE_DIR, "apidocs/"))
+    shutil.rmtree(apidocs_dir, ignore_errors=True)
+
+    argv = [
+        "--force",  # Overwrite output files
+        "--follow-links",  # Follow symbolic links
+        "--module-first",  # Put module documentation before submodule
+        "--separate",
+        "--maxdepth",
+        "4",
+        "-o",
+        "apidocs",  # Output path
+        "../libcloud",  # include path
+    ] + ignore_paths
+
+    apidoc.main(argv)
+
+
 def setup(app):
+    app.connect("builder-inited", run_apidoc)
     app.connect("source-read", linkify_issues_in_changelog)
+    app.connect("source-read", add_orphan_tag_to_apidocs)

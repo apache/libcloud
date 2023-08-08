@@ -374,7 +374,7 @@ jobs:
 
       - name: Build Docs
         run: |
-          tox -e docs-ci
+          tox -e docs
 
       - name: Trigger ReadTheDocs build
         if: ${{ github.ref_name == 'trunk' }}
