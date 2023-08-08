@@ -1,3 +1,5 @@
+:orphan:
+
 Changes in Apache Libcloud v2.0
 ===============================
 

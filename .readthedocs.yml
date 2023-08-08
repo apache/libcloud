@@ -18,6 +18,8 @@ formats:
    - pdf
    - epub
 
+# NOTE: We need to use older version of sphinx otherwise bullet points won't be rendered correctly
+# on RTD using rtd theme.
 # Optional but recommended, declare the Python requirements required
 # to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html

@@ -1,5 +1,5 @@
 Scaleway Storage Driver Documentation
-==================================
+=====================================
 
 Scaleway Object Storage is an Object Storage service based on the S3 protocol.
 
@@ -15,7 +15,7 @@ Examples
 --------
 
 1. Upload a file to Scaleway's Object Storage
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example shows how to upload a local file to Scaleway's Object Storage.
 
