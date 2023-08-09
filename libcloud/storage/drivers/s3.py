@@ -94,6 +94,7 @@ REGION_TO_HOST_MAP = {
     "eu-west-2": S3_EU_WEST2_HOST,
     "eu-west-3": "s3.eu-west-3.amazonaws.com",
     "eu-north-1": "s3.eu-north-1.amazonaws.com",
+    "eu-south-1": "s3.eu-south-1.amazonaws.com",
     "eu-central-1": S3_EU_CENTRAL_HOST,
     "ap-south-1": S3_AP_SOUTH_HOST,
     "ap-southeast-1": S3_AP_SOUTHEAST_HOST,
