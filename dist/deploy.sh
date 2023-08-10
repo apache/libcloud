@@ -30,6 +30,7 @@ echo "Uploading packages"
 # shellcheck disable=SC2086
 ls ./*$VERSION*.tar.gz ./*$VERSION*.whl ./*$VERSION*.tar.gz.asc
 # shellcheck disable=SC2086
+twine check ./*$VERSION*.tar.gz ./*$VERSION*.whl
 twine upload ./*$VERSION*.tar.gz ./*$VERSION*.whl ./*$VERSION*.tar.gz.asc
 
 popd
