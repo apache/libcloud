@@ -176,9 +176,19 @@ key.
 7. Publishing package to PyPi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We have a script that runs uploads the signed Python source files to PyPi. It
+We have a script that uploads the signed Python source files to PyPi. It
 uses twine, so ensure you have twine available in your path `which twine`
-before running. Twine can be downloaded from https://pypi.python.org/pypi/twine
+before running. Twine can be downloaded from https://pypi.python.org/pypi/twine.
+
+You should also ensure you have 2FA / MFA enabled for your PyPi account and
+generate a new API token with apache-libcloud project scope which gives
+publish permission.
+
+For more information on how to generate an API tokens and configure twine to
+use this token, see:
+
+* https://pypi.org/help/#apitoken
+* https://kynan.github.io/blog/2020/05/23/how-to-upload-your-package-to-the-python-package-index-pypi-test-server
 
 .. sourcecode:: bash
 
