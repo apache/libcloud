@@ -9,6 +9,7 @@ build
 MANIFEST
 /.ropeproject/config.py
 /.coverage
+/.coverage*
 coverage_html_report/
 coverage.xml
 .idea
