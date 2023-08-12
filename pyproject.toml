@@ -189,7 +189,7 @@ module = [
 ignore_errors = true
 
 [tool.coverage.run]
-parallel = true
+parallel = false
 branch = true
 source = ["libcloud"]
 
