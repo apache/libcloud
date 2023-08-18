@@ -29,18 +29,15 @@ RUN set -e && \
     add-apt-repository ppa:pypy/ppa && \
     apt-get update && \
     apt-get -y install \
-      python3.7 \
       python3.8 \
       python3.9 \
       python3.10 \
       python3.11 \
       python3-dev \
-      python3.7-dev \
       python3.8-dev \
       python3.9-dev \
       python3.10-dev \
       python3.11-dev \
-      python3.7-distutils \
       python3.8-distutils \
       python3.9-distutils \
       pypy3 \

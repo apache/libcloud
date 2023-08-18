@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+Common
+~~~~~~
+
+- Support for Python 3.7 which is EOL has been removed.
+
+  If you still want to use Libcloud with Python 3.7, you should use an older
+  release which still supports Python 3.7.
+  (#1941)
+
 Changes in Apache Libcloud 3.8.0
 --------------------------------
 
