@@ -19,7 +19,6 @@ import time
 import base64
 import string
 import datetime
-
 import unittest
 
 from integration.storage.base import Integration, random_string
