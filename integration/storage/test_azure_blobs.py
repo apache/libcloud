@@ -146,6 +146,11 @@ class StorageTest(Integration.TestBase):
         delete_threshold_ts = now_ts - int(datetime.timedelta(hours=6).total_seconds())
 
         for resource_group in resource_groups:
+            # NOTE (Tomaz): It looks like that for some reason .tags property is sometimes None
+            # We simply skip those. Could be resources created outside the tests
+            if not resource_group.tags:
+                continue
+
             resource_create_ts = int(resource_group.tags.get("create_ts", now_ts))
 
             if (

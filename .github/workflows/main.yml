@@ -201,7 +201,7 @@ jobs:
 
       - name: Run Python Checks
         run: |
-          tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint
+          tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint,mypy
 
   build_test_docker_image:
     name: Build and Verify Docker Image

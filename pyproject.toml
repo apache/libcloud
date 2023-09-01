@@ -189,10 +189,21 @@ module = [
 ignore_errors = true
 
 [tool.coverage.run]
+parallel = false
 branch = true
 source = ["libcloud"]
 
+[tool.coverage.paths]
+source = [
+   "libcloud/",
+]
+tests = [
+   "libcloud/test/",
+]
+
 [tool.coverage.report]
+show_missing = true
+skip_covered = true
 exclude_lines = [
     # Have to re-enable the standard pragma
     "pragma: no cover",
@@ -210,6 +221,10 @@ exclude_lines = [
     "import",
     "deprecated_warning",
     "in_development_warning",
+    "@abc.abstractmethod",
+    # Type checking related code,
+    "^if (False|TYPE_CHECKING):",
+    "if typing.TYPE_CHECKING",
 ]
 ignore_errors = true
 
