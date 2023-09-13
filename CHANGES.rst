@@ -18,6 +18,13 @@ Common
   (#1940)
   [@munahaf on behalf of OpenRefactory and Open Source Security Foundation]
 
+Storage
+~~~~~~~
+
+- [Amazon S3] Add support for ``eu-south-1`` region.
+  (#1950)
+  [@H3199]
+
 Changes in Apache Libcloud 3.8.0
 --------------------------------
 
