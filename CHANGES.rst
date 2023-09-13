@@ -14,6 +14,10 @@ Common
   (#1944)
   [Ricardo Branco - @ricardobranco777]
 
+- [NTT CIS] Fix invalid comparison in the ``XmlListConfig.__init__()`` method.
+  (#1940)
+  [@munahaf on behalf of OpenRefactory and Open Source Security Foundation]
+
 Changes in Apache Libcloud 3.8.0
 --------------------------------
 
