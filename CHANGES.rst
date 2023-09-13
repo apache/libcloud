@@ -1,6 +1,19 @@
 Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Common
+~~~~~~
+
+- Types inheriting from ``libcloud.common.types.Type`` have been made hashable.
+  This way they can be directly used for testing memberships in sets which
+  contain string representation of the type enum value
+  (e.g. ``NodeState.RUNNING in {"running"} == True``).
+  (#1944)
+  [Ricardo Branco - @ricardobranco777]
+
 Changes in Apache Libcloud 3.8.0
 --------------------------------
 

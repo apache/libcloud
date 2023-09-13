@@ -82,7 +82,7 @@ class Type(str, Enum):
         return self.value
 
     def __hash__(self):
-        return id(self)
+        return hash(self.value)
 
 
 class LibcloudError(Exception):
