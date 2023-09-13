@@ -1460,14 +1460,6 @@ class S3EUNorth1StorageDriver(S3StorageDriver):
     ex_location_name = "eu-north-1"
     region_name = "eu-north-1"
 
-class S3EUSouth1Connection(S3SignatureV4Connection):
-    host = S3_EU_SOUTH1_HOST
-
-class S3EUSouth1StorageDriver(S3StorageDriver):
-    name = 'Amazon S3 (eu-south-1)'
-    connectionCls = S3EUSouth1Connection
-    ex_location_name = 'eu-south-1'
-    region_name = 'eu-south-1'
 
 class S3APSEStorageDriver(S3StorageDriver):
     name = "Amazon S3 (ap-southeast-1)"
