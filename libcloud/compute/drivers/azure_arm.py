@@ -808,6 +808,7 @@ class AzureNodeDriver(NodeDriver):
         ex_destroy_vhd=True,
         ex_poll_qty=10,
         ex_poll_wait=10,
+        ex_destroy_os_disk=False,
     ):
         """
         Destroy a node.
@@ -829,6 +830,9 @@ class AzureNodeDriver(NodeDriver):
 
         :param ex_poll_wait: Delay in seconds between retries (default 10).
         :type node: ``int``
+
+        :param ex_destroy_os_disk: Destroy the OS disk associated with
+        this node (default True).
 
         :return: True if the destroy was successful, raises exception
         otherwise.
@@ -911,6 +915,25 @@ class AzureNodeDriver(NodeDriver):
                     else:
                         raise
                 time.sleep(10)
+
+        # Optionally destroy the OS disk
+        if ex_destroy_os_disk:
+            disk_id = node.extra['properties']['storageProfile']['osDisk']['managedDisk']['id']
+            retries = ex_poll_qty
+            while retries > 0:
+                try:
+                    self.connection.request(
+                        disk_id, params={"api-version": DISK_API_VERSION}, method="DELETE"
+                    )
+                    break
+                except BaseHTTPError as h:
+                    retries -= 1 
+                    if h.code in (204, 404):
+                        break
+                    elif retries > 0:
+                        time.sleep(ex_poll_wait)
+                    else:
+                        raise
 
         return True
 
