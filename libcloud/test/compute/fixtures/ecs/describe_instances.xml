@@ -14,7 +14,7 @@
 			<VlanId></VlanId>
 			<InstanceId>i-28n7dkvov</InstanceId>
 			<EipAddress>
-				<IpAddress>42.112.1.2</IpAddress>
+				<IpAddress></IpAddress>
 				<AllocationId></AllocationId>
 				<InternetChargeType></InternetChargeType>
 			</EipAddress>
@@ -27,9 +27,7 @@
 			<Cpu>1</Cpu>
 			<VpcAttributes>
 				<NatIpAddress></NatIpAddress>
-				<PrivateIpAddress>
-					<IpAddress>172.17.1.1</IpAddress>
-				</PrivateIpAddress>
+				<PrivateIpAddress />
 				<VSwitchId></VSwitchId>
 				<VpcId></VpcId>
 			</VpcAttributes>
@@ -44,6 +42,51 @@
 			<PublicIpAddress>
 				<IpAddress>114.215.124.73</IpAddress>
 			</PublicIpAddress>
+			<HostName>iZ28n7dkvovZ</HostName>
+			<InstanceType>ecs.t1.small</InstanceType>
+			<CreationTime>2015-12-27T07:35Z</CreationTime>
+			<Status>Starting</Status>
+			<ClusterId></ClusterId>
+			<RegionId>cn-qingdao</RegionId>
+			<OperationLocks />
+			<InstanceChargeType>PostPaid</InstanceChargeType>
+			<ExpiredTime>2999-09-08T16:00Z</ExpiredTime>
+		</Instance>
+		<Instance>
+			<ImageId>ubuntu1404_64_20G_aliaegis_20150325.vhd</ImageId>
+			<InnerIpAddress/>
+			<InstanceTypeFamily>ecs.t1</InstanceTypeFamily>
+			<VlanId></VlanId>
+			<InstanceId>i-28n7dkvov</InstanceId>
+			<EipAddress>
+				<IpAddress>114.215.124.73</IpAddress>
+				<AllocationId></AllocationId>
+				<InternetChargeType></InternetChargeType>
+			</EipAddress>
+			<InternetMaxBandwidthIn>-1</InternetMaxBandwidthIn>
+			<ZoneId>cn-qingdao-b</ZoneId>
+			<InternetChargeType>PayByTraffic</InternetChargeType>
+			<SerialNumber>ca0122d9-374d-4fce-9fc0-71f7c3eaf1c3</SerialNumber>
+			<IoOptimized>false</IoOptimized>
+			<Memory>1024</Memory>
+			<Cpu>1</Cpu>
+			<VpcAttributes>
+				<NatIpAddress></NatIpAddress>
+				<PrivateIpAddress>
+					<IpAddress>10.163.197.74</IpAddress>
+				</PrivateIpAddress>
+				<VSwitchId></VSwitchId>
+				<VpcId></VpcId>
+			</VpcAttributes>
+			<InternetMaxBandwidthOut>1</InternetMaxBandwidthOut>
+			<DeviceAvailable>true</DeviceAvailable>
+			<SecurityGroupIds>
+				<SecurityGroupId>sg-28ou0f3xa</SecurityGroupId>
+			</SecurityGroupIds>
+			<InstanceName>iZ28n7dkvovZ</InstanceName>
+			<Description></Description>
+			<InstanceNetworkType>classic</InstanceNetworkType>
+			<PublicIpAddress/>
 			<HostName>iZ28n7dkvovZ</HostName>
 			<InstanceType>ecs.t1.small</InstanceType>
 			<CreationTime>2015-12-27T07:35Z</CreationTime>

@@ -72,51 +72,54 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.fake_security_group_id = "fake_security_group_id"
 
     def test_list_nodes(self):
+        # the test describes two nodes:
+        # the first on a classic network and with public ip attached
+        # the second on a vpc with an elastic ip attached
+        vpc_ips = [None, "10.163.197.74"]
+        eips = ["", "114.215.124.73"]
         nodes = self.driver.list_nodes()
         self.assertIsNotNone(nodes)
-        self.assertEqual(1, len(nodes))
-        node = nodes[0]
-        self.assertEqual("iZ28n7dkvovZ", node.name)
-        self.assertEqual("i-28n7dkvov", node.id)
-        self.assertEqual(NodeState.PENDING, node.state)
-        self.assertEqual(2, len(node.public_ips))
-        self.assertEqual("114.215.124.73", node.public_ips[0])
-        self.assertEqual("42.112.1.2", node.public_ips[1])
-        self.assertEqual(2, len(node.private_ips))
-        self.assertEqual("10.163.197.74", node.private_ips[0])
-        self.assertEqual("172.17.1.1", node.private_ips[1])
-        expected_extra = {
-            "image_id": "ubuntu1404_64_20G_aliaegis_20150325.vhd",
-            "description": "",
-            "instance_type_family": "ecs.t1",
-            "zone_id": "cn-qingdao-b",
-            "internet_charge_type": "PayByTraffic",
-            "serial_number": "ca0122d9-374d-4fce-9fc0-71f7c3eaf1c3",
-            "io_optimized": "false",
-            "device_available": "true",
-            "instance_network_type": "classic",
-            "hostname": "iZ28n7dkvovZ",
-            "instance_type": "ecs.t1.small",
-            "creation_time": "2015-12-27T07:35Z",
-            "instance_charge_type": "PostPaid",
-            "expired_time": "2999-09-08T16:00Z",
-        }
-        self._validate_extras(expected_extra, node.extra)
-        vpc = {
-            "vpc_id": "",
-            "vswitch_id": "",
-            "private_ip_address": "172.17.1.1",
-            "nat_ip_address": "",
-        }
-        self._validate_extras(vpc, node.extra["vpc_attributes"])
-        eip_address = {
-            "allocation_id": "",
-            "ip_address": "42.112.1.2",
-            "internet_charge_type": "",
-            "bandwidth": None,
-        }
-        self._validate_extras(eip_address, node.extra["eip_address"])
-        self.assertIsNone(node.extra["operation_locks"]["lock_reason"])
+        self.assertEqual(2, len(nodes))
+        for node, vpc_ip, eip in zip(nodes, vpc_ips, eips):
+            self.assertEqual("iZ28n7dkvovZ", node.name)
+            self.assertEqual("i-28n7dkvov", node.id)
+            self.assertEqual(NodeState.PENDING, node.state)
+            self.assertEqual(1, len(node.public_ips))
+            self.assertEqual("114.215.124.73", node.public_ips[0])
+            self.assertEqual(1, len(node.private_ips))
+            self.assertEqual("10.163.197.74", node.private_ips[0])
+            expected_extra = {
+                "image_id": "ubuntu1404_64_20G_aliaegis_20150325.vhd",
+                "description": "",
+                "instance_type_family": "ecs.t1",
+                "zone_id": "cn-qingdao-b",
+                "internet_charge_type": "PayByTraffic",
+                "serial_number": "ca0122d9-374d-4fce-9fc0-71f7c3eaf1c3",
+                "io_optimized": "false",
+                "device_available": "true",
+                "instance_network_type": "classic",
+                "hostname": "iZ28n7dkvovZ",
+                "instance_type": "ecs.t1.small",
+                "creation_time": "2015-12-27T07:35Z",
+                "instance_charge_type": "PostPaid",
+                "expired_time": "2999-09-08T16:00Z",
+            }
+            self._validate_extras(expected_extra, node.extra)
+            vpc = {
+                "vpc_id": "",
+                "vswitch_id": "",
+                "private_ip_address": vpc_ip,
+                "nat_ip_address": "",
+            }
+            self._validate_extras(vpc, node.extra["vpc_attributes"])
+            eip_address = {
+                "allocation_id": "",
+                "ip_address": eip,
+                "internet_charge_type": "",
+                "bandwidth": None,
+            }
+            self._validate_extras(eip_address, node.extra["eip_address"])
+            self.assertIsNone(node.extra["operation_locks"]["lock_reason"])
 
     def test_list_nodes_with_ex_node_ids(self):
         ECSMockHttp.type = "list_nodes_ex_node_ids"
