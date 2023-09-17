@@ -14,7 +14,7 @@
 			<VlanId></VlanId>
 			<InstanceId>i-28n7dkvov</InstanceId>
 			<EipAddress>
-				<IpAddress></IpAddress>
+				<IpAddress>42.112.1.2</IpAddress>
 				<AllocationId></AllocationId>
 				<InternetChargeType></InternetChargeType>
 			</EipAddress>
@@ -27,7 +27,9 @@
 			<Cpu>1</Cpu>
 			<VpcAttributes>
 				<NatIpAddress></NatIpAddress>
-				<PrivateIpAddress />
+				<PrivateIpAddress>
+					<IpAddress>172.17.1.1</IpAddress>
+				</PrivateIpAddress>
 				<VSwitchId></VSwitchId>
 				<VpcId></VpcId>
 			</VpcAttributes>

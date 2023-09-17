@@ -79,10 +79,12 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual("iZ28n7dkvovZ", node.name)
         self.assertEqual("i-28n7dkvov", node.id)
         self.assertEqual(NodeState.PENDING, node.state)
-        self.assertEqual(1, len(node.public_ips))
+        self.assertEqual(2, len(node.public_ips))
         self.assertEqual("114.215.124.73", node.public_ips[0])
-        self.assertEqual(1, len(node.private_ips))
+        self.assertEqual("42.112.1.2", node.public_ips[1])
+        self.assertEqual(2, len(node.private_ips))
         self.assertEqual("10.163.197.74", node.private_ips[0])
+        self.assertEqual("172.17.1.1", node.private_ips[1])
         expected_extra = {
             "image_id": "ubuntu1404_64_20G_aliaegis_20150325.vhd",
             "description": "",
@@ -103,13 +105,13 @@ class ECSDriverTestCase(LibcloudTestCase):
         vpc = {
             "vpc_id": "",
             "vswitch_id": "",
-            "private_ip_address": None,
+            "private_ip_address": "172.17.1.1",
             "nat_ip_address": "",
         }
         self._validate_extras(vpc, node.extra["vpc_attributes"])
         eip_address = {
             "allocation_id": "",
-            "ip_address": "",
+            "ip_address": "42.112.1.2",
             "internet_charge_type": "",
             "bandwidth": None,
         }
