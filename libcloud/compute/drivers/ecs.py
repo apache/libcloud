@@ -1271,11 +1271,7 @@ class ECSDriver(NodeDriver):
 
         private_ips = []
         for xpath in ("InnerIpAddress/IpAddress", "VpcAttributes/PrivateIpAddress/IpAddress"):
-            private_ip_els = findall(
-                element=instance,
-                xpath=xpath,
-                namespace=self.namespace
-            )
+            private_ip_els = findall(element=instance, xpath=xpath, namespace=self.namespace)
             private_ips.extend(_get_ips(private_ip_els))
 
         # Extra properties
