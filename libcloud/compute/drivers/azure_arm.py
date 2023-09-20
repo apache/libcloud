@@ -860,7 +860,7 @@ class AzureNodeDriver(NodeDriver):
                 raise
 
         # Poll until the node actually goes away (otherwise attempt to delete
-        # NIC and VHD will fail with "resource in use" errors).
+        # NIC, VHD and Disk will fail with "resource in use" errors).
         retries = ex_poll_qty
         while do_node_polling and retries > 0:
             try:
@@ -928,7 +928,8 @@ class AzureNodeDriver(NodeDriver):
                     break
                 except BaseHTTPError as h:
                     retries -= 1 
-                    if h.code in (204, 404):
+                    if h.code in (200, 204):
+                        # destroy disk is ok or accepted (but deferred)
                         break
                     elif retries > 0:
                         time.sleep(ex_poll_wait)
