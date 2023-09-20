@@ -18,6 +18,14 @@ Common
   (#1940)
   [@munahaf on behalf of OpenRefactory and Open Source Security Foundation]
 
+Compute
+~~~~~~~
+
+- [LINODE] Add support for cloud-init metadata support to create_node()
+  Add new functions ``create_key_pair``, ``list_key_pairs``, and ``get_image``
+  (#1946)
+  [Michael Galaxy - @mraygalaxy2]
+
 Storage
 ~~~~~~~
 

@@ -5,6 +5,27 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.8.0
+--------------
+
+* [LINODE API v4] Order of arguments to create_node() was changed. The order of the
+  arguments for name and size were not consistent with the rest of the codebase
+  and with the standard Libcloud API.
+
+  This is possibly a breaking change for anyone using a previous version.
+
+  New method signature:
+
+  .. sourcecode:: python
+
+    def create_node(self, location, name, size, image, ...)
+
+  Old method signature:
+
+  .. sourcecode:: python
+
+    def create_node(self, location, size=None, image=None, name=None, ...)
+
 Libcloud 3.7.0
 --------------
 

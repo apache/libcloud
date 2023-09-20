@@ -28,7 +28,7 @@ Provider                       list key pairs get key pair create key pair impor
 `KTUCloud`_                    yes            yes          yes             yes                           no                          yes            
 `kubevirt`_                    no             no           no              no                            no                          no             
 `Libvirt`_                     no             no           no              no                            no                          no             
-`Linode`_                      no             no           no              no                            no                          no             
+`Linode`_                      yes            no           yes             no                            no                          no             
 `Maxihost`_                    yes            no           yes             no                            no                          no             
 `Nimbus`_                      yes            yes          yes             yes                           no                          yes            
 `NTTAmerica`_                  no             no           no              no                            no                          no             
