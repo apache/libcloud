@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import sys
+import json
+import base64
 import unittest
 from datetime import datetime
 
@@ -25,6 +27,13 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.common.linode import LinodeDisk, LinodeIPAddress, LinodeExceptionV4
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.compute.drivers.linode import LinodeNodeDriver, LinodeNodeDriverV4
+
+EX_USERDATA = """
+#!/bin/sh
+
+echo "test"
+exit 1
+""".strip()
 
 
 class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
@@ -96,6 +105,23 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
             size=size,
             image=image,
             root_pass="test123456",
+        )
+        self.assertTrue(isinstance(node, Node))
+
+    def test_create_node_with_ex_userdata(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+
+        LinodeMockHttpV4.type = "EX_USERDATA"
+
+        node = self.driver.create_node(
+            location,
+            "node-name",
+            size=size,
+            image=image,
+            root_pass="test123456",
+            ex_userdata=EX_USERDATA,
         )
         self.assertTrue(isinstance(node, Node))
 
@@ -434,7 +460,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(images), 34)
 
 
-class LinodeMockHttpV4(MockHttp):
+class LinodeMockHttpV4(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures("linode_v4")
 
     def _v4_profile_sshkeys(self, method, url, body, headers):
@@ -474,6 +500,17 @@ class LinodeMockHttpV4(MockHttp):
             body = self.fixtures.load("list_nodes.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         if method == "POST":
+            body = self.fixtures.load("create_node.json")
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v4_linode_instances_EX_USERDATA(self, method, url, body, headers):
+        if method == "POST":
+            body = json.loads(body)
+            self.assertTrue("metadata" in body)
+            self.assertTrue("user_data" in body["metadata"])
+            body_userdata_decoded = base64.b64decode(body["metadata"]["user_data"]).decode("utf-8")
+            self.assertEqual(body_userdata_decoded, EX_USERDATA)
+
             body = self.fixtures.load("create_node.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

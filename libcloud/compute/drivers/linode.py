@@ -994,7 +994,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ex_tags=None,
         ex_backups_enabled=False,
         ex_private_ip=False,
-        ex_userdata=False,
+        ex_userdata=None,
     ):
         """Creates a Linode Instance.
         In order for this request to complete successfully,
