@@ -1062,7 +1062,11 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         }
 
         if ex_userdata:
-            attr["metadata"] = {"user_data": binascii.b2a_base64(bytes(ex_userdata.encode("utf-8"))).decode("ascii").strip()}
+            attr["metadata"] = {
+                "user_data": binascii.b2a_base64(bytes(ex_userdata.encode("utf-8")))
+                .decode("ascii")
+                .strip()
+            }
 
         if image is not None:
             if root_pass is None:
