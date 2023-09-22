@@ -832,14 +832,15 @@ class AzureNodeDriver(NodeDriver):
         :type node: ``int``
 
         :param ex_destroy_os_disk: Destroy the OS disk associated with
-        this node (default True).
+        this node either this is a managed disk or a VHD (default False).
+        :type nod: ``bool``
 
         :return: True if the destroy was successful, raises exception
         otherwise.
         :rtype: ``bool``
         """
 
-        do_node_polling = ex_destroy_nic or ex_destroy_vhd
+        do_node_polling = ex_destroy_nic or ex_destroy_vhd or ex_destroy_os_disk
 
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
@@ -860,7 +861,7 @@ class AzureNodeDriver(NodeDriver):
                 raise
 
         # Poll until the node actually goes away (otherwise attempt to delete
-        # NIC, VHD and Disk will fail with "resource in use" errors).
+        # NIC, VHD and OS Disk will fail with "resource in use" errors).
         retries = ex_poll_qty
         while do_node_polling and retries > 0:
             try:
@@ -893,7 +894,7 @@ class AzureNodeDriver(NodeDriver):
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
-        if ex_destroy_vhd and vhd is not None:
+        if (ex_destroy_os_disk or ex_destroy_vhd) and vhd is not None:
             retries = ex_poll_qty
             resourceGroup = node.id.split("/")[4]
             while retries > 0:
@@ -916,25 +917,18 @@ class AzureNodeDriver(NodeDriver):
                         raise
                 time.sleep(10)
 
-        # Optionally destroy the OS disk
-        if ex_destroy_os_disk:
-            disk_id = node.extra['properties']['storageProfile']['osDisk']['managedDisk']['id']
-            retries = ex_poll_qty
-            while retries > 0:
-                try:
-                    self.connection.request(
-                        disk_id, params={"api-version": DISK_API_VERSION}, method="DELETE"
-                    )
-                    break
-                except BaseHTTPError as h:
-                    retries -= 1 
-                    if h.code in (200, 204):
-                        # destroy disk is ok or accepted (but deferred)
-                        break
-                    elif retries > 0:
-                        time.sleep(ex_poll_wait)
-                    else:
-                        raise
+        # Optionally destroy the OS managed disk
+        managed_disk = node.extra["properties"]["storageProfile"]["osDisk"].get("managedDisk")
+        if ex_destroy_os_disk and managed_disk is not None:
+            managed_disk_id = managed_disk["id"]
+            try:
+                self.connection.request(
+                    managed_disk_id, params={"api-version": DISK_API_VERSION}, method="DELETE"
+                )
+            except BaseHTTPError as h:
+                if h.code not in (202, 204):
+                    # 202 or 204 mean destroy is accepted (but deferred) or already destroyed
+                    raise
 
         return True
 

@@ -377,6 +377,49 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(4, time_sleep_mock.call_count)  # Retries
 
     @mock.patch("time.sleep", return_value=None)
+    def test_destroy_node__os_managed_disk(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+
+        node = self.driver.list_nodes()[0]
+
+        # ok responses
+        for response in (200, 202, 204):
+            AzureMockHttp.responses = [
+                # OK to the DELETE request
+                lambda f: (httplib.OK, None, {}, "OK"),
+                # 404 - Node destroyed
+                lambda f: error(BaseHTTPError, code=404, message="Not found"),
+                # 200 - NIC destroyed
+                lambda f: (httplib.OK, None, {}, "OK"),
+                # 200 - managed OS disk destroyed
+                lambda f: (httplib.OK, None, {}, "OK")
+                if response == 200
+                else error(BaseHTTPError, code=response, message="Deleted or deferred"),
+            ]
+            ret = self.driver.destroy_node(node, ex_destroy_os_disk=True)
+            self.assertTrue(ret)
+
+    @mock.patch("time.sleep", return_value=None)
+    def test_destroy_node__os_managed_disk_error(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # OK to the DELETE request
+            lambda f: (httplib.OK, None, {}, "OK"),
+            # 404 - Node destroyed
+            lambda f: error(BaseHTTPError, code=404, message="Not found"),
+            # 200 - NIC destroyed
+            lambda f: (httplib.OK, None, {}, "OK"),
+            # 500 - transient error when trying to destroy the OS disk
+            lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),
+        ]
+        with self.assertRaises(BaseHTTPError):
+            self.driver.destroy_node(node, ex_destroy_os_disk=True)
+
+    @mock.patch("time.sleep", return_value=None)
     def test_destroy_node__destroy_nic_retries(self, time_sleep_mock):
         def error(e, **kwargs):
             raise e(**kwargs)
