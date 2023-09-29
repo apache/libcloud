@@ -1258,18 +1258,21 @@ class ECSDriver(NodeDriver):
         state = self.NODE_STATE_MAPPING.get(instance_status, NodeState.UNKNOWN)
 
         def _get_ips(ip_address_els):
-            return [each.text for each in ip_address_els]
+            return [each.text for each in ip_address_els if each.text]
 
-        public_ip_els = findall(
-            element=instance,
-            xpath="PublicIpAddress/IpAddress",
-            namespace=self.namespace,
-        )
-        public_ips = _get_ips(public_ip_els)
-        private_ip_els = findall(
-            element=instance, xpath="InnerIpAddress/IpAddress", namespace=self.namespace
-        )
-        private_ips = _get_ips(private_ip_els)
+        public_ips = []
+        for xpath in ("PublicIpAddress/IpAddress", "EipAddress/IpAddress"):
+            public_ip_els = findall(
+                element=instance,
+                xpath=xpath,
+                namespace=self.namespace,
+            )
+            public_ips.extend(_get_ips(public_ip_els))
+
+        private_ips = []
+        for xpath in ("InnerIpAddress/IpAddress", "VpcAttributes/PrivateIpAddress/IpAddress"):
+            private_ip_els = findall(element=instance, xpath=xpath, namespace=self.namespace)
+            private_ips.extend(_get_ips(private_ip_els))
 
         # Extra properties
         extra = self._get_extra_dict(instance, RESOURCE_EXTRA_ATTRIBUTES_MAP["node"])
