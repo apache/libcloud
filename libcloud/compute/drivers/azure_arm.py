@@ -808,7 +808,7 @@ class AzureNodeDriver(NodeDriver):
         ex_destroy_vhd=True,
         ex_poll_qty=10,
         ex_poll_wait=10,
-        ex_destroy_os_disk=False,
+        ex_destroy_os_disk=True,
     ):
         """
         Destroy a node.
@@ -832,7 +832,7 @@ class AzureNodeDriver(NodeDriver):
         :type node: ``int``
 
         :param ex_destroy_os_disk: Destroy the OS disk associated with
-        this node either this is a managed disk or a VHD (default False).
+        this node either if it is a managed disk (default True).
         :type nod: ``bool``
 
         :return: True if the destroy was successful, raises exception
@@ -894,7 +894,7 @@ class AzureNodeDriver(NodeDriver):
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
-        if (ex_destroy_os_disk or ex_destroy_vhd) and vhd is not None:
+        if ex_destroy_vhd and vhd is not None:
             retries = ex_poll_qty
             resourceGroup = node.id.split("/")[4]
             while retries > 0:
@@ -918,7 +918,7 @@ class AzureNodeDriver(NodeDriver):
                 time.sleep(10)
 
         # Optionally destroy the OS managed disk
-        managed_disk = node.extra["properties"]["storageProfile"]["osDisk"].get("managedDisk")
+        managed_disk = node.extra.get("properties", {}).get("storageProfile", {}).get("osDisk", {}).get("managedDisk")
         if ex_destroy_os_disk and managed_disk is not None:
             managed_disk_id = managed_disk["id"]
             try:
