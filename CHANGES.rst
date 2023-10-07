@@ -26,6 +26,10 @@ Compute
   (#1946)
   [Michael Galaxy - @mraygalaxy2]
 
+- [ECS] Add VPC IP and Elastic IP to ECS node as private and public IP.
+  (#1954)
+  [Victor Herrero Otal - @vicwicker]
+
 Storage
 ~~~~~~~
 
