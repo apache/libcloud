@@ -833,7 +833,7 @@ class AzureNodeDriver(NodeDriver):
 
         :param ex_destroy_os_disk: Destroy the OS disk associated with
         this node either if it is a managed disk (default True).
-        :type nod: ``bool``
+        :type node: ``bool``
 
         :return: True if the destroy was successful, raises exception
         otherwise.
