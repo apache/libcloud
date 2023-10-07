@@ -918,7 +918,12 @@ class AzureNodeDriver(NodeDriver):
                 time.sleep(10)
 
         # Optionally destroy the OS managed disk
-        managed_disk = node.extra.get("properties", {}).get("storageProfile", {}).get("osDisk", {}).get("managedDisk")
+        managed_disk = (
+            node.extra.get("properties", {})
+            .get("storageProfile", {})
+            .get("osDisk", {})
+            .get("managedDisk")
+        )
         if ex_destroy_os_disk and managed_disk is not None:
             managed_disk_id = managed_disk["id"]
             try:
