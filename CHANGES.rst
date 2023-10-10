@@ -26,6 +26,11 @@ Compute
   (#1946)
   [Michael Galaxy - @mraygalaxy2]
 
+- [Azure ARM] Add a new argument to destroy_node() to also delete node's
+  managed OS disk as part of the node's deletion.
+  (#1957)
+  [Victor Herrero Otal - @vicwicker]
+
 Storage
 ~~~~~~~
 
