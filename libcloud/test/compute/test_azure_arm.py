@@ -630,6 +630,15 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
         self.assertEqual(new_size, original_size + 8)
 
+    def test_resize_node(self):
+        location = self.driver.list_locations()[0]
+        size = self.driver.list_sizes(location=location)[0]
+        node = self.driver.list_nodes()[0]
+
+        value = self.driver.ex_resize_node(node, size)
+
+        self.assertEqual(value["size"], size.id)
+
     def test_detach_volume(self):
         volumes = self.driver.list_volumes()
         node = self.driver.list_nodes()[0]

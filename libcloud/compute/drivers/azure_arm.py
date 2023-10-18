@@ -2161,6 +2161,24 @@ class AzureNodeDriver(NodeDriver):
         # Libcloud v2.7.0
         return self.stop_node(node=node, ex_deallocate=deallocate)
 
+    def ex_resize_node(self, node, size):
+        """
+        Resize the node to a different machine size.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :param size: New size for this machine
+        :type node: :class:`NodeSize`
+        """
+        target = "%s/resize" % node.id
+        data = {"size": size.id}
+        r = self.connection.request(
+            target, params={"api-version": VM_API_VERSION}, data=data,
+            method="POST"
+        )
+        return r.object
+
     def ex_get_storage_account_keys(self, resource_group, storage_account):
         """
         Get account keys required to access to a storage account
