@@ -2165,7 +2165,7 @@ class AzureNodeDriver(NodeDriver):
         """
         Resize the node to a different machine size.
 
-        :param node: Node to rebuild
+        :param node: Node to resize
         :type node: :class:`Node`
 
         :param size: New size for this machine
