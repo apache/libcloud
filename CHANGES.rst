@@ -30,6 +30,10 @@ Compute
   (#1954)
   [Victor Herrero Otal - @vicwicker]
 
+- [Azure ARM] When deleting a node, delete VM OS disk if it's a managed disk.
+  (#1957)
+  [Victor Herrero Otal - @vicwicker]
+
 Storage
 ~~~~~~~
 
