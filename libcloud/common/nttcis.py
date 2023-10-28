@@ -2235,12 +2235,12 @@ class XmlListConfig(list):
 
     def __init__(self, elem_list):
         for element in elem_list:
-            if element is not None:
+            if element is not None and len(element) > 1:
                 # treat like dict
-                if len(element) >= 0 or element[0].tag != element[1].tag:
+                if element[0].tag != element[1].tag:
                     self.append(XmlDictConfig(element))
                 # treat like list
-                elif element[0].tag == element[1].tag:
+                else:
                     # property refers to an element used repeatedly
                     #  in the XML for data centers only
                     if "property" in element.tag:

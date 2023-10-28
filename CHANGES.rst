@@ -3,6 +3,7 @@ Changelog
 
 Changes in Apache Libcloud in development
 -----------------------------------------
+
 Common
 ~~~~~~
 
@@ -11,6 +12,44 @@ Common
   If you still want to use Libcloud with Python 3.7, you should use an older
   release which still supports Python 3.7.
   (#1941)
+
+- Types inheriting from ``libcloud.common.types.Type`` have been made hashable.
+  This way they can be directly used for testing memberships in sets which
+  contain string representation of the type enum value
+  (e.g. ``NodeState.RUNNING in {"running"} == True``).
+  (#1944)
+  [Ricardo Branco - @ricardobranco777]
+
+- [NTT CIS] Fix invalid comparison in the ``XmlListConfig.__init__()`` method.
+  (#1940)
+  [@munahaf on behalf of OpenRefactory and Open Source Security Foundation]
+
+Compute
+~~~~~~~
+
+- [LINODE] Add support for cloud-init metadata support to create_node()
+  Add new functions ``create_key_pair``, ``list_key_pairs``, and ``get_image``
+  (#1946)
+  [Michael Galaxy - @mraygalaxy2]
+
+- [ECS] Add VPC IP and Elastic IP to ECS node as private and public IP.
+  (#1954)
+  [Victor Herrero Otal - @vicwicker]
+
+- [Azure ARM] When deleting a node, delete VM OS disk if it's a managed disk.
+  (#1957)
+  [Victor Herrero Otal - @vicwicker]
+
+- [Azure ARM] Add ``ex_resize_node()`` method.
+  (#1964 #1965)
+  [@rajat-garg-del]
+
+Storage
+~~~~~~~
+
+- [Amazon S3] Add support for ``eu-south-1`` region.
+  (#1950)
+  [@H3199]
 
 Changes in Apache Libcloud 3.8.0
 --------------------------------

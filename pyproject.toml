@@ -74,7 +74,7 @@ Changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
 
 [project.optional-dependencies]
 build = [
-    "build==0.10.0"
+    "build==1.0.3"
 ]
 publish = [
     "twine==4.0.2"

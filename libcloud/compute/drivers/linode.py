@@ -37,6 +37,7 @@ from datetime import datetime
 from libcloud.utils.py3 import httplib
 from libcloud.compute.base import (
     Node,
+    KeyPair,
     NodeSize,
     NodeImage,
     NodeDriver,
@@ -861,6 +862,33 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         data = self._paginated_request("/v4/images", "data")
         return [self._to_image(obj) for obj in data]
 
+    def create_key_pair(self, name, public_key=""):
+        """
+        Creates an SSH keypair
+
+        :param name: The name to be given to the keypair (required).\
+        :type name: `str`
+
+        :keyword public_key: Contents of the public key the the SSH key pair
+        :type public_key: `str`
+
+        :rtype: :class: `KeyPair`
+        """
+        attr = {"label": name, "ssh_key": public_key}
+        response = self.connection.request(
+            "/v4/profile/sshkeys", data=json.dumps(attr), method="POST"
+        ).object
+        return self._to_key_pair(response)
+
+    def list_key_pairs(self):
+        """
+        Provide a list of all the SSH keypairs in your account.
+
+        :rtype: ``list`` of :class: `KeyPair`
+        """
+        data = self._paginated_request("/v4/profile/sshkeys", "data")
+        return [self._to_key_pair(obj) for obj in data]
+
     def list_locations(self):
         """
         Lists the Regions available for Linode services
@@ -945,15 +973,28 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
     def create_node(
         self,
         location,
-        size,
-        image=None,
-        name=None,
+        # Previously, the following 3 parameters did not match the rest of the libcloud
+        # codebase drivers. They should be in the same order as other compute drivers.
+        # Previously, it looked like this:
+        #         size,
+        #         image=None,
+        #         name=None,
+        #
+        # Comments welcome on how backwards compatibility (if any) should work here.
+        # Since it was not compatible with other drivers, it is not clear to me if this
+        # would break anyone's codebase if they were not using any other libcloud drivers
+        # to other cloud providers in the first place. If they were not, that seems to
+        # kind of defeat the purpose of using libcloud.
+        name,  # Can be None
+        size,  # Can be None
+        image,  # Can be None
         root_pass=None,
         ex_authorized_keys=None,
         ex_authorized_users=None,
         ex_tags=None,
         ex_backups_enabled=False,
         ex_private_ip=False,
+        ex_userdata=None,
     ):
         """Creates a Linode Instance.
         In order for this request to complete successfully,
@@ -997,6 +1038,12 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :keyword ex_private_ip: whether or not to request a private IP
         :type    ex_private_ip: ``bool``
 
+        :keyword ex_userdata: add cloud-config compatible userdata to be
+        processed by cloud-init inside the Linode instance. NOTE: the
+        contents of this string must be base64 encoded before passing
+        it to this function.
+        :type    ex_userdata: ``str``
+
         :return: Node representing the newly-created node
         :rtype: :class:`Node`
         """
@@ -1013,6 +1060,13 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             "private_ip": ex_private_ip,
             "backups_enabled": ex_backups_enabled,
         }
+
+        if ex_userdata:
+            attr["metadata"] = {
+                "user_data": binascii.b2a_base64(bytes(ex_userdata.encode("utf-8")))
+                .decode("ascii")
+                .strip()
+            }
 
         if image is not None:
             if root_pass is None:
@@ -1369,6 +1423,18 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         response = self.connection.request("/v4/volumes/%s" % volume_id).object
         return self._to_volume(response)
 
+    def get_image(self, image):
+        """
+        Lookup a Linode image
+
+        :param image: The name to image to be looked up (required).\
+        :type name: `str`
+
+        :rtype: :class: `NodeImage`
+        """
+        response = self.connection.request("/v4/images/%s" % image, method="GET")
+        return self._to_image(response.object)
+
     def create_image(self, disk, name=None, description=None):
         """Creates a private image from a LinodeDisk.
          Images are limited to three per account.
@@ -1553,6 +1619,18 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ).object
 
         return self._to_node(response)
+
+    def _to_key_pair(self, data):
+        extra = {"id": data["id"]}
+
+        return KeyPair(
+            name=data["label"],
+            fingerprint=None,
+            public_key=data["ssh_key"],
+            private_key=None,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_node(self, data):
         extra = {
