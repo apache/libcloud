@@ -2197,8 +2197,7 @@ class AzureNodeDriver(NodeDriver):
         target = "%s/resize" % node.id
         data = {"size": size.id}
         r = self.connection.request(
-            target, params={"api-version": VM_API_VERSION}, data=data,
-            method="POST"
+            target, params={"api-version": VM_API_VERSION}, data=data, method="POST"
         )
         return r.object
 
