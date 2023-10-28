@@ -34,6 +34,10 @@ Compute
   (#1957)
   [Victor Herrero Otal - @vicwicker]
 
+- [Azure ARM] Add ``ex_resize_node()`` method.
+  (#1964 #1965)
+  [@rajat-garg-del]
+
 Storage
 ~~~~~~~
 
