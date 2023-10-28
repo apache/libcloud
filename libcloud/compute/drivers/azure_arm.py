@@ -808,6 +808,7 @@ class AzureNodeDriver(NodeDriver):
         ex_destroy_vhd=True,
         ex_poll_qty=10,
         ex_poll_wait=10,
+        ex_destroy_os_disk=True,
     ):
         """
         Destroy a node.
@@ -830,12 +831,16 @@ class AzureNodeDriver(NodeDriver):
         :param ex_poll_wait: Delay in seconds between retries (default 10).
         :type node: ``int``
 
+        :param ex_destroy_os_disk: Destroy the OS disk associated with
+        this node either if it is a managed disk (default True).
+        :type node: ``bool``
+
         :return: True if the destroy was successful, raises exception
         otherwise.
         :rtype: ``bool``
         """
 
-        do_node_polling = ex_destroy_nic or ex_destroy_vhd
+        do_node_polling = ex_destroy_nic or ex_destroy_vhd or ex_destroy_os_disk
 
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
@@ -856,7 +861,7 @@ class AzureNodeDriver(NodeDriver):
                 raise
 
         # Poll until the node actually goes away (otherwise attempt to delete
-        # NIC and VHD will fail with "resource in use" errors).
+        # NIC, VHD and OS Disk will fail with "resource in use" errors).
         retries = ex_poll_qty
         while do_node_polling and retries > 0:
             try:
@@ -911,6 +916,24 @@ class AzureNodeDriver(NodeDriver):
                     else:
                         raise
                 time.sleep(10)
+
+        # Optionally destroy the OS managed disk
+        managed_disk = (
+            node.extra.get("properties", {})
+            .get("storageProfile", {})
+            .get("osDisk", {})
+            .get("managedDisk")
+        )
+        if ex_destroy_os_disk and managed_disk is not None:
+            managed_disk_id = managed_disk["id"]
+            try:
+                self.connection.request(
+                    managed_disk_id, params={"api-version": DISK_API_VERSION}, method="DELETE"
+                )
+            except BaseHTTPError as h:
+                if h.code not in (202, 204):
+                    # 202 or 204 mean destroy is accepted (but deferred) or already destroyed
+                    raise
 
         return True
 
