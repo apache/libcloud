@@ -26,6 +26,14 @@ Compute
   (#1946)
   [Michael Galaxy - @mraygalaxy2]
 
+- [ECS] Add VPC IP and Elastic IP to ECS node as private and public IP.
+  (#1954)
+  [Victor Herrero Otal - @vicwicker]
+
+- [Azure ARM] When deleting a node, delete VM OS disk if it's a managed disk.
+  (#1957)
+  [Victor Herrero Otal - @vicwicker]
+
 Storage
 ~~~~~~~
 
