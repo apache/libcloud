@@ -314,9 +314,8 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
 class EquinixMetalMockHttp(MockHttp):
     fixtures = ComputeFileFixtures("equinixmetal")
 
-    def _metal_v1_facilities(self, method, url, body, headers):
-        body = self.fixtures.load("facilities.json")
-
+    def _metal_v1_metros(self, method, url, body, headers):
+        body = self.fixtures.load("metros.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _metal_v1_plans(self, method, url, body, headers):
