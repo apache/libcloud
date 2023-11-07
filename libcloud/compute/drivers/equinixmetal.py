@@ -22,7 +22,6 @@ except ImportError:  # If not available will do things serially
     asyncio = None
 
 import json
-import datetime
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.base import JsonResponse, ConnectionKey
@@ -33,8 +32,6 @@ from libcloud.compute.base import (
     NodeImage,
     NodeDriver,
     NodeLocation,
-    StorageVolume,
-    VolumeSnapshot,
 )
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 
@@ -238,7 +235,7 @@ def _list_async(driver):
         return list(map(self._to_node, data))
 
     def list_locations(self):
-        data = self.connection.request("/metal/v1/facilities").object["facilities"]
+        data = self.connection.request("/metal/v1/locations/metros").object["metros"]
         return list(map(self._to_location, data))
 
     def list_images(self):
@@ -285,12 +282,15 @@ def _list_async(driver):
             if not ex_project_id:
                 raise Exception("ex_project_id needs to be specified")
 
-        facility = location.extra["code"]
+        location_code = location.extra["code"]
+        if not self._valid_location:
+            raise ValueError("Failed to create node: valid parameter metro [code] is required in the input")
+
         params = {
             "hostname": name,
             "plan": size.id,
             "operating_system": image.id,
-            "facility": facility,
+            "metro": location_code,
             "include": "plan",
             "billing_cycle": "hourly",
         }
@@ -453,6 +453,8 @@ def _list_async(driver):
             size = None
         if "facility" in data:
             extra["facility"] = data["facility"]
+        if "metro" in data and data["metro"] is not None:
+            extra["metro"] = data["metro"]
 
         for key in extra_keys:
             if key in data:
@@ -491,8 +493,8 @@ def _list_async(driver):
         except KeyError:
             cpus = None
         regions = [
-            region.get("href").replace("/metal/v1/facilities/", "")
-            for region in data.get("available_in", [])
+            region.get("href").replace("/metal/v1/locations/metros", "")
+            for region in data.get("available_in_metros", [])
         ]
         extra = {
             "description": data["description"],
@@ -683,7 +685,7 @@ def _list_async(driver):
             "quantity": quantity,
         }
         if location_id:
-            params["facility"] = location_id
+            params["metro"] = location_id
         if comments:
             params["comments"] = comments
         if customdata:
@@ -709,246 +711,14 @@ def _list_async(driver):
         result = self.connection.request(path, params=params, method="DELETE").object
         return result
 
-    def list_volumes(self, ex_project_id=None):
-        if ex_project_id:
-            return self.ex_list_volumes_for_project(ex_project_id=ex_project_id)
-
-        # if project has been specified during driver initialization, then
-        # return nodes for this project only
-        if self.project_id:
-            return self.ex_list_volumes_for_project(ex_project_id=self.project_id)
-
-        # In case of Python2 perform requests serially
-        if not use_asyncio():
-            nodes = []
-            for project in self.projects:
-                nodes.extend(self.ex_list_volumes_for_project(ex_project_id=project.id))
-            return nodes
-        # In case of Python3 use asyncio to perform requests in parallel
-        return self.list_resources_async("volumes")
-
-    def ex_list_volumes_for_project(self, ex_project_id, include="plan", page=1, per_page=1000):
-        params = {"include": include, "page": page, "per_page": per_page}
-        data = self.connection.request(
-            "/metal/v1/projects/%s/storage" % (ex_project_id), params=params
-        ).object["volumes"]
-        return list(map(self._to_volume, data))
-
-    def _to_volume(self, data):
-        return StorageVolume(
-            id=data["id"], name=data["name"], size=data["size"], driver=self, extra=data
-        )
-
-    def create_volume(
-        self,
-        size,
-        location,
-        plan="storage_1",
-        description="",
-        ex_project_id=None,
-        locked=False,
-        billing_cycle=None,
-        customdata="",
-        snapshot_policies=None,
-        **kwargs,
-    ):
-        """
-        Create a new volume.
-
-        :param size: Size of volume in gigabytes (required)
-        :type size: ``int``
-
-        :param location: Which data center to create a volume in. If
-                               empty, undefined behavior will be selected.
-                               (optional)
-        :type location: :class:`.NodeLocation`
-        :return: The newly created volume.
-        :rtype: :class:`StorageVolume`
-        """
-        path = "/metal/v1/projects/%s/storage" % (ex_project_id or self.projects[0].id)
-        try:
-            facility = location.extra["code"]
-        except AttributeError:
-            facility = location
-        params = {"facility": facility, "plan": plan, "size": size, "locked": locked}
-        params.update(kwargs)
-        if description:
-            params["description"] = description
-        if customdata:
-            params["customdata"] = customdata
-        if billing_cycle:
-            params["billing_cycle"] = billing_cycle
-        if snapshot_policies:
-            params["snapshot_policies"] = snapshot_policies
-        data = self.connection.request(path, params=params, method="POST").object
-        return self._to_volume(data)
-
-    def destroy_volume(self, volume):
-        """
-        Destroys a storage volume.
-
-        :param volume: Volume to be destroyed
-        :type volume: :class:`StorageVolume`
-
-        :rtype: ``bool``
-        """
-        path = "/metal/v1/storage/%s" % volume.id
-        res = self.connection.request(path, method="DELETE")
-        return res.status == httplib.NO_CONTENT
-
-    def attach_volume(self, node, volume):
-        """
-        Attaches volume to node.
-
-        :param node: Node to attach volume to.
-        :type node: :class:`.Node`
-
-        :param volume: Volume to attach.
-        :type volume: :class:`.StorageVolume`
-
-        :rytpe: ``bool``
-        """
-        path = "/metal/v1/storage/%s/attachments" % volume.id
-        params = {"device_id": node.id}
-        res = self.connection.request(path, params=params, method="POST")
-        return res.status == httplib.OK
-
-    def detach_volume(self, volume, ex_node=None, ex_attachment_id=""):
-        """
-        Detaches a volume from a node.
-
-        :param volume: Volume to be detached
-        :type volume: :class:`.StorageVolume`
-
-        :param ex_attachment_id: Attachment id to be detached, if empty detach
-                                        all attachments
-        :type name: ``str``
-
-        :rtype: ``bool``
-        """
-        path = "/metal/v1/storage/%s/attachments" % volume.id
-        attachments = volume.extra["attachments"]
-        assert len(attachments) > 0, "Volume is not attached to any node"
-        success = True
-        result = None
-        for attachment in attachments:
-            if not ex_attachment_id or ex_attachment_id in attachment["href"]:
-                attachment_id = attachment["href"].split("/")[-1]
-                if ex_node:
-                    node_id = self.ex_describe_attachment(attachment_id)["device"]["href"].split(
-                        "/"
-                    )[-1]
-                    if node_id != ex_node.id:
-                        continue
-                path = "/metal/v1/storage/attachments/%s" % (ex_attachment_id or attachment_id)
-                result = self.connection.request(path, method="DELETE")
-                success = success and result.status == httplib.NO_CONTENT
-
-        return result and success
-
-    def create_volume_snapshot(self, volume, name=""):
-        """
-        Create a new volume snapshot.
-
-        :param volume: Volume to create a snapshot for
-        :type volume: class:`StorageVolume`
-
-        :return: The newly created volume snapshot.
-        :rtype: :class:`VolumeSnapshot`
-        """
-        path = "/metal/v1/storage/%s/snapshots" % volume.id
-        res = self.connection.request(path, method="POST")
-        assert res.status == httplib.ACCEPTED
-        return volume.list_snapshots()[-1]
-
-    def destroy_volume_snapshot(self, snapshot):
-        """
-        Delete a volume snapshot
-
-        :param snapshot: volume snapshot to delete
-        :type snapshot: class:`VolumeSnapshot`
-
-        :rtype: ``bool``
-        """
-        volume_id = snapshot.extra["volume"]["href"].split("/")[-1]
-        path = "/metal/v1/storage/{}/snapshots/{}".format(volume_id, snapshot.id)
-        res = self.connection.request(path, method="DELETE")
-        return res.status == httplib.NO_CONTENT
-
-    def list_volume_snapshots(self, volume, include=""):
-        """
-        List snapshots for a volume.
-
-        :param volume: Volume to list snapshots for
-        :type volume: class:`StorageVolume`
-
-        :return: List of volume snapshots.
-        :rtype: ``list`` of :class: `VolumeSnapshot`
-        """
-        path = "/metal/v1/storage/%s/snapshots" % volume.id
-        params = {}
-        if include:
-            params["include"] = include
-        data = self.connection.request(path, params=params).object["snapshots"]
-        return list(map(self._to_volume_snapshot, data))
-
-    def _to_volume_snapshot(self, data):
-        created = datetime.datetime.strptime(data["created_at"], "%Y-%m-%dT%H:%M:%S")
-        return VolumeSnapshot(
-            id=data["id"],
-            name=data["id"],
-            created=created,
-            state=data["status"],
-            driver=self,
-            extra=data,
-        )
-
-    def ex_modify_volume(
-        self,
-        volume,
-        description=None,
-        size=None,
-        locked=None,
-        billing_cycle=None,
-        customdata=None,
-    ):
-        path = "/metal/v1/storage/%s" % volume.id
-        params = {}
-        if description:
-            params["description"] = description
-        if size:
-            params["size"] = size
-        if locked is not None:
-            params["locked"] = locked
-        if billing_cycle:
-            params["billing_cycle"] = billing_cycle
-        res = self.connection.request(path, params=params, method="PUT")
-        return self._to_volume(res.object)
-
-    def ex_restore_volume(self, snapshot):
-        volume_id = snapshot.extra["volume"]["href"].split("/")[-1]
-        ts = snapshot.extra["timestamp"]
-        path = "/metal/v1/storage/{}/restore?restore_point={}".format(volume_id, ts)
-        res = self.connection.request(path, method="POST")
-        return res.status == httplib.NO_CONTENT
-
-    def ex_clone_volume(self, volume, snapshot=None):
-        path = "/metal/v1/storage/%s/clone" % volume.id
-        if snapshot:
-            path += "?snapshot_timestamp=%s" % snapshot.extra["timestamp"]
-        res = self.connection.request(path, method="POST")
-        return res.status == httplib.NO_CONTENT
-
-    def ex_describe_volume(self, volume_id):
-        path = "/metal/v1/storage/%s" % volume_id
-        data = self.connection.request(path).object
-        return self._to_volume(data)
-
-    def ex_describe_attachment(self, attachment_id):
-        path = "/metal/v1/storage/attachments/%s" % attachment_id
-        data = self.connection.request(path).object
-        return data
-
+    def _valid_location(self, metro_code):
+        if metro_code == None or metro_code == "":
+            return False
+        metros = self.connection.request("/metal/v1/locations/metros").object["metros"]
+        for metro in metros:
+            if metro["code"] == metro_code:
+                return True
+        return False
 
 class Project:
     def __init__(self, project):
