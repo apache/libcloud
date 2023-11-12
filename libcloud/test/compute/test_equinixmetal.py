@@ -251,66 +251,6 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
 
                 break
 
-    def test_list_volumes(self):
-        volumes = self.driver.list_volumes()
-        assert len(volumes) == 2
-        assert len(volumes[0].extra["attachments"]) == 0
-
-    def test_create_volume(self):
-        location = self.driver.list_locations()[0]
-        volume = self.driver.create_volume(
-            10,
-            location,
-            description="test volume",
-            plan="storage_1",
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df",
-        )
-        assert len(volume.extra["attachments"]) == 0
-        assert not volume.extra["locked"]
-
-    def test_attach_volume(self):
-        attached = False
-        volumes = self.driver.ex_list_volumes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )
-        node = self.driver.ex_list_nodes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )[0]
-
-        for vol in volumes:
-            if len(vol.extra["attachments"]) == 0:
-                attached = self.driver.attach_volume(node, vol)
-
-                break
-        assert attached
-
-    def test_detach_volume(self):
-        detached = False
-        volumes = self.driver.ex_list_volumes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )
-
-        for vol in volumes:
-            if len(vol.extra["attachments"]) > 0:
-                detached = self.driver.detach_volume(vol)
-
-                break
-        assert detached
-
-    def test_destroy_volume(self):
-        destroyed = False
-        volumes = self.driver.ex_list_volumes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )
-
-        for vol in volumes:
-            if len(vol.extra["attachments"]) == 0:
-                destroyed = self.driver.destroy_volume(vol)
-
-                break
-        assert destroyed
-
-
 class EquinixMetalMockHttp(MockHttp):
     fixtures = ComputeFileFixtures("equinixmetal")
 
@@ -522,6 +462,7 @@ class EquinixMetalMockHttp(MockHttp):
         if method == "DELETE":
             return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
+<<<<<<< HEAD
     def _metal_v1_projects_3d27fd13_0466_4878_be22_9a4b5595a3df_storage(
         self, method, url, body, headers
     ):
@@ -570,6 +511,8 @@ class EquinixMetalMockHttp(MockHttp):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
+=======
+>>>>>>> 86ff77e3c (Remove storage and volume interface implementation)
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
