@@ -501,7 +501,7 @@ def _list_async(driver):
             "regions": regions,
         }
         try:
-           factor = 1
+            factor = 1
             ram_txt = data["specs"]["memory"]["total"]
             if "GB" in ram_txt:
                factor = 1024
