@@ -843,6 +843,7 @@ def _list_async(driver):
     ):
         """
         Create a new volume.
+
         :param size: Size of volume in gigabytes (required)
         :type size: ``int``
         :param location: Which data center to create a volume in. If
