@@ -599,7 +599,11 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
                 volumes_dict = {"containerDisk": {"image": image}, "name": disk_name}
             elif disk_type == "persistentVolumeClaim":
-                if "claim_name" not in disk:
+                if "volume_spec" not in disk:
+                    raise KeyError(
+                        "You must provide a volume_spec dictionary"
+                    )
+                if "claim_name" not in disk["volume_spec"]:
                     msg = (
                         "You must provide either a claim_name of an "
                         "existing claim or if you want one to be "
@@ -612,21 +616,21 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     )
                     raise KeyError(msg)
 
-                claim_name = disk["claim_name"]
+                claim_name = disk["volume_spec"]["claim_name"]
 
                 if claim_name not in self.ex_list_persistent_volume_claims(namespace=namespace):
-                    if "size" not in disk or "storage_class_name" not in disk:
+                    if "size" not in disk["volume_spec"] or "storage_class_name" not in disk["volume_spec"]:
                         msg = (
-                            "disk['size'] and "
-                            "disk['storage_class_name'] "
+                            "disk['volume_spec']['size'] and "
+                            "disk['volume_spec']['storage_class_name'] "
                             "are both required to create "
                             "a new claim."
                         )
                         raise KeyError(msg)
-                    size = disk["size"]
-                    storage_class = disk["storage_class_name"]
-                    volume_mode = disk.get("volume_mode", "Filesystem")
-                    access_mode = disk.get("access_mode", "ReadWriteOnce")
+                    size = disk["volume_spec"]["size"]
+                    storage_class = disk["volume_spec"]["storage_class_name"]
+                    volume_mode = disk["volume_spec"].get("volume_mode", "Filesystem")
+                    access_mode = disk["volume_spec"].get("access_mode", "ReadWriteOnce")
                     self.create_volume(
                         size=size,
                         name=claim_name,
@@ -644,7 +648,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 warnings.warn(
                     "The disk type {} is not tested. Use at your own risk.".format(disk_type)
                 )
-                volumes_dict = {disk_type: disk["volume_spec"], "name": disk_name}
+                volumes_dict = {disk_type: disk.get("volume_spec", {}), "name": disk_name}
 
             disk_dict = {device: {"bus": bus}, "name": disk_name}
             vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
