@@ -18,9 +18,13 @@
 """
 kubevirt driver with support for nodes (vms)
 """
+import copy
 import json
 import time
+import uuid
 import hashlib
+import warnings
+from typing import Union, Optional
 from datetime import datetime
 
 from libcloud.common.types import LibcloudError
@@ -31,6 +35,8 @@ from libcloud.compute.base import (
     NodeDriver,
     NodeLocation,
     StorageVolume,
+    NodeAuthSSHKey,
+    NodeAuthPassword,
 )
 from libcloud.compute.types import Provider, NodeState
 from libcloud.common.kubernetes import (
@@ -39,9 +45,28 @@ from libcloud.common.kubernetes import (
     KubernetesBasicAuthConnection,
 )
 
-__all__ = ["KubeVirtNodeDriver"]
+__all__ = [
+    "KubeVirtNodeDriver",
+    "DISK_TYPES",
+    "KubeVirtNodeSize",
+    "KubeVirtNodeImage",
+]
+
 ROOT_URL = "/api/v1/"
 KUBEVIRT_URL = "/apis/kubevirt.io/v1alpha3/"
+
+# all valid disk types supported by kubevirt
+DISK_TYPES = {
+    "containerDisk",
+    "ephemeral",
+    "configMap",
+    "dataVolume",
+    "cloudInitNoCloud",
+    "persistentVolumeClaim",
+    "emptyDisk",
+    "cloudInitConfigDrive",
+    "hostDisk",
+}
 
 
 class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
@@ -179,125 +204,85 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         except Exception:
             raise
 
-    # only has container disk support atm with no persistency
-    def create_node(
-        self,
-        name,
-        image,
-        location=None,
-        ex_memory=128,
-        ex_cpu=1,
-        ex_disks=None,
-        ex_network=None,
-        ex_termination_grace_period=0,
-        ports=None,
-    ):
+    def _create_node_with_template(self, name: str, template: dict, namespace="default"):
         """
-        Creating a VM with a containerDisk.
-        :param name: A name to give the VM. The VM will be identified by
-                     this name and atm it cannot be changed after it is set.
+        Creating a VM defined by the template.
+
+        :param name: A name to give the VM. The VM will be identified by this
+                     name, and it must be the same as the name in the
+                     ``template["metadata"]["name"]``.
+                     Atm, it cannot be changed after it is set.
         :type name: ``str``
 
-        :param image: Either a libcloud NodeImage or a string.
-                      In both cases it must point to a Docker image with an
-                      embedded disk.
-                      May be a URI like `kubevirt/cirros-registry-disk-demo`,
-                      kubevirt will automatically pull it from
-                      https://hub.docker.com/u/URI.
-                      For more info visit:
-                      https://kubevirt.io/user-guide/docs/latest/creating-virtual-machines/disks-and-volumes.html#containerdisk
-        :type image: `str`
+        :param template: A dictionary of kubernetes object that defines the
+                         KubeVirt VM.
+                         See also:
+                         - https://kubernetes.io/docs/concepts/overview/working-with-objects/
+                         - https://kubevirt.io/api-reference/
+        :type template: ``dict`` with keys:
+                         -apiVersion: ``str``
+                         -kind: ``str``
+                         -metadata: ``dict``
+                         -spec: ``dict``
+                           - domain: ``dict``
+                           - volumes: ``list``
+                           - ...
 
-        :param location: The namespace where the VM will live.
+
+        :param namespace: The namespace where the VM will live.
                           (default is 'default')
-        :type location: ``str``
-
-        :param ex_memory: The RAM in MB to be allocated to the VM
-        :type ex_memory: ``int``
-
-        :param ex_cpu: The amount of cpu to be allocated in miliCPUs
-                    ie: 400 will mean 0.4 of a core, 1000 will mean 1 core
-                    and 3000 will mean 3 cores.
-        :type ex_cpu: ``int``
-
-        :param ex_disks: A list containing disk dictionaries.
-                             Each dictionaries should have the
-                             following optional keys:
-                             -bus: can be "virtio", "sata", or "scsi"
-                             -device: can be "lun" or "disk"
-                             The following are required keys:
-                             -disk_type: atm only "persistentVolumeClaim"
-                                         is supported
-                             -name: The name of the disk configuration
-                             -claim_name: the name of the
-                                         Persistent Volume Claim
-
-                            If you wish a new Persistent Volume Claim can be
-                            created by providing the following:
-                            required:
-                            -size: the desired size (implied in GB)
-                            -storage_class_name: the name of the storage class to # NOQA
-                                               be used for the creation of the
-                                               Persistent Volume Claim.
-                                               Make sure it allows for
-                                               dymamic provisioning.
-                             optional:
-                            -access_mode: default is ReadWriteOnce
-                            -volume_mode: default is `Filesystem`,
-                                         it can also be `Block`
-
-        :type ex_disks: `list` of `dict`. For each `dict` the types
-                            for its keys are:
-                            -bus: `str`
-                            -device: `str`
-                            -disk_type: `str`
-                            -name: `str`
-                            -claim_name: `str`
-                            (for creating a claim:)
-                            -size: `int`
-                            -storage_class_name: `str`
-                            -volume_mode: `str`
-                            -access_mode: `str`
-
-        :param ex_network: Only the pod type is supported, and in the
-                               configuration masquerade or bridge are the
-                               accepted values.
-                               The parameter must be a tuple or list with
-                               (network_type, interface, name)
-        :type ex_network: `iterable` (tuple or list) [network_type, interface, name]
-                      network_type: `str` | only "pod" is accepted atm
-                      interface: `str` | "masquerade" or "bridge"
-                      name: `str`
-
-        :param ports: A dictionary with keys: 'ports_tcp' and 'ports_udp'
-                      'ports_tcp' value is a list of ints that indicate
-                      the ports to be exposed with TCP protocol,
-                      and 'ports_udp' is a list of ints that indicate
-                      the ports to be exposed with UDP protocol.
-        :type  ports: `dict` with keys
-                      'ports_tcp`: `list` of `int`
-                      'ports_udp`: `list` of `int`
+        :return:
         """
-        # all valid disk types for which support will be added in the future
-        DISK_TYPES = {
-            "containerDisk",
-            "ephemeral",
-            "configMap",
-            "dataVolume",
-            "cloudInitNoCloud",
-            "persistentVolumeClaim",
-            "emptyDisk",
-            "cloudInitConfigDrive",
-            "hostDisk",
-        }
+        # k8s object checks
+        if template.get("apiVersion", "") != "kubevirt.io/v1alpha3":
+            raise ValueError("The template must have an apiVersion: kubevirt.io/v1alpha3")
+        if template.get("kind", "") != "VirtualMachine":
+            raise ValueError("The template must contain kind: VirtualMachine")
+        if name != template.get("metadata", {}).get("name"):
+            raise ValueError("The name of the VM must be the same as the name in the template. "
+                             "(name={}, template.metadata.name={})".format(
+                name, template.get("metadata", {}).get("name")))
+        if template.get("spec", {}).get("running", False):
+            warnings.warn(
+                "The VM will be created in a stopped state, and then started. "
+                "Ignoring the `spec.running: True` in the template."
+            )
+            # assert "spec" in template and "running" in template["spec"]
+            template["spec"]["running"] = False
 
-        if location is not None:
-            namespace = location.name
-        else:
-            namespace = "default"
+        vm = template
 
-        # vm template to be populated
-        vm = {
+        method = "POST"
+        data = json.dumps(vm)
+        req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/"
+        try:
+            self.connection.request(req, method=method, data=data)
+
+        except Exception:
+            raise
+        # check if new node is present
+        nodes = self.list_nodes()
+        for node in nodes:
+            if node.name == name:
+                self.start_node(node)
+                return node
+
+    @staticmethod
+    def _base_vm_template(name=None):  # type: (Optional[str]) -> dict
+        """
+        A skeleton VM template to be used for creating VMs.
+
+        :param name: A name to give the VM. The VM will be identified by this
+                     name. If not provided, a random uuid4 will be used.
+                     The generated name can be gotten from the returned dict
+                     with the key ``["metadata"]["name"]``.
+        :type name: ``str``
+
+        :return: dict: A skeleton VM template.
+        """
+        if not name:
+            name = uuid.uuid4()
+        return {
             "apiVersion": "kubevirt.io/v1alpha3",
             "kind": "VirtualMachine",
             "metadata": {"labels": {"kubevirt.io/vm": name}, "name": name},
@@ -316,69 +301,305 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                             "resources": {"requests": {}, "limits": {}},
                         },
                         "networks": [],
-                        "terminationGracePeriodSeconds": ex_termination_grace_period,  # NOQA
+                        "terminationGracePeriodSeconds": 0,
                         "volumes": [],
                     },
                 },
             },
         }
-        memory = str(ex_memory) + "Mi"
-        vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["memory"] = memory
-        vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"] = memory
-        if ex_cpu < 10:
-            cpu = int(ex_cpu)
-            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"] = cpu
-            vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
+
+    # only has container disk support atm with no persistency
+    def create_node(
+        self,
+        name,  # type: str
+        size,  # type: Optional[NodeSize]
+        image,  # type: Optional[Union[NodeImage, str]]
+        location=None,  # type: Optional[NodeLocation]
+        auth=None,  # type: Optional[Union[NodeAuthSSHKey, NodeAuthPassword]]
+        ex_disks=None,  # type: Optional[list]
+        ex_network=None,  # type: Optional[dict]
+        ex_termination_grace_period=0,  # type: Optional[int]
+        ex_ports=None,  # type: Optional[dict]
+        ex_template=None,  # type: Optional[dict]
+    ):  # type: (...) -> Node
+        """
+        Creating a VM with a containerDisk.
+
+        :param name: A name to give the VM. The VM will be identified by
+                     this name and atm it cannot be changed after it is set.
+        :type name: ``str``
+
+        :param size: The size of the VM in terms of CPU and memory.
+        :type size: ``NodeSize``:
+
+                    >>> size = NodeSize(
+                    >>>     # id='small',  # str: Size ID
+                    >>>     # name='small',  # str: Size name. Not used atm
+                    >>>     ram=2048,  # int: Amount of memory (in MB)
+                    >>>     # disk=20,  # int: Amount of disk storage (in GB). Not used atm
+                    >>>     # bandwidth=0,  # int: Amount of bandwidth. Not used atm
+                    >>>     # price=0,  # float: Price (in US dollars) of running this node for an hour. Not used atm
+                    >>>     # driver=KubeVirtNodeDriver  # NodeDriver: Driver this size belongs to
+                    >>>     extra={
+                    >>>         'cpu': 1,  # int: Number of CPUs provided by this size.
+                    >>>     },
+                    >>> )
+
+        :param image: Either a libcloud NodeImage or a string.
+                      In both cases it must point to a Docker image with an
+                      embedded disk.
+                      May be a URI like `kubevirt/cirros-registry-disk-demo`,
+                      kubevirt will automatically pull it from
+                      https://hub.docker.com/u/URI.
+                      For more info visit:
+                      https://kubevirt.io/user-guide/docs/latest/creating-virtual-machines/disks-and-volumes.html#containerdisk
+        :type image: ``str`` or ``NodeImage``
+
+                     >>> image = NodeImage(
+                     >>>   name='kubevirt/cirros-registry-disk-demo',  # str: Image URI
+                     >>>   ... # Other attributes are ignored
+                     >>> )
+
+        :param location: The namespace where the VM will live.
+                          (default is 'default')
+        :type location: `NodeLocation`` in which the name is the namespace
+
+                        >>> location = NodeLocation(
+                        >>>     name='default',  # str: namespace
+                        >>>     ... # Other attributes are ignored
+                        >>> )
+
+        :param auth: authentication to a node.
+        :type auth: ``NodeAuthSSHKey`` or ``NodeAuthPassword``:
+                    - NodeAuthSSHKey(pubkey='...')
+                    - NodeAuthPassword(password='...')
+
+        :param ex_disks: A list containing disk dictionaries.
+                            Each dictionary should have the
+                            following optional keys:
+
+                            - ``"bus"``: can be "virtio", "sata", or "scsi"
+                            - ``"device"``: can be "lun" or "disk"
+
+                             The following are required keys:
+
+                             - ``"disk_type"``
+                                    One of the supported ``DISK_TYPES``.
+                                    Atm only "persistentVolumeClaim" and
+                                    "containerDisk" are promised to work.
+                                    Other types may work but are not tested.
+                             - ``"name"``:
+                                    The name of the disk configuration
+                             - ``"voulme_spec"``:
+                                    the dictionary that defines the volume
+                                    of the disk.
+                                    Will be translated to KubeVirt API object:
+
+                                      volumes:
+                                        - name: <disk_name>
+                                          <disk_type>:
+                                            <voulme_spec>
+
+                                    Content is depending on the disk_type:
+
+                                    For "containerDisk" the dictionary
+                                    should have a key "image" with the
+                                    value being the image URI.
+
+                                    For "persistentVolumeClaim" the
+                                    dictionary should have a key
+                                    "claimName" with the value being
+                                    the name of the claim.
+                                    If you wish, a new Persistent Volume Claim can be
+                                    created by providing the following:
+
+                                    - required:
+                                        - size: the desired size (implied in GB)
+                                        - storage_class_name: the name of the storage class to # NOQA
+                                                               be used for the creation of the
+                                                               Persistent Volume Claim.
+                                                               Make sure it allows for
+                                                               dymamic provisioning.
+                                    - optional:
+                                        - access_mode: default is ReadWriteOnce
+                                        - volume_mode: default is `Filesystem`,
+                                                       it can also be `Block`
+
+                                    For other disk types, it will be translated to
+                                    a KubeVirt volume object as is:
+
+                                        {disk_type: <volume_spec>, "name": disk_name}
+
+                                    Please refer to the KubeVirt API documentation
+                                    for volume specifications:
+
+                                    https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes
+
+        :type ex_disks: `list` of `dict`.
+                        For each `dict` the types for its keys are:
+                            - bus: `str`
+                            - device: `str`
+                            - disk_type: `str`
+                            - name: `str`
+                            - voulme_spec: `dict`
+
+        :param ex_network: Only the `pod` type is supported, and in the
+                               configuration `masquerade` or `bridge` are the
+                               accepted values.
+                               The parameter must be a dict:
+
+                                {
+                                    "network_type": "pod",
+                                    "interface": "masquerade | bridge",
+                                    "name": "network_name"
+                                }
+
+        :type ex_network: `dict` with keys:
+
+                      - network_type: `str` | only "pod" is accepted atm
+                      - interface: `str` | "masquerade" or "bridge"
+                      - name: `str`
+
+        :param ex_termination_grace_period: The grace period in seconds before
+                                            the VM is forcefully terminated.
+                                            (default is 0)
+        :type ex_termination_grace_period: `int`
+
+        :param ex_ports: A dictionary with keys: 'ports_tcp' and 'ports_udp'
+                      'ports_tcp' value is a list of ints that indicate
+                      the ports to be exposed with TCP protocol,
+                      and 'ports_udp' is a list of ints that indicate
+                      the ports to be exposed with UDP protocol.
+        :type  ex_ports: `dict` with keys
+                      'ports_tcp`: `list` of `int`
+                      'ports_udp`: `list` of `int`
+
+        :param ex_template: A dictionary of kubernetes object that defines the
+                            KubeVirt VM. This is for advanced vm specifications
+                            that are not covered by the other parameters.
+                            If provided, it will override all other parameters
+                            except for `name` and `location`.
+                            See also:
+                            - https://kubernetes.io/docs/concepts/overview/working-with-objects/
+                            - https://kubevirt.io/api-reference/
+        :type ex_template: ``dict`` with keys:
+                            -apiVersion: ``str``
+                            -kind: ``str``
+                            -metadata: ``dict``
+                            -spec: ``dict``
+                              - domain: ``dict``
+                              - volumes: ``list``
+                              - ...
+        """
+
+        # location -> namespace
+        if isinstance(location, NodeLocation):
+            if location not in self.list_locations():
+                raise ValueError("The location must be one of the available namespaces")
+            namespace = location.name
         else:
-            cpu = str(ex_cpu) + "m"
+            namespace = "default"
+
+        # ex_template or _base_vm_template -> vm
+
+        # ex_template exists, use it to create the vm, ignore other parameters
+        if ex_template is not None:
+            assert isinstance(ex_template, dict), "ex_template must be a dictionary"
+
+            other_params = {
+                "size": size,
+                "image": image,
+                "auth": auth,
+                "ex_disks": ex_disks,
+                "ex_network": ex_network,
+                "ex_termination_grace_period": ex_termination_grace_period,
+                "ex_ports": ex_ports,
+            }
+            ignored_non_none_param_keys = list(filter(
+                lambda x: other_params[x] is not None,
+                other_params))
+            if ignored_non_none_param_keys:
+                warnings.warn(
+                    "ex_template is provided, ignoring the following non-None "
+                    "parameters: {}"
+                    .format(ignored_non_none_param_keys)
+                )
+
+            vm = copy.deepcopy(ex_template)
+
+            if vm.get("metadata") is None:
+                vm["metadata"] = {}
+
+            if vm["metadata"].get("name") is None:
+                vm["metadata"]["name"] = name
+            elif vm["metadata"]["name"] != name:
+                warnings.warn(
+                    "The name in the ex_template ({}) will be ignored. "
+                    "The name provided in the arguments ({}) will be used."
+                    .format(vm["metadata"]["name"], name)
+                )
+                vm["metadata"]["name"] = name
+
+            return self._create_node_with_template(name=name,
+                                                   template=vm,
+                                                   namespace=namespace)
+        # else (ex_template is None): create a vm with other parameters
+
+        # vm template to be populated
+        vm = self._base_vm_template(name=name)
+
+        # size -> cpu and memory limits
+
+        if size is not None:
+            assert isinstance(size, NodeSize), "size must be a NodeSize"
+            ex_cpu = size.extra["cpu"]
+            ex_memory = size.ram
+        else:
+            ex_cpu = None
+            ex_memory = None
+
+        if ex_memory is not None:
+            assert isinstance(ex_memory, int), "ex_memory must be an int in MiB"
+            memory = str(ex_memory) + "Mi"
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["memory"] = memory
+            vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"] = memory
+
+        if ex_cpu is not None:
+            if isinstance(ex_cpu, str) and ex_cpu.endswith("m"):
+                cpu = ex_cpu
+            else:
+                try:
+                    cpu = float(ex_cpu)
+                except ValueError:
+                    raise ValueError("ex_cpu must be a number or a string ending with 'm'")
             vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"] = cpu
             vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
-        i = 0
-        for disk in ex_disks:
+
+        # TODO: debug: no boot disk???
+
+        # ex_disks -> disks and volumes
+        ex_disks = ex_disks or []
+        for i, disk in enumerate(ex_disks):
             disk_type = disk.get("disk_type")
             bus = disk.get("bus", "virtio")
             disk_name = disk.get("name", "disk{}".format(i))
-            i += 1
             device = disk.get("device", "disk")
+
             if disk_type not in DISK_TYPES:
                 raise ValueError("The possible values for this " "parameter are: ", DISK_TYPES)
+
             # depending on disk_type, in the future,
             # when more will be supported,
             # additional elif should be added
             if disk_type == "containerDisk":
                 try:
-                    image = disk["image"]
+                    image = disk["volume_spec"]["image"]
                 except KeyError:
                     raise KeyError("A container disk needs a " "containerized image")
 
                 volumes_dict = {"containerDisk": {"image": image}, "name": disk_name}
-
-            if disk_type == "persistentVolumeClaim":
-                if "claim_name" in disk:
-                    claimName = disk["claim_name"]
-                    if claimName not in self.ex_list_persistent_volume_claims(namespace=namespace):
-                        if "size" not in disk or "storage_class_name" not in disk:
-                            msg = (
-                                "disk['size'] and "
-                                "disk['storage_class_name'] "
-                                "are both required to create "
-                                "a new claim."
-                            )
-                            raise KeyError(msg)
-                        size = disk["size"]
-                        storage_class = disk["storage_class_name"]
-                        volume_mode = disk.get("volume_mode", "Filesystem")
-                        access_mode = disk.get("access_mode", "ReadWriteOnce")
-                        self.create_volume(
-                            size=size,
-                            name=claimName,
-                            location=location,
-                            ex_storage_class_name=storage_class,
-                            ex_volume_mode=volume_mode,
-                            ex_access_mode=access_mode,
-                        )
-
-                else:
+            elif disk_type == "persistentVolumeClaim":
+                if "claim_name" not in disk:
                     msg = (
                         "You must provide either a claim_name of an "
                         "existing claim or if you want one to be "
@@ -391,63 +612,151 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     )
                     raise KeyError(msg)
 
+                claim_name = disk["claim_name"]
+
+                if claim_name not in self.ex_list_persistent_volume_claims(namespace=namespace):
+                    if "size" not in disk or "storage_class_name" not in disk:
+                        msg = (
+                            "disk['size'] and "
+                            "disk['storage_class_name'] "
+                            "are both required to create "
+                            "a new claim."
+                        )
+                        raise KeyError(msg)
+                    size = disk["size"]
+                    storage_class = disk["storage_class_name"]
+                    volume_mode = disk.get("volume_mode", "Filesystem")
+                    access_mode = disk.get("access_mode", "ReadWriteOnce")
+                    self.create_volume(
+                        size=size,
+                        name=claim_name,
+                        location=location,
+                        ex_storage_class_name=storage_class,
+                        ex_volume_mode=volume_mode,
+                        ex_access_mode=access_mode,
+                    )
+
                 volumes_dict = {
-                    "persistentVolumeClaim": {"claimName": claimName},
+                    "persistentVolumeClaim": {"claimName": claim_name},
                     "name": disk_name,
                 }
+            else:
+                warnings.warn(
+                    "The disk type {} is not tested. Use at your own risk.".format(disk_type)
+                )
+                volumes_dict = {disk_type: disk["volume_spec"], "name": disk_name}
+
             disk_dict = {device: {"bus": bus}, "name": disk_name}
             vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
             vm["spec"]["template"]["spec"]["volumes"].append(volumes_dict)
+        # end of for disk in ex_disks
 
+        # image -> containerDisk
         # adding image in a container Disk
         if isinstance(image, NodeImage):
             image = image.name
 
-        volumes_dict = {"containerDisk": {"image": image}, "name": "boot-disk"}
-        disk_dict = {"disk": {"bus": "virtio"}, "name": "boot-disk"}
+        boot_disk_name = "boot-disk-" + str(uuid.uuid4())
+        volumes_dict = {"containerDisk": {"image": image}, "name": boot_disk_name}
+        disk_dict = {"disk": {"bus": "virtio"}, "name": boot_disk_name}
         vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
         vm["spec"]["template"]["spec"]["volumes"].append(volumes_dict)
 
-        # network
-        if ex_network:
-            interface = ex_network[1]
-            network_name = ex_network[2]
-            network_type = ex_network[0]
+        # auth -> cloud-init
+        if auth is not None:
+            # auth requires cloud-init,
+            # and only one cloud-init volume is supported by kubevirt.
+            # So if both auth and cloud-init are provided, raise an error.
+
+            for volume in vm["spec"]["template"]["spec"]["volumes"]:
+                if "cloudInitNoCloud" in volume or "cloudInitConfigDrive" in volume:
+                    raise ValueError(
+                        "Setting auth and cloudInit at the same time is not supported."
+                        "Use deploy_node() instead."
+                    )
+
+            # cloud-init volume
+            cloud_init_volume = "auth-cloudinit-" + str(uuid.uuid4())
+            disk_dict = {"disk": {"bus": "virtio"}, "name": cloud_init_volume}
+            volume_dict = {
+                "name": cloud_init_volume,
+                "cloudInitNoCloud": {
+                    "userData": ""
+                },
+            }
+
+            # auth
+            # cloud_init_config reference: https://kubevirt.io/user-guide/virtual_machines/startup_scripts/#injecting-ssh-keys-with-cloud-inits-cloud-config
+            if isinstance(auth, NodeAuthSSHKey):
+                public_key = auth.pubkey
+                cloud_init_config = ("""#cloud-config\n"""
+                                     """ssh_authorized_keys:\n"""
+                                     """  - {}\n""").format(public_key)
+            elif isinstance(auth, NodeAuthPassword):
+                password = auth.password
+                cloud_init_config = ("""#cloud-config\n"""
+                                     """password: {}\n"""
+                                     """chpasswd: {{ expire: False }}\n"""
+                                     """ssh_pwauth: True\n""").format(password)
+            else:
+                raise ValueError("auth must be NodeAuthSSHKey or NodeAuthPassword")
+
+            volume_dict["cloudInitNoCloud"]["userData"] = cloud_init_config
+
+            # add volume
+            vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
+            vm["spec"]["template"]["spec"]["volumes"].append(volume_dict)
+
+        # now, all disks and volumes stuff are done
+
+        # ex_network -> network and interface
+
+        if ex_network is not None:
+            try:
+                interface = ex_network["interface"]
+                network_name = ex_network["name"]
+                network_type = ex_network["network_type"]
+            except KeyError:
+                msg = (
+                    "ex_network: You must provide a dictionary with keys: "
+                    "'interface', 'name', 'network_type'."
+                )
+                raise KeyError(msg)
         # add a default network
         else:
             interface = "masquerade"
             network_name = "netw1"
             network_type = "pod"
+
         network_dict = {network_type: {}, "name": network_name}
         interface_dict = {interface: {}, "name": network_name}
-        ports = ports or {}
-        if ports.get("ports_tcp"):
+
+        # ex_ports -> network.ports
+        ex_ports = ex_ports or {}
+        if ex_ports.get("ports_tcp"):
             ports_to_expose = []
-            for port in ports["ports_tcp"]:
+            for port in ex_ports["ports_tcp"]:
                 ports_to_expose.append({"port": port, "protocol": "TCP"})
             interface_dict[interface]["ports"] = ports_to_expose
-        if ports.get("ports_udp"):
+        if ex_ports.get("ports_udp"):
             ports_to_expose = interface_dict[interface].get("ports", [])
-            for port in ports.get("ports_udp"):
+            for port in ex_ports.get("ports_udp"):
                 ports_to_expose.append({"port": port, "protocol": "UDP"})
             interface_dict[interface]["ports"] = ports_to_expose
+
         vm["spec"]["template"]["spec"]["networks"].append(network_dict)
         vm["spec"]["template"]["spec"]["domain"]["devices"]["interfaces"].append(interface_dict)
 
-        method = "POST"
-        data = json.dumps(vm)
-        req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/"
-        try:
-            self.connection.request(req, method=method, data=data)
+        # terminationGracePeriodSeconds
+        if ex_termination_grace_period is not None:
+            assert isinstance(ex_termination_grace_period, int), (
+                "ex_termination_grace_period must be an int"
+            )
+            vm["spec"]["template"]["spec"]["terminationGracePeriodSeconds"] = (
+                ex_termination_grace_period
+            )
 
-        except Exception:
-            raise
-        # check if new node is present
-        nodes = self.list_nodes()
-        for node in nodes:
-            if node.name == name:
-                self.start_node(node)
-                return node
+        return self._create_node_with_template(name=name, template=vm, namespace=namespace)
 
     def list_images(self, location=None):
         """
@@ -923,13 +1232,25 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             kwargs["cert_file"] = self.cert_file
         return kwargs
 
-    def _to_node(self, vm, is_stopped=False):
-        """ """
+    def _to_node(self, vm, is_stopped=False):  # type: (dict, bool) -> Node
+        """
+        converts a vm from the kubevirt API to a libcloud node
+
+        :param vm: kubevirt vm object
+        :type vm: dict
+
+        :param is_stopped: if the vm is stopped, it will not have a pod
+        :type is_stopped: bool
+
+        :return: a libcloud node
+        :rtype: Node
+        """
         ID = vm["metadata"]["uid"]
         name = vm["metadata"]["name"]
         driver = self.connection.driver
         extra = {"namespace": vm["metadata"]["namespace"]}
         extra["pvcs"] = []
+
         memory = 0
         if "limits" in vm["spec"]["template"]["spec"]["domain"]["resources"]:
             if "memory" in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]:
@@ -939,17 +1260,8 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 "memory", None
             ):
                 memory = vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["memory"]
-        if not isinstance(memory, int):
-            if "M" in memory or "Mi" in memory:
-                memory = memory.rstrip("M")
-                memory = memory.rstrip("Mi")
-                memory = int(memory)
-            elif "G" in memory:
-                memory = memory.rstrip("G")
-                memory = int(memory) // 1000
-            elif "Gi" in memory:
-                memory = memory.rstrip("Gi")
-                memory = int(memory) // 1024
+        memory = _memory_in_MB(memory)
+
         cpu = 1
         if vm["spec"]["template"]["spec"]["domain"]["resources"].get("limits", None):
             if vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"].get("cpu", None):
@@ -962,7 +1274,8 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             cpu = vm["spec"]["template"]["spec"]["domain"]["cpu"].get("cores", 1)
         if not isinstance(cpu, int):
             cpu = int(cpu.rstrip("m"))
-        extra_size = {"cpus": cpu}
+
+        extra_size = {"cpu": cpu}
         size_name = "{} vCPUs, {}MB Ram".format(str(cpu), str(memory))
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
         size = NodeSize(
@@ -975,8 +1288,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             driver=driver,
             extra=extra_size,
         )
+
         extra["memory"] = memory
         extra["cpu"] = cpu
+
         image_name = "undefined"
         for volume in vm["spec"]["template"]["spec"]["volumes"]:
             for k, v in volume.items():
@@ -988,6 +1303,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             for volume in vm["spec"]["template"]["spec"]["volumes"]:
                 if "persistentVolumeClaim" in volume:
                     extra["pvcs"].append(volume["persistentVolumeClaim"]["claimName"])
+
         port_forwards = []
         services = self.ex_list_services(namespace=extra["namespace"], node_name=name)
         for service in services:
@@ -1009,6 +1325,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     }
                 )
         extra["port_forwards"] = port_forwards
+
         if is_stopped:
             state = NodeState.STOPPED
             public_ips = None
@@ -1231,3 +1548,144 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         except Exception:
             raise
         return result.status in VALID_RESPONSE_CODES
+
+
+def _deep_merge_dict(source: dict, destination: dict) -> dict:
+    """
+    Deep merge two dictionaries: source into destination.
+    For conflicts, prefer source's non-zero values over destination's.
+    (By non-zero, we mean that bool(value) is True.)
+
+    Extended from https://stackoverflow.com/a/20666342, added zero value handling.
+
+    >>> a = {"domain": {"devices": 0}, "volumes": [1, 2, 3], "network": {}}
+    >>> b = {"domain": {"machine": "non-exist-in-a", "devices": 1024}, "volumes": [4, 5, 6]}
+    >>> _deep_merge_dict(a, b)
+    {'domain': {'machine': 'non-exist-in-a', 'devices': 1024}, 'volumes': [1, 2, 3], 'network': {}}
+
+    In the above example:
+
+    - network: exists in source (a) but not in destination (b): add source (a)'s
+    - volumes: exists in both, both are non-zero: prefer source (a)'s
+    - devices: exists in both: source (a) is zero, destination (b) is non-zero: keep destination (b)'s
+    - machine: exists in destination (b) but not in source (a): reserve destination (b)'s
+
+    :param source: RO: A dict to be merged into another.
+                   Do not use circular dict (e.g. d = {}; d['d'] = d) as source,
+                   otherwise a RecursionError will be raised.
+    :param destination: RW: A dict to be merged into. (the value will be modified).
+
+    :return: dict: Updated destination.
+    """
+    for key, value in source.items():
+        if isinstance(value, dict):  # recurse for dicts
+            node = destination.setdefault(key, {})  # get node or create one
+            _deep_merge_dict(value, node)
+        elif key not in destination:  # not existing in destination: add it
+            destination[key] = value
+        elif value:  # existing: update if source's value is non-zero
+            destination[key] = value
+
+    return destination
+
+
+def _memory_in_MB(memory):  # type: (Union[str, int]) -> int
+    """
+    parse k8s memory resource units to MiB or MB (depending on input)
+
+    Note:
+
+    - 1 MiB = 1024 KiB = 1024 * 1024 B = 1048576 B
+    -  1 MB =  1000 KB = 1000 * 1000 B = 1000000 B
+
+    Reference: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory
+
+    :param memory: Limits and requests for memory are measured in bytes.
+                   You can express memory as a plain integer or as a fixed-point integer using one of these suffixes:
+                   E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki
+                   For example, the following represent roughly the same value:
+                   128974848, 129e6, 129M, 123Mi
+    :type memory: ``str`` or ``int``
+
+    :return: memory in MiB (if input is `int` bytes or `str` with suffix `?i`)
+             or in MB (if input is `str` with suffix `?`)
+    :rtype: ``int``
+    """
+
+    try:
+        mem_bytes = int(memory)
+        return mem_bytes // 1024 // 1024
+    except ValueError:
+        pass
+
+    if not isinstance(memory, str):
+        raise ValueError("memory must be int or str")
+
+    if memory.endswith("Ei"):
+        return int(memory.rstrip("Ei")) * 1024 * 1024 * 1024 * 1024
+    elif memory.endswith("Pi"):
+        return int(memory.rstrip("Pi")) * 1024 * 1024 * 1024
+    elif memory.endswith("Ti"):
+        return int(memory.rstrip("Ti")) * 1024 * 1024
+    elif memory.endswith("Gi"):
+        return int(memory.rstrip("Gi")) * 1024
+    elif memory.endswith("Mi"):
+        return int(memory.rstrip("Mi"))
+    elif memory.endswith("Ki"):
+        return int(memory.rstrip("Ki")) // 1024
+    elif memory.endswith("E"):
+        return int(memory.rstrip("E")) * 1000 * 1000 * 1000 * 1000
+    elif memory.endswith("P"):
+        return int(memory.rstrip("P")) * 1000 * 1000 * 1000
+    elif memory.endswith("T"):
+        return int(memory.rstrip("T")) * 1000 * 1000
+    elif memory.endswith("G"):
+        return int(memory.rstrip("G")) * 1000
+    elif memory.endswith("M"):
+        return int(memory.rstrip("M"))
+    elif memory.endswith("K"):
+        return int(memory.rstrip("K")) // 1000
+    else:
+        raise ValueError("memory unit not supported {}".format(memory))
+
+
+def KubeVirtNodeSize(cpu, ram):  # type: (int, int) -> NodeSize
+    """
+    Create a NodeSize object for KubeVirt driver.
+
+    :param cpu: number of virtual CPUs
+    :type cpu: ``int``
+
+    :param ram: amount of RAM in MiB
+    :type ram: ``int``
+
+    :return: a NodeSize object
+    :rtype: :class:`NodeSize`
+    """
+    extra = {"cpu": cpu}
+    name = "{} vCPUs, {}MB Ram".format(str(cpu), str(ram))
+    size_id = hashlib.md5(name.encode("utf-8")).hexdigest()
+    return NodeSize(
+        id=size_id,
+        name=name,
+        ram=ram,
+        disk=0,
+        bandwidth=0,
+        price=0,
+        driver=KubeVirtNodeDriver,
+        extra=extra,
+    )
+
+
+def KubeVirtNodeImage(name):  # type: (str) -> NodeImage
+    """
+    Create a NodeImage object for KubeVirt driver.
+
+    :param name: image source
+    :type name: ``str``
+
+    :return: a NodeImage object
+    :rtype: :class:`NodeImage`
+    """
+    image_id = hashlib.md5(name.encode("utf-8")).hexdigest()
+    return NodeImage(id=image_id, name=name, driver=KubeVirtNodeDriver)
