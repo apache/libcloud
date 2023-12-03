@@ -273,9 +273,11 @@ jobs:
         with:
           virtual-environment: venv/
           # setuptools which we don't install or depend on directly
+          # PYSEC-2023-228 - pip vulnerability and we don't install pip directly
           ignore-vulns: |
             GHSA-r9hx-vwmv-q579
             PYSEC-2022-43012
+            PYSEC-2023-228
 
       - name: Cleanup
         run: |
