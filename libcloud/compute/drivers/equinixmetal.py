@@ -554,7 +554,7 @@ def _list_async(driver):
                 factor = 1024 * 1024
                 ram_txt = ram_txt.replace("TB", "")
             ram = int(ram_txt) * factor
-        except Exception as e:
+        except Exception:
             ram = None
         disk = None
 
