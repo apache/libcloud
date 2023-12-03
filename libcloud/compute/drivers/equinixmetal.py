@@ -501,8 +501,16 @@ def _list_async(driver):
             "regions": regions,
         }
         try:
-            ram = int(data["specs"]["memory"]["total"].replace("GB", "")) * 1024  # noqa
-        except KeyError:
+            factor = 1
+            ram_txt = data["specs"]["memory"]["total"]
+            if "GB" in ram_txt:
+               factor = 1024
+               ram_txt = ram_txt.replace("GB","")
+            elif "TB" in ram_txt:
+               factor = 1024 * 1024
+               ram_txt = ram_txt.replace("TB","")
+            ram = int(ram_txt) * factor
+        except Exception as e:
             ram = None
         disk = None
         if data["specs"].get("drives", ""):
