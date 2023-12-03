@@ -62,6 +62,7 @@ class EquinixMetalResponse(JsonResponse):
             raise InvalidCredsError(body.get("error"))
         else:
             body = self.parse_body()
+
             if "message" in body:
                 error = "{} (code: {})".format(body.get("message"), self.status)
             elif "errors" in body:
@@ -91,6 +92,7 @@ class EquinixMetalConnection(ConnectionKey):
         headers[
             "X-Consumer-Token"
         ] = "kcrhMn7hwG8Ceo2hAhGFa2qpxLBvVHxEjS9ue8iqmsNkeeB2iQgMq4dNc1893pYu"
+
         return headers
 
 
@@ -145,6 +147,7 @@ class EquinixMetalNodeDriver(NodeDriver):
         Lazily retrieve projects and set self.project_id variable on initial
         access to self.projects variable.
         """
+
         if not self._projects_populated:
             # NOTE: Each EquinixMetal account needs at least one project,
             # but to be on the safe side and avoid infinite loop
@@ -156,10 +159,12 @@ class EquinixMetalNodeDriver(NodeDriver):
 
             # If project name is specified, verify it's valid and populate
             # self.project_id
+
             if self._project:
                 for project_obj in self._projects:
                     if self._project in [project_obj.name, project_obj.id]:
                         self.project_id = project_obj.id
+
                         break
 
                 if not self.project_id:
@@ -172,8 +177,10 @@ class EquinixMetalNodeDriver(NodeDriver):
         projects = []
         data = self.connection.request("/metal/v1/projects").object
         projects = data.get("projects")
+
         if projects:
             projects = [Project(project) for project in projects]
+
         return projects
 
     def list_nodes(self, ex_project_id=None):
@@ -182,16 +189,21 @@ class EquinixMetalNodeDriver(NodeDriver):
 
         # if project has been specified during driver initialization, then
         # return nodes for this project only
+
         if self.project_id:
             return self.ex_list_nodes_for_project(ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
+
         if not use_asyncio():
             nodes = []
+
             for project in self.projects:
                 nodes.extend(self.ex_list_nodes_for_project(ex_project_id=project.id))
+
             return nodes
         # In case of Python3 use asyncio to perform requests in parallel
+
         return self.list_resources_async("nodes")
 
     def list_resources_async(self, resource_type):
@@ -217,6 +229,7 @@ def _list_async(driver):
     for future in futures:
         result = yield from future
         retval.extend(result)
+
     return retval"""
             % resource_type,
             glob,
@@ -235,26 +248,31 @@ def _list_async(driver):
         data = self.connection.request(
             "/metal/v1/projects/%s/devices" % (ex_project_id), params=params
         ).object["devices"]
+
         return list(map(self._to_node, data))
 
     def list_locations(self):
         data = self.connection.request("/metal/v1/facilities").object["facilities"]
+
         return list(map(self._to_location, data))
 
     def list_images(self):
         data = self.connection.request("/metal/v1/operating-systems").object["operating_systems"]
+
         return list(map(self._to_image, data))
 
     def list_sizes(self, ex_project_id=None):
         project_id = (
             ex_project_id or self.project_id or (len(self.projects) and self.projects[0].id)
         )
+
         if project_id:
             data = self.connection.request("/metal/v1/projects/%s/plans" % project_id).object[
                 "plans"
             ]
         else:  # This only works with personal tokens
             data = self.connection.request("/metal/v1/plans").object["plans"]
+
         return [self._to_size(size) for size in data if size.get("line") == "baremetal"]
 
     def create_node(
@@ -294,9 +312,11 @@ def _list_async(driver):
             "include": "plan",
             "billing_cycle": "hourly",
         }
+
         if ip_addresses:
             params["ip_addresses"] = ip_addresses
         params.update(kwargs)
+
         if cloud_init:
             params["userdata"] = cloud_init
         data = self.connection.request(
@@ -306,16 +326,20 @@ def _list_async(driver):
         )
 
         status = data.object.get("status", "OK")
+
         if status == "ERROR":
             message = data.object.get("message", None)
             error_message = data.object.get("error_message", message)
             raise ValueError("Failed to create node: %s" % (error_message))
         node = self._to_node(data=data.object)
+
         if disk:
             self.attach_volume(node, disk)
+
         if disk_size:
             volume = self.create_volume(size=disk_size, location=location)
             self.attach_volume(node, volume)
+
         return node
 
     def reboot_node(self, node):
@@ -323,6 +347,7 @@ def _list_async(driver):
         res = self.connection.request(
             "/metal/v1/devices/%s/actions" % (node.id), params=params, method="POST"
         )
+
         return res.status == httplib.OK
 
     def start_node(self, node):
@@ -330,6 +355,7 @@ def _list_async(driver):
         res = self.connection.request(
             "/metal/v1/devices/%s/actions" % (node.id), params=params, method="POST"
         )
+
         return res.status == httplib.OK
 
     def stop_node(self, node):
@@ -337,22 +363,26 @@ def _list_async(driver):
         res = self.connection.request(
             "/metal/v1/devices/%s/actions" % (node.id), params=params, method="POST"
         )
+
         return res.status == httplib.OK
 
     def destroy_node(self, node):
         res = self.connection.request("/metal/v1/devices/%s" % (node.id), method="DELETE")
+
         return res.status == httplib.OK
 
     def ex_start_node(self, node):
         # NOTE: This method is here for backward compatibility reasons after
         # this method was promoted to be part of the standard compute API in
         # Libcloud v2.7.0
+
         return self.start_node(node=node)
 
     def ex_stop_node(self, node):
         # NOTE: This method is here for backward compatibility reasons after
         # this method was promoted to be part of the standard compute API in
         # Libcloud v2.7.0
+
         return self.stop_node(node=node)
 
     def ex_reinstall_node(self, node):
@@ -360,6 +390,7 @@ def _list_async(driver):
         res = self.connection.request(
             "/metal/v1/devices/%s/actions" % (node.id), params=params, method="POST"
         )
+
         return res.status == httplib.OK
 
     def ex_rescue_node(self, node):
@@ -367,21 +398,25 @@ def _list_async(driver):
         res = self.connection.request(
             "/metal/v1/devices/%s/actions" % (node.id), params=params, method="POST"
         )
+
         return res.status == httplib.OK
 
     def ex_update_node(self, node, **kwargs):
         path = "/metal/v1/devices/%s" % node.id
         res = self.connection.request(path, params=kwargs, method="PUT")
+
         return res.status == httplib.OK
 
     def ex_get_node_bandwidth(self, node, from_time, until_time):
         path = "/metal/v1/devices/%s/bandwidth" % node.id
         params = {"from": from_time, "until": until_time}
+
         return self.connection.request(path, params=params).object
 
     def ex_list_ip_assignments_for_node(self, node, include=""):
         path = "/metal/v1/devices/%s/ips" % node.id
         params = {"include": include}
+
         return self.connection.request(path, params=params).object
 
     def list_key_pairs(self):
@@ -392,6 +427,7 @@ def _list_async(driver):
         :rtype: ``list`` of :class:`.KeyPair` objects
         """
         data = self.connection.request("/metal/v1/ssh-keys").object["ssh_keys"]
+
         return list(map(self._to_key_pairs, data))
 
     def create_key_pair(self, name, public_key):
@@ -406,6 +442,7 @@ def _list_async(driver):
         """
         params = {"label": name, "key": public_key}
         data = self.connection.request("/metal/v1/ssh-keys", method="POST", params=params).object
+
         return self._to_key_pairs(data)
 
     def delete_key_pair(self, key):
@@ -417,6 +454,7 @@ def _list_async(driver):
         """
         key_id = key.name
         res = self.connection.request("/metal/v1/ssh-keys/%s" % (key_id), method="DELETE")
+
         return res.status == httplib.NO_CONTENT
 
     def _to_node(self, data):
@@ -432,6 +470,7 @@ def _list_async(driver):
             "project",
             "description",
         ]
+
         if "state" in data:
             state = self.NODE_STATE_MAP.get(data["state"], NodeState.UNKNOWN)
         else:
@@ -451,6 +490,7 @@ def _list_async(driver):
             extra["plan"] = data["plan"].get("slug")
         else:
             size = None
+
         if "facility" in data:
             extra["facility"] = data["facility"]
 
@@ -469,6 +509,7 @@ def _list_async(driver):
             extra=extra,
             driver=self,
         )
+
         return node
 
     def _to_image(self, data):
@@ -477,10 +518,12 @@ def _list_async(driver):
             "version": data["version"],
             "supported_sizes": data.get("provisionable_on", []),
         }
+
         return NodeImage(id=data["slug"], name=data["name"], extra=extra, driver=self)
 
     def _to_location(self, data):
         extra = data
+
         return NodeLocation(
             id=data["id"], name=data["name"], country=None, driver=self, extra=extra
         )
@@ -503,25 +546,30 @@ def _list_async(driver):
         try:
             factor = 1
             ram_txt = data["specs"]["memory"]["total"]
+
             if "GB" in ram_txt:
-               factor = 1024
-               ram_txt = ram_txt.replace("GB","")
+                factor = 1024
+                ram_txt = ram_txt.replace("GB", "")
             elif "TB" in ram_txt:
-               factor = 1024 * 1024
-               ram_txt = ram_txt.replace("TB","")
+                factor = 1024 * 1024
+                ram_txt = ram_txt.replace("TB", "")
             ram = int(ram_txt) * factor
         except Exception as e:
             ram = None
         disk = None
+
         if data["specs"].get("drives", ""):
             disk = 0
+
             for disks in data["specs"]["drives"]:
                 disk_size = disks["size"].replace("GB", "")
+
                 if "TB" in disk_size:
                     disk_size = float(disks["size"].replace("TB", "")) * 1000
                 disk += disks["count"] * int(disk_size)
         name = "{} - {} RAM".format(data.get("name"), ram)
         price = data["pricing"].get("hour")
+
         return NodeSize(
             id=data["slug"],
             name=name,
@@ -539,6 +587,7 @@ def _list_async(driver):
             "created_at": data["created_at"],
             "updated_at": data["updated_at"],
         }
+
         return KeyPair(
             name=data["id"],
             fingerprint=data["fingerprint"],
@@ -551,16 +600,19 @@ def _list_async(driver):
     def _parse_ips(self, data):
         public_ips = []
         private_ips = []
+
         for address in data:
             if "address" in address and address["address"] is not None:
                 if "public" in address and address["public"] is True:
                     public_ips.append(address["address"])
                 else:
                     private_ips.append(address["address"])
+
         return {"public": public_ips, "private": private_ips}
 
     def ex_get_bgp_config_for_project(self, ex_project_id):
         path = "/metal/v1/projects/%s/bgp-config" % ex_project_id
+
         return self.connection.request(path).object
 
     def ex_get_bgp_config(self, ex_project_id=None):
@@ -571,22 +623,28 @@ def _list_async(driver):
         else:
             projects = [p.id for p in self.projects]
         retval = []
+
         for p in projects:
             config = self.ex_get_bgp_config_for_project(p)
+
             if config:
                 retval.append(config)
+
         return retval
 
     def ex_get_bgp_session(self, session_uuid):
         path = "/metal/v1/bgp/sessions/%s" % session_uuid
+
         return self.connection.request(path).object
 
     def ex_list_bgp_sessions_for_node(self, node):
         path = "/metal/v1/devices/%s/bgp/sessions" % node.id
+
         return self.connection.request(path).object
 
     def ex_list_bgp_sessions_for_project(self, ex_project_id):
         path = "/metal/v1/projects/%s/bgp/sessions" % ex_project_id
+
         return self.connection.request(path).object
 
     def ex_list_bgp_sessions(self, ex_project_id=None):
@@ -597,29 +655,35 @@ def _list_async(driver):
         else:
             projects = [p.id for p in self.projects]
         retval = []
+
         for p in projects:
             retval.extend(self.ex_list_bgp_sessions_for_project(p)["bgp_sessions"])
+
         return retval
 
     def ex_create_bgp_session(self, node, address_family="ipv4"):
         path = "/metal/v1/devices/%s/bgp/sessions" % node.id
         params = {"address_family": address_family}
         res = self.connection.request(path, params=params, method="POST")
+
         return res.object
 
     def ex_delete_bgp_session(self, session_uuid):
         path = "/metal/v1/bgp/sessions/%s" % session_uuid
         res = self.connection.request(path, method="DELETE")
+
         return res.status == httplib.OK  # or res.status == httplib.NO_CONTENT
 
     def ex_list_events_for_node(self, node, include=None, page=1, per_page=10):
         path = "/metal/v1/devices/%s/events" % node.id
         params = {"include": include, "page": page, "per_page": per_page}
+
         return self.connection.request(path, params=params).object
 
     def ex_list_events_for_project(self, project, include=None, page=1, per_page=10):
         path = "/metal/v1/projects/%s/events" % project.id
         params = {"include": include, "page": page, "per_page": per_page}
+
         return self.connection.request(path, params=params).object
 
     def ex_describe_all_addresses(self, ex_project_id=None, only_associated=False):
@@ -630,8 +694,10 @@ def _list_async(driver):
         else:
             projects = [p.id for p in self.projects]
         retval = []
+
         for project in projects:
             retval.extend(self.ex_describe_all_addresses_for_project(project, only_associated))
+
         return retval
 
     def ex_describe_all_addresses_for_project(
@@ -658,6 +724,7 @@ def _list_async(driver):
             for a in ip_addresses.get("ip_addresses", [])
             if not only_associated or len(a.get("assignments", [])) > 0
         ]
+
         return result
 
     def ex_describe_address(self, ex_address_id, include=None):
@@ -666,6 +733,7 @@ def _list_async(driver):
             "include": include,
         }
         result = self.connection.request(path, params=params).object
+
         return result
 
     def ex_request_address_reservation(
@@ -682,13 +750,17 @@ def _list_async(driver):
             "type": address_family,
             "quantity": quantity,
         }
+
         if location_id:
             params["facility"] = location_id
+
         if comments:
             params["comments"] = comments
+
         if customdata:
             params["customdata"] = customdata
         result = self.connection.request(path, params=params, method="POST").object
+
         return result
 
     def ex_associate_address_with_node(self, node, address, manageable=False, customdata=""):
@@ -699,14 +771,17 @@ def _list_async(driver):
             "customdata": customdata,
         }
         result = self.connection.request(path, params=params, method="POST").object
+
         return result
 
     def ex_disassociate_address(self, address_uuid, include=None):
         path = "/metal/v1/ips/%s" % address_uuid
         params = {}
+
         if include:
             params["include"] = include
         result = self.connection.request(path, params=params, method="DELETE").object
+
         return result
 
     def list_volumes(self, ex_project_id=None):
@@ -715,16 +790,21 @@ def _list_async(driver):
 
         # if project has been specified during driver initialization, then
         # return nodes for this project only
+
         if self.project_id:
             return self.ex_list_volumes_for_project(ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
+
         if not use_asyncio():
             nodes = []
+
             for project in self.projects:
                 nodes.extend(self.ex_list_volumes_for_project(ex_project_id=project.id))
+
             return nodes
         # In case of Python3 use asyncio to perform requests in parallel
+
         return self.list_resources_async("volumes")
 
     def ex_list_volumes_for_project(self, ex_project_id, include="plan", page=1, per_page=1000):
@@ -732,6 +812,7 @@ def _list_async(driver):
         data = self.connection.request(
             "/metal/v1/projects/%s/storage" % (ex_project_id), params=params
         ).object["volumes"]
+
         return list(map(self._to_volume, data))
 
     def _to_volume(self, data):
@@ -772,15 +853,20 @@ def _list_async(driver):
             facility = location
         params = {"facility": facility, "plan": plan, "size": size, "locked": locked}
         params.update(kwargs)
+
         if description:
             params["description"] = description
+
         if customdata:
             params["customdata"] = customdata
+
         if billing_cycle:
             params["billing_cycle"] = billing_cycle
+
         if snapshot_policies:
             params["snapshot_policies"] = snapshot_policies
         data = self.connection.request(path, params=params, method="POST").object
+
         return self._to_volume(data)
 
     def destroy_volume(self, volume):
@@ -794,6 +880,7 @@ def _list_async(driver):
         """
         path = "/metal/v1/storage/%s" % volume.id
         res = self.connection.request(path, method="DELETE")
+
         return res.status == httplib.NO_CONTENT
 
     def attach_volume(self, node, volume):
@@ -811,6 +898,7 @@ def _list_async(driver):
         path = "/metal/v1/storage/%s/attachments" % volume.id
         params = {"device_id": node.id}
         res = self.connection.request(path, params=params, method="POST")
+
         return res.status == httplib.OK
 
     def detach_volume(self, volume, ex_node=None, ex_attachment_id=""):
@@ -831,13 +919,16 @@ def _list_async(driver):
         assert len(attachments) > 0, "Volume is not attached to any node"
         success = True
         result = None
+
         for attachment in attachments:
             if not ex_attachment_id or ex_attachment_id in attachment["href"]:
                 attachment_id = attachment["href"].split("/")[-1]
+
                 if ex_node:
                     node_id = self.ex_describe_attachment(attachment_id)["device"]["href"].split(
                         "/"
                     )[-1]
+
                     if node_id != ex_node.id:
                         continue
                 path = "/metal/v1/storage/attachments/%s" % (ex_attachment_id or attachment_id)
@@ -859,6 +950,7 @@ def _list_async(driver):
         path = "/metal/v1/storage/%s/snapshots" % volume.id
         res = self.connection.request(path, method="POST")
         assert res.status == httplib.ACCEPTED
+
         return volume.list_snapshots()[-1]
 
     def destroy_volume_snapshot(self, snapshot):
@@ -873,6 +965,7 @@ def _list_async(driver):
         volume_id = snapshot.extra["volume"]["href"].split("/")[-1]
         path = "/metal/v1/storage/{}/snapshots/{}".format(volume_id, snapshot.id)
         res = self.connection.request(path, method="DELETE")
+
         return res.status == httplib.NO_CONTENT
 
     def list_volume_snapshots(self, volume, include=""):
@@ -887,13 +980,16 @@ def _list_async(driver):
         """
         path = "/metal/v1/storage/%s/snapshots" % volume.id
         params = {}
+
         if include:
             params["include"] = include
         data = self.connection.request(path, params=params).object["snapshots"]
+
         return list(map(self._to_volume_snapshot, data))
 
     def _to_volume_snapshot(self, data):
         created = datetime.datetime.strptime(data["created_at"], "%Y-%m-%dT%H:%M:%S")
+
         return VolumeSnapshot(
             id=data["id"],
             name=data["id"],
@@ -914,15 +1010,20 @@ def _list_async(driver):
     ):
         path = "/metal/v1/storage/%s" % volume.id
         params = {}
+
         if description:
             params["description"] = description
+
         if size:
             params["size"] = size
+
         if locked is not None:
             params["locked"] = locked
+
         if billing_cycle:
             params["billing_cycle"] = billing_cycle
         res = self.connection.request(path, params=params, method="PUT")
+
         return self._to_volume(res.object)
 
     def ex_restore_volume(self, snapshot):
@@ -930,23 +1031,28 @@ def _list_async(driver):
         ts = snapshot.extra["timestamp"]
         path = "/metal/v1/storage/{}/restore?restore_point={}".format(volume_id, ts)
         res = self.connection.request(path, method="POST")
+
         return res.status == httplib.NO_CONTENT
 
     def ex_clone_volume(self, volume, snapshot=None):
         path = "/metal/v1/storage/%s/clone" % volume.id
+
         if snapshot:
             path += "?snapshot_timestamp=%s" % snapshot.extra["timestamp"]
         res = self.connection.request(path, method="POST")
+
         return res.status == httplib.NO_CONTENT
 
     def ex_describe_volume(self, volume_id):
         path = "/metal/v1/storage/%s" % volume_id
         data = self.connection.request(path).object
+
         return self._to_volume(data)
 
     def ex_describe_attachment(self, attachment_id):
         path = "/metal/v1/storage/attachments/%s" % attachment_id
         data = self.connection.request(path).object
+
         return data
 
 
