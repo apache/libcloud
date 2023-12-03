@@ -43,6 +43,12 @@ Compute
   (#1964 #1965)
   [@rajat-garg-del]
 
+- [Equinix Metal] Fix ``list_nodes()`` method so it correctly handles
+  NodeSize.ram attribute in case TB is returned.
+
+  (#1973)
+  [Denis Lussier - @luss]
+
 Storage
 ~~~~~~~
 
