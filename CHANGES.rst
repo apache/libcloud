@@ -26,6 +26,11 @@ Compute
   (#1946)
   [Michael Galaxy - @mraygalaxy2]
 
+- [Azure ARM] Add a new argument to destroy_node() to also delete node's
+  managed OS disk as part of the node's deletion.
+  (#1957)
+  [Victor Herrero Otal - @vicwicker]
+
 - [ECS] Add VPC IP and Elastic IP to ECS node as private and public IP.
   (#1954)
   [Victor Herrero Otal - @vicwicker]
@@ -37,6 +42,12 @@ Compute
 - [Azure ARM] Add ``ex_resize_node()`` method.
   (#1964 #1965)
   [@rajat-garg-del]
+
+- [Equinix Metal] Fix ``list_nodes()`` method so it correctly handles
+  NodeSize.ram attribute in case TB is returned.
+
+  (#1973)
+  [Denis Lussier - @luss]
 
 Storage
 ~~~~~~~
