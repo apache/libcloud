@@ -288,12 +288,13 @@ class GoDaddyDNSDriver(DNSDriver):
         """
         Get a zone (by domain)
 
-        :param  zone_id: The domain, not the ID
+        :param  zone_id: The domain ID
         :type   zone_id: ``str``
 
         :rtype:  :class:`Zone`
         """
-        result = self.connection.request("/v1/domains/%s/" % zone_id).object
+        domain, = [x.domain for x in self.list_zones() if x.id == zone_id]
+        result = self.connection.request("/v1/domains/%s/" % domain).object
         zone = self._to_zone(result)
         return zone
 
