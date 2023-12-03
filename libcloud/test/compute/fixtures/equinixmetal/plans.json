@@ -16,6 +16,23 @@
       "pricing": {
         "hourly":0.4,"monthly":250.0
       }
+    },
+    {
+      "id": "6d1f1ffa-7912-4b78-b50d-88cc7c8ab40e",
+      "slug": "baremetal_2",
+      "name": "Type 2",
+      "description": "Our Type 2 configuration is a zippy general use server",
+      "line": "baremetal",
+      "specs": {
+        "cpus":[{"count":2,"type":"Intel E3-1240 v3"}],
+        "memory":{"total":"2TB"},
+        "drives":[{"count":2,"size":"120GB","type":"SSD"}],
+        "nics":[{"count":2,"type":"gigabit"}],
+        "features":{"raid":true,"txt":true}
+      },
+      "pricing": {
+        "hourly":0.4,"monthly":250.0
+      }
     }
   ]
 }
