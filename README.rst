@@ -59,10 +59,11 @@ through a unified and easy to use API.
 :Issues:        https://issues.apache.org/jira/projects/LIBCLOUD/issues
 :Website:       https://libcloud.apache.org/
 :Documentation: https://libcloud.readthedocs.io
-:Supported Python Versions: Python >= 3.7, PyPy >= 3.7, Python 3.10 + Pyjion
+:Supported Python Versions: Python >= 3.8, PyPy >= 3.8, Python 3.10 + Pyjion
                             (Python 2.7 and Python 3.4 is supported by the
                             v2.8.x release series, last version which supports
-                            Python 3.5 is v3.4.0 and v3.6.x for Python 3.6)
+                            Python 3.5 is v3.4.0, v3.6.x for Python 3.6, and
+                            v3.8.x for Python 3.7)
 
 Resources you can manage with Libcloud are divided into the following categories:
 
@@ -85,8 +86,10 @@ Documentation can be found at <https://libcloud.readthedocs.org>.
 Note on Python Version Compatibility
 ====================================
 
-Libcloud supports Python >= 3.7 and PyPy >= 3.7.
+Libcloud supports Python >= 3.8 and PyPy >= 3.8.
 
+* Support for Python 3.7 has been dropped in v3.9.0 release.
+  Last release series which supports Python 3.6 is v3.6.x.
 * Support for Python 3.6 has been dropped in v3.7.0 release.
   Last release series which supports Python 3.6 is v3.6.x.
 * Support for Python 3.5 has been dropped in v3.5.0 release.

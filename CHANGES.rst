@@ -7,6 +7,12 @@ Changes in Apache Libcloud in development
 Common
 ~~~~~~
 
+- Support for Python 3.7 which is EOL has been removed.
+
+  If you still want to use Libcloud with Python 3.7, you should use an older
+  release which still supports Python 3.7.
+  (#1941)
+
 - Types inheriting from ``libcloud.common.types.Type`` have been made hashable.
   This way they can be directly used for testing memberships in sets which
   contain string representation of the type enum value
