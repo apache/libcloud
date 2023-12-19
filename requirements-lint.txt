@@ -10,4 +10,4 @@ rstcheck==6.1.2; python_version >= '3.7'
 codespell==2.2.5
 
 requests>=2.27.1
-paramiko==3.3.1; platform_python_implementation != 'PyPy'
+paramiko==3.4.0; platform_python_implementation != 'PyPy'
