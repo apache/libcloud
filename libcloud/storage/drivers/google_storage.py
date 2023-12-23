@@ -194,7 +194,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
     """
 
     name = "Google Cloud Storage"
-    website = "http://cloud.google.com/storage"
+    website = "https://cloud.google.com/storage"
     connectionCls = GoogleStorageConnection
     jsonConnectionCls = GoogleStorageJSONConnection
     hash_type = "md5"

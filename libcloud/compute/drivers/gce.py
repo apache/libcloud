@@ -197,7 +197,7 @@ class GCEConnection(GoogleBaseConnection):
         if zone:
             request_path = "/zones/{}/{}".format(zone.name, api_name)
         else:
-            request_path = "/aggregated/%s" % (api_name)
+            request_path = "/aggregated/{}".format(api_name)
 
         api_responses = []
 
@@ -211,7 +211,7 @@ class GCEConnection(GoogleBaseConnection):
                     # Special case when we are handling pagination for a
                     # specific zone
                     items = response["items"]
-                    response["items"] = {"zones/%s" % (zone): {api_name: items}}
+                    response["items"] = {"zones/{}".format(zone): {api_name: items}}
                 api_responses.append(response)
             more_results = "pageToken" in params
         return self._merge_response_items(api_name, api_responses)
@@ -384,7 +384,7 @@ class GCELicense(UuidMixin, LazyObject):
             new_request_path = saved_request_path.replace(self.driver.project, self.project)
             self.driver.connection.request_path = new_request_path
 
-            request = "/global/licenses/%s" % self.name
+            request = "/global/licenses/{}".format(self.name)
             response = self.driver.connection.request(request, method="GET").object
         except Exception:
             raise
@@ -540,8 +540,7 @@ class GCEBackend(UuidMixin):
         :return: dict formatted as a list entry for Backend Service 'backend'.
         :rtype: ``dict``
         """
-        d = {}
-        d["group"] = self.instance_group.extra["selfLink"]
+        d = {"group": self.instance_group.extra["selfLink"]}
 
         if self.balancing_mode:
             d["balancingMode"] = self.balancing_mode
@@ -1845,7 +1844,7 @@ class GCEZone(NodeLocation):
         next_window = None
         if not self.maintenance_windows:
             return None
-        if len(self.maintenance_windows) == 1:
+        elif len(self.maintenance_windows) == 1:
             return self.maintenance_windows[0]
         for mw in self.maintenance_windows:
             begin_next = timestamp_to_datetime(mw["beginTime"])
@@ -2465,7 +2464,7 @@ class GCENodeDriver(NodeDriver):
         elif region == "global":
             request = "/global/addresses"
         else:
-            request = "/regions/%s/addresses" % (region.name)
+            request = "/regions/{}/addresses".format(region.name)
         response = self.connection.request(request, method="GET").object
 
         if "items" in response:
@@ -2485,12 +2484,8 @@ class GCENodeDriver(NodeDriver):
         :return: A list of backend service objects.
         :rtype: ``list`` of :class:`GCEBackendService`
         """
-        list_backendservices = []
         response = self.connection.request("/global/backendServices", method="GET").object
-
-        list_backendservices = [self._to_backendservice(d) for d in response.get("items", [])]
-
-        return list_backendservices
+        return [self._to_backendservice(d) for d in response.get("items", [])]
 
     def ex_list_healthchecks(self):
         """
@@ -2499,11 +2494,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of health check objects.
         :rtype: ``list`` of :class:`GCEHealthCheck`
         """
-        list_healthchecks = []
         request = "/global/httpHealthChecks"
         response = self.connection.request(request, method="GET").object
-        list_healthchecks = [self._to_healthcheck(h) for h in response.get("items", [])]
-        return list_healthchecks
+        return [self._to_healthcheck(h) for h in response.get("items", [])]
 
     def ex_list_firewalls(self):
         """
@@ -2512,11 +2505,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of firewall objects.
         :rtype: ``list`` of :class:`GCEFirewall`
         """
-        list_firewalls = []
         request = "/global/firewalls"
         response = self.connection.request(request, method="GET").object
-        list_firewalls = [self._to_firewall(f) for f in response.get("items", [])]
-        return list_firewalls
+        return [self._to_firewall(f) for f in response.get("items", [])]
 
     def ex_list_forwarding_rules(self, region=None, global_rules=False):
         """
@@ -2635,11 +2626,8 @@ class GCENodeDriver(NodeDriver):
                     # Restore the connection request_path
                     self.connection.request_path = save_request_path
                 for img in response.get("items", []):
-                    if "deprecated" not in img:
+                    if "deprecated" not in img or ex_include_deprecated:
                         list_images.append(self._to_node_image(img))
-                    else:
-                        if ex_include_deprecated:
-                            list_images.append(self._to_node_image(img))
         return list_images
 
     def list_locations(self):
@@ -2652,11 +2640,9 @@ class GCENodeDriver(NodeDriver):
         :return: List of NodeLocation objects
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        list_locations = []
         request = "/zones"
         response = self.connection.request(request, method="GET").object
-        list_locations = [self._to_node_location(loc) for loc in response["items"]]
-        return list_locations
+        return [self._to_node_location(loc) for loc in response["items"]]
 
     def ex_list_routes(self):
         """
@@ -2665,11 +2651,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of route objects.
         :rtype: ``list`` of :class:`GCERoute`
         """
-        list_routes = []
         request = "/global/routes"
         response = self.connection.request(request, method="GET").object
-        list_routes = [self._to_route(n) for n in response.get("items", [])]
-        return list_routes
+        return [self._to_route(n) for n in response.get("items", [])]
 
     def ex_list_sslcertificates(self):
         """
@@ -2684,11 +2668,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of SSLCertificate objects.
         :rtype: ``list`` of :class:`GCESslCertificate`
         """
-        list_data = []
         request = "/global/sslCertificates"
         response = self.connection.request(request, method="GET").object
-        list_data = [self._to_sslcertificate(a) for a in response.get("items", [])]
-        return list_data
+        return [self._to_sslcertificate(a) for a in response.get("items", [])]
 
     def ex_list_subnetworks(self, region=None):
         """
@@ -2734,11 +2716,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of network objects.
         :rtype: ``list`` of :class:`GCENetwork`
         """
-        list_networks = []
         request = "/global/networks"
         response = self.connection.request(request, method="GET").object
-        list_networks = [self._to_network(n) for n in response.get("items", [])]
-        return list_networks
+        return [self._to_network(n) for n in response.get("items", [])]
 
     def list_nodes(self, ex_zone=None, ex_use_disk_cache=True):
         """
@@ -2748,9 +2728,9 @@ class GCENodeDriver(NodeDriver):
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
 
-        :keyword  ex_use_disk_cache:  Disk information for each node will
-                                   retrieved from a dictionary rather
-                                   than making a distinct API call for it.
+        :keyword  ex_use_disk_cache:  Disk information for each node will be
+                                      retrieved from a dictionary rather
+                                      than making a distinct API call for it.
         :type     ex_use_disk_cache: ``bool``
 
         :return:  List of Node objects
@@ -2798,11 +2778,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of region objects.
         :rtype: ``list`` of :class:`GCERegion`
         """
-        list_regions = []
         request = "/regions"
         response = self.connection.request(request, method="GET").object
-        list_regions = [self._to_region(r) for r in response["items"]]
-        return list_regions
+        return [self._to_region(r) for r in response["items"]]
 
     def list_sizes(self, location=None):
         """
@@ -2820,7 +2798,7 @@ class GCENodeDriver(NodeDriver):
         if zone is None:
             request = "/aggregated/machineTypes"
         else:
-            request = "/zones/%s/machineTypes" % (zone.name)
+            request = "/zones/{}/machineTypes".format(zone.name)
 
         response = self.connection.request(request, method="GET").object
         # getting pricing data here so it is done only once
@@ -2844,11 +2822,9 @@ class GCENodeDriver(NodeDriver):
         :return:  A list of snapshot objects
         :rtype:   ``list`` of :class:`GCESnapshot`
         """
-        list_snapshots = []
         request = "/global/snapshots"
         response = self.connection.request(request, method="GET").object
-        list_snapshots = [self._to_snapshot(s) for s in response.get("items", [])]
-        return list_snapshots
+        return [self._to_snapshot(s) for s in response.get("items", [])]
 
     def ex_list_targethttpproxies(self):
         """
@@ -2911,7 +2887,7 @@ class GCENodeDriver(NodeDriver):
         if region is None:
             request = "/aggregated/targetPools"
         else:
-            request = "/regions/%s/targetPools" % (region.name)
+            request = "/regions/{}/targetPools".format(region.name)
         response = self.connection.request(request, method="GET").object
 
         if "items" in response:
@@ -2958,7 +2934,7 @@ class GCENodeDriver(NodeDriver):
         if zone is None:
             request = "/aggregated/instanceGroups"
         else:
-            request = "/zones/%s/instanceGroups" % (zone.name)
+            request = "/zones/{}/instanceGroups".format(zone.name)
         response = self.connection.request(request, method="GET").object
         if "items" in response:
             # The aggregated result returns dictionaries for each region
@@ -2988,7 +2964,7 @@ class GCENodeDriver(NodeDriver):
         if zone is None:
             request = "/aggregated/instanceGroupManagers"
         else:
-            request = "/zones/%s/instanceGroupManagers" % (zone.name)
+            request = "/zones/{}/instanceGroupManagers".format(zone.name)
         response = self.connection.request(request, method="GET").object
 
         if "items" in response:
@@ -3064,7 +3040,7 @@ class GCENodeDriver(NodeDriver):
         if zone is None:
             request = "/aggregated/disks"
         else:
-            request = "/zones/%s/disks" % (zone.name)
+            request = "/zones/{}/disks".format(zone.name)
 
         response = self.connection.request(request, method="GET").object
         if "items" in response:
@@ -3084,11 +3060,9 @@ class GCENodeDriver(NodeDriver):
         :return: A list of zone objects.
         :rtype: ``list`` of :class:`GCEZone`
         """
-        list_zones = []
         request = "/zones"
         response = self.connection.request(request, method="GET").object
-        list_zones = [self._to_zone(z) for z in response["items"]]
-        return list_zones
+        return [self._to_zone(z) for z in response["items"]]
 
     def ex_create_address(
         self,
@@ -3187,7 +3161,6 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCEAutoscaler`
         """
         zone = zone or self.zone
-        autoscaler_data = {}
         autoscaler_data = {"name": name}
         if not hasattr(zone, "name"):
             zone = self.ex_get_zone(zone)
@@ -3195,7 +3168,7 @@ class GCENodeDriver(NodeDriver):
 
         # TODO(supertom): we should validate the policy
         autoscaler_data["autoscalingPolicy"] = policy
-        request = "/zones/%s/autoscalers" % zone.name
+        request = "/zones/{}/autoscalers".format(zone.name)
         autoscaler_data["target"] = instance_group.extra["selfLink"]
         self.connection.async_request(request, method="POST", data=autoscaler_data)
         return self.ex_get_autoscaler(name, zone)
@@ -3427,20 +3400,23 @@ class GCENodeDriver(NodeDriver):
         :return:  Health Check object
         :rtype:   :class:`GCEHealthCheck`
         """
-        hc_data = {}
-        hc_data["name"] = name
+        hc_data = {"name": name}
         if host:
             hc_data["host"] = host
         if description:
             hc_data["description"] = description
         # As of right now, the 'default' values aren't getting set when called
         # through the API, so set them explicitly
-        hc_data["requestPath"] = path or "/"
-        hc_data["port"] = port or 80
-        hc_data["checkIntervalSec"] = interval or 5
-        hc_data["timeoutSec"] = timeout or 5
-        hc_data["unhealthyThreshold"] = unhealthy_threshold or 2
-        hc_data["healthyThreshold"] = healthy_threshold or 2
+        hc_data.update(
+            {
+                "requestPath": path or "/",
+                "port": port or 80,
+                "checkIntervalSec": interval or 5,
+                "timeoutSec": timeout or 5,
+                "unhealthyThreshold": unhealthy_threshold or 2,
+                "healthyThreshold": healthy_threshold or 2,
+            }
+        )
 
         request = "/global/httpHealthChecks"
 
@@ -3547,15 +3523,19 @@ class GCENodeDriver(NodeDriver):
         else:
             nw = network
 
-        firewall_data["name"] = name
-        firewall_data["direction"] = direction
-        firewall_data["priority"] = priority
-        firewall_data["description"] = description
+        firewall_data.update(
+            {
+                "name": name,
+                "direction": direction,
+                "priority": priority,
+                "description": description,
+                "network": nw.extra["selfLink"],
+            }
+        )
         if direction == "INGRESS":
             firewall_data["allowed"] = allowed
         elif direction == "EGRESS":
             firewall_data["denied"] = denied
-        firewall_data["network"] = nw.extra["selfLink"]
         if source_ranges is None and source_tags is None and source_service_accounts is None:
             source_ranges = ["0.0.0.0/0"]
         if source_ranges is not None:
@@ -3669,7 +3649,7 @@ class GCENodeDriver(NodeDriver):
         if global_rule:
             request = "/global/forwardingRules"
         else:
-            request = "/regions/%s/forwardingRules" % (region.name)
+            request = "/regions/{}/forwardingRules".format(region.name)
 
         self.connection.async_request(request, method="POST", data=forwarding_rule_data)
 
@@ -3733,12 +3713,8 @@ class GCENodeDriver(NodeDriver):
 
         :return:  A GCENodeImage object for the new image
         :rtype:   :class:`GCENodeImage`
-
         """
-        image_data = {}
-        image_data["name"] = name
-        image_data["description"] = description
-        image_data["family"] = family
+        image_data = {"name": name, "description": description, "family": family}
         if isinstance(volume, StorageVolume):
             image_data["sourceDisk"] = volume.extra["selfLink"]
             image_data["zone"] = volume.extra["zone"].name
@@ -3877,10 +3853,8 @@ class GCENodeDriver(NodeDriver):
         zone = zone or self.zone
         if not hasattr(zone, "name"):
             zone = self.ex_get_zone(zone)
-        request = "/zones/%s/instanceGroups" % (zone.name)
-        request_data = {}
-        request_data["name"] = name
-        request_data["zone"] = zone.extra["selfLink"]
+        request = "/zones/{}/instanceGroups".format(zone.name)
+        request_data = {"name": name, "zone": zone.extra["selfLink"]}
         if description:
             request_data["description"] = description
         if network:
@@ -3924,23 +3898,19 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(zone, "name"):
             zone = self.ex_get_zone(zone)
 
-        request = "/zones/%s/instanceGroupManagers" % (zone.name)
-
-        manager_data = {}
+        request = "/zones/{}/instanceGroupManagers".format(zone.name)
 
         # If the user gave us a name, we fetch the GCEInstanceTemplate for it.
         if not hasattr(template, "name"):
             template = self.ex_get_instancetemplate(template)
-        manager_data["instanceTemplate"] = template.extra["selfLink"]
-
-        # If base_instance_name is not set, we use name.
-        manager_data["baseInstanceName"] = name
-        if base_instance_name is not None:
-            manager_data["baseInstanceName"] = base_instance_name
-
-        manager_data["name"] = name
-        manager_data["targetSize"] = size
-        manager_data["description"] = description
+        manager_data = {
+            "instanceTemplate": template.extra["selfLink"],
+            # If base_instance_name is not set, we use name.
+            "baseInstanceName": name if base_instance_name is None else base_instance_name,
+            "name": name,
+            "targetSize": size,
+            "description": description,
+        }
 
         self.connection.async_request(request, method="POST", data=manager_data)
 
@@ -3987,11 +3957,6 @@ class GCENodeDriver(NodeDriver):
         :return:  Route object
         :rtype:   :class:`GCERoute`
         """
-        route_data = {}
-        route_data["name"] = name
-        route_data["destRange"] = dest_range
-        route_data["priority"] = priority
-        route_data["description"] = description
         if isinstance(network, str) and network.startswith("https://"):
             network_uri = network
         elif isinstance(network, str):
@@ -3999,8 +3964,15 @@ class GCENodeDriver(NodeDriver):
             network_uri = network.extra["selfLink"]
         else:
             network_uri = network.extra["selfLink"]
-        route_data["network"] = network_uri
-        route_data["tags"] = tags
+        route_data = {
+            "name": name,
+            "destRange": dest_range,
+            "priority": priority,
+            "description": description,
+            "network": network_uri,
+            "tags": tags,
+        }
+
         if next_hop is None:
             url = "https://www.googleapis.com/compute/{}/projects/{}/{}".format(
                 API_VERSION,
@@ -4060,11 +4032,12 @@ class GCENodeDriver(NodeDriver):
         """
 
         request = "/global/sslCertificates"
-        request_data = {}
-        request_data["name"] = name
-        request_data["certificate"] = certificate
-        request_data["privateKey"] = private_key
-        request_data["description"] = description
+        request_data = {
+            "name": name,
+            "certificate": certificate,
+            "privateKey": private_key,
+            "description": description,
+        }
 
         self.connection.async_request(request, method="POST", data=request_data)
 
@@ -4139,17 +4112,18 @@ class GCENodeDriver(NodeDriver):
                     region_obj = self.ex_get_region(region)
                     region_url = region_obj.extra["selfLink"]
 
-        subnet_data = {}
-        subnet_data["name"] = name
-        subnet_data["description"] = description
-        subnet_data["ipCidrRange"] = cidr
-        subnet_data["network"] = network_url
-        subnet_data["region"] = region_url
-        subnet_data["privateIpGoogleAccess"] = privateipgoogleaccess
-        subnet_data["secondaryIpRanges"] = secondaryipranges
+        subnet_data = {
+            "name": name,
+            "description": description,
+            "ipCidrRange": cidr,
+            "network": network_url,
+            "region": region_url,
+            "privateIpGoogleAccess": privateipgoogleaccess,
+            "secondaryIpRanges": secondaryipranges,
+        }
         region_name = region_url.split("/")[-1]
 
-        request = "/regions/%s/subnetworks" % (region_name)
+        request = "/regions/{}/subnetworks".format(region_name)
         self.connection.async_request(request, method="POST", data=subnet_data)
 
         return self.ex_get_subnetwork(name, region_name)
@@ -4183,9 +4157,7 @@ class GCENodeDriver(NodeDriver):
         :return:  Network object
         :rtype:   :class:`GCENetwork`
         """
-        network_data = {}
-        network_data["name"] = name
-        network_data["description"] = description
+        network_data = {"name": name, "description": description}
         if mode.lower() not in ["auto", "custom", "legacy"]:
             raise ValueError(
                 "Invalid network mode: '%s'. Must be 'auto', " "'custom', or 'legacy'." % mode
@@ -5627,11 +5599,12 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCETargetHttpsProxy`
         """
         request = "/global/targetHttpsProxies"
-        request_data = {}
-        request_data["name"] = name
-        request_data["description"] = description
-        request_data["sslCertificates"] = [x.extra["selfLink"] for x in sslcertificates]
-        request_data["urlMap"] = urlmap.extra["selfLink"]
+        request_data = {
+            "name": name,
+            "description": description,
+            "sslCertificates": [x.extra["selfLink"] for x in sslcertificates],
+            "urlMap": urlmap.extra["selfLink"],
+        }
 
         self.connection.async_request(request, method="POST", data=request_data)
 
@@ -5663,8 +5636,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCETargetInstance`
         """
         zone = zone or self.zone
-        targetinstance_data = {}
-        targetinstance_data["name"] = name
+        targetinstance_data = {"name": name}
         if not hasattr(zone, "name"):
             zone = self.ex_get_zone(zone)
         targetinstance_data["zone"] = zone.extra["selfLink"]
@@ -5676,7 +5648,7 @@ class GCENodeDriver(NodeDriver):
         if description:
             targetinstance_data["description"] = description
 
-        request = "/zones/%s/targetInstances" % (zone.name)
+        request = "/zones/{}/targetInstances".format(zone.name)
         self.connection.async_request(request, method="POST", data=targetinstance_data)
         return self.ex_get_targetinstance(name, zone)
 
@@ -5857,8 +5829,7 @@ class GCENodeDriver(NodeDriver):
         :return:  A GCE Snapshot object
         :rtype:   :class:`GCESnapshot`
         """
-        snapshot_data = {}
-        snapshot_data["name"] = name
+        snapshot_data = {"name": name}
         request = "/zones/{}/disks/{}/createSnapshot".format(
             volume.extra["zone"].name,
             volume.name,
@@ -5902,11 +5873,12 @@ class GCENodeDriver(NodeDriver):
         :return:  An Autoscaler object representing the new state.
         :rtype:   :class:`GCEAutoscaler``
         """
-        request = "/zones/%s/autoscalers" % (autoscaler.zone.name)
-        as_data = {}
-        as_data["name"] = autoscaler.name
-        as_data["autoscalingPolicy"] = autoscaler.policy
-        as_data["target"] = autoscaler.target.extra["selfLink"]
+        request = "/zones/{}/autoscalers".format(autoscaler.zone.name)
+        as_data = {
+            "name": autoscaler.name,
+            "autoscalingPolicy": autoscaler.policy,
+            "target": autoscaler.target.extra["selfLink"],
+        }
 
         self.connection.async_request(request, method="PUT", data=as_data)
 
@@ -5925,20 +5897,21 @@ class GCENodeDriver(NodeDriver):
         :return:  An object representing the new state of the health check.
         :rtype:   :class:`GCEHealthCheck`
         """
-        hc_data = {}
-        hc_data["name"] = healthcheck.name
-        hc_data["requestPath"] = healthcheck.path
-        hc_data["port"] = healthcheck.port
-        hc_data["checkIntervalSec"] = healthcheck.interval
-        hc_data["timeoutSec"] = healthcheck.timeout
-        hc_data["unhealthyThreshold"] = healthcheck.unhealthy_threshold
-        hc_data["healthyThreshold"] = healthcheck.healthy_threshold
+        hc_data = {
+            "name": healthcheck.name,
+            "requestPath": healthcheck.path,
+            "port": healthcheck.port,
+            "checkIntervalSec": healthcheck.interval,
+            "timeoutSec": healthcheck.timeout,
+            "unhealthyThreshold": healthcheck.unhealthy_threshold,
+            "healthyThreshold": healthcheck.healthy_threshold,
+        }
         if healthcheck.extra["host"]:
             hc_data["host"] = healthcheck.extra["host"]
         if healthcheck.extra["description"]:
             hc_data["description"] = healthcheck.extra["description"]
 
-        request = "/global/httpHealthChecks/%s" % (healthcheck.name)
+        request = "/global/httpHealthChecks/{}".format(healthcheck.name)
 
         self.connection.async_request(request, method="PUT", data=hc_data)
 
@@ -5957,12 +5930,13 @@ class GCENodeDriver(NodeDriver):
         :return:  An object representing the new state of the firewall.
         :rtype:   :class:`GCEFirewall`
         """
-        firewall_data = {}
-        firewall_data["name"] = firewall.name
-        firewall_data["allowed"] = firewall.allowed
-        firewall_data["denied"] = firewall.denied
+        firewall_data = {
+            "name": firewall.name,
+            "allowed": firewall.allowed,
+            "denied": firewall.denied,
+            "network": firewall.network.extra["selfLink"],
+        }
         # Priority updates not yet exposed via API
-        firewall_data["network"] = firewall.network.extra["selfLink"]
         if firewall.source_ranges:
             firewall_data["sourceRanges"] = firewall.source_ranges
         if firewall.source_tags:
@@ -6003,7 +5977,7 @@ class GCENodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        request = "/targetHttpsProxies/%s/setSslCertificates" % (targethttpsproxy.name)
+        request = "/targetHttpsProxies/{}/setSslCertificates".format(targethttpsproxy.name)
         request_data = {"sslCertificates": [x.extra["selfLink"] for x in sslcertificates]}
         self.connection.async_request(request, method="POST", data=request_data)
 
@@ -6028,7 +6002,7 @@ class GCENodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        request = "/targetHttpsProxies/%s/setUrlMap" % (targethttpsproxy.name)
+        request = "/targetHttpsProxies/{}/setUrlMap".format(targethttpsproxy.name)
         request_data = {"urlMap": urlmap.extra["selfLink"]}
         self.connection.async_request(request, method="POST", data=request_data)
 
@@ -6466,10 +6440,11 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request_data = {}
-        request_data["autoHealingPolicies"] = [
-            {"healthCheck": healthcheck.path, "initialDelaySec": initialdelaysec}
-        ]
+        request_data = {
+            "autoHealingPolicies": [
+                {"healthCheck": healthcheck.path, "initialDelaySec": initialdelaysec}
+            ]
+        }
 
         request = "/zones/{}/instanceGroupManagers/{}/".format(
             manager.zone.name,
@@ -7215,7 +7190,7 @@ class GCENodeDriver(NodeDriver):
         :rtype   instanceTemplate: ````bool````
         """
 
-        request = "/global/instanceTemplates/%s" % (instancetemplate.name)
+        request = "/global/instanceTemplates/{}".format(instancetemplate.name)
         request_data = {}
         self.connection.async_request(request, method="DELETE", data=request_data)
 
@@ -7404,7 +7379,7 @@ class GCENodeDriver(NodeDriver):
         :rtype   targetHttpsProxy: ````bool````
         """
 
-        request = "/global/targetHttpsProxies/%s" % (targethttpsproxy.name)
+        request = "/global/targetHttpsProxies/{}".format(targethttpsproxy.name)
         request_data = {}
         self.connection.async_request(request, method="DELETE", data=request_data)
 
@@ -9228,17 +9203,18 @@ class GCENodeDriver(NodeDriver):
         :return: Subnetwork object
         :rtype: :class:`GCESubnetwork`
         """
-        extra = {}
+        extra = {
+            "creationTimestamp": subnetwork.get("creationTimestamp"),
+            "description": subnetwork.get("description"),
+            "gatewayAddress": subnetwork.get("gatewayAddress"),
+            "ipCidrRange": subnetwork.get("ipCidrRange"),
+            "network": subnetwork.get("network"),
+            "region": subnetwork.get("region"),
+            "selfLink": subnetwork.get("selfLink"),
+            "privateIpGoogleAccess": subnetwork.get("privateIpGoogleAccess"),
+            "secondaryIpRanges": subnetwork.get("secondaryIpRanges"),
+        }
 
-        extra["creationTimestamp"] = subnetwork.get("creationTimestamp")
-        extra["description"] = subnetwork.get("description")
-        extra["gatewayAddress"] = subnetwork.get("gatewayAddress")
-        extra["ipCidrRange"] = subnetwork.get("ipCidrRange")
-        extra["network"] = subnetwork.get("network")
-        extra["region"] = subnetwork.get("region")
-        extra["selfLink"] = subnetwork.get("selfLink")
-        extra["privateIpGoogleAccess"] = subnetwork.get("privateIpGoogleAccess")
-        extra["secondaryIpRanges"] = subnetwork.get("secondaryIpRanges")
         network = self._get_object_by_kind(subnetwork.get("network"))
         region = self._get_object_by_kind(subnetwork.get("region"))
 
@@ -9262,18 +9238,19 @@ class GCENodeDriver(NodeDriver):
         :return: Network object
         :rtype: :class:`GCENetwork`
         """
-        extra = {}
+        extra = {
+            "selfLink": network.get("selfLink"),
+            "description": network.get("description"),
+            "creationTimestamp": network.get("creationTimestamp"),
+            "gatewayIPv4": network.get("gatewayIPv4"),
+            "IPv4Range": network.get("IPv4Range"),
+            "autoCreateSubnetworks": network.get("autoCreateSubnetworks"),
+            "subnetworks": network.get("subnetworks"),
+            "routingConfig": network.get("routingConfig"),
+        }
 
-        extra["selfLink"] = network.get("selfLink")
-        extra["description"] = network.get("description")
-        extra["creationTimestamp"] = network.get("creationTimestamp")
         # 'legacy'
-        extra["gatewayIPv4"] = network.get("gatewayIPv4")
-        extra["IPv4Range"] = network.get("IPv4Range")
         # 'auto' or 'custom'
-        extra["autoCreateSubnetworks"] = network.get("autoCreateSubnetworks")
-        extra["subnetworks"] = network.get("subnetworks")
-        extra["routingConfig"] = network.get("routingConfig")
 
         # match Cloud SDK 'gcloud'
         if "autoCreateSubnetworks" in network:
@@ -9302,11 +9279,12 @@ class GCENodeDriver(NodeDriver):
         :return: Route object
         :rtype: :class:`GCERoute`
         """
-        extra = {}
+        extra = {
+            "selfLink": route.get("selfLink"),
+            "description": route.get("description"),
+            "creationTimestamp": route.get("creationTimestamp"),
+        }
 
-        extra["selfLink"] = route.get("selfLink")
-        extra["description"] = route.get("description")
-        extra["creationTimestamp"] = route.get("creationTimestamp")
         network = route.get("network")
         priority = route.get("priority")
 
@@ -9342,20 +9320,23 @@ class GCENodeDriver(NodeDriver):
         :return: Image object
         :rtype: :class:`GCENodeImage`
         """
-        extra = {}
+        extra = {
+            "description": image.get("description", None),
+            "family": image.get("family", None),
+            "creationTimestamp": image.get("creationTimestamp"),
+            "selfLink": image.get("selfLink"),
+            "sourceType": image.get("sourceType", None),
+            "rawDisk": image.get("rawDisk", None),
+            "status": image.get("status", None),
+            "archiveSizeBytes": image.get("archiveSizeBytes", None),
+            "diskSizeGb": image.get("diskSizeGb", None),
+            "labels": image.get("labels", None),
+            "labelFingerprint": image.get("labelFingerprint", None),
+        }
         if "preferredKernel" in image:
             extra["preferredKernel"] = image.get("preferredKernel", None)
-        extra["description"] = image.get("description", None)
-        extra["family"] = image.get("family", None)
-        extra["creationTimestamp"] = image.get("creationTimestamp")
-        extra["selfLink"] = image.get("selfLink")
         if "deprecated" in image:
             extra["deprecated"] = image.get("deprecated", None)
-        extra["sourceType"] = image.get("sourceType", None)
-        extra["rawDisk"] = image.get("rawDisk", None)
-        extra["status"] = image.get("status", None)
-        extra["archiveSizeBytes"] = image.get("archiveSizeBytes", None)
-        extra["diskSizeGb"] = image.get("diskSizeGb", None)
         if "guestOsFeatures" in image:
             extra["guestOsFeatures"] = image.get("guestOsFeatures", [])
         if "sourceDisk" in image:
@@ -9365,8 +9346,6 @@ class GCENodeDriver(NodeDriver):
         if "licenses" in image:
             lic_objs = self._licenses_from_urls(licenses=image["licenses"])
             extra["licenses"] = lic_objs
-        extra["labels"] = image.get("labels", None)
-        extra["labelFingerprint"] = image.get("labelFingerprint", None)
 
         return GCENodeImage(id=image["id"], name=image["name"], driver=self, extra=extra)
 
@@ -9402,33 +9381,32 @@ class GCENodeDriver(NodeDriver):
         """
         public_ips = []
         private_ips = []
-        extra = {}
-
-        extra["status"] = node.get("status", "UNKNOWN")
-        extra["statusMessage"] = node.get("statusMessage")
-        extra["description"] = node.get("description")
-        extra["zone"] = self.ex_get_zone(node["zone"])
-        extra["image"] = node.get("image")
-        extra["machineType"] = node.get("machineType")
-        extra["cpuPlatform"] = node.get("cpuPlatform")
-        extra["minCpuPlatform"] = node.get("minCpuPlatform")
-        extra["disks"] = node.get("disks", [])
-        extra["networkInterfaces"] = node.get("networkInterfaces")
-        extra["id"] = node["id"]
-        extra["selfLink"] = node.get("selfLink")
-        extra["kind"] = node.get("kind")
-        extra["creationTimestamp"] = node.get("creationTimestamp")
-        extra["name"] = node["name"]
-        extra["metadata"] = node.get("metadata", {})
-        extra["tags_fingerprint"] = node["tags"]["fingerprint"]
-        extra["scheduling"] = node.get("scheduling", {})
-        extra["deprecated"] = True if node.get("deprecated", None) else False
-        extra["canIpForward"] = node.get("canIpForward")
-        extra["serviceAccounts"] = node.get("serviceAccounts", [])
-        extra["scheduling"] = node.get("scheduling", {})
-        extra["boot_disk"] = None
-        extra["labels"] = node.get("labels")
-        extra["labelFingerprint"] = node.get("labelFingerprint")
+        extra = {
+            "status": node.get("status", "UNKNOWN"),
+            "statusMessage": node.get("statusMessage"),
+            "description": node.get("description"),
+            "zone": self.ex_get_zone(node["zone"]),
+            "image": node.get("image"),
+            "machineType": node.get("machineType"),
+            "cpuPlatform": node.get("cpuPlatform"),
+            "minCpuPlatform": node.get("minCpuPlatform"),
+            "disks": node.get("disks", []),
+            "networkInterfaces": node.get("networkInterfaces"),
+            "id": node["id"],
+            "selfLink": node.get("selfLink"),
+            "kind": node.get("kind"),
+            "creationTimestamp": node.get("creationTimestamp"),
+            "name": node["name"],
+            "metadata": node.get("metadata", {}),
+            "tags_fingerprint": node["tags"]["fingerprint"],
+            "scheduling": node.get("scheduling", {}),
+            "deprecated": True if node.get("deprecated", None) else False,
+            "canIpForward": node.get("canIpForward"),
+            "serviceAccounts": node.get("serviceAccounts", []),
+            "boot_disk": None,
+            "labels": node.get("labels"),
+            "labelFingerprint": node.get("labelFingerprint"),
+        }
 
         for disk in extra["disks"]:
             if disk.get("boot") and disk.get("type") == "PERSISTENT":
@@ -9489,13 +9467,14 @@ class GCENodeDriver(NodeDriver):
         :return: Size object
         :rtype: :class:`GCENodeSize`
         """
-        extra = {}
-        extra["selfLink"] = machine_type.get("selfLink")
-        extra["zone"] = self.ex_get_zone(machine_type["zone"])
-        extra["description"] = machine_type.get("description")
-        extra["guestCpus"] = machine_type.get("guestCpus")
-        extra["creationTimestamp"] = machine_type.get("creationTimestamp")
-        extra["accelerators"] = machine_type.get("accelerators", [])
+        extra = {
+            "selfLink": machine_type.get("selfLink"),
+            "zone": self.ex_get_zone(machine_type["zone"]),
+            "description": machine_type.get("description"),
+            "guestCpus": machine_type.get("guestCpus"),
+            "creationTimestamp": machine_type.get("creationTimestamp"),
+            "accelerators": machine_type.get("accelerators", []),
+        }
         try:
             size_name = machine_type["name"][:2]
             location = extra["zone"].name
@@ -9530,10 +9509,11 @@ class GCENodeDriver(NodeDriver):
         :return: Project object
         :rtype: :class:`GCEProject`
         """
-        extra = {}
-        extra["selfLink"] = project.get("selfLink")
-        extra["creationTimestamp"] = project.get("creationTimestamp")
-        extra["description"] = project.get("description")
+        extra = {
+            "selfLink": project.get("selfLink"),
+            "creationTimestamp": project.get("creationTimestamp"),
+            "description": project.get("description"),
+        }
         metadata = project["commonInstanceMetadata"].get("items")
         if "commonInstanceMetadata" in project:
             # add this struct to get 'fingerprint' too
@@ -9560,10 +9540,11 @@ class GCENodeDriver(NodeDriver):
         :return: Region object
         :rtype: :class:`GCERegion`
         """
-        extra = {}
-        extra["selfLink"] = region.get("selfLink")
-        extra["creationTimestamp"] = region.get("creationTimestamp")
-        extra["description"] = region.get("description")
+        extra = {
+            "selfLink": region.get("selfLink"),
+            "creationTimestamp": region.get("creationTimestamp"),
+            "description": region.get("description"),
+        }
 
         quotas = region.get("quotas")
         zones = [self.ex_get_zone(z) for z in region.get("zones", [])]
@@ -9593,10 +9574,11 @@ class GCENodeDriver(NodeDriver):
         :return:  Snapshot object
         :rtype:   :class:`VolumeSnapshot`
         """
-        extra = {}
-        extra["selfLink"] = snapshot.get("selfLink")
-        extra["creationTimestamp"] = snapshot.get("creationTimestamp")
-        extra["sourceDisk"] = snapshot.get("sourceDisk")
+        extra = {
+            "selfLink": snapshot.get("selfLink"),
+            "creationTimestamp": snapshot.get("creationTimestamp"),
+            "sourceDisk": snapshot.get("sourceDisk"),
+        }
         if "description" in snapshot:
             extra["description"] = snapshot["description"]
         if "sourceDiskId" in snapshot:
@@ -9634,20 +9616,21 @@ class GCENodeDriver(NodeDriver):
         :return: Volume object
         :rtype: :class:`StorageVolume`
         """
-        extra = {}
-        extra["selfLink"] = volume.get("selfLink")
-        extra["zone"] = self.ex_get_zone(volume["zone"])
-        extra["status"] = volume.get("status")
-        extra["creationTimestamp"] = volume.get("creationTimestamp")
-        extra["description"] = volume.get("description")
-        extra["sourceImage"] = volume.get("sourceImage")
-        extra["sourceImageId"] = volume.get("sourceImageId")
-        extra["sourceSnapshot"] = volume.get("sourceSnapshot")
-        extra["sourceSnapshotId"] = volume.get("sourceSnapshotId")
-        extra["options"] = volume.get("options")
-        extra["labels"] = volume.get("labels", {})
-        extra["labelFingerprint"] = volume.get("labelFingerprint")
-        extra["users"] = volume.get("users", [])
+        extra = {
+            "selfLink": volume.get("selfLink"),
+            "zone": self.ex_get_zone(volume["zone"]),
+            "status": volume.get("status"),
+            "creationTimestamp": volume.get("creationTimestamp"),
+            "description": volume.get("description"),
+            "sourceImage": volume.get("sourceImage"),
+            "sourceImageId": volume.get("sourceImageId"),
+            "sourceSnapshot": volume.get("sourceSnapshot"),
+            "sourceSnapshotId": volume.get("sourceSnapshotId"),
+            "options": volume.get("options"),
+            "labels": volume.get("labels", {}),
+            "labelFingerprint": volume.get("labelFingerprint"),
+            "users": volume.get("users", []),
+        }
 
         if "licenses" in volume:
             lic_objs = self._licenses_from_urls(licenses=volume["licenses"])
@@ -9728,10 +9711,11 @@ class GCENodeDriver(NodeDriver):
         :rtype:  :class:`GCETargetInstance`
         """
         node = None
-        extra = {}
-        extra["selfLink"] = targetinstance.get("selfLink")
-        extra["description"] = targetinstance.get("description")
-        extra["natPolicy"] = targetinstance.get("natPolicy")
+        extra = {
+            "selfLink": targetinstance.get("selfLink"),
+            "description": targetinstance.get("description"),
+            "natPolicy": targetinstance.get("natPolicy"),
+        }
         zone = self.ex_get_zone(targetinstance["zone"])
         if "instance" in targetinstance:
             node_name = targetinstance["instance"].split("/")[-1]
@@ -9759,10 +9743,11 @@ class GCENodeDriver(NodeDriver):
         :return: Target Pool object
         :rtype:  :class:`GCETargetPool`
         """
-        extra = {}
-        extra["selfLink"] = targetpool.get("selfLink")
-        extra["description"] = targetpool.get("description")
-        extra["sessionAffinity"] = targetpool.get("sessionAffinity")
+        extra = {
+            "selfLink": targetpool.get("selfLink"),
+            "description": targetpool.get("description"),
+            "sessionAffinity": targetpool.get("sessionAffinity"),
+        }
         region = self.ex_get_region(targetpool["region"])
         healthcheck_list = [
             self.ex_get_healthcheck(h.split("/")[-1]) for h in targetpool.get("healthChecks", [])
@@ -9805,11 +9790,12 @@ class GCENodeDriver(NodeDriver):
         :return: InstanceGroup object.
         :rtype: :class:`GCEInstanceGroup`
         """
-        extra = {}
-        extra["description"] = instancegroup.get("description", None)
-        extra["selfLink"] = instancegroup["selfLink"]
-        extra["namedPorts"] = instancegroup.get("namedPorts", [])
-        extra["fingerprint"] = instancegroup.get("fingerprint", None)
+        extra = {
+            "description": instancegroup.get("description", None),
+            "selfLink": instancegroup["selfLink"],
+            "namedPorts": instancegroup.get("namedPorts", []),
+            "fingerprint": instancegroup.get("fingerprint", None),
+        }
 
         zone = instancegroup.get("zone", None)
         if zone:
@@ -9851,13 +9837,14 @@ class GCENodeDriver(NodeDriver):
         """
         zone = self.ex_get_zone(manager["zone"])
 
-        extra = {}
-        extra["selfLink"] = manager.get("selfLink")
-        extra["description"] = manager.get("description")
-        extra["currentActions"] = manager.get("currentActions")
-        extra["baseInstanceName"] = manager.get("baseInstanceName")
-        extra["namedPorts"] = manager.get("namedPorts", [])
-        extra["autoHealingPolicies"] = manager.get("autoHealingPolicies", [])
+        extra = {
+            "selfLink": manager.get("selfLink"),
+            "description": manager.get("description"),
+            "currentActions": manager.get("currentActions"),
+            "baseInstanceName": manager.get("baseInstanceName"),
+            "namedPorts": manager.get("namedPorts", []),
+            "autoHealingPolicies": manager.get("autoHealingPolicies", []),
+        }
         template_name = self._get_components_from_path(manager["instanceTemplate"])["name"]
         template = self.ex_get_instancetemplate(template_name)
         ig_name = self._get_components_from_path(manager["instanceGroup"])["name"]
@@ -9885,10 +9872,11 @@ class GCENodeDriver(NodeDriver):
         :return: Instance Template object.
         :rtype:  :class:`GCEInstanceTemplate`
         """
-        extra = {}
-        extra["selfLink"] = instancetemplate.get("selfLink")
-        extra["description"] = instancetemplate.get("description")
-        extra["properties"] = instancetemplate.get("properties")
+        extra = {
+            "selfLink": instancetemplate.get("selfLink"),
+            "description": instancetemplate.get("description"),
+            "properties": instancetemplate.get("properties"),
+        }
 
         return GCEInstanceTemplate(
             id=instancetemplate["id"],
@@ -9907,9 +9895,10 @@ class GCENodeDriver(NodeDriver):
         :return: Autoscaler object.
         :rtype:  :class:`GCEAutoscaler`
         """
-        extra = {}
-        extra["selfLink"] = autoscaler.get("selfLink")
-        extra["description"] = autoscaler.get("description")
+        extra = {
+            "selfLink": autoscaler.get("selfLink"),
+            "description": autoscaler.get("description"),
+        }
         zone = self.ex_get_zone(autoscaler.get("zone"))
         ig_name = self._get_components_from_path(autoscaler.get("target"))["name"]
         target = self.ex_get_instancegroupmanager(ig_name, zone)
@@ -10072,11 +10061,12 @@ class GCENodeDriver(NodeDriver):
         :return: Zone object
         :rtype: :class:`GCEZone`
         """
-        extra = {}
-        extra["selfLink"] = zone.get("selfLink")
-        extra["creationTimestamp"] = zone.get("creationTimestamp")
-        extra["description"] = zone.get("description")
-        extra["region"] = zone.get("region")
+        extra = {
+            "selfLink": zone.get("selfLink"),
+            "creationTimestamp": zone.get("creationTimestamp"),
+            "description": zone.get("description"),
+            "region": zone.get("region"),
+        }
 
         deprecated = zone.get("deprecated")
 

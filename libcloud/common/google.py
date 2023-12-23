@@ -74,18 +74,19 @@ import base64
 import logging
 import datetime
 import urllib.parse
+import sqlite3
+from collections import OrderedDict
 from typing import Optional
 from http.server import HTTPServer, BaseHTTPRequestHandler
+
+from offutils import pp
 
 from libcloud.utils.py3 import b, httplib, urlparse, urlencode
 from libcloud.common.base import BaseDriver, JsonResponse, PollingConnection, ConnectionUserAndKey
 from libcloud.common.types import LibcloudError, ProviderError
 from libcloud.utils.connection import get_response_object
 
-try:
-    import simplejson as json
-except ImportError:
-    import json  # type: ignore
+import json
 
 
 try:
@@ -168,10 +169,10 @@ class ResourceNotFoundError(GoogleBaseError):
             and value["message"].count("projects/") == 1
         ):
             value["message"] = (
-                value["message"] + ". A missing project "
+                "{}. A missing project "
                 "error may be an authentication issue. "
                 "Please  ensure your auth credentials match "
-                "your project. "
+                "your project. ".format(value["message"])
             )
         super().__init__(value, http_code, driver)
 
@@ -230,7 +231,7 @@ class GoogleResponse(JsonResponse):
                 code = err.get("reason")
             message = body.get("error_description", err)
 
-        return (code, message)
+        return code, message
 
     def parse_body(self):
         """
@@ -245,40 +246,43 @@ class GoogleResponse(JsonResponse):
         json_error = False
         try:
             body = json.loads(self.body)
-        except Exception:
+        except TypeError:
             # If there is both a JSON parsing error and an unsuccessful http
             # response (like a 404), we want to raise the http error and not
             # the JSON one, so don't raise JsonParseError here.
             body = self.body
             json_error = True
 
-        valid_http_codes = [
-            httplib.OK,
-            httplib.CREATED,
-            httplib.ACCEPTED,
-            httplib.CONFLICT,
-        ]
+        valid_http_codes = frozenset(
+            (
+                httplib.OK,
+                httplib.CREATED,
+                httplib.ACCEPTED,
+                httplib.CONFLICT,
+            )
+        )
         if self.status in valid_http_codes:
             if json_error:
                 raise JsonParseError(body, self.status, None)
             elif "error" in body:
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
                 if code == "QUOTA_EXCEEDED":
-                    raise QuotaExceededError(message, self.status, code)
+                    exception = QuotaExceededError
                 elif code == "RESOURCE_ALREADY_EXISTS":
-                    raise ResourceExistsError(message, self.status, code)
+                    exception = ResourceExistsError
                 elif code == "alreadyExists":
-                    raise ResourceExistsError(message, self.status, code)
+                    exception = ResourceExistsError
                 elif code.startswith("RESOURCE_IN_USE"):
-                    raise ResourceInUseError(message, self.status, code)
+                    exception = ResourceInUseError
                 else:
-                    raise GoogleBaseError(message, self.status, code)
+                    exception = GoogleBaseError
+                raise exception(message, self.status, code)
             else:
                 return body
 
         elif self.status == httplib.NOT_FOUND:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -286,7 +290,7 @@ class GoogleResponse(JsonResponse):
 
         elif self.status == httplib.BAD_REQUEST:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -294,7 +298,7 @@ class GoogleResponse(JsonResponse):
 
         else:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -362,8 +366,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         """
         Add defaults for 'Content-Type' and 'Host' headers.
         """
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-        headers["Host"] = self.host
+        headers.update({"Content-Type": "application/x-www-form-urlencoded", "Host": self.host})
         return headers
 
     def _token_request(self, request_body):
@@ -434,8 +437,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         data = urlencode(auth_params)
 
         url = "https://{}{}?{}".format(self.host, self.auth_path, data)
-        print("\nPlease Go to the following URL and sign in:")
-        print(url)
+        print("\nPlease Go to the following URL and sign in:\n", url, sep="")
         code = self._receive_code_through_local_loopback()
         return code
 
@@ -485,7 +487,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
 
     @property
     def _redirect_uri_with_port(self):
-        return self.redirect_uri + ":" + str(self.redirect_uri_port)
+        return "{0}:{1}".format(self.redirect_uri, self.redirect_uri_port)
 
     def _receive_code_through_local_loopback(self):
         """
@@ -516,8 +518,10 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
                 self_.send_response(200)
                 self_.send_header("Content-type", "text/html")
                 self_.end_headers()
-                self_.wfile.write(b"<html><head><title>Libcloud Sign-In</title></head>")
-                self_.wfile.write(b"<body><p>You can now close this tab</p>")
+                self_.wfile.write(
+                    b"<html><head><title>Libcloud Sign-In</title></head>"
+                    b"<body><p>You can now close this tab</p>"
+                )
 
         if (
             "127.0.0.1" in self.redirect_uri
@@ -574,7 +578,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                     with open(key_path) as f:
                         key_content = f.read()
                 except OSError:
-                    raise GoogleAuthError("Missing (or unreadable) key " "file: '%s'" % key)
+                    raise GoogleAuthError("Missing (or unreadable) key " "file: '{}'".format(key))
             else:
                 # assume it's a PEM str or serialized JSON str
                 key_content = key
@@ -598,12 +602,8 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         try:
             # check if the key is actually a PEM encoded private key
             serialization.load_pem_private_key(b(key), password=None, backend=default_backend())
-        except ValueError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
-        except TypeError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
-        except exceptions.UnsupportedAlgorithm as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
+        except (ValueError, TypeError, exceptions.UnsupportedAlgorithm) as e:
+            raise GoogleAuthError("Unable to decode provided PEM key: {}".format(e))
 
         super().__init__(user_id, key, *args, **kwargs)
 
@@ -663,8 +663,8 @@ class GoogleGCEServiceAcctAuthConnection(GoogleBaseAuthConnection):
         http_code, http_reason, token_info = _get_gce_metadata(path)
         if http_code == httplib.NOT_FOUND:
             raise ValueError("Service Accounts are not enabled for this " "GCE instance.")
-        if http_code != httplib.OK:
-            raise ValueError("Internal GCE Authorization failed: " "'%s'" % str(http_reason))
+        elif http_code != httplib.OK:
+            raise ValueError("Internal GCE Authorization failed: " "'{}'".format(http_reason))
         token_info = json.loads(token_info)
         if "expires_in" in token_info:
             expire_time = _utcnow() + datetime.timedelta(seconds=token_info["expires_in"])
@@ -724,9 +724,7 @@ class GoogleAuthType:
         # this will slow down the driver instantiation when retrying failed
         # requests is enabled globally.
         http_code, http_reason, body = _get_gce_metadata(retry_failed=False)
-        if http_code == httplib.OK and body:
-            return True
-        return False
+        return http_code == httplib.OK and body
 
     @staticmethod
     def _is_gcs_s3(user_id):
@@ -737,22 +735,24 @@ class GoogleAuthType:
 
     @staticmethod
     def _is_sa(user_id):
+        print("_is_sa(user_id):", repr(user_id), ";")
         return user_id.endswith(".gserviceaccount.com")
 
 
 class GoogleOAuth2Credential:
-    default_credential_file = "~/.google_libcloud_auth"
+    default_credential_file = os.path.join(os.path.expanduser("~"), ".google_libcloud_auth")
+    credentials_filetype = None
 
     def __init__(self, user_id, key, auth_type=None, credential_file=None, scopes=None, **kwargs):
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if self.auth_type not in GoogleAuthType.ALL_TYPES:
-            raise GoogleAuthError("Invalid auth type: %s" % self.auth_type)
-        if not GoogleAuthType.is_oauth2(self.auth_type):
-            raise GoogleAuthError("Auth type %s cannot be used with OAuth2" % self.auth_type)
+            raise GoogleAuthError("Invalid auth type: {}".format(self.auth_type))
+        elif not GoogleAuthType.is_oauth2(self.auth_type):
+            raise GoogleAuthError("Auth type {} cannot be used with OAuth2".format(self.auth_type))
         self.user_id = user_id
         self.key = key
 
-        default_credential_file = ".".join([self.default_credential_file, user_id])
+        default_credential_file = ".".join((self.default_credential_file, user_id))
         self.credential_file = credential_file or default_credential_file
         # Default scopes to read/write for compute, storage, and dns.
         self.scopes = scopes or [
@@ -776,7 +776,7 @@ class GoogleOAuth2Credential:
                 self.user_id, self.key, self.scopes, **kwargs
             )
         else:
-            raise GoogleAuthError("Invalid auth_type: %s" % str(self.auth_type))
+            raise GoogleAuthError("Invalid auth_type: {}".format(str(self.auth_type)))
 
         if self.token is None:
             self.token = self.oauth2_conn.get_new_token()
@@ -784,7 +784,7 @@ class GoogleOAuth2Credential:
 
     @property
     def access_token(self):
-        if self.token_expire_utc_datetime < _utcnow():
+        if "expire_time" not in self.token or self.token_expire_utc_datetime < _utcnow():
             self._refresh_token()
         return self.token["access_token"]
 
@@ -808,9 +808,36 @@ class GoogleOAuth2Credential:
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
 
         try:
-            with open(filename) as f:
-                data = f.read()
-            token = json.loads(data)
+            ext = os.path.splitext(filename)[1]
+            if ext == "{}json".format(os.path.extsep):
+                self.credentials_filetype = "json"
+                with open(filename) as f:
+                    data = f.read()
+                token = json.loads(data)
+            elif ext == "{}db".format(os.path.extsep):
+                self.credentials_filetype = "sqlite3"
+                con = sqlite3.connect(filename)
+                cur = con.cursor("SELECT * FROM access_tokens " "ORDER BY token_expiry " "LIMIT 1")
+                res = cur.fetchone()
+                cur.close()
+                con.close()
+                if res is not None:
+                    self.token = OrderedDict(
+                        {
+                            "account_id": res[0],
+                            "access_token": res[1],
+                            "token_expiry": res[2],
+                            # rapt_token (Optional [ str ]) – The reauth Proof Token.
+                            "rapt_token": res[3],
+                            # id_token (str) – The Open ID Connect ID Token.
+                            "id_token": res[4],
+                        }
+                    )
+                    pp({"self.token now": self.token, "keys": tuple(self.token.keys())})
+                else:
+                    raise GoogleAuthError("access token not found in {}".format(filename))
+            else:
+                raise NotImplementedError(ext)
         except (OSError, ValueError) as e:
             # Note: File related errors (IOError) and errors related to json
             # parsing of the data (ValueError) are not fatal.
@@ -823,14 +850,23 @@ class GoogleOAuth2Credential:
         Write token to credential file.
         Mocked in libcloud.test.common.google.GoogleTestCase.
         """
-        filename = os.path.expanduser(self.credential_file)
-        filename = os.path.realpath(filename)
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
 
         try:
-            data = json.dumps(self.token)
-            write_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
-            with os.fdopen(os.open(filename, write_flags, int("600", 8)), "w") as f:
-                f.write(data)
+            if self.credentials_filetype == "json":
+                data = json.dumps(self.token)
+                write_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+                with os.fdopen(os.open(filename, write_flags, int("600", 8)), "w") as f:
+                    f.write(data)
+            elif self.credentials_filetype == "sqlite3":
+                con = sqlite3.connect(filename)
+                cur = con.cursor()
+                cur.execute(
+                    "INSERT INTO access_token VALUES(?, ?, ?, ?, ?)", tuple(self.token.values())
+                )
+                con.commit()
+                cur.close()
+                con.close()
         except Exception as e:
             # Note: Failure to write (cache) token in a file is not fatal. It
             # simply means degraded performance since we will need to acquire a
@@ -886,15 +922,23 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         super().__init__(user_id, key, **kwargs)
 
+        from offutils import pp
+
+        pp(
+            {
+                "user_id": user_id,
+                "key": key,
+                "auth_type": auth_type,
+                "credential_file": credential_file,
+                "scopes": scopes,
+                "kwargs": kwargs,
+            }
+        )
         self.oauth2_credential = GoogleOAuth2Credential(
             user_id, key, auth_type, credential_file, scopes, **kwargs
         )
 
-        python_ver = "{}.{}.{}".format(
-            sys.version_info[0],
-            sys.version_info[1],
-            sys.version_info[2],
-        )
+        python_ver = ".".join(map(str, sys.version_info[:3]))
         ver_platform = "Python {}/{}".format(python_ver, sys.platform)
         self.user_agent_append(ver_platform)
 
@@ -902,8 +946,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         @inherits: :class:`Connection.add_default_headers`
         """
-        headers["Content-Type"] = "application/json"
-        headers["Host"] = self.host
+        headers.update({"Content-Type": "application/json", "Host": self.host})
         return headers
 
     def pre_connect_hook(self, params, headers):
@@ -913,7 +956,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         @inherits: :class:`Connection.pre_connect_hook`
         """
-        headers["Authorization"] = "Bearer " + self.oauth2_credential.access_token
+        headers["Authorization"] = "Bearer {}".format(self.oauth2_credential.access_token)
         return params, headers
 
     def encode_data(self, data):
@@ -933,7 +976,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                 return super().request(*args, **kwargs)
             except OSError as e:
                 if e.errno == errno.ECONNRESET:
-                    tries = tries + 1
+                    tries += 1
                 else:
                     raise e
         # One more time, then give up.
@@ -949,10 +992,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         :return:  True if complete, False otherwise
         :rtype:   ``bool``
         """
-        if response.object["status"] == "DONE":
-            return True
-        else:
-            return False
+        return response.object["status"] == "DONE"
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         """

@@ -31,18 +31,19 @@ from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.exceptions import exception_from_message
 
 __all__ = [
-    "RETRY_FAILED_HTTP_REQUESTS",
     "BaseDriver",
+    "CertificateConnection",
     "Connection",
-    "PollingConnection",
     "ConnectionKey",
     "ConnectionUserAndKey",
-    "CertificateConnection",
-    "Response",
     "HTTPResponse",
     "JsonResponse",
-    "XmlResponse",
+    "LazyObject",
+    "PollingConnection",
+    "RETRY_FAILED_HTTP_REQUESTS",
     "RawResponse",
+    "Response",
+    "XmlResponse",
 ]
 
 # Module level variable indicates if the failed HTTP requests should be retried
@@ -491,7 +492,7 @@ class Connection:
         self.connection = connection
 
     def _user_agent(self):
-        user_agent_suffix = " ".join(["(%s)" % x for x in self.ua])
+        user_agent_suffix = " ".join("({})".format(x) for x in self.ua)
 
         if self.driver:
             user_agent = "libcloud/{} ({}) {}".format(
@@ -614,9 +615,9 @@ class Connection:
         port = int(self.port)
 
         if port not in (80, 443):
-            headers.update({"Host": "%s:%d" % (self.host, port)})
+            headers["Host"] = "{}:{:d}".format(self.host, port)
         else:
-            headers.update({"Host": self.host})
+            headers["Host"] = self.host
 
         if data:
             data = self.encode_data(data)
@@ -624,10 +625,7 @@ class Connection:
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            if "?" in action:
-                url = "&".join((action, urlencode(params, doseq=True)))
-            else:
-                url = "?".join((action, urlencode(params, doseq=True)))
+            url = ("&" if "?" in action else "?").join((action, urlencode(params, doseq=True)))
         else:
             url = action
 
@@ -686,9 +684,9 @@ class Connection:
                 # value
                 class_name = self.__class__.__name__
                 msg = (
-                    '%s. Perhaps "host" Connection class attribute '
-                    "(%s.connection) is set to an invalid, non-hostname "
-                    "value (%s)?" % (message, class_name, self.host)
+                    '{}. Perhaps "host" Connection class attribute '
+                    "({}.connection) is set to an invalid, non-hostname "
+                    "value ({})?".format(message, class_name, self.host)
                 )
                 raise socket.gaierror(msg)  # type: ignore
             self.reset_context()
@@ -1129,7 +1127,8 @@ class BaseDriver:
         )
 
         args = [self.key]
-
+        if self.api_name == "google" and self.secret is None:
+            self.secret = True
         if self.secret is not None:
             args.append(self.secret)
 
@@ -1142,6 +1141,10 @@ class BaseDriver:
 
         if port is not None:
             args.append(port)
+
+        from offutils import pp
+
+        pp({"connectionCls": self.connectionCls, "args": args, "conn_kwargs": conn_kwargs})
 
         self.connection = self.connectionCls(*args, **conn_kwargs)
         self.connection.driver = self
