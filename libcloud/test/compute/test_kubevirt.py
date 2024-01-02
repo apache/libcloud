@@ -19,7 +19,7 @@ from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
 from libcloud.compute.types import NodeState
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver
+from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver, KubeVirtNodeImage, KubeVirtNodeSize
 from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 
 
@@ -81,9 +81,37 @@ class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
 
         self.assertTrue(resp)
 
+    def test_create_node(self):
+        node = self.driver.create_node(
+            name="testcreatenode",
+            size=KubeVirtNodeSize(cpu=1, ram=128),
+            image=KubeVirtNodeImage("kubevirt/cirros-registry-disk-demo"),
+            ex_disks=[
+                {
+                    "name": "anpvc",
+                    "bus": "virtio",
+                    "device": "disk",
+                    "disk_type": "persistentVolumeClaim",
+                    "volume_spec": {
+                        "claim_name": "mypvc2"
+                    },
+                },
+            ],
+            ex_network={
+                "name": "netw1",
+                "network_type": "pod",
+                "interface": "masquerade",
+            },
+        )
+        self.assertEqual(node.name, "testcreatenode")
+        self.assertEqual(node.size.extra["cpu"], 1)
+        self.assertEqual(node.size.ram, 128)
+
 
 class KubeVirtMockHttp(MockHttp):
     fixtures = ComputeFileFixtures("kubevirt")
+
+    did_create_vm = False
 
     def _api_v1_namespaces(self, method, url, body, headers):
         if method == "GET":
@@ -97,11 +125,15 @@ class KubeVirtMockHttp(MockHttp):
         self, method, url, body, headers
     ):
         if method == "GET":
-            body = self.fixtures.load("get_default_vms.json")
+            if self.did_create_vm:
+                body = self.fixtures.load("get_default_vms_after_create_vm.json")
+            else:
+                body = self.fixtures.load("get_default_vms.json")
             resp = httplib.OK
         elif method == "POST":
             body = self.fixtures.load("create_vm.json")
             resp = httplib.CREATED
+            self.did_create_vm = True
         else:
             AssertionError("Unsupported method")
         return (resp, body, {}, httplib.responses[httplib.OK])
@@ -144,10 +176,18 @@ class KubeVirtMockHttp(MockHttp):
     ):
         if method == "GET":
             body = self.fixtures.load("get_kube_public_vms.json")
-        elif method == "POST":
-            pass
         else:
             AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines_testcreatenode(
+        self, method, url, body, headers
+    ):
+        if method == "GET":
+            body = self.fixtures.load("create_vm.json")
+        else:
+            AssertionError("Unsupported method")
+
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines_testvm(
@@ -207,6 +247,16 @@ class KubeVirtMockHttp(MockHttp):
     def _api_v1_namespaces_default_services(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("get_services.json")
+        else:
+            AssertionError("Unsupported method")
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_namespaces_default_persistentvolumeclaims(
+        self, method, url, body, headers
+    ):
+        if method == "GET":
+            body = self.fixtures.load("get_pvcs.json")
         else:
             AssertionError("Unsupported method")
 

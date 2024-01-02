@@ -4,19 +4,19 @@
       "namespace": "default",
       "resourceVersion": "911058",
       "generation": 1,
-      "name": "libcloud-created",
+      "name": "testcreatenode",
       "labels": {
-        "kubevirt.io/vm": "libcloud-created"
+        "kubevirt.io/vm": "testcreatenode"
       },
       "uid": "e553010d-e904-436f-a92a-396be0f8bd4c",
-      "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachines/libcloud-created"
+      "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachines/testcreatenode"
     },
     "spec": {
       "running": false,
       "template": {
         "metadata": {
           "labels": {
-            "kubevirt.io/vm": "libcloud-created"
+            "kubevirt.io/vm": "testcreatenode"
           }
         },
         "spec": {

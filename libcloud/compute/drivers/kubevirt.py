@@ -85,7 +85,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     def list_nodes(self, location=None):
         namespaces = []
         if location is not None:
-            namespaces.append(location.name)
+            if isinstance(location, NodeLocation):
+                namespaces.append(location.name)
+            elif isinstance(location, str):
+                namespaces.append(location)
+            else:
+                raise ValueError("location must be a NodeLocation or a string")
         else:
             for ns in self.list_locations():
                 namespaces.append(ns.name)
@@ -303,15 +308,20 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         req = KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/"
         try:
             self.connection.request(req, method=method, data=data)
-
         except Exception:
             raise
+
         # check if new node is present
-        nodes = self.list_nodes()
+        nodes = self.list_nodes(location=namespace)
         for node in nodes:
             if node.name == name:
                 self.start_node(node)
                 return node
+
+        raise ValueError(
+            "The node was not found after creation, "
+            "create_node may have failed. Please check the kubernetes logs."
+        )
 
     @staticmethod
     def _base_vm_template(name=None):  # type: (Optional[str]) -> dict
@@ -480,7 +490,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             the value being the image URI.
 
             For `persistentVolumeClaim` the dictionary should have a key
-            `claimName` with the value being the name of the claim.
+            `claim_name` with the value being the name of the claim.
             If you wish, a new Persistent Volume Claim can be
             created by providing the following:
 
@@ -706,8 +716,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     raise ValueError("ex_cpu must be a number or a string ending with 'm'")
             vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"] = cpu
             vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
-
-        # TODO: debug: no boot disk???
 
         # ex_disks -> disks and volumes
         ex_disks = ex_disks or []

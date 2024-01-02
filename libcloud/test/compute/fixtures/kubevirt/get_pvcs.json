@@ -1,0 +1,150 @@
+{
+  "kind": "PersistentVolumeClaimList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/namespaces/default/persistentvolumeclaims",
+    "resourceVersion": "330771690"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "mypvc2",
+        "namespace": "default",
+        "selfLink": "/api/v1/namespaces/default/persistentvolumeclaims/mypvc2",
+        "uid": "cd6f5a57-02c8-4012-8461-960ce49f95dd",
+        "resourceVersion": "324384796",
+        "creationTimestamp": "2023-12-19T07:17:53Z",
+        "labels": {
+          "alerts.k8s.io/KubePersistentVolumeFillingUp": "disabled",
+          "app": "containerized-data-importer",
+          "app.kubernetes.io/component": "storage",
+          "app.kubernetes.io/managed-by": "cdi-controller"
+        },
+        "annotations": {
+          "cdi.kubevirt.io/storage.condition.bound": "false",
+          "cdi.kubevirt.io/storage.condition.bound.message": "Claim Pending",
+          "cdi.kubevirt.io/storage.condition.bound.reason": "Claim Pending",
+          "cdi.kubevirt.io/storage.contentType": "",
+          "cdi.kubevirt.io/storage.import.endpoint": "docker://quay.io/containerdisks/ubuntu:22.04",
+          "cdi.kubevirt.io/storage.import.importPodName": "importer-mypvc2",
+          "cdi.kubevirt.io/storage.import.requiresScratch": "false",
+          "cdi.kubevirt.io/storage.import.source": "registry",
+          "cdi.kubevirt.io/storage.pod.phase": "Pending",
+          "cdi.kubevirt.io/storage.pod.restarts": "0",
+          "cdi.kubevirt.io/storage.preallocation.requested": "false",
+          "volume.beta.kubernetes.io/storage-provisioner": "example.com/external-nfs"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "cdi.kubevirt.io/v1beta1",
+            "kind": "DataVolume",
+            "name": "mypvc2",
+            "uid": "66470738-e865-4f18-95b1-86c40ff6a3d2",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "kubernetes.io/pvc-protection"
+        ],
+        "managedFields": [
+          {
+            "manager": "cdi-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2023-12-19T07:17:53Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {"f:metadata":{"f:annotations":{".":{},"f:cdi.kubevirt.io/storage.condition.bound":{},"f:cdi.kubevirt.io/storage.condition.bound.message":{},"f:cdi.kubevirt.io/storage.condition.bound.reason":{},"f:cdi.kubevirt.io/storage.contentType":{},"f:cdi.kubevirt.io/storage.import.endpoint":{},"f:cdi.kubevirt.io/storage.import.importPodName":{},"f:cdi.kubevirt.io/storage.import.requiresScratch":{},"f:cdi.kubevirt.io/storage.import.source":{},"f:cdi.kubevirt.io/storage.pod.phase":{},"f:cdi.kubevirt.io/storage.pod.restarts":{},"f:cdi.kubevirt.io/storage.preallocation.requested":{}},"f:labels":{".":{},"f:alerts.k8s.io/KubePersistentVolumeFillingUp":{},"f:app":{},"f:app.kubernetes.io/component":{},"f:app.kubernetes.io/managed-by":{}},"f:ownerReferences":{".":{},"k:{\"uid\":\"66170738-e845-4f58-99b1-88c40ff6a3d2\"}":{".":{},"f:apiVersion":{},"f:blockOwnerDeletion":{},"f:controller":{},"f:kind":{},"f:name":{},"f:uid":{}}}},"f:spec":{"f:accessModes":{},"f:resources":{"f:requests":{".":{},"f:storage":{}}},"f:storageClassName":{},"f:volumeMode":{}},"f:status":{"f:phase":{}}}
+          },
+          {
+            "manager": "kube-controller-manager",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2023-12-19T07:18:03Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {"f:metadata":{"f:annotations":{"f:volume.beta.kubernetes.io/storage-provisioner":{}}}}
+          }
+        ]
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "20Gi"
+          }
+        },
+        "storageClassName": "example-nfs",
+        "volumeMode": "Filesystem"
+      },
+      "status": {
+        "phase": "Pending"
+      }
+    },
+    {
+      "metadata": {
+        "name": "mypvc2-scratch",
+        "namespace": "default",
+        "selfLink": "/api/v1/namespaces/default/persistentvolumeclaims/mypvc2-scratch",
+        "uid": "cf849c48-a91e-4c34-9639-0591824437dc",
+        "resourceVersion": "324384797",
+        "creationTimestamp": "2023-12-19T07:17:53Z",
+        "labels": {
+          "app": "containerized-data-importer",
+          "app.kubernetes.io/component": "storage",
+          "app.kubernetes.io/managed-by": "cdi-controller"
+        },
+        "annotations": {
+          "volume.beta.kubernetes.io/storage-provisioner": "example.com/external-nfs"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "name": "importer-mypvc2",
+            "uid": "572c58a2-857d-4dc8-b2f6-0eff76a5a18a",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "kubernetes.io/pvc-protection"
+        ],
+        "managedFields": [
+          {
+            "manager": "cdi-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2023-12-19T07:17:53Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {"f:metadata":{"f:labels":{".":{},"f:app":{},"f:app.kubernetes.io/component":{},"f:app.kubernetes.io/managed-by":{}},"f:ownerReferences":{".":{},"k:{\"uid\":\"570c58a2-858d-4dd8-b0f6-0eff76a5a38a\"}":{".":{},"f:apiVersion":{},"f:blockOwnerDeletion":{},"f:controller":{},"f:kind":{},"f:name":{},"f:uid":{}}}},"f:spec":{"f:accessModes":{},"f:resources":{"f:requests":{".":{},"f:storage":{}}},"f:storageClassName":{},"f:volumeMode":{}},"f:status":{"f:phase":{}}}
+          },
+          {
+            "manager": "kube-controller-manager",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2023-12-19T07:17:53Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {"f:metadata":{"f:annotations":{".":{},"f:volume.beta.kubernetes.io/storage-provisioner":{}}}}
+          }
+        ]
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "20Gi"
+          }
+        },
+        "storageClassName": "example-nfs",
+        "volumeMode": "Filesystem"
+      },
+      "status": {
+        "phase": "Pending"
+      }
+    }
+  ]
+}
