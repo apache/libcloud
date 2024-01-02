@@ -663,8 +663,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         boot_disk_name = "boot-disk-" + str(uuid.uuid4())
         volumes_dict = {"containerDisk": {"image": image}, "name": boot_disk_name}
         disk_dict = {"disk": {"bus": "virtio"}, "name": boot_disk_name}
-        vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].append(disk_dict)
-        vm["spec"]["template"]["spec"]["volumes"].append(volumes_dict)
+        # boot disk should be the first one, otherwise it will not boot
+        vm["spec"]["template"]["spec"]["domain"]["devices"]["disks"].insert(0, disk_dict)
+        vm["spec"]["template"]["spec"]["volumes"].insert(0, volumes_dict)
 
         # auth -> cloud-init
         if auth is not None:
