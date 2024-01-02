@@ -74,6 +74,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     name = "kubevirt"
     website = "https://www.kubevirt.io"
     connectionCls = KubernetesBasicAuthConnection
+    features = {"create_node": ["ssh_key", "password"]}
 
     NODE_STATE_MAP = {
         "pending": NodeState.PENDING,
@@ -112,7 +113,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         return vms
 
     def get_node(self, id=None, name=None):
-        "get a vm by name or id"
+        """get a vm by name or id.
+
+        :param id: id of the vm
+        :type id: ``str``
+
+        :param name: name of the vm
+        :type name: ``str``
+        """
         if not id and not name:
             raise ValueError("This method needs id or name to be specified")
         nodes = self.list_nodes()
@@ -127,6 +135,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise ValueError("Node does not exist")
 
     def start_node(self, node):
+        """Starting a VM.
+
+        :param node: The node to be started.
+        :type node: :class:`Node`
+
+        :return: True if the start was successful, False otherwise.
+        :rtype: ``bool``
+        """
         # make sure it is stopped
         if node.state is NodeState.RUNNING:
             return True
@@ -146,6 +162,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
 
     def stop_node(self, node):
+        """Stopping a VM.
+
+        :param node: The node to be stopped.
+        :type node: :class:`Node`
+
+        :return: True if the stop was successful, False otherwise.
+        :rtype: ``bool``
+        """
         # check if running
         if node.state is NodeState.STOPPED:
             return True
@@ -167,6 +191,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     def reboot_node(self, node):
         """
         Rebooting a node.
+
+        :param node: The node to be rebooted.
+        :type node: :class:`Node`
+
+        :return: True if the reboot was successful, False otherwise.
+        :rtype: ``bool``
         """
         namespace = node.extra["namespace"]
         name = node.name
@@ -184,7 +214,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
     def destroy_node(self, node):
         """
-        Terminating a VMI and deleting the VM resource backing it
+        Terminating a VMI and deleting the VM resource backing it.
+
+        :param node: The node to be destroyed.
+        :type node: :class:`Node`
+
+        :return: True if the destruction was successful, False otherwise.
+        :rtype: ``bool``
         """
         namespace = node.extra["namespace"]
         name = node.name
@@ -208,26 +244,33 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
         Creating a VM defined by the template.
 
+        The template must be a dictionary of kubernetes object that defines the
+        KubeVirt VM. Following are the keys:
+
+        - ``apiVersion``: ``str``
+        - ``kind``: ``str``
+        - ``metadata``: ``dict``
+        - ``spec``: ``dict``
+            - ``domain``: ``dict``
+            - ``volumes``: ``list``
+            - ...
+        - ...
+
+        See also:
+
+        - https://kubernetes.io/docs/concepts/overview/working-with-objects/
+        - https://kubevirt.io/api-reference/
+
         :param name: A name to give the VM. The VM will be identified by this
                      name, and it must be the same as the name in the
                      ``template["metadata"]["name"]``.
                      Atm, it cannot be changed after it is set.
         :type name: ``str``
 
-        :param template: A dictionary of kubernetes object that defines the
-                         KubeVirt VM.
-                         See also:
-                         - https://kubernetes.io/docs/concepts/overview/working-with-objects/
-                         - https://kubevirt.io/api-reference/
+        :param template: A dictionary of kubernetes object that defines the VM.
         :type template: ``dict`` with keys:
-                         -apiVersion: ``str``
-                         -kind: ``str``
-                         -metadata: ``dict``
-                         -spec: ``dict``
-                           - domain: ``dict``
-                           - volumes: ``list``
-                           - ...
-
+                        ``apiVersion: str``, ``kind: str``, ``metadata: dict``,
+                        ``spec: dict`` etc.
 
         :param namespace: The namespace where the VM will live.
                           (default is 'default')
@@ -239,9 +282,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         if template.get("kind", "") != "VirtualMachine":
             raise ValueError("The template must contain kind: VirtualMachine")
         if name != template.get("metadata", {}).get("name"):
-            raise ValueError("The name of the VM must be the same as the name in the template. "
-                             "(name={}, template.metadata.name={})".format(
-                name, template.get("metadata", {}).get("name")))
+            raise ValueError(
+                "The name of the VM must be the same as the name in the template. "
+                "(name={}, template.metadata.name={})".format(
+                    name, template.get("metadata", {}).get("name")
+                )
+            )
         if template.get("spec", {}).get("running", False):
             warnings.warn(
                 "The VM will be created in a stopped state, and then started. "
@@ -325,171 +371,259 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
         Creating a VM with a containerDisk.
 
+        @inherits: :class:`NodeDriver.create_node`
+
+        The ``size`` parameter should be a ``NodeSize`` object that defines
+        the CPU and memory limits of the VM.
+        The ``NodeSize`` object must have the following attributes:
+
+        - ram: int (in MiB)
+        - extra["cpu"]: int (in cores)
+
+        An example NodeSize for a VM with 1 CPU and 2GiB of memory
+        (attributes except for ``ram`` and ``extra["cpu"]`` are not supported atm,
+        but they are required by the ``NodeSize`` object)::
+
+            >>> size = NodeSize(
+            >>>     id='small',  # str: Size ID
+            >>>     name='small',  # str: Size name. Not used atm
+            >>>     ram=2048,  # int: Amount of memory (in MB)
+            >>>     disk=20,  # int: Amount of disk storage (in GB). Not used atm
+            >>>     bandwidth=0,  # int: Amount of bandwidth. Not used atm
+            >>>     price=0,  # float: Price (in US dollars) of running this node for an hour. Not used atm
+            >>>     driver=KubeVirtNodeDriver  # NodeDriver: Driver this size belongs to
+            >>>     extra={
+            >>>         'cpu': 1,  # int: Number of CPUs provided by this size.
+            >>>     },
+            >>> )
+
+        The ``KubeVirtNodeSize`` wrapper can be used to create the ``NodeSize``
+        object more easily::
+
+            >>> size = KubeVirtNodeSize(
+            >>>     cpu=1,  # int: Number of CPUs provided by this size.
+            >>>     ram=2048,  # int: Amount of memory (in MB)
+            >>> )
+
+        The ``image`` parameter can be either a ``NodeImage`` object
+        with a ``name`` attribute that points to a containerDisk image,
+        or a string representing the image URI.
+
+        In both cases, it must point to a Docker image with an embedded disk.
+        May be a URI like `kubevirt/cirros-registry-disk-demo`,
+        kubevirt will automatically pull it from https://hub.docker.com/u/URI.
+
+        For more info visit: https://kubevirt.io/user-guide/docs/latest/creating-virtual-machines/disks-and-volumes.html#containerdisk
+
+        An example ``NodeImage``::
+
+            >>> image = NodeImage(
+            >>>     id="something_unique",
+            >>>     name="quay.io/containerdisks/ubuntu:22.04"
+            >>>     driver=KubeVirtNodeDriver,
+            >>> )
+
+        The ``KubeVirtNodeImage`` wrapper can be used to create the ``NodeImage``
+        object more easily::
+
+            >>> image = KubeVirtNodeImage(
+            >>>     name="quay.io/containerdisks/ubuntu:22.04"
+            >>> )
+
+        The ``location`` parameter is a NodeLocation object
+        with the name being the kubernetes namespace where the VM will live.
+        If not provided, the VM will be created in the default namespace.
+        It can be created as the following::
+
+            >>> location = NodeLocation(
+            >>>     name='default',  # str: namespace
+            >>>     ... # Other attributes are ignored
+            >>> )
+
+        The ``auth`` parameter is the authentication method for the VM,
+        either a ``NodeAuthSSHKey`` or a ``NodeAuthPassword``:
+
+        - ``NodeAuthSSHKey(pubkey='pubkey data here')``
+        - ``NodeAuthPassword(password='mysecretpassword')``
+
+        If the ``auth`` parameter is provided, the VM will be created with
+        a cloud-init volume that will inject the provided authentication
+        into the VM.
+        For details, see:
+        https://kubevirt.io/user-guide/virtual_machines/startup_scripts/#injecting-ssh-keys-with-cloud-inits-cloud-config
+
+        The ``ex_disks`` parameter is a list of disk dictionaries that define
+        the disks of the VM.
+        Each dictionary should have specific keys for disk configuration.
+
+        The following are optional keys:
+
+        - ``"bus"``: can be "virtio", "sata", or "scsi"
+        - ``"device"``: can be "lun" or "disk"
+
+        The following are required keys:
+
+        - ``"disk_type"``:
+            One of the supported ``DISK_TYPES``.
+            Atm only "persistentVolumeClaim" and
+            "containerDisk" are promised to work.
+            Other types may work but are not tested.
+
+        - ``"name"``:
+            The name of the disk configuration
+
+        - ``"voulme_spec"``:
+            the dictionary that defines the volume of the disk.
+            The content is depending on the disk_type:
+
+            For `containerDisk` the dictionary should have a key `image` with
+            the value being the image URI.
+
+            For `persistentVolumeClaim` the dictionary should have a key
+            `claimName` with the value being the name of the claim.
+            If you wish, a new Persistent Volume Claim can be
+            created by providing the following:
+
+            - required:
+                - size: the desired size (implied in GB)
+                - storage_class_name: the name of the storage class to # NOQA
+                                       be used for the creation of the
+                                       Persistent Volume Claim.
+                                       Make sure it allows for
+                                       dymamic provisioning.
+            - optional:
+                - access_mode: default is ReadWriteOnce
+                - volume_mode: default is `Filesystem`, it can also be `Block`
+
+            For other disk types, it will be translated to
+            a KubeVirt volume object as is::
+
+                {disk_type: <volume_spec>, "name": disk_name}
+
+            This dict will be translated to KubeVirt API object::
+
+              volumes:
+                - name: <disk_name>
+                  <disk_type>:
+                    <voulme_spec>
+
+        Please refer to the KubeVirt API documentation
+        for volume specifications:
+
+        https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes
+
+        An example ``ex_disks`` list with a hostDisk that will create a new
+        img file in the host machine::
+
+            >>> ex_disks = [
+            >>>     {
+            >>>         "bus": "virtio",
+            >>>         "device": "disk",
+            >>>         "disk_type": "hostDisk",
+            >>>         "name": "disk114514",
+            >>>         "volume_spec": {
+            >>>             "capacity": "10Gi",
+            >>>             "path": "/tmp/kubevirt/data/disk114514.img",
+            >>>             "type": "DiskOrCreate",
+            >>>         },
+            >>>     },
+            >>> ]
+
+        The ``ex_network`` parameter is a dictionary that defines the network
+        of the VM.
+        Only the ``pod`` type is supported, and in the configuration
+        ``masquerade`` or ``bridge`` are the accepted values.
+        The parameter must be a dict::
+
+            {
+                "network_type": "pod",
+                "interface": "masquerade | bridge",
+                "name": "network_name"
+            }
+
+        For advanced configurations not covered by the other parameters,
+        the ``ex_template`` parameter can be used to provide a dictionary of
+        kubernetes object that defines the KubeVirt VM.
+        Notice, If provided, ``ex_template`` will override all other parameters
+        except for ``name`` and ``location``.
+
+        The ``ex_template`` parameter is a dictionary of kubernetes object:
+
+        - ``apiVersion``: ``str``
+        - ``kind``: ``str``
+        - ``metadata``: ``dict``
+        - ``spec``: ``dict``
+            - ``domain``: ``dict``
+            - ``volumes``: ``list``
+            - ...
+
+        See also:
+
+        - https://kubernetes.io/docs/concepts/overview/working-with-objects/
+        - https://kubevirt.io/api-reference/
+
         :param name: A name to give the VM. The VM will be identified by
                      this name and atm it cannot be changed after it is set.
         :type name: ``str``
 
         :param size: The size of the VM in terms of CPU and memory.
-        :type size: ``NodeSize``:
-
-                    >>> size = NodeSize(
-                    >>>     # id='small',  # str: Size ID
-                    >>>     # name='small',  # str: Size name. Not used atm
-                    >>>     ram=2048,  # int: Amount of memory (in MB)
-                    >>>     # disk=20,  # int: Amount of disk storage (in GB). Not used atm
-                    >>>     # bandwidth=0,  # int: Amount of bandwidth. Not used atm
-                    >>>     # price=0,  # float: Price (in US dollars) of running this node for an hour. Not used atm
-                    >>>     # driver=KubeVirtNodeDriver  # NodeDriver: Driver this size belongs to
-                    >>>     extra={
-                    >>>         'cpu': 1,  # int: Number of CPUs provided by this size.
-                    >>>     },
-                    >>> )
+                     A NodeSize object with the attributes
+                     ``ram`` (int in MiB) and ``extra["cpu"]`` (int in cores).
+        :type size: ``NodeSize`` with
 
         :param image: Either a libcloud NodeImage or a string.
-                      In both cases it must point to a Docker image with an
-                      embedded disk.
-                      May be a URI like `kubevirt/cirros-registry-disk-demo`,
-                      kubevirt will automatically pull it from
-                      https://hub.docker.com/u/URI.
-                      For more info visit:
-                      https://kubevirt.io/user-guide/docs/latest/creating-virtual-machines/disks-and-volumes.html#containerdisk
+                      In both cases, it must a URL to the containerDisk image.
         :type image: ``str`` or ``NodeImage``
 
-                     >>> image = NodeImage(
-                     >>>   name='kubevirt/cirros-registry-disk-demo',  # str: Image URI
-                     >>>   ... # Other attributes are ignored
-                     >>> )
-
         :param location: The namespace where the VM will live.
-                          (default is 'default')
+                          (default is ``'default'``)
         :type location: `NodeLocation`` in which the name is the namespace
 
-                        >>> location = NodeLocation(
-                        >>>     name='default',  # str: namespace
-                        >>>     ... # Other attributes are ignored
-                        >>> )
-
         :param auth: authentication to a node.
-        :type auth: ``NodeAuthSSHKey`` or ``NodeAuthPassword``:
-                    - NodeAuthSSHKey(pubkey='...')
-                    - NodeAuthPassword(password='...')
+        :type auth: ``NodeAuthSSHKey`` or ``NodeAuthPassword``.
 
         :param ex_disks: A list containing disk dictionaries.
-                            Each dictionary should have the
-                            following optional keys:
+                         Each dictionary should have the following keys:
+                         ``bus``: can be ``"virtio"``, ``"sata"``, or ``"scsi"``;
+                         ``device``: can be ``"lun"`` or ``"disk"``;
+                         ``disk_type``: One of the supported DISK_TYPES;
+                         ``name``: The name of the disk configuration;
+                         ``voulme_spec``: the dictionary that defines the volume of the disk.
 
-                            - ``"bus"``: can be "virtio", "sata", or "scsi"
-                            - ``"device"``: can be "lun" or "disk"
+        :type ex_disks: ``list`` of ``dict`` with keys:
+                        ``bus: str``, ``device: str``, ``disk_type: str``, ``name: str``
+                        and ``voulme_spec: dict``
 
-                             The following are required keys:
-
-                             - ``"disk_type"``
-                                    One of the supported ``DISK_TYPES``.
-                                    Atm only "persistentVolumeClaim" and
-                                    "containerDisk" are promised to work.
-                                    Other types may work but are not tested.
-                             - ``"name"``:
-                                    The name of the disk configuration
-                             - ``"voulme_spec"``:
-                                    the dictionary that defines the volume
-                                    of the disk.
-                                    Will be translated to KubeVirt API object:
-
-                                      volumes:
-                                        - name: <disk_name>
-                                          <disk_type>:
-                                            <voulme_spec>
-
-                                    Content is depending on the disk_type:
-
-                                    For "containerDisk" the dictionary
-                                    should have a key "image" with the
-                                    value being the image URI.
-
-                                    For "persistentVolumeClaim" the
-                                    dictionary should have a key
-                                    "claimName" with the value being
-                                    the name of the claim.
-                                    If you wish, a new Persistent Volume Claim can be
-                                    created by providing the following:
-
-                                    - required:
-                                        - size: the desired size (implied in GB)
-                                        - storage_class_name: the name of the storage class to # NOQA
-                                                               be used for the creation of the
-                                                               Persistent Volume Claim.
-                                                               Make sure it allows for
-                                                               dymamic provisioning.
-                                    - optional:
-                                        - access_mode: default is ReadWriteOnce
-                                        - volume_mode: default is `Filesystem`,
-                                                       it can also be `Block`
-
-                                    For other disk types, it will be translated to
-                                    a KubeVirt volume object as is:
-
-                                        {disk_type: <volume_spec>, "name": disk_name}
-
-                                    Please refer to the KubeVirt API documentation
-                                    for volume specifications:
-
-                                    https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes
-
-        :type ex_disks: `list` of `dict`.
-                        For each `dict` the types for its keys are:
-                            - bus: `str`
-                            - device: `str`
-                            - disk_type: `str`
-                            - name: `str`
-                            - voulme_spec: `dict`
-
-        :param ex_network: Only the `pod` type is supported, and in the
-                               configuration `masquerade` or `bridge` are the
-                               accepted values.
-                               The parameter must be a dict:
-
-                                {
-                                    "network_type": "pod",
-                                    "interface": "masquerade | bridge",
-                                    "name": "network_name"
-                                }
-
-        :type ex_network: `dict` with keys:
-
-                      - network_type: `str` | only "pod" is accepted atm
-                      - interface: `str` | "masquerade" or "bridge"
-                      - name: `str`
+        :param ex_network: a dictionary that defines the network of the VM.
+                           The following keys are required:
+                           ``network_type``: ``"pod"``;
+                           ``interface``: ``"masquerade"`` or ``"bridge"``;
+                           ``name``: ``"network_name"``.
+        :type ex_network: ``dict`` with keys:
+                          ``network_type: str``, ``interface: str`` and ``name: str``
 
         :param ex_termination_grace_period: The grace period in seconds before
                                             the VM is forcefully terminated.
                                             (default is 0)
         :type ex_termination_grace_period: `int`
 
-        :param ex_ports: A dictionary with keys: 'ports_tcp' and 'ports_udp'
-                      'ports_tcp' value is a list of ints that indicate
+        :param ex_ports: A dictionary with keys: ``"ports_tcp"`` and ``"ports_udp"``
+                      ``"ports_tcp"`` value is a list of ints that indicate
                       the ports to be exposed with TCP protocol,
-                      and 'ports_udp' is a list of ints that indicate
+                      and ``"ports_udp"`` is a list of ints that indicate
                       the ports to be exposed with UDP protocol.
         :type  ex_ports: `dict` with keys
-                      'ports_tcp`: `list` of `int`
-                      'ports_udp`: `list` of `int`
+                      ``ports_tcp``: ``list`` of ``int``;
+                      ``ports_udp``: ``list`` of ``int``.
 
         :param ex_template: A dictionary of kubernetes object that defines the
                             KubeVirt VM. This is for advanced vm specifications
                             that are not covered by the other parameters.
                             If provided, it will override all other parameters
                             except for `name` and `location`.
-                            See also:
-                            - https://kubernetes.io/docs/concepts/overview/working-with-objects/
-                            - https://kubevirt.io/api-reference/
         :type ex_template: ``dict`` with keys:
-                            -apiVersion: ``str``
-                            -kind: ``str``
-                            -metadata: ``dict``
-                            -spec: ``dict``
-                              - domain: ``dict``
-                              - volumes: ``list``
-                              - ...
+                            ``apiVersion: str``, ``kind: str``, ``metadata: dict``
+                            and ``spec: dict``
         """
 
         # location -> namespace
@@ -515,14 +649,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 "ex_termination_grace_period": ex_termination_grace_period,
                 "ex_ports": ex_ports,
             }
-            ignored_non_none_param_keys = list(filter(
-                lambda x: other_params[x] is not None,
-                other_params))
+            ignored_non_none_param_keys = list(
+                filter(lambda x: other_params[x] is not None, other_params)
+            )
             if ignored_non_none_param_keys:
                 warnings.warn(
                     "ex_template is provided, ignoring the following non-None "
-                    "parameters: {}"
-                    .format(ignored_non_none_param_keys)
+                    "parameters: {}".format(ignored_non_none_param_keys)
                 )
 
             vm = copy.deepcopy(ex_template)
@@ -535,14 +668,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             elif vm["metadata"]["name"] != name:
                 warnings.warn(
                     "The name in the ex_template ({}) will be ignored. "
-                    "The name provided in the arguments ({}) will be used."
-                    .format(vm["metadata"]["name"], name)
+                    "The name provided in the arguments ({}) will be used.".format(
+                        vm["metadata"]["name"], name
+                    )
                 )
                 vm["metadata"]["name"] = name
 
-            return self._create_node_with_template(name=name,
-                                                   template=vm,
-                                                   namespace=namespace)
+            return self._create_node_with_template(name=name, template=vm, namespace=namespace)
         # else (ex_template is None): create a vm with other parameters
 
         # vm template to be populated
@@ -600,9 +732,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 volumes_dict = {"containerDisk": {"image": image}, "name": disk_name}
             elif disk_type == "persistentVolumeClaim":
                 if "volume_spec" not in disk:
-                    raise KeyError(
-                        "You must provide a volume_spec dictionary"
-                    )
+                    raise KeyError("You must provide a volume_spec dictionary")
                 if "claim_name" not in disk["volume_spec"]:
                     msg = (
                         "You must provide either a claim_name of an "
@@ -619,7 +749,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 claim_name = disk["volume_spec"]["claim_name"]
 
                 if claim_name not in self.ex_list_persistent_volume_claims(namespace=namespace):
-                    if "size" not in disk["volume_spec"] or "storage_class_name" not in disk["volume_spec"]:
+                    if (
+                        "size" not in disk["volume_spec"]
+                        or "storage_class_name" not in disk["volume_spec"]
+                    ):
                         msg = (
                             "disk['volume_spec']['size'] and "
                             "disk['volume_spec']['storage_class_name'] "
@@ -685,24 +818,24 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             disk_dict = {"disk": {"bus": "virtio"}, "name": cloud_init_volume}
             volume_dict = {
                 "name": cloud_init_volume,
-                "cloudInitNoCloud": {
-                    "userData": ""
-                },
+                "cloudInitNoCloud": {"userData": ""},
             }
 
             # auth
             # cloud_init_config reference: https://kubevirt.io/user-guide/virtual_machines/startup_scripts/#injecting-ssh-keys-with-cloud-inits-cloud-config
             if isinstance(auth, NodeAuthSSHKey):
                 public_key = auth.pubkey
-                cloud_init_config = ("""#cloud-config\n"""
-                                     """ssh_authorized_keys:\n"""
-                                     """  - {}\n""").format(public_key)
+                cloud_init_config = (
+                    """#cloud-config\n""" """ssh_authorized_keys:\n""" """  - {}\n"""
+                ).format(public_key)
             elif isinstance(auth, NodeAuthPassword):
                 password = auth.password
-                cloud_init_config = ("""#cloud-config\n"""
-                                     """password: {}\n"""
-                                     """chpasswd: {{ expire: False }}\n"""
-                                     """ssh_pwauth: True\n""").format(password)
+                cloud_init_config = (
+                    """#cloud-config\n"""
+                    """password: {}\n"""
+                    """chpasswd: {{ expire: False }}\n"""
+                    """ssh_pwauth: True\n"""
+                ).format(password)
             else:
                 raise ValueError("auth must be NodeAuthSSHKey or NodeAuthPassword")
 
@@ -754,12 +887,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         # terminationGracePeriodSeconds
         if ex_termination_grace_period is not None:
-            assert isinstance(ex_termination_grace_period, int), (
-                "ex_termination_grace_period must be an int"
-            )
-            vm["spec"]["template"]["spec"]["terminationGracePeriodSeconds"] = (
-                ex_termination_grace_period
-            )
+            assert isinstance(
+                ex_termination_grace_period, int
+            ), "ex_termination_grace_period must be an int"
+            vm["spec"]["template"]["spec"][
+                "terminationGracePeriodSeconds"
+            ] = ex_termination_grace_period
 
         return self._create_node_with_template(name=name, template=vm, namespace=namespace)
 
@@ -1248,7 +1381,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :type is_stopped: bool
 
         :return: a libcloud node
-        :rtype: Node
+        :rtype: :class:`Node`
         """
         ID = vm["metadata"]["uid"]
         name = vm["metadata"]["name"]
@@ -1402,7 +1535,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     def ex_list_services(self, namespace="default", node_name=None, service_name=None):
         """
         If node_name is given then the services returned will be those that
-        concern the node
+        concern the node.
         """
         params = None
         if service_name is not None:
@@ -1433,41 +1566,41 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         to delete existing exposed ports and expose just the ones in the port
         variable.
 
-        param node: the libcloud node for which the ports will be exposed
-        type  node: libcloud `Node` class
+        :param node: the libcloud node for which the ports will be exposed
+        :type  node: libcloud `Node` class
 
-        param ports: a list of dictionaries with keys --> values:
-                     'port' --> port to be exposed on the service
+        :param ports: a list of dictionaries with keys --> values:
+                     'port' --> port to be exposed on the service;
                      'target_port' --> port on the pod/node, optional
                                        if empty then it gets the same
-                                       value as 'port' value
-                     'protocol' ---> either 'UDP' or 'TCP', defaults to TCP
-                     'name' --> A name for the service
+                                       value as 'port' value;
+                     'protocol' ---> either 'UDP' or 'TCP', defaults to TCP;
+                     'name' --> A name for the service;
                      If ports is an empty `list` and a service exists of this
                      type then the service will be deleted.
-        type  ports: `list` of `dict` where each `dict` has keys --> values:
-                     'port' --> `int`
-                     'target_port' --> `int`
-                     'protocol' --> `str`
-                     'name' --> `str`
+        :type  ports: `list` of `dict` where each `dict` has keys --> values:
+                     'port' --> `int`;
+                     'target_port' --> `int`;
+                     'protocol' --> `str`;
+                     'name' --> `str`;
 
-        param service_type: Valid types are ClusterIP, NodePort, LoadBalancer
-        type  service_type: `str`
+        :param service_type: Valid types are ClusterIP, NodePort, LoadBalancer
+        :type  service_type: `str`
 
-        param cluster_ip: This can be set with an IP string value if you want
+        :param cluster_ip: This can be set with an IP string value if you want
                           manually set the service's internal IP. If the value
                           is not correct the method will fail, this value can't
                           be updated.
-        type  cluster_ip: `str`
+        :type  cluster_ip: `str`
 
-        param override_existing_ports: Set to True if you want to delete the
+        :param override_existing_ports: Set to True if you want to delete the
                                        existing ports exposed by the service
                                        and keep just the ones declared in the
                                        present ports argument.
                                        By default it is false and if the
                                        service already exists the ports will be
                                        added to the existing ones.
-        type  override_existing_ports: `boolean`
+        :type  override_existing_ports: `boolean`
         """
         # check if service exists first
         namespace = node.extra.get("namespace", "default")
@@ -1563,10 +1696,12 @@ def _deep_merge_dict(source: dict, destination: dict) -> dict:
 
     Extended from https://stackoverflow.com/a/20666342, added zero value handling.
 
-    >>> a = {"domain": {"devices": 0}, "volumes": [1, 2, 3], "network": {}}
-    >>> b = {"domain": {"machine": "non-exist-in-a", "devices": 1024}, "volumes": [4, 5, 6]}
-    >>> _deep_merge_dict(a, b)
-    {'domain': {'machine': 'non-exist-in-a', 'devices': 1024}, 'volumes': [1, 2, 3], 'network': {}}
+    Example::
+
+        >>> a = {"domain": {"devices": 0}, "volumes": [1, 2, 3], "network": {}}
+        >>> b = {"domain": {"machine": "non-exist-in-a", "devices": 1024}, "volumes": [4, 5, 6]}
+        >>> _deep_merge_dict(a, b)
+        {'domain': {'machine': 'non-exist-in-a', 'devices': 1024}, 'volumes': [1, 2, 3], 'network': {}}
 
     In the above example:
 
@@ -1658,13 +1793,15 @@ def KubeVirtNodeSize(cpu, ram):  # type: (int, int) -> NodeSize
     """
     Create a NodeSize object for KubeVirt driver.
 
+    This function is just a shorthand for ``NodeSize(ram=ram, extra={"cpu": cpu})``.
+
     :param cpu: number of virtual CPUs
     :type cpu: ``int``
 
     :param ram: amount of RAM in MiB
     :type ram: ``int``
 
-    :return: a NodeSize object
+    :return: a NodeSize object with ram and extra.cpu set
     :rtype: :class:`NodeSize`
     """
     extra = {"cpu": cpu}
@@ -1686,10 +1823,13 @@ def KubeVirtNodeImage(name):  # type: (str) -> NodeImage
     """
     Create a NodeImage object for KubeVirt driver.
 
+    This function is just a shorthand for ``NodeImage(name=name)``.
+
     :param name: image source
     :type name: ``str``
 
-    :return: a NodeImage object
+    :return: a NodeImage object with the name set to the source to a
+        containerDisk image (e.g. ``"quay.io/containerdisks/ubuntu:22.04"``)
     :rtype: :class:`NodeImage`
     """
     image_id = hashlib.md5(name.encode("utf-8")).hexdigest()
