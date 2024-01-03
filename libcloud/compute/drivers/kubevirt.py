@@ -312,6 +312,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
 
         # check if new node is present
+        # But why not just use the resp from the POST request?
+        # Or self.get_node()?
+        # I don't think a for loop over list_nodes is necessary.
         nodes = self.list_nodes(location=namespace)
         for node in nodes:
             if node.name == name:
@@ -368,10 +371,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     def create_node(
         self,
         name,  # type: str
-        size,  # type: Optional[NodeSize]
-        image,  # type: Optional[Union[NodeImage, str]]
+        size=None,  # type: Optional[NodeSize]
+        image=None,  # type: Optional[Union[NodeImage, str]]
         location=None,  # type: Optional[NodeLocation]
         auth=None,  # type: Optional[Union[NodeAuthSSHKey, NodeAuthPassword]]
+        ex_cpu=None,  # type: Optional[Union[int, str]]
+        ex_memory=None,  # type: Optional[Union[int]]
         ex_disks=None,  # type: Optional[list]
         ex_network=None,  # type: Optional[dict]
         ex_termination_grace_period=0,  # type: Optional[int]
@@ -414,6 +419,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             >>>     cpu=1,  # int: Number of CPUs provided by this size.
             >>>     ram=2048,  # int: Amount of memory (in MB)
             >>> )
+
+        For legacy support, the ``ex_cpu`` and ``ex_memory`` parameters
+        can be used instead of ``size``:
+
+        - ``ex_cpu``: The number of CPU cores to allocate to the VM.
+                        ex_cpu must be a number (cores) or a string
+                        ending with 'm' (miliCPUs).
+        - ``ex_memory``: The amount of memory to allocate to the VM in MiB.
 
         The ``image`` parameter can be either a ``NodeImage`` object
         with a ``name`` attribute that points to a containerDisk image,
@@ -592,6 +605,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param auth: authentication to a node.
         :type auth: ``NodeAuthSSHKey`` or ``NodeAuthPassword``.
 
+        :param ex_cpu: The number of CPU cores to allocate to the VM.
+                       (Legacy support, consider using ``size`` instead)
+        :type ex_cpu: ``int`` or ``str``
+
+        :param ex_memory: The amount of memory to allocate to the VM in MiB.
+                          (Legacy support, consider using ``size`` instead)
+        :type ex_memory: ``int``
+
         :param ex_disks: A list containing disk dictionaries.
                          Each dictionary should have the following keys:
                          ``bus``: can be ``"virtio"``, ``"sata"``, or ``"scsi"``;
@@ -696,9 +717,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             assert isinstance(size, NodeSize), "size must be a NodeSize"
             ex_cpu = size.extra["cpu"]
             ex_memory = size.ram
-        else:
-            ex_cpu = None
-            ex_memory = None
 
         if ex_memory is not None:
             assert isinstance(ex_memory, int), "ex_memory must be an int in MiB"
@@ -859,9 +877,16 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         if ex_network is not None:
             try:
-                interface = ex_network["interface"]
-                network_name = ex_network["name"]
-                network_type = ex_network["network_type"]
+                if isinstance(ex_network, dict):
+                    interface = ex_network["interface"]
+                    network_name = ex_network["name"]
+                    network_type = ex_network["network_type"]
+                elif isinstance(ex_network, (tuple, list)):  # legacy 3-tuple
+                    network_type = ex_network[0]
+                    interface = ex_network[1]
+                    network_name = ex_network[2]
+                else:
+                    raise KeyError("ex_network must be a dictionary or a tuple/list")
             except KeyError:
                 msg = (
                     "ex_network: You must provide a dictionary with keys: "
