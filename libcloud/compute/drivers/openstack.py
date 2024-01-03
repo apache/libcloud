@@ -1565,6 +1565,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 progress=api_image.get("progress"),
                 metadata=api_image.get("metadata"),
                 os_type=api_image.get("os_type"),
+                os_distro=api_image.get("os_distro"),
+                os_version=api_image.get("os_version"),
                 serverId=server.get("id"),
                 minDisk=min_disk,
                 minRam=min_ram,
