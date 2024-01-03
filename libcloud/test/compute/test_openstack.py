@@ -2041,6 +2041,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image.extra["created"], "2017-09-11T13:00:05Z")
         self.assertEqual(image.extra["status"], "active")
         self.assertEqual(image.extra["os_type"], "linux")
+        self.assertEqual(image.extra["os_version"], "16.04")
+        self.assertEqual(image.extra["os_distro"], "ubuntu")
         self.assertIsNone(image.extra["serverId"])
         self.assertEqual(image.extra["minDisk"], 40)
         self.assertEqual(image.extra["minRam"], 0)
