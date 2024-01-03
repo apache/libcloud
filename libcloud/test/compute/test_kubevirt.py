@@ -19,7 +19,11 @@ from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
 from libcloud.compute.types import NodeState
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.drivers.kubevirt import KubeVirtNodeDriver, KubeVirtNodeImage, KubeVirtNodeSize
+from libcloud.compute.drivers.kubevirt import (
+    KubeVirtNodeDriver,
+    KubeVirtNodeImage,
+    KubeVirtNodeSize,
+)
 from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 
 
@@ -92,9 +96,7 @@ class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
                     "bus": "virtio",
                     "device": "disk",
                     "disk_type": "persistentVolumeClaim",
-                    "volume_spec": {
-                        "claim_name": "mypvc2"
-                    },
+                    "volume_spec": {"claim_name": "mypvc2"},
                 },
             ],
             ex_network={
@@ -252,9 +254,7 @@ class KubeVirtMockHttp(MockHttp):
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_v1_namespaces_default_persistentvolumeclaims(
-        self, method, url, body, headers
-    ):
+    def _api_v1_namespaces_default_persistentvolumeclaims(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("get_pvcs.json")
         else:

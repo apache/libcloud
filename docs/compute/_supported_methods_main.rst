@@ -26,7 +26,7 @@ Provider                       list nodes create node reboot node destroy node s
 `InternetSolutions`_           yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Kamatera`_                    yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `KTUCloud`_                    yes        yes         yes         yes          no         no        yes         yes        yes        
-`kubevirt`_                    yes        yes         yes         yes          yes        yes       yes         yes        no         
+`kubevirt`_                    yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Libvirt`_                     yes        no          yes         yes          yes        yes       no          no         no         
 `Linode`_                      yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Maxihost`_                    yes        yes         yes         yes          yes        yes       yes         yes        no         
