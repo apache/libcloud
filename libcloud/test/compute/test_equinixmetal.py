@@ -462,57 +462,5 @@ class EquinixMetalMockHttp(MockHttp):
         if method == "DELETE":
             return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
-<<<<<<< HEAD
-    def _metal_v1_projects_3d27fd13_0466_4878_be22_9a4b5595a3df_storage(
-        self, method, url, body, headers
-    ):
-        if method == "GET":
-            body = self.fixtures.load("volumes.json")
-        elif method == "POST":
-            body = self.fixtures.load("create_volume.json")
-
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_projects_4a4bce6b_d2ef_41f8_95cf_0e2f32996440_storage(
-        self, method, url, body, headers
-    ):
-        if method == "GET":
-            body = json.dumps({"volumes": []})
-
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_projects_4b653fce_6405_4300_9f7d_c587b7888fe5_storage(
-        self, method, url, body, headers
-    ):
-        if method == "GET":
-            body = json.dumps({"volumes": []})
-
-            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_storage_74f11291_fde8_4abf_8150_e51cda7308c3(self, method, url, body, headers):
-        if method == "DELETE":
-            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
-
-    def _metal_v1_storage_a08aaf76_e0ce_43aa_b9cd_cce0d4ae4f4c_attachments(
-        self, method, url, body, headers
-    ):
-        if method == "POST":
-            body = self.fixtures.load("attach_volume.json")
-
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_storage_a08aaf76_e0ce_43aa_b9cd_cce0d4ae4f4c(self, method, url, body, headers):
-        if method == "DELETE":
-            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
-
-    def _metal_v1_storage_attachments_2c16a96f_bb4f_471b_8e2e_b5820b9e1603(
-        self, method, url, body, headers
-    ):
-        if method == "DELETE":
-            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
-
-=======
->>>>>>> 86ff77e3c (Remove storage and volume interface implementation)
-
 if __name__ == "__main__":
     sys.exit(unittest.main())
