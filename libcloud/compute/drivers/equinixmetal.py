@@ -252,12 +252,7 @@ def _list_async(driver):
         return list(map(self._to_node, data))
 
     def list_locations(self):
-<<<<<<< HEAD
-        data = self.connection.request("/metal/v1/facilities").object["facilities"]
-
-=======
         data = self.connection.request("/metal/v1/locations/metros").object["metros"]
->>>>>>> ea215b807 (Deprecate facility in the favor of metro)
         return list(map(self._to_location, data))
 
     def list_images(self):
@@ -981,12 +976,8 @@ def _list_async(driver):
         return list(map(self._to_volume_snapshot, data))
 
     def _to_volume_snapshot(self, data):
-<<<<<<< HEAD
         created = datetime.datetime.strptime(data["created_at"], "%Y-%m-%dT%H:%M:%S")
 
-=======
-        created = datetime.strptime(data["created_at"], "%Y-%m-%dT%H:%M:%S")
->>>>>>> ea215b807 (Deprecate facility in the favor of metro)
         return VolumeSnapshot(
             id=data["id"],
             name=data["id"],
