@@ -252,7 +252,7 @@ def _list_async(driver):
         return list(map(self._to_node, data))
 
     def list_locations(self):
-        data = self.connection.request("/metal/v1/facilities").object["facilities"]
+        data = self.connection.request("/metal/v1/locations/metros").object["metros"]
 
         return list(map(self._to_location, data))
 
@@ -303,12 +303,15 @@ def _list_async(driver):
             if not ex_project_id:
                 raise Exception("ex_project_id needs to be specified")
 
-        facility = location.extra["code"]
+        location_code = location.extra["code"]
+        if not self._valid_location:
+            raise ValueError("Failed to create node: valid parameter metro [code] is required in the input")
+
         params = {
             "hostname": name,
             "plan": size.id,
             "operating_system": image.id,
-            "facility": facility,
+            "metro": location_code,
             "include": "plan",
             "billing_cycle": "hourly",
         }
@@ -493,6 +496,8 @@ def _list_async(driver):
 
         if "facility" in data:
             extra["facility"] = data["facility"]
+        if "metro" in data and data["metro"] is not None:
+            extra["metro"] = data["metro"]
 
         for key in extra_keys:
             if key in data:
@@ -534,8 +539,8 @@ def _list_async(driver):
         except KeyError:
             cpus = None
         regions = [
-            region.get("href").replace("/metal/v1/facilities/", "")
-            for region in data.get("available_in", [])
+            region.get("href").replace("/metal/v1/locations/metros", "")
+            for region in data.get("available_in_metros", [])
         ]
         extra = {
             "description": data["description"],
@@ -752,7 +757,7 @@ def _list_async(driver):
         }
 
         if location_id:
-            params["facility"] = location_id
+            params["metro"] = location_id
 
         if comments:
             params["comments"] = comments
@@ -1055,6 +1060,14 @@ def _list_async(driver):
 
         return data
 
+    def _valid_location(self, metro_code):
+        if metro_code == None or metro_code == "":
+            return False
+        metros = self.connection.request("/metal/v1/locations/metros").object["metros"]
+        for metro in metros:
+            if metro["code"] == metro_code:
+                return True
+        return False
 
 class Project:
     def __init__(self, project):
