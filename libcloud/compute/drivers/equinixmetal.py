@@ -253,6 +253,7 @@ def _list_async(driver):
 
     def list_locations(self):
         data = self.connection.request("/metal/v1/locations/metros").object["metros"]
+
         return list(map(self._to_location, data))
 
     def list_images(self):
@@ -757,6 +758,7 @@ def _list_async(driver):
 
         if location_id:
             params["metro"] = location_id
+
         if comments:
             params["comments"] = comments
 
@@ -841,6 +843,7 @@ def _list_async(driver):
 
         :param size: Size of volume in gigabytes (required)
         :type size: ``int``
+
         :param location: Which data center to create a volume in. If
                                empty, undefined behavior will be selected.
                                (optional)
@@ -874,8 +877,10 @@ def _list_async(driver):
     def destroy_volume(self, volume):
         """
         Destroys a storage volume.
+
         :param volume: Volume to be destroyed
         :type volume: :class:`StorageVolume`
+
         :rtype: ``bool``
         """
         path = "/metal/v1/storage/%s" % volume.id
@@ -886,10 +891,13 @@ def _list_async(driver):
     def attach_volume(self, node, volume):
         """
         Attaches volume to node.
+
         :param node: Node to attach volume to.
         :type node: :class:`.Node`
+
         :param volume: Volume to attach.
         :type volume: :class:`.StorageVolume`
+
         :rytpe: ``bool``
         """
         path = "/metal/v1/storage/%s/attachments" % volume.id
@@ -901,11 +909,14 @@ def _list_async(driver):
     def detach_volume(self, volume, ex_node=None, ex_attachment_id=""):
         """
         Detaches a volume from a node.
+
         :param volume: Volume to be detached
         :type volume: :class:`.StorageVolume`
+
         :param ex_attachment_id: Attachment id to be detached, if empty detach
                                         all attachments
         :type name: ``str``
+
         :rtype: ``bool``
         """
         path = "/metal/v1/storage/%s/attachments" % volume.id
@@ -934,8 +945,10 @@ def _list_async(driver):
     def create_volume_snapshot(self, volume, name=""):
         """
         Create a new volume snapshot.
+
         :param volume: Volume to create a snapshot for
         :type volume: class:`StorageVolume`
+
         :return: The newly created volume snapshot.
         :rtype: :class:`VolumeSnapshot`
         """
@@ -948,8 +961,10 @@ def _list_async(driver):
     def destroy_volume_snapshot(self, snapshot):
         """
         Delete a volume snapshot
+
         :param snapshot: volume snapshot to delete
         :type snapshot: class:`VolumeSnapshot`
+
         :rtype: ``bool``
         """
         volume_id = snapshot.extra["volume"]["href"].split("/")[-1]
@@ -961,8 +976,10 @@ def _list_async(driver):
     def list_volume_snapshots(self, volume, include=""):
         """
         List snapshots for a volume.
+
         :param volume: Volume to list snapshots for
         :type volume: class:`StorageVolume`
+
         :return: List of volume snapshots.
         :rtype: ``list`` of :class: `VolumeSnapshot`
         """
