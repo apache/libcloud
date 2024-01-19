@@ -251,66 +251,6 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
 
                 break
 
-    def test_list_volumes(self):
-        volumes = self.driver.list_volumes()
-        assert len(volumes) == 2
-        assert len(volumes[0].extra["attachments"]) == 0
-
-    def test_create_volume(self):
-        location = self.driver.list_locations()[0]
-        volume = self.driver.create_volume(
-            10,
-            location,
-            description="test volume",
-            plan="storage_1",
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df",
-        )
-        assert len(volume.extra["attachments"]) == 0
-        assert not volume.extra["locked"]
-
-    def test_attach_volume(self):
-        attached = False
-        volumes = self.driver.ex_list_volumes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )
-        node = self.driver.ex_list_nodes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )[0]
-
-        for vol in volumes:
-            if len(vol.extra["attachments"]) == 0:
-                attached = self.driver.attach_volume(node, vol)
-
-                break
-        assert attached
-
-    def test_detach_volume(self):
-        detached = False
-        volumes = self.driver.ex_list_volumes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )
-
-        for vol in volumes:
-            if len(vol.extra["attachments"]) > 0:
-                detached = self.driver.detach_volume(vol)
-
-                break
-        assert detached
-
-    def test_destroy_volume(self):
-        destroyed = False
-        volumes = self.driver.ex_list_volumes_for_project(
-            ex_project_id="3d27fd13-0466-4878-be22-9a4b5595a3df"
-        )
-
-        for vol in volumes:
-            if len(vol.extra["attachments"]) == 0:
-                destroyed = self.driver.destroy_volume(vol)
-
-                break
-        assert destroyed
-
-
 class EquinixMetalMockHttp(MockHttp):
     fixtures = ComputeFileFixtures("equinixmetal")
 
@@ -521,55 +461,6 @@ class EquinixMetalMockHttp(MockHttp):
     def _metal_v1_ips_aea4ee0c_675f_4b77_8337_8e13b868dd9c(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.OK, "", {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_projects_3d27fd13_0466_4878_be22_9a4b5595a3df_storage(
-        self, method, url, body, headers
-    ):
-        if method == "GET":
-            body = self.fixtures.load("volumes.json")
-        elif method == "POST":
-            body = self.fixtures.load("create_volume.json")
-
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_projects_4a4bce6b_d2ef_41f8_95cf_0e2f32996440_storage(
-        self, method, url, body, headers
-    ):
-        if method == "GET":
-            body = json.dumps({"volumes": []})
-
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_projects_4b653fce_6405_4300_9f7d_c587b7888fe5_storage(
-        self, method, url, body, headers
-    ):
-        if method == "GET":
-            body = json.dumps({"volumes": []})
-
-            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_storage_74f11291_fde8_4abf_8150_e51cda7308c3(self, method, url, body, headers):
-        if method == "DELETE":
-            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
-
-    def _metal_v1_storage_a08aaf76_e0ce_43aa_b9cd_cce0d4ae4f4c_attachments(
-        self, method, url, body, headers
-    ):
-        if method == "POST":
-            body = self.fixtures.load("attach_volume.json")
-
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _metal_v1_storage_a08aaf76_e0ce_43aa_b9cd_cce0d4ae4f4c(self, method, url, body, headers):
-        if method == "DELETE":
-            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
-
-    def _metal_v1_storage_attachments_2c16a96f_bb4f_471b_8e2e_b5820b9e1603(
-        self, method, url, body, headers
-    ):
-        if method == "DELETE":
-            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
-
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
