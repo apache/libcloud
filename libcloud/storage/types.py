@@ -60,6 +60,7 @@ class Provider:
     :cvar S3_CN_NORTH: Amazon S3 CN North (Beijing)
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     :cvar S3_EU_WEST2: Amazon S3 EU West 2 (London)
+    :cvar S3_EU_WEST3: Amazon S3 EU West 3 (Paris)
     :cvar S3_EU_CENTRAL: Amazon S3 EU Central (Frankfurt)
     :cvar S3_EU_NORTH1: Amazon S3 EU North 1 (Stockholm)
     :cvar S3_SA_EAST: Amazon S3 South America East (Sao Paulo)
@@ -96,6 +97,7 @@ class Provider:
     S3_CN_NORTHWEST = "s3_cn_northwest"
     S3_EU_WEST = "s3_eu_west"
     S3_EU_WEST2 = "s3_eu_west_2"
+    S3_EU_WEST3 = "s3_eu_west_3"
     S3_EU_CENTRAL = "s3_eu_central"
     S3_EU_NORTH1 = "s3_eu_north_1"
     S3_SA_EAST = "s3_sa_east"
