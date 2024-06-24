@@ -77,7 +77,7 @@ build = [
     "build==1.2.1"
 ]
 publish = [
-    "twine==4.0.2"
+    "twine==5.1.0"
 ]
 test = [
     "pytest",
