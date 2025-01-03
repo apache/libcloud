@@ -542,8 +542,8 @@ class RcodeZeroDNSDriver(DNSDriver):
                 # request
                 continue
 
-            if name == r.name and r.id != id:
-                # we have other records with the same name so make an update
+            if name == r.name and type == r.type and r.id != id:
+                # we have other records with the same name and type so make an update
                 # request
                 rrset["changetype"] = "update"
                 content = {}
