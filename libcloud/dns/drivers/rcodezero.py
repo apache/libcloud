@@ -110,7 +110,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         secure=True,
         host=None,
         port=None,
-        api_version="v1",
+        api_version="v2",
         **kwargs,
     ):
         """
@@ -139,6 +139,8 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         if api_version == "v1":
             self.api_root = "/api/v1"
+        elif api_version == "v2":
+            self.api_root = "/api/v2"
         else:
             raise NotImplementedError("Unsupported API version: %s" % api_version)
 
