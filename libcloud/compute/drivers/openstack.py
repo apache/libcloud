@@ -4414,6 +4414,47 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             driver=self.reservation_connection.driver,
         )
 
+    def ex_list_hosts(self):
+        """
+        List leases
+
+        :rtype: ``list`` of :class:`OpenStack_2_Host`
+        """
+        return self._to_hosts(self.reservation_connection.request("/os-hosts").object)
+
+    def _to_hosts(self, obj):
+        host_elements = obj["hosts"]
+        return [self._to_host(host) for host in host_elements]
+
+    def _to_host(self, obj):
+        return OpenStack_2_Host(
+            id=obj["id"],
+            hypervisor_hostname=obj["hypervisor_hostname"],
+            vcpus=obj["vcpus"],
+            memory_mb=obj["memory_mb"],
+            local_gb=obj["local_gb"],
+            service_name=obj["service_name"],
+        )
+
+class OpenStack_2_Host:
+    """
+    Host info.
+    """
+
+    def __init__(self, id, hypervisor_hostname, vcpus, memory_mb, local_gb, service_name):
+        self.id = id
+        self.hypervisor_hostname = hypervisor_hostname
+        self.vcpus = vcpus
+        self.memory_mb = memory_mb
+        self.local_gb = local_gb
+        self.service_name = service_name
+
+    def __repr__(self):
+        return "<OpenStack_2_Host: id=%s, hypervisor_hostname=%s>" % (
+            self.id,
+            self.hypervisor_hostname,
+        )
+
 
 class OpenStack_2_Lease:
     """

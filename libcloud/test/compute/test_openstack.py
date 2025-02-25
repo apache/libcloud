@@ -2571,6 +2571,13 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(leases[0].end, "2017-12-27T12:00:00.000000")
         self.assertEqual(leases[0].status, "PENDING")
 
+    def test_ex_list_hosts(self):
+        hosts = self.driver.ex_list_hosts()
+        self.assertEqual(len(hosts), 1)
+        self.assertEqual(hosts[0].id, "1")
+        self.assertEqual(hosts[0].hypervisor_hostname, "compute-1")
+        self.assertEqual(hosts[0].vcpus, 4)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -4021,6 +4028,17 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v1_leases(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_leases.json")
+
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v1_os_hosts(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_os_hosts.json")
 
             return (
                 httplib.OK,
