@@ -4436,6 +4436,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             service_name=obj["service_name"],
         )
 
+
 class OpenStack_2_Host:
     """
     Host info.
