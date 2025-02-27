@@ -17,7 +17,7 @@ import os
 import hmac
 import time
 import base64
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 from hashlib import sha1
 from datetime import datetime
 
@@ -1274,7 +1274,12 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
     def list_regions(self):
         return REGION_TO_HOST_MAP.keys()
 
-    def get_object_cdn_url(self, obj, ex_expiry=S3_CDN_URL_EXPIRY_HOURS):
+    def get_object_cdn_url(
+        self,
+        obj,
+        ex_expiry=S3_CDN_URL_EXPIRY_HOURS,
+        ex_method: Literal["GET", "PUT", "DELETE"] = "GET",
+    ):
         """
         Return a "presigned URL" for read-only access to object
 
@@ -1319,7 +1324,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
             params=params_to_sign,
             headers=headers_to_sign,
             dt=now,
-            method="GET",
+            method=ex_method,
             path=object_path,
             data=UnsignedPayloadSentinel,
         )
