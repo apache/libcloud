@@ -138,6 +138,7 @@ class AbiquoNodeDriver(NodeDriver):
         edit_vm = get_href(vm, "edit")
         headers = {"Accept": self.NODE_MIME_TYPE}
         vm = self.connection.request(edit_vm, headers=headers).object
+
         return self._to_node(vm, self)
 
     def destroy_node(self, node):
@@ -163,6 +164,8 @@ class AbiquoNodeDriver(NodeDriver):
         if state in ["ALLOCATED", "CONFIGURED", "LOCKED", "UNKNOWN"]:
             raise LibcloudError("Invalid Node state", self)
 
+        res = None
+
         if state != "NOT_ALLOCATED":
             # prepare the element that forces the undeploy
             vm_task = ET.Element("virtualmachinetask")
@@ -183,9 +186,11 @@ class AbiquoNodeDriver(NodeDriver):
             )
 
         # pylint: disable=maybe-no-member
-        if state == "NOT_ALLOCATED" or res.async_success():
+
+        if state == "NOT_ALLOCATED" or (res and res.async_success()):
             # pylint: enable=maybe-no-member
             self.connection.request(action=node.extra["uri_id"], method="DELETE")
+
             return True
         else:
             return False
@@ -231,6 +236,7 @@ class AbiquoNodeDriver(NodeDriver):
         edit_vm = get_href(e_vm, "edit")
         headers = {"Accept": self.NODE_MIME_TYPE}
         e_vm = self.connection.request(edit_vm, headers=headers).object
+
         return self._to_node(e_vm, self)
 
     def ex_populate_cache(self):
@@ -270,14 +276,17 @@ class AbiquoNodeDriver(NodeDriver):
             "/admin/datacenters", headers=dcs_headers, params=params
         ).object
         dc_dict = {}
+
         for dc in e_dcs.findall("datacenter"):
             key = get_href(dc, "self")
             dc_dict[key] = dc
 
         # Populate locations name cache
         self.connection.cache["locations"] = {}
+
         for e_vdc in e_vdcs.findall("virtualDatacenter"):
             loc = get_href(e_vdc, "location")
+
             if loc is not None:
                 self.connection.cache["locations"][loc] = get_href(e_vdc, "edit")
 
@@ -344,6 +353,8 @@ class AbiquoNodeDriver(NodeDriver):
             error = "Can not destroy group because of current state"
             raise LibcloudError(error, self)
 
+        res = None
+
         if state == "DEPLOYED":
             # prepare the element that forces the undeploy
             vm_task = ET.Element("virtualmachinetask")
@@ -366,10 +377,12 @@ class AbiquoNodeDriver(NodeDriver):
             )
 
         # pylint: disable=maybe-no-member
-        if state == "NOT_DEPLOYED" or res.async_success():
+
+        if state == "NOT_DEPLOYED" or (res and res.async_success()):
             # pylint: enable=maybe-no-member
             # The node is no longer deployed. Unregister it.
             self.connection.request(action=group.uri, method="DELETE")
+
             return True
         else:
             return False
@@ -384,6 +397,7 @@ class AbiquoNodeDriver(NodeDriver):
         :return:         the list of :class:`NodeGroup`
         """
         groups = []
+
         for vdc in self._get_locations(location):
             link_vdc = self.connection.cache["locations"][vdc]
             hdr_vdc = {"Accept": self.VDC_MIME_TYPE}
@@ -391,11 +405,13 @@ class AbiquoNodeDriver(NodeDriver):
             apps_link = get_href(e_vdc, "virtualappliances")
             hdr_vapps = {"Accept": self.VAPPS_MIME_TYPE}
             vapps = self.connection.request(apps_link, headers=hdr_vapps).object
+
             for vapp in vapps.findall("virtualAppliance"):
                 nodes = []
                 vms_link = get_href(vapp, "virtualmachines")
                 headers = {"Accept": self.NODES_MIME_TYPE}
                 vms = self.connection.request(vms_link, headers=headers).object
+
                 for vm in vms.findall("virtualMachine"):
                     nodes.append(self._to_node(vm, self))
                 group = NodeGroup(self, vapp.findtext("name"), nodes, get_href(vapp, "edit"))
@@ -419,9 +435,11 @@ class AbiquoNodeDriver(NodeDriver):
         repos = self.connection.request(uri, headers=repos_hdr).object
 
         images = []
+
         for repo in repos.findall("datacenterRepository"):
             # filter by location. Skips when the name of the location
             # is different from the 'datacenterRepository' element
+
             for vdc in self._get_locations(location):
                 # Check if the virtual datacenter belongs to this repo
                 link_vdc = self.connection.cache["locations"][vdc]
@@ -439,10 +457,12 @@ class AbiquoNodeDriver(NodeDriver):
                     templates = self.connection.request(
                         url_templates, params, headers=headers
                     ).object
+
                     for templ in templates.findall("virtualMachineTemplate"):
                         # Avoid duplicated templates
                         id_template = templ.findtext("id")
                         ids = [image.id for image in images]
+
                         if id_template not in ids:
                             images.append(self._to_nodeimage(templ, self, get_href(repo, "edit")))
 
@@ -456,6 +476,7 @@ class AbiquoNodeDriver(NodeDriver):
                  user
         :rtype:  ``list`` of :class:`NodeLocation`
         """
+
         return list(self.connection.cache["locations"].keys())
 
     def list_nodes(self, location=None):
@@ -491,6 +512,7 @@ class AbiquoNodeDriver(NodeDriver):
         :return: The list of sizes
         :rtype:  ``list`` of :class:`NodeSizes`
         """
+
         return [
             NodeSize(
                 id=1,
@@ -543,6 +565,7 @@ class AbiquoNodeDriver(NodeDriver):
         reboot_uri = node.extra["uri_id"] + "/action/reset"
         reboot_hdr = {"Accept": self.AR_MIME_TYPE}
         res = self.connection.async_request(action=reboot_uri, method="POST", headers=reboot_hdr)
+
         return res.async_success()  # pylint: disable=maybe-no-member
 
     # -------------------------
@@ -579,6 +602,7 @@ class AbiquoNodeDriver(NodeDriver):
         res = self.connection.async_request(
             action=link_deploy, method="POST", data=tostring(vm_task), headers=headers
         )
+
         if not res.async_success():  # pylint: disable=maybe-no-member
             raise LibcloudError("Could not run the node", self)
 
@@ -589,6 +613,7 @@ class AbiquoNodeDriver(NodeDriver):
         identifier = vdc.findtext("id")
         name = vdc.findtext("name")
         country = dc.findtext("name")
+
         return NodeLocation(identifier, name, country, driver)
 
     def _to_node(self, vm, driver):
@@ -610,10 +635,13 @@ class AbiquoNodeDriver(NodeDriver):
         public_ips = []
         nics_hdr = {"Accept": self.NICS_MIME_TYPE}
         nics_element = self.connection.request(get_href(vm, "nics"), headers=nics_hdr).object
+
         for nic in nics_element.findall("nic"):
             ip = nic.findtext("ip")
+
             for link in nic.findall("link"):
                 rel = link.attrib["rel"]
+
                 if rel == "privatenetwork":
                     private_ips.append(ip)
                 elif rel in ["publicnetwork", "externalnetwork", "unmanagednetwork"]:
@@ -645,12 +673,14 @@ class AbiquoNodeDriver(NodeDriver):
         url = get_href(template, "edit")
         hdreqd = template.findtext("hdRequired")
         extra = {"repo": repo, "url": url, "hdrequired": hdreqd}
+
         return NodeImage(identifier, name, driver, extra)
 
     def _get_locations(self, location=None):
         """
         Returns the locations as a generator.
         """
+
         if location is not None:
             yield location
         else:
@@ -660,6 +690,7 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Returns the identifier of the logged user's enterprise.
         """
+
         return self.connection.cache["enterprise"].findtext("id")
 
     def _define_create_node_location(self, image, location):
@@ -670,11 +701,13 @@ class AbiquoNodeDriver(NodeDriver):
         location will be created.
         """
         # First, get image location
+
         if not image:
             error = "'image' parameter is mandatory"
             raise LibcloudError(error, self)
 
         # Get the location argument
+
         if location:
             if location not in self.list_locations():
                 raise LibcloudError("Location does not exist")
@@ -683,14 +716,17 @@ class AbiquoNodeDriver(NodeDriver):
         # the input location
         loc = None
         target_loc = None
+
         for candidate_loc in self._get_locations(location):
             link_vdc = self.connection.cache["locations"][candidate_loc]
             hdr_vdc = {"Accept": self.VDC_MIME_TYPE}
             e_vdc = self.connection.request(link_vdc, headers=hdr_vdc).object
+
             for img in self.list_images(candidate_loc):
                 if img.id == image.id:
                     loc = e_vdc
                     target_loc = candidate_loc
+
                     break
 
         if loc is None:
@@ -705,6 +741,7 @@ class AbiquoNodeDriver(NodeDriver):
 
         If we can not find any group, create it into argument 'location'
         """
+
         if not group_name:
             group_name = NodeGroup.DEFAULT_GROUP_NAME
 
@@ -713,14 +750,17 @@ class AbiquoNodeDriver(NodeDriver):
         groups_hdr = {"Accept": self.VAPPS_MIME_TYPE}
         vapps_element = self.connection.request(groups_link, headers=groups_hdr).object
         target_group = None
+
         for vapp in vapps_element.findall("virtualAppliance"):
             if vapp.findtext("name") == group_name:
                 uri_vapp = get_href(vapp, "edit")
+
                 return NodeGroup(self, vapp.findtext("name"), uri=uri_vapp)
 
         # target group not found: create it. Since it is an extension of
         # the basic 'libcloud' functionality, we try to be as flexible as
         # possible.
+
         if target_group is None:
             return self.ex_create_group(group_name, loc)
 
@@ -732,6 +772,7 @@ class AbiquoNodeDriver(NodeDriver):
         the API before to create it into the target hypervisor.
         """
         vm = ET.Element("virtualMachine")
+
         if name:
             vmname = ET.SubElement(vm, "label")
             vmname.text = name
@@ -795,4 +836,5 @@ class NodeGroup:
         Destroys the group delegating the execution to
         :class:`AbiquoNodeDriver`.
         """
+
         return self.driver.ex_destroy_group(self)

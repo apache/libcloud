@@ -33,7 +33,8 @@ class MinioTest(Integration.ContainerTestBase):
     # Output seemed to have changed recently, see
     # https://github.com/apache/libcloud/runs/7481114211?check_suite_focus=true
     # ready_message = b'Console endpoint is listening on a dynamic port'
-    ready_message = b"1 Online"
+    # ready_message = b"1 Online"
+    ready_message = b"MinIO Object Storage Server"
 
     def test_cdn_url(self):
         self.skipTest("Not implemented in driver")

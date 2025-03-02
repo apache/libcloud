@@ -78,6 +78,7 @@ class OvhNodeDriver(NodeDriver):
 
     def _get_project_action(self, suffix):
         base_url = "{}/cloud/project/{}/".format(API_ROOT, self.project_id)
+
         return base_url + suffix
 
     @classmethod
@@ -96,9 +97,11 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("instance")
         data = {}
+
         if location:
             data["region"] = location.id
         response = self.connection.request(action, data=data)
+
         return self._to_nodes(response.object)
 
     def ex_get_node(self, node_id):
@@ -113,6 +116,7 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("instance/%s" % node_id)
         response = self.connection.request(action, method="GET")
+
         return self._to_node(response.object)
 
     def create_node(self, name, image, size, location, ex_keyname=None):
@@ -144,23 +148,28 @@ class OvhNodeDriver(NodeDriver):
             "flavorId": size.id,
             "region": location.id,
         }
+
         if ex_keyname:
             key_id = self.get_key_pair(ex_keyname, location).extra["id"]
             data["sshKeyId"] = key_id
         response = self.connection.request(action, data=data, method="POST")
+
         return self._to_node(response.object)
 
     def destroy_node(self, node):
         action = self._get_project_action("instance/%s" % node.id)
         self.connection.request(action, method="DELETE")
+
         return True
 
     def list_sizes(self, location=None):
         action = self._get_project_action("flavor")
         params = {}
+
         if location:
             params["region"] = location.id
         response = self.connection.request(action, params=params)
+
         return self._to_sizes(response.object)
 
     def ex_get_size(self, size_id):
@@ -175,6 +184,7 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("flavor/%s" % size_id)
         response = self.connection.request(action)
+
         return self._to_size(response.object)
 
     def list_images(self, location=None, ex_size=None):
@@ -192,21 +202,26 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("image")
         params = {}
+
         if location:
             params["region"] = location.id
+
         if ex_size:
             params["flavorId"] = ex_size.id
         response = self.connection.request(action, params=params)
+
         return self._to_images(response.object)
 
     def get_image(self, image_id):
         action = self._get_project_action("image/%s" % image_id)
         response = self.connection.request(action)
+
         return self._to_image(response.object)
 
     def list_locations(self):
         action = self._get_project_action("region")
         data = self.connection.request(action)
+
         return self._to_locations(data.object)
 
     def list_key_pairs(self, ex_location=None):
@@ -221,9 +236,11 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("sshkey")
         params = {}
+
         if ex_location:
             params["region"] = ex_location.id
         response = self.connection.request(action, params=params)
+
         return self._to_key_pairs(response.object)
 
     def get_key_pair(self, name, ex_location=None):
@@ -241,8 +258,10 @@ class OvhNodeDriver(NodeDriver):
         """
         # Keys are indexed with ID
         keys = [key for key in self.list_key_pairs(ex_location) if key.name == name]
+
         if not keys:
             raise Exception("No key named '%s'" % name)
+
         return keys[0]
 
     def import_key_pair_from_string(self, name, key_material, ex_location):
@@ -264,12 +283,14 @@ class OvhNodeDriver(NodeDriver):
         action = self._get_project_action("sshkey")
         data = {"name": name, "publicKey": key_material, "region": ex_location.id}
         response = self.connection.request(action, data=data, method="POST")
+
         return self._to_key_pair(response.object)
 
     def delete_key_pair(self, key_pair):
         action = self._get_project_action("sshkey/%s" % key_pair.extra["id"])
         params = {"keyId": key_pair.extra["id"]}
         self.connection.request(action, params=params, method="DELETE")
+
         return True
 
     def create_volume(
@@ -313,14 +334,17 @@ class OvhNodeDriver(NodeDriver):
             "size": size,
             "type": ex_volume_type,
         }
+
         if ex_description:
             data["description"] = ex_description
         response = self.connection.request(action, data=data, method="POST")
+
         return self._to_volume(response.object)
 
     def destroy_volume(self, volume):
         action = self._get_project_action("volume/%s" % volume.id)
         self.connection.request(action, method="DELETE")
+
         return True
 
     def list_volumes(self, ex_location=None):
@@ -335,9 +359,11 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("volume")
         data = {}
+
         if ex_location:
             data["region"] = ex_location.id
         response = self.connection.request(action, data=data)
+
         return self._to_volumes(response.object)
 
     def ex_get_volume(self, volume_id):
@@ -352,6 +378,7 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("volume/%s" % volume_id)
         response = self.connection.request(action)
+
         return self._to_volume(response.object)
 
     def attach_volume(self, node, volume, device=None):
@@ -372,6 +399,7 @@ class OvhNodeDriver(NodeDriver):
         action = self._get_project_action("volume/%s/attach" % volume.id)
         data = {"instanceId": node.id, "volumeId": volume.id}
         self.connection.request(action, data=data, method="POST")
+
         return True
 
     def detach_volume(self, volume, ex_node=None):
@@ -392,6 +420,7 @@ class OvhNodeDriver(NodeDriver):
                             node is attached to the volume
         """
         action = self._get_project_action("volume/%s/detach" % volume.id)
+
         if ex_node is None:
             if len(volume.extra["attachedTo"]) != 1:
                 err_msg = (
@@ -401,6 +430,7 @@ class OvhNodeDriver(NodeDriver):
             ex_node = self.ex_get_node(volume.extra["attachedTo"][0])
         data = {"instanceId": ex_node.id}
         self.connection.request(action, data=data, method="POST")
+
         return True
 
     def ex_list_snapshots(self, location=None):
@@ -414,9 +444,11 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("volume/snapshot")
         params = {}
+
         if location:
             params["region"] = location.id
         response = self.connection.request(action, params=params)
+
         return self._to_snapshots(response.object)
 
     def ex_get_volume_snapshot(self, snapshot_id):
@@ -431,6 +463,7 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("volume/snapshot/%s" % snapshot_id)
         response = self.connection.request(action)
+
         return self._to_snapshot(response.object)
 
     def list_volume_snapshots(self, volume):
@@ -438,6 +471,7 @@ class OvhNodeDriver(NodeDriver):
         params = {"region": volume.extra["region"]}
         response = self.connection.request(action, params=params)
         snapshots = self._to_snapshots(response.object)
+
         return [snap for snap in snapshots if snap.extra["volume_id"] == volume.id]
 
     def create_volume_snapshot(self, volume, name=None, ex_description=None):
@@ -457,22 +491,27 @@ class OvhNodeDriver(NodeDriver):
         """
         action = self._get_project_action("volume/%s/snapshot/" % volume.id)
         data = {}
+
         if name:
             data["name"] = name
+
         if ex_description:
             data["description"] = ex_description
         response = self.connection.request(action, data=data, method="POST")
+
         return self._to_snapshot(response.object)
 
     def destroy_volume_snapshot(self, snapshot):
         action = self._get_project_action("volume/snapshot/%s" % snapshot.id)
         response = self.connection.request(action, method="DELETE")
+
         return response.status == httplib.OK
 
     def ex_get_pricing(self, size_id, subsidiary="US"):
         action = "%s/cloud/subsidiaryPrice" % (API_ROOT)
         params = {"flavorId": size_id, "ovhSubsidiary": subsidiary}
         pricing = self.connection.request(action, params=params).object["instances"][0]
+
         return {
             "hourly": pricing["price"]["value"],
             "monthly": pricing["monthlyPrice"]["value"],
@@ -484,6 +523,7 @@ class OvhNodeDriver(NodeDriver):
         extra.pop("name")
         extra.pop("size")
         state = self.VOLUME_STATE_MAP.get(obj.pop("status", None), StorageVolumeState.UNKNOWN)
+
         return StorageVolume(
             id=obj["id"],
             name=obj["name"],
@@ -498,6 +538,7 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_location(self, obj):
         location = self.connectionCls.LOCATIONS[obj]
+
         return NodeLocation(driver=self, **location)
 
     def _to_locations(self, objs):
@@ -505,10 +546,14 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_node(self, obj):
         extra = obj.copy()
+
         if "ipAddresses" in extra:
             public_ips = [ip["ip"] for ip in extra["ipAddresses"]]
+        else:
+            public_ips = []
         del extra["id"]
         del extra["name"]
+
         return Node(
             id=obj["id"],
             name=obj["name"],
@@ -524,6 +569,7 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_size(self, obj):
         extra = {"vcpus": obj["vcpus"], "type": obj["type"], "region": obj["region"]}
+
         return NodeSize(
             id=obj["id"],
             name=obj["name"],
@@ -540,6 +586,7 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_image(self, obj):
         extra = {"region": obj["region"], "visibility": obj["visibility"]}
+
         return NodeImage(id=obj["id"], name=obj["name"], driver=self, extra=extra)
 
     def _to_images(self, objs):
@@ -547,6 +594,7 @@ class OvhNodeDriver(NodeDriver):
 
     def _to_key_pair(self, obj):
         extra = {"regions": obj["regions"], "id": obj["id"]}
+
         return OpenStackKeyPair(
             name=obj["name"],
             public_key=obj["publicKey"],
@@ -575,6 +623,7 @@ class OvhNodeDriver(NodeDriver):
             state=state,
             name=obj["name"],
         )
+
         return snapshot
 
     def _to_snapshots(self, objs):

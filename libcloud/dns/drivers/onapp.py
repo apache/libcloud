@@ -53,6 +53,7 @@ class OnAppDNSDriver(DNSDriver):
         response = self.connection.request("/dns_zones.json")
 
         zones = self._to_zones(response.object)
+
         return zones
 
     def get_zone(self, zone_id):
@@ -66,6 +67,7 @@ class OnAppDNSDriver(DNSDriver):
         """
         response = self.connection.request("/dns_zones/%s.json" % zone_id)
         zone = self._to_zone(response.object)
+
         return zone
 
     def create_zone(self, domain, type="master", ttl=None, extra=None):
@@ -91,6 +93,7 @@ class OnAppDNSDriver(DNSDriver):
         https://docs.onapp.com/display/52API/Add+DNS+Zone
         """
         dns_zone = {"name": domain}
+
         if extra is not None:
             dns_zone.update(extra)
         dns_zone_data = json.dumps({"dns_zone": dns_zone})
@@ -101,6 +104,7 @@ class OnAppDNSDriver(DNSDriver):
             data=dns_zone_data,
         )
         zone = self._to_zone(response.object)
+
         return zone
 
     def delete_zone(self, zone):
@@ -115,6 +119,7 @@ class OnAppDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         self.connection.request("/dns_zones/%s.json" % zone.id, method="DELETE")
+
         return True
 
     def list_records(self, zone):
@@ -129,6 +134,7 @@ class OnAppDNSDriver(DNSDriver):
         response = self.connection.request("/dns_zones/%s/records.json" % zone.id)
         dns_records = response.object["dns_zone"]["records"]
         records = self._to_records(dns_records, zone)
+
         return records
 
     def get_record(self, zone_id, record_id):
@@ -147,6 +153,7 @@ class OnAppDNSDriver(DNSDriver):
             "/dns_zones/{}/records/{}.json".format(zone_id, record_id)
         )
         record = self._to_record(response.object, zone_id=zone_id)
+
         return record
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -186,6 +193,7 @@ class OnAppDNSDriver(DNSDriver):
             data=dns_record_data,
         )
         record = self._to_record(response.object, zone=zone)
+
         return record
 
     def update_record(self, record, name, type, data, extra=None):
@@ -226,6 +234,7 @@ class OnAppDNSDriver(DNSDriver):
             data=dns_record_data,
         )
         record = self.get_record(zone.id, record.id)
+
         return record
 
     def delete_record(self, record):
@@ -244,6 +253,7 @@ class OnAppDNSDriver(DNSDriver):
         self.connection.request(
             "/dns_zones/{}/records/{}.json".format(zone_id, record.id), method="DELETE"
         )
+
         return True
 
     #
@@ -253,6 +263,7 @@ class OnAppDNSDriver(DNSDriver):
     def _format_record(self, name, type, data, extra):
         if name == "":
             name = "@"
+
         if extra is None:
             extra = {}
         record_type = self.RECORD_TYPE_MAP[type]
@@ -261,6 +272,7 @@ class OnAppDNSDriver(DNSDriver):
             "ttl": extra.get("ttl", DEFAULT_ZONE_TTL),
             "type": record_type,
         }
+
         if type == RecordType.MX:
             additions = {
                 "priority": extra.get("priority", 1),
@@ -283,12 +295,16 @@ class OnAppDNSDriver(DNSDriver):
             additions = {"txt": extra.get("txt")}
         elif type == RecordType.NS:
             additions = {"hostname": extra.get("hostname")}
+        else:
+            additions = {}
 
         new_record.update(additions)
+
         return new_record
 
     def _to_zones(self, data):
         zones = []
+
         for zone in data:
             _zone = self._to_zone(zone)
             zones.append(_zone)
@@ -320,11 +336,13 @@ class OnAppDNSDriver(DNSDriver):
     def _to_records(self, data, zone):
         records = []
         data = data.values()
+
         for data_type in data:
             for item in data_type:
                 record = self._to_record(item, zone=zone)
                 records.append(record)
         records.sort(key=lambda x: x.id, reverse=False)
+
         return records
 
     def _to_record(self, data, zone_id=None, zone=None):
@@ -335,6 +353,7 @@ class OnAppDNSDriver(DNSDriver):
         name = record.get("name")
         type = record.get("type")
         ttl = record.get("ttl", None)
+
         return Record(
             id=id,
             name=name,

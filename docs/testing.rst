@@ -77,7 +77,7 @@ To generate the test coverage run the following command:
 
 .. sourcecode:: bash
 
-    PYTHONPATH=. python setup.py coverage
+    tox -e coverage_html_report
 
 When it completes you should see a new ``coverage_html_report`` directory which
 contains the test coverage.

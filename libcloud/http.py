@@ -296,7 +296,7 @@ class LibcloudConnection(LibcloudBaseConnection):
 
 class HttpLibResponseProxy:
     """
-    Provides a proxy pattern around the :class:`requests.Reponse`
+    Provides a proxy pattern around the :class:`requests.Response`
     object to a :class:`httplib.HTTPResponse` object
     """
 

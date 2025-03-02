@@ -92,6 +92,7 @@ class InvalidDomainName(WorldWideDNSException):
 
 class ErrorOnReloadInNameServer(WorldWideDNSException):
     def __init__(self, server, http_code, driver=None):
+        value, code = "unknown", "unknown"
         if server == 1:
             value = "Name server #1 kicked an error on reload, contact support"
             code = 411

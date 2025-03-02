@@ -1135,7 +1135,7 @@ class LXDContainerDriver(ContainerDriver):
         :param alias: the image alias
         :type  alias: ``str``
 
-        :rtype:  ``tupple`` :: (``boolean``, ``str``)
+        :rtype:  ``tuple`` :: (``boolean``, ``str``)
         """
 
         # get all the images existing on the host
