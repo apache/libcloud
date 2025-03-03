@@ -89,7 +89,7 @@ class RcodeZeroDNSTestCase(LibcloudTestCase):
 
     def test_list_records(self):
         records = self.driver.list_records(self.test_zone)
-        self.assertEqual(len(records), 3)
+        self.assertEqual(len(records), 4)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
@@ -117,6 +117,24 @@ class RcodeZeroDNSTestCase(LibcloudTestCase):
         self.assertEqual(record.data, "127.0.0.1")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 300)
+
+    # test issue #2042
+    def test_add_other_type_to_existing_record(self):
+        payload = self.driver._to_patchrequest(
+            self.test_record.zone.id,
+            self.test_record,
+            "aaaaexisting",
+            RecordType.A,
+            "127.0.0.1",
+            {"ttl": 300},
+            "update",
+        )
+        self.assertEqual(payload[0]["name"], "aaaaexisting.example.at.")
+        self.assertEqual(payload[0]["type"], RecordType.A)
+        self.assertEqual(payload[0]["ttl"], 300)
+        self.assertEqual(payload[0]["changetype"], "update")
+        expected_record = [{"content": "127.0.0.1"}]
+        self.assertEqual(payload[0]["records"], expected_record)
 
     def test_update_zone(self):
         with self.assertRaises(NotImplementedError):
