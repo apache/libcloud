@@ -144,7 +144,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("rcodezero")
     base_headers = {"content-type": "application/json"}
 
-    def _api_v1_zones(self, method, url, body, headers):
+    def _api_v2_zones(self, method, url, body, headers):
         if method == "GET":
             # list_zones()
             body = self.fixtures.load("list_zones.json")
@@ -157,7 +157,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError("Unexpected method: %s" % method)
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _api_v1_zones_example_at(self, method, *args, **kwargs):
+    def _api_v2_zones_example_at(self, method, *args, **kwargs):
         if method == "GET":
             # list_records()
             body = self.fixtures.load("get_zone_details.json")
@@ -173,10 +173,10 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError("Unexpected method: %s" % method)
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _api_v1_zones_example_at__rrsets(self, method, *args, **kwargs):
-        return self._api_v1_zones_example_at_rrsets(method, *args, **kwargs)
+    def _api_v2_zones_example_at__rrsets(self, method, *args, **kwargs):
+        return self._api_v2_zones_example_at_rrsets(method, *args, **kwargs)
 
-    def _api_v1_zones_example_at_rrsets(self, method, *args, **kwargs):
+    def _api_v2_zones_example_at_rrsets(self, method, *args, **kwargs):
         if method == "GET":
             # list_records()
             body = self.fixtures.load("list_records.json")
@@ -189,7 +189,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError("Unexpected method: %s" % method)
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _api_v1_zones_EXISTS(self, method, url, body, headers):
+    def _api_v2_zones_EXISTS(self, method, url, body, headers):
         # create_zone() is a POST. Raise on all other operations to be safe.
         if method != "POST":
             raise NotImplementedError("Unexpected method: %s" % method)
@@ -203,7 +203,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             "Unprocessable Entity",
         )
 
-    def _api_v1_zones_example_com_MISSING(self, *args, **kwargs):
+    def _api_v2_zones_example_com_MISSING(self, *args, **kwargs):
         return (
             httplib.NOT_FOUND,
             '{"status": "failed","message": "Zone not found"}',
@@ -211,7 +211,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             "Unprocessable Entity",
         )
 
-    def _api_v1_zones_example_at_MISSING(self, *args, **kwargs):
+    def _api_v2_zones_example_at_MISSING(self, *args, **kwargs):
         return (
             httplib.NOT_FOUND,
             '{"status": "failed","message": "Zone not found"}',
