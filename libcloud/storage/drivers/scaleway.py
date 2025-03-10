@@ -88,4 +88,6 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
     def get_object_cdn_url(self, obj, ex_expiry=S3_CDN_URL_EXPIRY_HOURS, ex_method: str = "GET"):
         # In order to download (private) objects we need to be able to generate a valid CDN URL,
         # hence shamefully just use the working code from the S3StorageDriver.
-        return S3StorageDriver.get_object_cdn_url(self, obj, ex_expiry=ex_expiry, ex_method=ex_method)
+        return S3StorageDriver.get_object_cdn_url(
+            self, obj, ex_expiry=ex_expiry, ex_method=ex_method
+        )
