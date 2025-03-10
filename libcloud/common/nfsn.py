@@ -45,10 +45,13 @@ class NFSNResponse(JsonResponse):
         # If we only have one of "error" or "debug", use the one that we have.
         # If we have both, use both, with a space character in between them.
         value = "No message specified"
+
         if error is not None:
             value = error
+
         if debug is not None:
             value = debug
+
         if error is not None and value is not None:
             value = error + " " + value
         value = value + " (HTTP Code: %d)" % self.status
@@ -70,22 +73,25 @@ class NFSNConnection(ConnectionUserAndKey):
         salt = self._salt()
         api_key = self.key
         data = urlencode(data)
-        data_hash = hashlib.sha1(data.encode("utf-8")).hexdigest()
+        data_hash = hashlib.sha1(data.encode("utf-8")).hexdigest()  # nosec
 
         string = ";".join((login, timestamp, salt, api_key, action, data_hash))
-        string_hash = hashlib.sha1(string.encode("utf-8")).hexdigest()
+        string_hash = hashlib.sha1(string.encode("utf-8")).hexdigest()  # nosec
 
         return ";".join((login, timestamp, salt, string_hash))
 
     def request(self, action, params=None, data="", headers=None, method="GET"):
         """Add the X-NFSN-Authentication header to an HTTP request."""
+
         if not headers:
             headers = {}
+
         if not params:
             params = {}
         header = self._header(action, data)
 
         headers["X-NFSN-Authentication"] = header
+
         if method == "POST":
             headers["Content-Type"] = "application/x-www-form-urlencoded"
 
@@ -94,16 +100,20 @@ class NFSNConnection(ConnectionUserAndKey):
     def encode_data(self, data):
         """NFSN expects the body to be regular key-value pairs that are not
         JSON-encoded."""
+
         if data:
             data = urlencode(data)
+
         return data
 
     def _salt(self):
         """Return a 16-character alphanumeric string."""
         r = random.SystemRandom()
+
         return "".join(r.choice(SALT_CHARACTERS) for _ in range(16))
 
     def _timestamp(self):
         """Return the current number of seconds since the Unix epoch,
         as a string."""
+
         return str(int(time.time()))

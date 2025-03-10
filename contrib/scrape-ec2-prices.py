@@ -31,7 +31,7 @@ import requests
 
 # Buffer size for ijson.parse() function. Larger buffer size results in increased memory
 # consumption, but faster parsing.
-IJSON_BUF_SIZE = 10 * 65536
+IJSON_BUF_SIZE = 30 * 65536
 
 # same URL as the one used by scrape-ec2-sizes.py, now it has official data on pricing
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"

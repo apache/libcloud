@@ -35,7 +35,7 @@ jobs:
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Install Dependencies
         run: |
@@ -51,11 +51,20 @@ jobs:
           ls -la dist | grep .tar.gz
           ls -la dist | grep .whl
 
-      - name: Store dev artifacts
+      - name: Store dev artifacts - .tar.gz
         uses: actions/upload-artifact@v4
         with:
-          name: libcloud-dev-artifacts
+          name: libcloud-dev-tarball
           retention-days: 60
+          compression-level: 0
           path: |
             dist/*.tar.gz
+
+      - name: Store dev artifacts - .whl
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcloud-dev-wheel
+          retention-days: 60
+          compression-level: 0
+          path: |
             dist/*.whl

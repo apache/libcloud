@@ -7,6 +7,23 @@ Changes in Apache Libcloud 3.9.0
 Common
 ~~~~~~
 
+- Unused ``setup.py`` file has been removed. The project has switched
+  to ``pyproject.toml`` a while ago and unused file has been removed to
+  reduce potential confusion.
+  (#2024)
+  [Tomaz Muraus - @Kami]
+
+- Indicate we also support Python 3.12 (non beta) and Python 3.13.
+  (#2050)
+  [Tomaz Muraus - @Kami]
+
+- Support for Python 3.8 which is EOL has been removed.
+
+  If you still want to use Libcloud with Python 3.8, you should use an older
+  release which still supports Python 3.8.
+  (#2050)
+  [Tomaz Muraus - @Kami]
+
 - Support for Python 3.7 which is EOL has been removed.
 
   If you still want to use Libcloud with Python 3.7, you should use an older
@@ -25,8 +42,23 @@ Common
   (#1940)
   [@munahaf on behalf of OpenRefactory and Open Source Security Foundation]
 
+- Update versions of build and packaging tools required to build the package.
+
+  Per report from Rui Chen (@chenrui333) ansible homebrew package which
+  depends on libcloud was failing to build with Libcloud 3.8.0.
+
+  Special thanks to Rui Chen for their assistance with troubleshooting the issue
+  and testing v3.9.0 release candidate.
+  (#2047)
+  [Tomaz Muraus - @Kami, Rui Chen - @chenrui333]
+
 Compute
 ~~~~~~~
+
+- [OpenStack] Add optional node port ID to attach the floating IP in OpenStack
+  ex_attach_floating_ip_to_node function.
+  (#2028)
+  [Miguel Caballer - @micafer]
 
 - [OpenStack] Add metadata fields ``os_distro`` and ``os_version`` provided
   by OpenStack Image API (if set) to the ``extra`` field of the OpenStack NodeImage.
@@ -97,6 +129,10 @@ Compute
   (#1983)
   [@cdfmlr]
 
+- [Amazon S3] Add support for ``me-central-1`` region.
+  (#2030)
+  [@seifertdan]
+
 Storage
 ~~~~~~~
 
@@ -123,6 +159,11 @@ Other / Development
   tests in parallel and order in which they run is not fully deterministic).
   (#1994)
   [Tomaz Muraus - @Kami]
+
+- Add a workaround so tests work with pytest >= 8.2. Also use latest version of
+  pytest for running tests.
+  (#2033)
+  [Steve Kowalik - @s-t-e-v-e-n-k]
 
 Changes in Apache Libcloud 3.8.0
 --------------------------------

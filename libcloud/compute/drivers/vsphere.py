@@ -55,14 +55,17 @@ logger = logging.getLogger("libcloud.compute.drivers.vsphere")
 
 def recurse_snapshots(snapshot_list):
     ret = []
+
     for s in snapshot_list:
         ret.append(s)
         ret += recurse_snapshots(getattr(s, "childSnapshotList", []))
+
     return ret
 
 
 def format_snapshots(snapshot_list):
     ret = []
+
     for s in snapshot_list:
         ret.append(
             {
@@ -73,6 +76,7 @@ def format_snapshots(snapshot_list):
                 "state": s.state,
             }
         )
+
     return ret
 
 
@@ -92,6 +96,7 @@ class VSphereNodeDriver(NodeDriver):
         """Initialize a connection by providing a hostname,
         username and password
         """
+
         if pyvmomi is None:
             raise ImportError(
                 'Missing "pyvmomi" dependency. '
@@ -119,15 +124,19 @@ class VSphereNodeDriver(NodeDriver):
             atexit.register(connect.Disconnect, self.connection)
         except Exception as exc:
             error_message = str(exc).lower()
+
             if "incorrect user name" in error_message:
                 raise InvalidCredsError("Check your username and " "password are valid")
+
             if "connection refused" in error_message or "is not a vim server" in error_message:
                 raise LibcloudError(
                     "Check that the host provided is a " "vSphere installation",
                     driver=self,
                 )
+
             if "name or service not known" in error_message:
                 raise LibcloudError("Check that the vSphere host is accessible", driver=self)
+
             if "certificate verify failed" in error_message:
                 # bypass self signed certificates
                 try:
@@ -170,12 +179,14 @@ class VSphereNodeDriver(NodeDriver):
         locations = []
         hosts_all = []
         clusters = []
+
         for location in potential_locations:
             if isinstance(location, vim.HostSystem):
                 hosts_all.append(location)
             elif isinstance(location, vim.ClusterComputeResource):
                 if location.configuration.drsConfig.enabled:
                     clusters.append(location)
+
         if ex_show_hosts_in_drs:
             hosts = hosts_all
         else:
@@ -184,11 +195,14 @@ class VSphereNodeDriver(NodeDriver):
 
         for cluster in clusters:
             locations.append(self._to_location(cluster))
+
         for host in hosts:
             locations.append(self._to_location(host))
+
         return locations
 
     def _to_location(self, data):
+        extra = {}
         try:
             if isinstance(data, vim.HostSystem):
                 extra = {
@@ -217,6 +231,7 @@ class VSphereNodeDriver(NodeDriver):
         except AttributeError as exc:
             logger.error("Cannot convert location {}: {!r}".format(data.name, exc))
             extra = {}
+
         return NodeLocation(id=data.name, name=data.name, country=None, extra=extra, driver=self)
 
     def ex_list_networks(self):
@@ -238,12 +253,14 @@ class VSphereNodeDriver(NodeDriver):
             "ip_pool_id": summary.ipPoolId,
             "accessible": summary.accessible,
         }
+
         return VSphereNetwork(id=data.name, name=data.name, extra=extra)
 
     def list_sizes(self):
         """
         Returns sizes
         """
+
         return []
 
     def list_images(self, location=None, folder_ids=None):
@@ -254,8 +271,10 @@ class VSphereNodeDriver(NodeDriver):
         """
 
         images = []
+
         if folder_ids:
             vms = []
+
             for folder_id in folder_ids:
                 folder_object = self._get_item_by_moid("Folder", folder_id)
                 vms.extend(folder_object.childEntity)
@@ -279,6 +298,7 @@ class VSphereNodeDriver(NodeDriver):
         cpus = summary.config.numCpu
         operating_system = summary.config.guestFullName
         os_type = "unix"
+
         if "Microsoft" in str(operating_system):
             os_type = "windows"
         annotation = summary.config.annotation
@@ -296,8 +316,10 @@ class VSphereNodeDriver(NodeDriver):
         }
 
         boot_time = summary.runtime.bootTime
+
         if boot_time:
             extra["boot_time"] = boot_time.isoformat()
+
         if annotation:
             extra["annotation"] = annotation
 
@@ -360,8 +382,10 @@ class VSphereNodeDriver(NodeDriver):
         props = collector.RetrieveContents([filter_spec])
 
         data = []
+
         for obj in props:
             properties = {}
+
             for prop in obj.propSet:
                 properties[prop.name] = prop.val
 
@@ -369,6 +393,7 @@ class VSphereNodeDriver(NodeDriver):
                 properties["obj"] = obj.obj
 
             data.append(properties)
+
         return data
 
     def list_nodes(self, enhance=True, max_properties=20):
@@ -400,6 +425,7 @@ class VSphereNodeDriver(NodeDriver):
         )
         i = 0
         vm_dict = {}
+
         while i < len(vm_properties):
             vm_list = self._collect_properties(
                 content,
@@ -409,6 +435,7 @@ class VSphereNodeDriver(NodeDriver):
                 include_mors=True,
             )
             i += max_properties
+
             for vm in vm_list:
                 if not vm_dict.get(vm["obj"]):
                     vm_dict[vm["obj"]] = vm
@@ -419,6 +446,7 @@ class VSphereNodeDriver(NodeDriver):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         nodes = loop.run_until_complete(self._to_nodes(vm_list))
+
         if enhance:
             nodes = self._enhance_metadata(nodes, content)
 
@@ -432,10 +460,12 @@ class VSphereNodeDriver(NodeDriver):
         content = self.connection.RetrieveContent()
         children = content.rootFolder.childEntity
         # this will be needed for custom VM metadata
+
         if content.customFieldsManager:
             self.custom_fields = content.customFieldsManager.field
         else:
             self.custom_fields = []
+
         for child in children:
             if hasattr(child, "vmFolder"):
                 datacenter = child
@@ -450,6 +480,7 @@ class VSphereNodeDriver(NodeDriver):
 
     def _enhance_metadata(self, nodes, content):
         nodemap = {}
+
         for node in nodes:
             node.extra["vSphere version"] = content.about.version
             nodemap[node.id] = node
@@ -457,11 +488,13 @@ class VSphereNodeDriver(NodeDriver):
         # Get VM deployment events to extract creation dates & images
         filter_spec = vim.event.EventFilterSpec(eventTypeId=["VmBeingDeployedEvent"])
         deploy_events = content.eventManager.QueryEvent(filter_spec)
+
         for event in deploy_events:
             try:
                 uuid = event.vm.vm.config.instanceUuid
             except Exception:
                 continue
+
             if uuid in nodemap:
                 node = nodemap[uuid]
                 try:  # Get source template as image
@@ -479,16 +512,19 @@ class VSphereNodeDriver(NodeDriver):
 
     async def _to_nodes(self, vm_list):
         vms = []
+
         for vm in vm_list:
             if vm.get("config.template"):
                 continue  # Do not include templates in node list
             vms.append(vm)
         loop = asyncio.get_event_loop()
         vms = [loop.run_in_executor(None, self._to_node, vms[i]) for i in range(len(vms))]
+
         return await asyncio.gather(*vms)
 
     def _to_nodes_recursive(self, vm_list):
         nodes = []
+
         for virtual_machine in vm_list:
             if hasattr(virtual_machine, "childEntity"):
                 # If this is a group it will have children.
@@ -505,6 +541,7 @@ class VSphereNodeDriver(NodeDriver):
                 ):
                     continue  # Do not include templates in node list
                 nodes.append(self._to_node_recursive(virtual_machine))
+
         return nodes
 
     def _to_node(self, vm):
@@ -514,7 +551,7 @@ class VSphereNodeDriver(NodeDriver):
         cpus = vm.get("summary.config.numCpu")
         disk = vm.get("summary.storage.committed", 0) // (1024**3)
         id_to_hash = str(memory) + str(cpus) + str(disk)
-        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()  # nosec
         size_name = name + "-size"
         size_extra = {"cpus": cpus}
         driver = self
@@ -532,11 +569,13 @@ class VSphereNodeDriver(NodeDriver):
         host = vm.get("summary.runtime.host")
 
         os_type = "unix"
+
         if "Microsoft" in str(operating_system):
             os_type = "windows"
         uuid = vm.get("summary.config.instanceUuid") or (
             vm.get("obj").config and vm.get("obj").config.instanceUuid
         )
+
         if not uuid:
             logger.error("No uuid for vm: {}".format(vm))
         annotation = vm.get("summary.config.annotation")
@@ -545,6 +584,7 @@ class VSphereNodeDriver(NodeDriver):
         boot_time = vm.get("summary.runtime.bootTime")
 
         ip_addresses = []
+
         if vm.get("summary.guest.ipAddress"):
             ip_addresses.append(vm.get("summary.guest.ipAddress"))
 
@@ -569,14 +609,17 @@ class VSphereNodeDriver(NodeDriver):
         if host:
             extra["host"] = host.name
             parent = host.parent
+
             while parent:
                 if isinstance(parent, vim.ClusterComputeResource):
                     extra["cluster"] = parent.name
+
                     break
                 parent = parent.parent
 
         if boot_time:
             extra["boot_time"] = boot_time.isoformat()
+
         if annotation:
             extra["annotation"] = annotation
 
@@ -589,6 +632,7 @@ class VSphereNodeDriver(NodeDriver):
             except Exception:
                 # IPV6 not supported
                 pass
+
         if vm.get("snapshot"):
             extra["snapshots"] = format_snapshots(
                 recurse_snapshots(vm.get("snapshot").rootSnapshotList)
@@ -610,6 +654,7 @@ class VSphereNodeDriver(NodeDriver):
             extra=extra,
         )
         node._uuid = uuid
+
         return node
 
     def _to_node_recursive(self, virtual_machine):
@@ -619,10 +664,11 @@ class VSphereNodeDriver(NodeDriver):
         memory = summary.config.memorySizeMB
         cpus = summary.config.numCpu
         disk = ""
+
         if summary.storage.committed:
             disk = summary.storage.committed / (1024**3)
         id_to_hash = str(memory) + str(cpus) + str(disk)
-        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()  # nosec
         size_name = name + "-size"
         size_extra = {"cpus": cpus}
         driver = self
@@ -641,6 +687,7 @@ class VSphereNodeDriver(NodeDriver):
 
         # mist.io needs this metadata
         os_type = "unix"
+
         if "Microsoft" in str(operating_system):
             os_type = "windows"
         uuid = summary.config.instanceUuid
@@ -649,6 +696,7 @@ class VSphereNodeDriver(NodeDriver):
         status = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
         boot_time = summary.runtime.bootTime
         ip_addresses = []
+
         if summary.guest is not None:
             ip_addresses.append(summary.guest.ipAddress)
 
@@ -673,13 +721,17 @@ class VSphereNodeDriver(NodeDriver):
         if host:
             extra["host"] = host.name
             parent = host.parent
+
             while parent:
                 if isinstance(parent, vim.ClusterComputeResource):
                     extra["cluster"] = parent.name
+
                     break
                 parent = parent.parent
+
         if boot_time:
             extra["boot_time"] = boot_time.isoformat()
+
         if annotation:
             extra["annotation"] = annotation
 
@@ -692,6 +744,7 @@ class VSphereNodeDriver(NodeDriver):
             except Exception:
                 # IPV6 not supported
                 pass
+
         if virtual_machine.snapshot:
             snapshots = [
                 {
@@ -721,28 +774,34 @@ class VSphereNodeDriver(NodeDriver):
             extra=extra,
         )
         node._uuid = uuid
+
         return node
 
     def reboot_node(self, node):
         """ """
         vm = self.find_by_uuid(node.id)
+
         return self.wait_for_task(vm.RebootGuest())
 
     def destroy_node(self, node):
         """ """
         vm = self.find_by_uuid(node.id)
+
         if node.state != NodeState.STOPPED:
             self.stop_node(node)
+
         return self.wait_for_task(vm.Destroy())
 
     def stop_node(self, node):
         """ """
         vm = self.find_by_uuid(node.id)
+
         return self.wait_for_task(vm.PowerOff())
 
     def start_node(self, node):
         """ """
         vm = self.find_by_uuid(node.id)
+
         return self.wait_for_task(vm.PowerOn())
 
     def ex_list_snapshots(self, node):
@@ -750,8 +809,10 @@ class VSphereNodeDriver(NodeDriver):
         List node snapshots
         """
         vm = self.find_by_uuid(node.id)
+
         if not vm.snapshot:
             return []
+
         return format_snapshots(recurse_snapshots(vm.snapshot.rootSnapshotList))
 
     def ex_create_snapshot(
@@ -761,6 +822,7 @@ class VSphereNodeDriver(NodeDriver):
         Create node snapshot
         """
         vm = self.find_by_uuid(node.id)
+
         return WaitForTask(vm.CreateSnapshot(snapshot_name, description, dump_memory, quiesce))
 
     def ex_remove_snapshot(self, node, snapshot_name=None, remove_children=True):
@@ -769,21 +831,25 @@ class VSphereNodeDriver(NodeDriver):
         If snapshot_name is not defined remove the last one.
         """
         vm = self.find_by_uuid(node.id)
+
         if not vm.snapshot:
             raise LibcloudError(
                 "Remove snapshot failed. No snapshots for node %s" % node.name,
                 driver=self,
             )
         snapshots = recurse_snapshots(vm.snapshot.rootSnapshotList)
+
         if not snapshot_name:
             snapshot = snapshots[-1].snapshot
         else:
             for s in snapshots:
                 if snapshot_name == s.name:
                     snapshot = s.snapshot
+
                     break
             else:
                 raise LibcloudError("Snapshot `%s` not found" % snapshot_name, driver=self)
+
         return self.wait_for_task(snapshot.RemoveSnapshot_Task(removeChildren=remove_children))
 
     def ex_revert_to_snapshot(self, node, snapshot_name=None):
@@ -792,20 +858,24 @@ class VSphereNodeDriver(NodeDriver):
         If snapshot_name is not defined revert to the last one.
         """
         vm = self.find_by_uuid(node.id)
+
         if not vm.snapshot:
             raise LibcloudError(
                 "Revert failed. No snapshots " "for node %s" % node.name, driver=self
             )
         snapshots = recurse_snapshots(vm.snapshot.rootSnapshotList)
+
         if not snapshot_name:
             snapshot = snapshots[-1].snapshot
         else:
             for s in snapshots:
                 if snapshot_name == s.name:
                     snapshot = s.snapshot
+
                     break
             else:
                 raise LibcloudError("Snapshot `%s` not found" % snapshot_name, driver=self)
+
         return self.wait_for_task(snapshot.RevertToSnapshot_Task())
 
     def _find_template_by_uuid(self, template_uuid):
@@ -823,6 +893,7 @@ class VSphereNodeDriver(NodeDriver):
                     template = vm
         except Exception as exc:
             raise LibcloudError("Error while searching for template: %s" % exc, driver=self)
+
         if not template:
             raise LibcloudError("Unable to locate VirtualMachine.", driver=self)
 
@@ -833,24 +904,31 @@ class VSphereNodeDriver(NodeDriver):
         returns pyVmomi.VmomiSupport.vim.VirtualMachine
         """
         vm = self.connection.content.searchIndex.FindByUuid(None, node_uuid, True, True)
+
         if not vm:
             # perhaps it is a moid
             vm = self._get_item_by_moid("VirtualMachine", node_uuid)
+
             if not vm:
                 raise LibcloudError("Unable to locate VirtualMachine.", driver=self)
+
         return vm
 
     def find_custom_field_key(self, key_id):
         """Return custom field key name, provided it's id"""
+
         if not hasattr(self, "custom_fields"):
             content = self.connection.RetrieveContent()
+
             if content.customFieldsManager:
                 self.custom_fields = content.customFieldsManager.field
             else:
                 self.custom_fields = []
+
         for k in self.custom_fields:
             if k.key == key_id:
                 return k.name
+
         return None
 
     def get_obj(self, vimtype, name):
@@ -861,29 +939,36 @@ class VSphereNodeDriver(NodeDriver):
         obj = None
         content = self.connection.RetrieveContent()
         container = content.viewManager.CreateContainerView(content.rootFolder, vimtype, True)
+
         for c in container.view:
             if name:
                 if c.name == name:
                     obj = c
+
                     break
             else:
                 obj = c
+
                 break
+
         return obj
 
     def wait_for_task(self, task, timeout=1800, interval=10):
         """wait for a vCenter task to finish"""
         start_time = time.time()
         task_done = False
+
         while not task_done:
             if time.time() - start_time >= timeout:
                 raise LibcloudError(
                     "Timeout while waiting " "for import task Id %s" % task.info.id,
                     driver=self,
                 )
+
             if task.info.state == "success":
                 if task.info.result and str(task.info.result) != "success":
                     return task.info.result
+
                 return True
 
             if task.info.state == "error":
@@ -912,20 +997,25 @@ class VSphereNodeDriver(NodeDriver):
 
         """
         template = self._find_template_by_uuid(image.id)
+
         if ex_cluster:
             cluster_name = ex_cluster
         else:
             cluster_name = location.name
         cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
+
         if not cluster:  # It is a host go with it
             cluster = self.get_obj([vim.HostSystem], cluster_name)
 
         datacenter = None
+
         if not ex_datacenter:  # Get datacenter from cluster
             parent = cluster.parent
+
             while parent:
                 if isinstance(parent, vim.Datacenter):
                     datacenter = parent
+
                     break
                 parent = parent.parent
 
@@ -934,6 +1024,7 @@ class VSphereNodeDriver(NodeDriver):
 
         if ex_folder:
             folder = self.get_obj([vim.Folder], ex_folder)
+
             if folder is None:
                 folder = self._get_item_by_moid("Folder", ex_folder)
         else:
@@ -955,6 +1046,7 @@ class VSphereNodeDriver(NodeDriver):
         datastore = None
         pod = None
         podsel = vim.storageDrs.PodSelectionSpec()
+
         if ex_datastore_cluster:
             pod = self.get_obj([vim.StoragePod], ex_datastore_cluster)
         else:
@@ -962,6 +1054,7 @@ class VSphereNodeDriver(NodeDriver):
             pods = content.viewManager.CreateContainerView(
                 content.rootFolder, [vim.StoragePod], True
             ).view
+
             for pod in pods:
                 if cluster.name.lower() in pod.name:
                     break
@@ -985,11 +1078,13 @@ class VSphereNodeDriver(NodeDriver):
 
         if ex_datastore:
             datastore = self.get_obj([vim.Datastore], ex_datastore)
+
             if datastore is None:
                 datastore = self._get_item_by_moid("Datastore", ex_datastore)
         elif not datastore:
             datastore = self.get_obj([vim.Datastore], template.datastore[0].info.name)
         add_network = True
+
         if ex_network and len(template.network) > 0:
             for nets in template.network:
                 if template in nets.vm:
@@ -1003,6 +1098,7 @@ class VSphereNodeDriver(NodeDriver):
             nicspec.device.deviceInfo = vim.Description()
 
             portgroup = self.get_obj([vim.dvs.DistributedVirtualPortgroup], ex_network)
+
             if portgroup:
                 dvs_port_connection = vim.dvs.PortConnection()
                 dvs_port_connection.portgroupKey = portgroup.key
@@ -1039,8 +1135,10 @@ class VSphereNodeDriver(NodeDriver):
         relospec = vim.vm.RelocateSpec()
         relospec.datastore = datastore
         relospec.pool = resource_pool
+
         if location:
             host = self.get_obj([vim.HostSystem], location.name)
+
             if host:
                 relospec.host = host
         clonespec.location = relospec
@@ -1077,6 +1175,7 @@ class VSphereNodeDriver(NodeDriver):
 
     def _get_item_by_moid(self, type_, moid):
         vm_obj = VmomiSupport.templateOf(type_)(moid, self.connection._stub)
+
         return vm_obj
 
     def ex_list_folders(self):
@@ -1085,11 +1184,13 @@ class VSphereNodeDriver(NodeDriver):
             content.rootFolder, [vim.Folder], True
         ).view
         folders = []
+
         for folder in folders_raw:
             to_add = {"type": list(folder.childType)}
             to_add["name"] = folder.name
             to_add["id"] = folder._moId
             folders.append(to_add)
+
         return folders
 
     def ex_list_datastores(self):
@@ -1112,10 +1213,12 @@ class VSphereNodeDriver(NodeDriver):
     def ex_open_console(self, vm_uuid):
         vm = self.find_by_uuid(vm_uuid)
         ticket = vm.AcquireTicket(ticketType="webmks")
+
         return "wss://{}:{}/ticket/{}".format(ticket.host, ticket.port, ticket.ticket)
 
     def _get_version(self):
         content = self.connection.RetrieveContent()
+
         return content.about.version
 
 
@@ -1141,7 +1244,9 @@ class VSphereResponse(JsonResponse):
         if self.body:
             message = self.body
             message += "-- code: {}".format(self.status)
+
             return message
+
         return self.body
 
 
@@ -1157,12 +1262,14 @@ class VSphereConnection(ConnectionKey):
         """
         headers["Content-Type"] = "application/json"
         headers["Accept"] = "application/json"
+
         if self.session_token is None:
             to_encode = "{}:{}".format(self.key, self.secret)
             b64_user_pass = base64.b64encode(to_encode.encode())
             headers["Authorization"] = "Basic {}".format(b64_user_pass.decode())
         else:
             headers["vmware-api-session-id"] = self.session_token
+
         return headers
 
 
@@ -1204,9 +1311,11 @@ class VSphere_REST_NodeDriver(NodeDriver):
             raise InvalidCredsError("Please provide both username " "(key) and password (secret).")
         super().__init__(key=key, secure=secure, host=host, port=port)
         prefixes = ["http://", "https://"]
+
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.lstrip(prefix)
+
         if ca_cert:
             self.connection.connection.ca_cert = ca_cert
         else:
@@ -1278,6 +1387,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             "filter.resource_pools": ex_filter_resource_pools,
         }
         params = {}
+
         for param, value in kwargs.items():
             if value:
                 params[param] = value
@@ -1285,8 +1395,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         vm_ids = [[item["vm"]] for item in result]
         vms = []
         interfaces = self._list_interfaces()
+
         for vm_id in vm_ids:
             vms.append(self._to_node(vm_id, interfaces))
+
         return vms
 
     def async_list_nodes(self):
@@ -1300,6 +1412,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         result = loop.run_until_complete(self._get_all_vms())
         vm_ids = [(item["vm"], item["host"]) for item in result]
         interfaces = self._list_interfaces()
+
         return loop.run_until_complete(self._list_nodes_async(vm_ids, interfaces))
 
     async def _list_nodes_async(self, vm_ids, interfaces):
@@ -1337,6 +1450,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         vm_resp = await asyncio.gather(*vm_resp_futures)
         # return a flat list
+
         return [item for vm_list in vm_resp for item in vm_list]
 
     def _get_vms_with_host(self, host):
@@ -1344,8 +1458,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         host_id = host["host"]
         response = self._request(req, params={"filter.hosts": host_id})
         vms = response.object["value"]
+
         for vm in vms:
             vm["host"] = host
+
         return vms
 
     def list_locations(self, ex_show_hosts_in_drs=True):
@@ -1365,6 +1481,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         clusters = self.ex_list_clusters()
         hosts_all = self.ex_list_hosts()
         hosts = []
+
         if ex_show_hosts_in_drs:
             hosts = hosts_all
         else:
@@ -1373,6 +1490,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             hosts = [host for host in hosts_all if host not in filter_hosts]
         driver = self.connection.driver
         locations = []
+
         for cluster in clusters:
             if cluster["drs_enabled"]:
                 extra = {"type": "cluster", "drs": True, "ha": cluster["ha_enabled"]}
@@ -1385,6 +1503,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                         extra=extra,
                     )
                 )
+
         for host in hosts:
             extra = {
                 "type": "host",
@@ -1401,6 +1520,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                     extra=extra,
                 )
             )
+
         return locations
 
     def stop_node(self, node):
@@ -1411,6 +1531,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         req = "/rest/vcenter/vm/{}/power/stop".format(node.id)
 
         result = self._request(req, method=method)
+
         return result.status in self.VALID_RESPONSE_CODES
 
     def start_node(self, node):
@@ -1423,6 +1544,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         method = "POST"
         req = "/rest/vcenter/vm/{}/power/start".format(node_id)
         result = self._request(req, method=method)
+
         return result.status in self.VALID_RESPONSE_CODES
 
     def reboot_node(self, node):
@@ -1432,10 +1554,12 @@ class VSphere_REST_NodeDriver(NodeDriver):
         method = "POST"
         req = "/rest/vcenter/vm/{}/power/reset".format(node.id)
         result = self._request(req, method=method)
+
         return result.status in self.VALID_RESPONSE_CODES
 
     def destroy_node(self, node):
         # make sure the machine is stopped
+
         if node.state is not NodeState.STOPPED:
             self.stop_node(node)
         # wait to make sure it stopped
@@ -1446,6 +1570,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         #     time.sleep(10)
         req = "/rest/vcenter/vm/{}".format(node.id)
         resp = self._request(req, method="DELETE")
+
         return resp.status in self.VALID_RESPONSE_CODES
 
     def ex_suspend_node(self, node):
@@ -1455,6 +1580,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         method = "POST"
         req = "/rest/vcenter/vm/{}/power/suspend".format(node.id)
         result = self._request(req, method=method)
+
         return result.status in self.VALID_RESPONSE_CODES
 
     def _list_interfaces(self):
@@ -1469,6 +1595,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             }
             for interface in response
         ]
+
         return interfaces
 
     def _to_node(self, vm_id_host, interfaces):
@@ -1485,12 +1612,15 @@ class VSphere_REST_NodeDriver(NodeDriver):
         # IP's
         private_ips = []
         nic_macs = set()
+
         for nic in vm["nics"]:
             nic_macs.add(nic["value"]["mac_address"])
+
         for interface in interfaces:
             if interface["mac"] in nic_macs:
                 private_ips.append(interface["ip"])
                 nic_macs.remove(interface["mac"])
+
                 if len(nic_macs) == 0:
                     break
         public_ips = []  # should default_getaway be the public?
@@ -1500,12 +1630,13 @@ class VSphere_REST_NodeDriver(NodeDriver):
         # size
         total_size = 0
         gb_converter = 1024**3
+
         for disk in vm["disks"]:
             total_size += int(int(disk["value"]["capacity"] / gb_converter))
         ram = int(vm["memory"]["size_MiB"])
         cpus = int(vm["cpu"]["count"])
         id_to_hash = str(ram) + str(cpus) + str(total_size)
-        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()  # nosec
         size_name = name + "-size"
         size_extra = {"cpus": cpus}
         size = NodeSize(
@@ -1525,8 +1656,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         image_extra = {"type": "guest_OS"}
         image = NodeImage(id=image_id, name=image_name, driver=driver, extra=image_extra)
         extra = {"snapshots": []}
+
         if len(vm_id_host) > 1:
             extra["host"] = vm_id_host[1].get("name", "")
+
         return Node(
             id=vm_id,
             name=name,
@@ -1560,11 +1693,13 @@ class VSphere_REST_NodeDriver(NodeDriver):
         }
 
         params = {}
+
         for param, value in kwargs.items():
             if value:
                 params[param] = value
         req = "/rest/vcenter/host"
         result = self._request(req, params=params).object["value"]
+
         return result
 
     def ex_list_clusters(
@@ -1581,11 +1716,13 @@ class VSphere_REST_NodeDriver(NodeDriver):
             "filter.clusters": ex_filter_clusters,
         }
         params = {}
+
         for param, value in kwargs.items():
             if value:
                 params[param] = value
         req = "/rest/vcenter/cluster"
         result = self._request(req, params=params).object["value"]
+
         return result
 
     def ex_list_datacenters(
@@ -1598,6 +1735,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             "filter.datacenters": ex_filter_datacenters,
         }
         params = {}
+
         for param, value in kwargs.items():
             if value:
                 params[param] = value
@@ -1605,12 +1743,14 @@ class VSphere_REST_NodeDriver(NodeDriver):
         to_return = [
             {"name": item["name"], "id": item["datacenter"]} for item in result.object["value"]
         ]
+
         return to_return
 
     def ex_list_content_libraries(self):
         req = "/rest/com/vmware/content/library"
         try:
             result = self._request(req).object
+
             return result["value"]
         except BaseHTTPError:
             return []
@@ -1620,6 +1760,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         params = {"library_id": library_id}
         try:
             result = self._request(req, params=params).object
+
             return result["value"]
         except BaseHTTPError:
             logger.error(
@@ -1627,14 +1768,17 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 " most probably the VCenter service "
                 "is stopped"
             )
+
             return []
 
     def ex_list_folders(self):
         req = "/rest/vcenter/folder"
         response = self._request(req).object
         folders = response["value"]
+
         for folder in folders:
             folder["id"] = folder["folder"]
+
         return folders
 
     def ex_list_datastores(
@@ -1654,12 +1798,15 @@ class VSphere_REST_NodeDriver(NodeDriver):
             "filter.datastores": ex_filter_datastores,
         }
         params = {}
+
         for param, value in kwargs.items():
             if value:
                 params[param] = value
         result = self._request(req, params=params).object["value"]
+
         for datastore in result:
             datastore["id"] = datastore["datastore"]
+
         return result
 
     def ex_update_memory(self, node, ram):
@@ -1667,6 +1814,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         :param ram: The amount of ram in MB.
         :type ram: `str` or `int`
         """
+
         if isinstance(node, str):
             node_id = node
         else:
@@ -1676,6 +1824,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         body = {"spec": {"size_MiB": ram}}
         response = self._request(request, method="PATCH", data=json.dumps(body))
+
         return response.status in self.VALID_RESPONSE_CODES
 
     def ex_update_cpu(self, node, cores):
@@ -1684,6 +1833,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         :param cores: Integer or string indicating number of cores
         :type cores: `int` or `str`
         """
+
         if isinstance(node, str):
             node_id = node
         else:
@@ -1692,6 +1842,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         cores = int(cores)
         body = {"spec": {"count": cores}}
         response = self._request(request, method="PATCH", data=json.dumps(body))
+
         return response.status in self.VALID_RESPONSE_CODES
 
     def ex_update_capacity(self, node, capacity):
@@ -1703,6 +1854,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         Creates a network adapter that will connect to the specified network
         for the given node. Returns a boolean indicating success or not.
         """
+
         if isinstance(node, str):
             node_id = node
         else:
@@ -1718,22 +1870,33 @@ class VSphere_REST_NodeDriver(NodeDriver):
         req = "/rest/vcenter/vm/{}/hardware/ethernet".format(node_id)
         method = "POST"
         resp = self._request(req, method=method, data=data)
+
         return resp.status
 
     def _get_library_item(self, item_id):
         req = "/rest/com/vmware/content/library/item/id:{}".format(item_id)
         result = self._request(req).object
+
         return result["value"]
 
     def _get_resource_pool(self, host_id=None, cluster_id=None, name=None):
+        pms = None
+
         if host_id:
             pms = {"filter.hosts": host_id}
+
         if cluster_id:
             pms = {"filter.clusters": cluster_id}
+
         if name:
             pms = {"filter.names": name}
+
+        if not pms:
+            raise ValueError("Either host_id, cluster_id or name must be provided")
+
         rp_request = "/rest/vcenter/resource-pool"
         resource_pool = self._request(rp_request, params=pms).object
+
         return resource_pool["value"][0]["resource_pool"]
 
     def _request(self, req, method="GET", params=None, data=None):
@@ -1748,43 +1911,53 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 raise
         except Exception:
             raise
+
         return result
 
     def list_images(self, **kwargs):
         libraries = self.ex_list_content_libraries()
         item_ids = []
+
         if libraries:
             for library in libraries:
                 item_ids.extend(self.ex_list_content_library_items(library))
         items = []
+
         if item_ids:
             for item_id in item_ids:
                 items.append(self._get_library_item(item_id))
         images = []
         names = set()
+
         if items:
             driver = self.connection.driver
+
             for item in items:
                 names.add(item["name"])
                 extra = {"type": item["type"]}
+
                 if item["type"] == "vm-template":
                     capacity = item["size"] // (1024**3)
                     extra["disk_size"] = capacity
                 images.append(
                     NodeImage(id=item["id"], name=item["name"], driver=driver, extra=extra)
                 )
+
         if self.driver_soap is None:
             self._get_soap_driver()
         templates_in_hosts = self.driver_soap.list_images()
+
         for template in templates_in_hosts:
             if template.name not in names:
                 images += [template]
+
         return images
 
     def ex_list_networks(self):
         request = "/rest/vcenter/network"
         response = self._request(request).object["value"]
         networks = []
+
         for network in response:
             networks.append(
                 VSphereNetwork(
@@ -1793,6 +1966,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                     extra={"type": network["type"]},
                 )
             )
+
         return networks
 
     def create_node(
@@ -1815,7 +1989,11 @@ class VSphere_REST_NodeDriver(NodeDriver):
         will attempt to put the VM in a random folder and a warning about it
         will be issued in case the value remains `None`.
         """
+        create_request = None
+        data = {}
+
         # image is in the host then need the 6.5 driver
+
         if image.extra["type"] == "template_6_5":
             kwargs = {}
             kwargs["name"] = name
@@ -1823,14 +2001,18 @@ class VSphere_REST_NodeDriver(NodeDriver):
             kwargs["size"] = size
             kwargs["ex_network"] = ex_network
             kwargs["location"] = location
+
             for dstore in self.ex_list_datastores():
                 if dstore["id"] == ex_datastore:
                     kwargs["ex_datastore"] = dstore["name"]
+
                     break
             kwargs["folder"] = ex_folder
+
             if self.driver_soap is None:
                 self._get_soap_driver()
             result = self.driver_soap.create_node(**kwargs)
+
             return result
 
         # post creation checks
@@ -1839,11 +2021,13 @@ class VSphere_REST_NodeDriver(NodeDriver):
         update_cpu = False
         create_disk = False
         update_capacity = False
+
         if image.extra["type"] == "guest_OS":
             spec = {}
             spec["guest_OS"] = image.name
             spec["name"] = name
             spec["placement"] = {}
+
             if ex_folder is None:
                 warn = (
                     "The API(6.7) requires the folder to be given, I will"
@@ -1853,13 +2037,16 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 )
                 warnings.warn(warn)
                 folders = self.ex_list_folders()
+
                 for folder in folders:
                     if folder["type"] == "VIRTUAL_MACHINE":
                         ex_folder = folder["folder"]
+
                 if ex_folder is None:
-                    msg = "No suitable folder vor VMs found, please create one"
+                    msg = "No suitable folder for VMs found, please create one"
                     raise ProviderError(msg, 404)
             spec["placement"]["folder"] = ex_folder
+
             if location.extra["type"] == "host":
                 spec["placement"]["host"] = location.id
             elif location.extra["type"] == "cluster":
@@ -1870,11 +2057,13 @@ class VSphere_REST_NodeDriver(NodeDriver):
             cpu = size.extra.get("cpu", 1)
             spec["cpu"] = {"count": cpu}
             spec["memory"] = {"size_MiB": size.ram}
+
             if size.disk:
                 disk = {}
                 disk["new_vmdk"] = {}
                 disk["new_vmdk"]["capacity"] = size.disk * (1024**3)
                 spec["disks"] = [disk]
+
             if ex_network:
                 nic = {}
                 nic["mac_type"] = "GENERATED"
@@ -1892,10 +2081,12 @@ class VSphere_REST_NodeDriver(NodeDriver):
             )
             spec = {}
             spec["target"] = {}
+
             if location.extra.get("type") == "resource-pool":
                 spec["target"]["resource_pool_id"] = location.id
             elif location.extra.get("type") == "host":
                 resource_pool = self._get_resource_pool(host_id=location.id)
+
                 if not resource_pool:
                     msg = (
                         "Could not find resource-pool for given location "
@@ -1906,6 +2097,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 spec["target"]["host_id"] = location.id
             elif location.extra.get("type") == "cluster":
                 resource_pool = self._get_resource_pool(cluster_id=location.id)
+
                 if not resource_pool:
                     msg = (
                         "Could not find resource-pool for given location "
@@ -1920,6 +2112,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             # assuming that since you want to make a vm you don't need reminder
             spec["deployment_spec"]["accept_all_EULA"] = True
             # network
+
             if ex_network and ovf["networks"]:
                 spec["deployment_spec"]["network_mappings"] = [
                     {"key": ovf["networks"][0], "value": ex_network}
@@ -1927,17 +2120,22 @@ class VSphere_REST_NodeDriver(NodeDriver):
             elif not ovf["networks"] and ex_network:
                 create_nic = True
             # storage
+
             if ex_datastore:
                 spec["deployment_spec"]["storage_mappings"] = []
                 store_map = {"type": "DATASTORE", "datastore_id": ex_datastore}
                 spec["deployment_spec"]["storage_mappings"].append(store_map)
+
             if size and size.ram:
                 update_memory = True
+
             if size and size.extra and size.extra.get("cpu"):
                 update_cpu = True
+
             if size and size.disk:
                 # TODO Should update capacity but it is not possible with 6.7
                 pass
+
             if ex_disks:
                 create_disk = True
 
@@ -1955,12 +2153,14 @@ class VSphere_REST_NodeDriver(NodeDriver):
             spec["name"] = name
 
             # storage
+
             if ex_datastore:
                 spec["disk_storage"] = {}
                 spec["disk_storage"]["datastore"] = ex_datastore
 
             # location :: folder,resource group, datacenter, host
             spec["placement"] = {}
+
             if not ex_folder:
                 warn = (
                     "The API(6.7) requires the folder to be given, I will"
@@ -1970,13 +2170,16 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 )
                 warnings.warn(warn)
                 folders = self.ex_list_folders()
+
                 for folder in folders:
                     if folder["type"] == "VIRTUAL_MACHINE":
                         ex_folder = folder["folder"]
+
                 if ex_folder is None:
-                    msg = "No suitable folder vor VMs found, please create one"
+                    msg = "No suitable folder for VMs found, please create one"
                     raise ProviderError(msg, 404)
             spec["placement"]["folder"] = ex_folder
+
             if location.extra["type"] == "host":
                 spec["placement"]["host"] = location.id
             elif location.extra["type"] == "cluster":
@@ -1987,8 +2190,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
             # after the creation finishes
             # only one network atm??
             spec["hardware_customization"] = {}
+
             if ex_network:
                 nics = template["nics"]
+
                 if len(nics) > 0:
                     nic = nics[0]
                     spec["hardware_customization"]["nics"] = [
@@ -1998,17 +2203,21 @@ class VSphere_REST_NodeDriver(NodeDriver):
                     create_nic = True
             spec["powered_on"] = False
             # hardware
+
             if size:
                 if size.ram:
                     spec["hardware_customization"]["memory_update"] = {"memory": int(size.ram)}
+
                 if size.extra.get("cpu"):
                     spec["hardware_customization"]["cpu_update"] = {"num_cpus": size.extra["cpu"]}
+
                 if size.disk:
                     if not len(template["disks"]) > 0:
                         create_disk = True
                     else:
                         capacity = size.disk * 1024 * 1024 * 1024
                         dsk = template["disks"][0]["key"]
+
                         if template["disks"][0]["value"]["capacity"] < capacity:
                             update = {"capacity": capacity}
                             spec["hardware_customization"]["disks_to_update"] = [
@@ -2019,26 +2228,38 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 image.id
             )
             data = json.dumps({"spec": spec})
+
+        if not create_request:
+            raise ValueError("Missing create_request")
+
         # deploy the node
         result = self._request(create_request, method="POST", data=data)
         # wait until the node is up and then add extra config
         node_id = result.object["value"]
+
         if image.extra["type"] == "ovf":
             node_id = node_id["resource_id"]["id"]
 
         node = self.list_nodes(ex_filter_vms=node_id)[0]
+
         if create_nic:
             self.ex_add_nic(node, ex_network)
+
         if update_memory:
             self.ex_update_memory(node, size.ram)
+
         if update_cpu:
             self.ex_update_cpu(node, size.extra["cpu"])
+
         if create_disk:
             pass  # until volumes are added
+
         if update_capacity:
             pass  # until API method is added
+
         if ex_turned_on:
             self.start_node(node)
+
         return node
 
     # TODO As soon as snapshot support gets added to the REST api
@@ -2047,8 +2268,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         """
         List node snapshots
         """
+
         if self.driver_soap is None:
             self._get_soap_driver()
+
         return self.driver_soap.ex_list_snapshots(node)
 
     def ex_create_snapshot(
@@ -2057,8 +2280,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         """
         Create node snapshot
         """
+
         if self.driver_soap is None:
             self._get_soap_driver()
+
         return self.driver_soap.ex_create_snapshot(
             node,
             snapshot_name,
@@ -2072,8 +2297,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         Remove a snapshot from node.
         If snapshot_name is not defined remove the last one.
         """
+
         if self.driver_soap is None:
             self._get_soap_driver()
+
         return self.driver_soap.ex_remove_snapshot(
             node, snapshot_name=snapshot_name, remove_children=remove_children
         )
@@ -2083,11 +2310,14 @@ class VSphere_REST_NodeDriver(NodeDriver):
         Revert node to a specific snapshot.
         If snapshot_name is not defined revert to the last one.
         """
+
         if self.driver_soap is None:
             self._get_soap_driver()
+
         return self.driver_soap.ex_revert_to_snapshot(node, snapshot_name=snapshot_name)
 
     def ex_open_console(self, vm_id):
         if self.driver_soap is None:
             self._get_soap_driver()
+
         return self.driver_soap.ex_open_console(vm_id)

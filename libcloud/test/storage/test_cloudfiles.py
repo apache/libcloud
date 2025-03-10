@@ -524,6 +524,7 @@ class CloudFilesTests(unittest.TestCase):
         def func(*args, **kwargs):
             self.assertEqual(kwargs["headers"]["Content-Length"], 0)
             func.called = True
+
             return old_request(*args, **kwargs)
 
         self.driver.connection.request = func
@@ -880,6 +881,7 @@ class CloudFilesTests(unittest.TestCase):
                 headers = {"etag": "d79fb00c27b50494a463e680d459c90c"}
                 headers.update(self.base_headers)
                 _201 = httplib.CREATED
+
                 return _201, "", headers, httplib.responses[_201]
 
         self.driver_klass.connectionCls.rawResponseCls = InterceptResponse
@@ -1068,11 +1070,13 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
     def _v2_0_tokens(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
         body = self.fixtures.load("_v2_0__auth.json")
+
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_MALFORMED_JSON(self, method, url, body, headers):
         # test_invalid_json_throws_exception
         body = 'broken: json /*"'
+
         return (
             httplib.NO_CONTENT,
             body,
@@ -1090,6 +1094,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     def _v1_MossoCloudFS(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
+
         if method == "GET":
             # list_containers
             body = self.fixtures.load("list_containers.json")
@@ -1108,10 +1113,12 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         elif method == "POST":
             body = ""
             status_code = httplib.NO_CONTENT
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_not_found(self, method, url, body, headers):
         # test_get_object_not_found
+
         if method == "HEAD":
             body = ""
         else:
@@ -1126,16 +1133,20 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     def _v1_MossoCloudFS_test_container_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load("list_container_objects_empty.json")
+
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_20container_201_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load("list_container_objects_empty.json")
+
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_container(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
+
         if method == "GET":
             # list_container_objects
+
             if url.find("marker") == -1:
                 body = self.fixtures.load("list_container_objects.json")
                 status_code = httplib.OK
@@ -1147,11 +1158,13 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             body = self.fixtures.load("list_container_objects_empty.json")
             status_code = httplib.NO_CONTENT
             headers.update({"x-container-object-count": "800", "x-container-bytes-used": "1234568"})
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_container_ITERATOR(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
         # list_container_objects
+
         if url.find("foo-test-3") != -1:
             body = self.fixtures.load("list_container_objects_not_exhausted2.json")
             status_code = httplib.OK
@@ -1167,6 +1180,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     def _v1_MossoCloudFS_test_container_not_found(self, method, url, body, headers):
         # test_get_container_not_found
+
         if method == "HEAD":
             body = ""
         else:
@@ -1181,6 +1195,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     def _v1_MossoCloudFS_test_container_test_object(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
+
         if method == "HEAD":
             # get_object
             body = self.fixtures.load("list_container_objects_empty.json")
@@ -1195,10 +1210,12 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
                     "content-type": "application/zip",
                 }
             )
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_container__7E_test_object(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
+
         if method == "HEAD":
             # get_object_name_encoding
             body = self.fixtures.load("list_container_objects_empty.json")
@@ -1213,6 +1230,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
                     "content-type": "application/zip",
                 }
             )
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_create_container(self, method, url, body, headers):
@@ -1222,6 +1240,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers = copy.deepcopy(self.base_headers)
         headers.update({"content-length": "18", "date": "Mon, 28 Feb 2011 07:52:57 GMT"})
         status_code = httplib.CREATED
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_speci_40l_name(self, method, url, body, headers):
@@ -1236,6 +1255,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers = copy.deepcopy(self.base_headers)
         headers.update({"content-length": "18", "date": "Mon, 28 Feb 2011 07:52:57 GMT"})
         status_code = httplib.CREATED
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_create_container_ALREADY_EXISTS(self, method, url, body, headers):
@@ -1244,6 +1264,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         body = self.fixtures.load("list_container_objects_empty.json")
         headers.update({"content-type": "text/plain"})
         status_code = httplib.ACCEPTED
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container(self, method, url, body, headers):
@@ -1257,6 +1278,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             body = ""
             headers = self.base_headers
             status_code = httplib.ACCEPTED
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS(self, method, url, body, headers):
@@ -1264,6 +1286,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             # test_ex_purge_from_cdn
             headers = self.base_headers
             status_code = httplib.NO_CONTENT
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS_EMAIL(
@@ -1274,6 +1297,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             self.assertEqual(headers["X-Purge-Email"], "test@test.com")
             headers = self.base_headers
             status_code = httplib.NO_CONTENT
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_NOT_FOUND(self, method, url, body, headers):
@@ -1282,6 +1306,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             body = self.fixtures.load("list_container_objects_empty.json")
             headers = self.base_headers
             status_code = httplib.NOT_FOUND
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_NOT_EMPTY(self, method, url, body, headers):
@@ -1290,6 +1315,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             body = self.fixtures.load("list_container_objects_empty.json")
             headers = self.base_headers
             status_code = httplib.CONFLICT
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object(self, method, url, body, headers):
@@ -1298,9 +1324,11 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
             body = self.fixtures.load("list_container_objects_empty.json")
             headers = self.base_headers
             status_code = httplib.NO_CONTENT
+
             return (status_code, body, headers, httplib.responses[httplib.OK])
         elif method == "GET":
             body = generate_random_data(1000)
+
             return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_range(self, method, url, body, headers):
@@ -1325,6 +1353,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
     def _v1_MossoCloudFS_py3_img_or_vid(self, method, url, body, headers):
         headers = {"etag": "e2378cace8712661ce7beec3d9362ef6"}
         headers.update(self.base_headers)
+
         return httplib.CREATED, "", headers, httplib.responses[httplib.CREATED]
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_upload(self, method, url, body, headers):
@@ -1334,6 +1363,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers = {}
         headers.update(self.base_headers)
         headers["etag"] = "hash343hhash89h932439jsaa89"
+
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_speci_40l_name_m_40obj_E2_82_ACct(self, method, url, body, headers):
@@ -1345,6 +1375,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers = copy.deepcopy(self.base_headers)
         body = ""
         headers["etag"] = "hash343hhash89h932439jsaa89"
+
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_empty(self, method, url, body, headers):
@@ -1353,6 +1384,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers = {}
         headers.update(self.base_headers)
         headers["etag"] = "hash343hhash89h932439jsaa89"
+
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_upload_INVALID_HASH(
@@ -1363,6 +1395,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers = {}
         headers.update(self.base_headers)
         headers["etag"] = "foobar"
+
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(
@@ -1370,12 +1403,14 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
     ):
         # test_download_object_invalid_file_size
         body = generate_random_data(100)
+
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NOT_FOUND(
         self, method, url, body, headers
     ):
         body = ""
+
         return (
             httplib.NOT_FOUND,
             body,
@@ -1385,7 +1420,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data(self, method, url, body, headers):
         # test_upload_object_via_stream_success
-        hasher = hashlib.md5()
+        hasher = hashlib.md5()  # nosec
         hasher.update(b"235")
         hash_value = hasher.hexdigest()
 
@@ -1393,13 +1428,14 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers.update(self.base_headers)
         headers["etag"] = hash_value
         body = "test"
+
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data_seek(
         self, method, url, body, headers
     ):
         # test_upload_object_via_stream_stream_seek_at_end
-        hasher = hashlib.md5()
+        hasher = hashlib.md5()  # nosec
         hasher.update(b"123456789")
         hash_value = hasher.hexdigest()
 
@@ -1407,6 +1443,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers.update(self.base_headers)
         headers["etag"] = hash_value
         body = "test"
+
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NO_BUFFER(
@@ -1417,6 +1454,7 @@ class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         headers.update(self.base_headers)
         headers["etag"] = "577ef1154f3240ad5b9b413aa7346a1e"
         body = generate_random_data(1000)
+
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
 

@@ -30,11 +30,11 @@ TMP_DIR=$(mktemp -d)
 # TODO: Use json endpoint + jq to parse out the url
 # https://pypi.org/pypi/apache-libcloud/3.4.0/json
 EXTENSIONS[0]=".tar.gz"
-EXTENSIONS[1]="-py2.py3-none-any.whl"
+EXTENSIONS[1]="-py3-none-any.whl"
 
 APACHE_MIRROR_URL="http://www.apache.org/dist/libcloud"
 PYPI_MIRROR_URL_SOURCE="https://pypi.python.org/packages/source/a/apache-libcloud"
-PYPI_MIRROR_URL_WHEEL="https://files.pythonhosted.org/packages/py2.py3/a/apache-libcloud"
+PYPI_MIRROR_URL_WHEEL="https://files.pythonhosted.org/packages/py3/a/apache-libcloud"
 
 # From http://tldp.org/LDP/abs/html/debugging.html#ASSERT
 function assert ()                 #  If condition false,
@@ -69,7 +69,7 @@ do
     extension=${EXTENSIONS[$i]}
     file_name="${VERSION}${extension}"
 
-    if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
+    if [ "${extension}" = "-py3-none-any.whl" ]; then
         # shellcheck disable=SC2001
         file_name=$(echo "${file_name}" | sed "s/apache-libcloud/apache_libcloud/g")
     fi
@@ -77,7 +77,7 @@ do
     apache_url="${APACHE_MIRROR_URL}/${file_name}"
     pypi_url="${PYPI_MIRROR_URL}/${file_name}"
 
-    if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
+    if [ "${extension}" = "-py3-none-any.whl" ]; then
         pypi_url="${PYPI_MIRROR_URL_WHEEL}/${file_name}"
     else
         pypi_url="${PYPI_MIRROR_URL_SOURCE}/${file_name}"

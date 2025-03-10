@@ -197,7 +197,7 @@ class ScriptDeployment(Deployment):
         """
         self.name = cast(str, self.name)
         file_path = client.put(path=self.name, chmod=int("755", 8), contents=self.script)
-        # Pre-pend cwd if user specified a relative path
+        # Prepend cwd if user specified a relative path
         if self.name and (self.name[0] not in ["/", "\\"] and not re.match(r"^\w\:.*$", file_path)):
             base_path = os.path.dirname(file_path)
             name = os.path.join(base_path, self.name)

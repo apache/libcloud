@@ -124,11 +124,13 @@ class Route53DNSDriver(DNSDriver):
         uri = API_ROOT + "hostedzone/" + zone_id
         data = self.connection.request(uri).object
         elem = findall(element=data, xpath="HostedZone", namespace=NAMESPACE)[0]
+
         return self._to_zone(elem)
 
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
         record_type, name = record_id.split(":", 1)
+
         if name:
             full_name = ".".join((name, zone.domain))
         else:
@@ -144,6 +146,7 @@ class Route53DNSDriver(DNSDriver):
         # hints than filters!!
         # So will return a result even if its not what you asked for.
         record_type_num = self._string_to_record_type(record_type)
+
         if record.name != name or record.type != record_type_num:
             raise RecordDoesNotExistError(value="", driver=self, record_id=record_id)
 
@@ -163,6 +166,7 @@ class Route53DNSDriver(DNSDriver):
         rsp = self.connection.request(uri, method="POST", data=data).object
 
         elem = findall(element=rsp, xpath="HostedZone", namespace=NAMESPACE)[0]
+
         return self._to_zone(elem=elem)
 
     def delete_zone(self, zone, ex_delete_records=False):
@@ -173,6 +177,7 @@ class Route53DNSDriver(DNSDriver):
 
         uri = API_ROOT + "hostedzone/%s" % (zone.id)
         response = self.connection.request(uri, method="DELETE")
+
         return response.status in [httplib.OK]
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -182,6 +187,7 @@ class Route53DNSDriver(DNSDriver):
         batch = [("CREATE", name, type, data, extra)]
         self._post_changeset(zone, batch)
         id = ":".join((self.RECORD_TYPE_MAP[type], name))
+
         return Record(
             id=id,
             name=name,
@@ -216,6 +222,7 @@ class Route53DNSDriver(DNSDriver):
             )
 
         id = ":".join((self.RECORD_TYPE_MAP[type], name))
+
         return Record(
             id=id,
             name=name,
@@ -234,6 +241,7 @@ class Route53DNSDriver(DNSDriver):
             self._post_changeset(record.zone, batch)
         except InvalidChangeBatch:
             raise RecordDoesNotExistError(value="", driver=self, record_id=r.id)
+
         return True
 
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
@@ -275,6 +283,7 @@ class Route53DNSDriver(DNSDriver):
         id = ":".join((self.RECORD_TYPE_MAP[type], name))
 
         records = []
+
         for value in values:
             record = Record(
                 id=id,
@@ -298,6 +307,7 @@ class Route53DNSDriver(DNSDriver):
         :type  zone: :class:`Zone`
         """
         deletions = []
+
         for r in zone.list_records():
             if r.type in (RecordType.NS, RecordType.SOA):
                 continue
@@ -400,6 +410,7 @@ class Route53DNSDriver(DNSDriver):
 
             rrecs = ET.SubElement(rrs, "ResourceRecords")
             rrec = ET.SubElement(rrecs, "ResourceRecord")
+
             if "priority" in extra:
                 data = "{} {}".format(extra["priority"], data)
             ET.SubElement(rrec, "Value").text = data
@@ -413,6 +424,7 @@ class Route53DNSDriver(DNSDriver):
 
     def _to_zones(self, data):
         zones = []
+
         for element in data.findall(fixxpath(xpath="HostedZones/HostedZone", namespace=NAMESPACE)):
             zones.append(self._to_zone(element))
 
@@ -429,6 +441,7 @@ class Route53DNSDriver(DNSDriver):
         extra = {"Comment": comment, "ResourceRecordSetCount": resource_record_count}
 
         zone = Zone(id=id, domain=name, type="master", ttl=0, driver=self, extra=extra)
+
         return zone
 
     def _to_records(self, data, zone):
@@ -436,6 +449,7 @@ class Route53DNSDriver(DNSDriver):
         elems = data.findall(
             fixxpath(xpath="ResourceRecordSets/ResourceRecordSet", namespace=NAMESPACE)
         )
+
         for elem in elems:
             record_set = elem.findall(
                 fixxpath(xpath="ResourceRecords/ResourceRecord", namespace=NAMESPACE)
@@ -457,6 +471,7 @@ class Route53DNSDriver(DNSDriver):
                 record_set_records.append(record)
 
             # Store reference to other records so update works correctly
+
             if multiple_value_record:
                 for index in range(0, len(record_set_records)):
                     record = record_set_records[index]
@@ -464,6 +479,7 @@ class Route53DNSDriver(DNSDriver):
                     for other_index, other_record in enumerate(record_set_records):
                         if index == other_index:
                             # Skip current record
+
                             continue
 
                         extra = copy.deepcopy(other_record.extra)
@@ -490,6 +506,7 @@ class Route53DNSDriver(DNSDriver):
             findtext(element=elem, xpath="Type", namespace=NAMESPACE)
         )
         ttl = findtext(element=elem, xpath="TTL", namespace=NAMESPACE)
+
         if ttl is not None:
             ttl = int(ttl)
 
@@ -522,17 +539,20 @@ class Route53DNSDriver(DNSDriver):
             ttl=extra.get("ttl", None),
             extra=extra,
         )
+
         return record
 
     def _get_more(self, rtype, **kwargs):
         exhausted = False
         last_key = None
+
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
             yield from items
 
     def _get_data(self, rtype, last_key, **kwargs):
         params = {}
+
         if last_key:
             params["name"] = last_key
         path = API_ROOT + "hostedzone"
@@ -546,6 +566,8 @@ class Route53DNSDriver(DNSDriver):
             self.connection.set_context({"zone_id": zone.id})
             response = self.connection.request(path, params=params)
             transform_func = self._to_records
+        else:
+            raise ValueError(f"Unsupported rtype: {rtype}")
 
         if response.status == httplib.OK:
             is_truncated = findtext(
@@ -556,6 +578,7 @@ class Route53DNSDriver(DNSDriver):
                 element=response.object, xpath="NextRecordName", namespace=NAMESPACE
             )
             items = transform_func(data=response.object, **kwargs)
+
             return items, last_key, exhausted
         else:
             return [], None, True
@@ -563,9 +586,11 @@ class Route53DNSDriver(DNSDriver):
     def _ex_connection_class_kwargs(self):
         kwargs = super()._ex_connection_class_kwargs()
         kwargs["token"] = self.token
+
         return kwargs
 
     def _quote_data(self, data):
         if data[0] == '"' and data[-1] == '"':
             return data
+
         return '"{}"'.format(data.replace('"', '"'))

@@ -15,6 +15,7 @@ coverage.xml
 .idea
 dist/*apache-libcloud*
 dist/*apache_libcloud*
+dist/wheel
 docs/apidocs/*
 _build/
 apache_libcloud.egg-info/

@@ -109,6 +109,7 @@ REGION_TO_HOST_MAP = {
     "ca-central-1": S3_CA_CENTRAL_HOST,
     "me-south-1": "s3.me-south-1.amazonaws.com",
     "af-south-1": S3_AF_SOUTH1_HOST,
+    "me-central-1": "s3.me-central-1.amazonaws.com",
 }
 
 API_VERSION = "2006-03-01"

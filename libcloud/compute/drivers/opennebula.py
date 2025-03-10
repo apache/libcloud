@@ -133,6 +133,7 @@ class OpenNebulaResponse(XmlResponse):
         :return: True is success, else False.
         """
         i = int(self.status)
+
         return 200 <= i <= 299
 
     def parse_error(self):
@@ -144,8 +145,10 @@ class OpenNebulaResponse(XmlResponse):
         :rtype:  :class:`ElementTree`
         :return: Contents of HTTP response body.
         """
+
         if int(self.status) == httplib.UNAUTHORIZED:
             raise InvalidCredsError(self.body)
+
         return self.body
 
 
@@ -179,13 +182,15 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         :rtype:  ``dict``
         :return: Dictionary containing updated headers.
         """
+
         if self.plain_auth:
             passwd = self.key
         else:
-            passwd = hashlib.sha1(b(self.key)).hexdigest()
+            passwd = hashlib.sha1(b(self.key)).hexdigest()  # nosec
         headers["Authorization"] = "Basic %s" % b64encode(
             b("{}:{}".format(self.user_id, passwd))
         ).decode("utf-8")
+
         return headers
 
 
@@ -278,7 +283,8 @@ class OpenNebulaNetwork:
         :rtype:  ``str``
         :return: Unique identifier for this instance.
         """
-        return hashlib.sha1(b("{}:{}".format(self.id, self.driver.type))).hexdigest()
+
+        return hashlib.sha1(b("{}:{}".format(self.id, self.driver.type))).hexdigest()  # nosec
 
     def __repr__(self):
         return (
@@ -321,6 +327,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                 cls = OpenNebula_3_6_NodeDriver
             elif api_version in ["3.8"]:
                 cls = OpenNebula_3_8_NodeDriver
+
                 if "plain_auth" not in kwargs:
                     kwargs["plain_auth"] = cls.plain_auth
                 else:
@@ -329,6 +336,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                 raise NotImplementedError(
                     "No OpenNebulaNodeDriver found for API version %s" % (api_version)
                 )
+
             return super().__new__(cls)
 
     def create_node(self, name, size, image, networks=None):
@@ -358,6 +366,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                 networks = [networks]
 
             networkGroup = ET.SubElement(compute, "NETWORK")
+
             for network in networks:
                 if network.address:
                     ET.SubElement(
@@ -394,6 +403,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         :return: List of compute node sizes supported by the cloud provider.
         :rtype:  ``list`` of :class:`OpenNebulaNodeSize`
         """
+
         return [
             NodeSize(
                 id=1,
@@ -439,6 +449,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                  compute node.
         :rtype:  ``list`` of :class:`OpenNebulaNetwork`
         """
+
         return self._to_networks(self.connection.request("/network").object)
 
     def ex_node_action(self, node, action):
@@ -492,6 +503,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         :return: List of images.
         """
         images = []
+
         for element in object.findall("DISK"):
             image_id = element.attrib["href"].partition("/storage/")[2]
             image = self.connection.request("/storage/%s" % (image_id)).object
@@ -510,6 +522,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         :rtype:  :class:`NodeImage`
         :return: The newly extracted :class:`NodeImage`.
         """
+
         return NodeImage(
             id=image.findtext("ID"),
             name=image.findtext("NAME"),
@@ -530,6 +543,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         :return: List of virtual networks.
         """
         networks = []
+
         for element in object.findall("NETWORK"):
             network_id = element.attrib["href"].partition("/network/")[2]
             network_element = self.connection.request("/network/%s" % (network_id)).object
@@ -548,6 +562,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         :rtype:  :class:`OpenNebulaNetwork`
         :return: The newly extracted :class:`OpenNebulaNetwork`.
         """
+
         return OpenNebulaNetwork(
             id=element.findtext("ID"),
             name=element.findtext("NAME"),
@@ -569,6 +584,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         :return: A list of compute nodes.
         """
         computes = []
+
         for element in object.findall("COMPUTE"):
             compute_id = element.attrib["href"].partition("/compute/")[2]
             compute = self.connection.request("/compute/%s" % (compute_id)).object
@@ -621,6 +637,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         networks = list()
 
         network_list = compute.find("NETWORK")
+
         for element in network_list.findall("NIC"):
             networks.append(
                 OpenNebulaNetwork(
@@ -650,6 +667,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         disks = list()
 
         disk_list = compute.find("STORAGE")
+
         if disk_list is not None:
             for element in disk_list.findall("DISK"):
                 disks.append(
@@ -663,6 +681,7 @@ class OpenNebulaNodeDriver(NodeDriver):
 
         # @TODO: Return all disks when the Node type accepts multiple
         # attached disks per node.
+
         if len(disks) > 0:
             return disks[0]
         else:
@@ -721,12 +740,14 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
             for network in networks:
                 nic = ET.SubElement(compute, "NIC")
                 ET.SubElement(nic, "NETWORK", {"href": "/network/%s" % (str(network.id))})
+
                 if network.address:
                     ip_line = ET.SubElement(nic, "IP")
                     ip_line.text = network.address
 
         if context and isinstance(context, dict):
             contextGroup = ET.SubElement(compute, "CONTEXT")
+
             for key, value in list(context.items()):
                 context = ET.SubElement(contextGroup, key.upper())
                 context.text = value
@@ -751,6 +772,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         :return: List of compute node sizes supported by the cloud provider.
         :rtype:  ``list`` of :class:`OpenNebulaNodeSize`
         """
+
         return [
             OpenNebulaNodeSize(
                 id=1,
@@ -807,6 +829,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         :return: List of images.
         """
         images = []
+
         for element in object.findall("STORAGE"):
             image_id = element.attrib["href"].partition("/storage/")[2]
             image = self.connection.request("/storage/%s" % (image_id)).object
@@ -825,6 +848,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         :rtype:  :class:`NodeImage`
         :return: The newly extracted :class:`NodeImage`.
         """
+
         return NodeImage(
             id=image.findtext("ID"),
             name=image.findtext("NAME"),
@@ -939,6 +963,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
         # Return all disks when the Node type accepts multiple attached disks
         # per node.
+
         if len(disks) > 1:
             return disks
         elif len(disks) == 1:
@@ -1056,6 +1081,7 @@ class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
         :return: The newly extracted :class:`OpenNebulaNetwork`.
         :rtype:  :class:`OpenNebulaNetwork`
         """
+
         return OpenNebulaNetwork(
             id=element.findtext("ID"),
             name=element.findtext("NAME"),
@@ -1085,6 +1111,7 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
         :return: List of compute node sizes supported by the cloud provider.
         :rtype:  ``list`` of :class:`OpenNebulaNodeSize`
         """
+
         return self._to_sizes(self.connection.request("/instance_type").object)
 
     def _to_sizes(self, object):
@@ -1198,6 +1225,7 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
         url = "/compute/%s/action" % node.id
 
         resp = self.connection.request(url, method="POST", data=xml)
+
         return resp.status == httplib.ACCEPTED
 
     def _do_detach_volume(self, node_id, disk_id):
@@ -1215,20 +1243,24 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
         url = "/compute/%s/action" % node_id
 
         resp = self.connection.request(url, method="POST", data=xml)
+
         return resp.status == httplib.ACCEPTED
 
     def detach_volume(self, volume):
         # We need to find the node using this volume
+
         for node in self.list_nodes():
             if type(node.image) is not list:
                 # This node has only one associated image. It is not the one we
                 # are after.
+
                 continue
 
             for disk in node.image:
                 if disk.id == volume.id:
                     # Node found. We can now detach the volume
                     disk_id = disk.extra["disk_id"]
+
                     return self._do_detach_volume(node.id, disk_id)
 
         return False
@@ -1246,6 +1278,7 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
 
     def _to_volumes(self, object):
         volumes = []
+
         for storage in object.findall("STORAGE"):
             storage_id = storage.attrib["href"].partition("/storage/")[2]
 
@@ -1301,6 +1334,7 @@ class OpenNebula_3_8_NodeDriver(OpenNebula_3_6_NodeDriver):
             size = OpenNebulaNodeSize(**size_kwargs)
             sizes.append(size)
             size_id += 1
+
         return sizes
 
     def _ex_connection_class_kwargs(self):

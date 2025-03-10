@@ -21,7 +21,7 @@ pushd "${SCRIPT_DIR}/../"
 
 # We redirect stderr to /dev/null since sometimes setuptools may print pyproject
 # related warning
-VERSION=$(python setup.py --version 2> /dev/null)
+VERSION=$(grep -Po '(?<=^__version__ = ")[^"]+' libcloud/__init__.py)
 popd
 
 pushd "${SCRIPT_DIR}"

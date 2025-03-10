@@ -90,7 +90,7 @@ class OpenStackAuthenticationCache:
     :class:`OpenStackAuthenticationCache` in
     OpenStackIdentityConnection.auth_cache.
 
-    Cache implementors should inherit this class and define the methods below.
+    Cache implementers should inherit this class and define the methods below.
     """
 
     def get(self, key):
