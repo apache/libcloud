@@ -19,8 +19,8 @@ import hmac
 import base64
 import hashlib
 import binascii
-from datetime import datetime, timedelta
 from typing import Literal
+from datetime import datetime, timedelta
 
 from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
 from libcloud.utils.xml import fixxpath

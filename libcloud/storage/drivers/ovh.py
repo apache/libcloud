@@ -83,7 +83,7 @@ class OvhStorageDriver(BaseS3StorageDriver):
     def list_regions(self):
         return REGION_TO_HOST_MAP.keys()
 
-    def get_object_cdn_url(self, obj, ex_expiry=S3_CDN_URL_EXPIRY_HOURS):
+    def get_object_cdn_url(self, obj, ex_expiry=S3_CDN_URL_EXPIRY_HOURS, ex_method: str = "GET"):
         # In order to download (private) objects we need to be able to generate a valid CDN URL,
         # hence shamefully just use the working code from the S3StorageDriver.
-        return S3StorageDriver.get_object_cdn_url(self, obj, ex_expiry=ex_expiry)
+        return S3StorageDriver.get_object_cdn_url(self, obj, ex_expiry=ex_expiry, ex_method=ex_method)
