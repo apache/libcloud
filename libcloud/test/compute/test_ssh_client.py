@@ -565,7 +565,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         chan = Mock()
         chan.recv_ready.side_effect = [True, True, True, True, False]
-        chan.recv.side_effect = ["\xF0", "\x90", "\x8D", "\x88"]
+        chan.recv.side_effect = ["\xf0", "\x90", "\x8d", "\x88"]
 
         stdout = client._consume_stdout(chan).getvalue()
         self.assertEqual("ð\x90\x8d\x88", stdout)
@@ -578,7 +578,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         chan = Mock()
         chan.recv_stderr_ready.side_effect = [True, True, True, True, False]
-        chan.recv_stderr.side_effect = ["\xF0", "\x90", "\x8D", "\x88"]
+        chan.recv_stderr.side_effect = ["\xf0", "\x90", "\x8d", "\x88"]
 
         stderr = client._consume_stderr(chan).getvalue()
         self.assertEqual("ð\x90\x8d\x88", stderr)
@@ -792,7 +792,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         self.assertEqual(client._get_sftp_client(), mock_sft_client)
         self.assertEqual(mock_client.open_sftp.call_count, 1)
 
-        # 2. existing sftp connection which is already opened is re-used
+        # 2. existing sftp connection which is already opened is reused
         mock_client = Mock()
         mock_sft_client = Mock()
         client.client = mock_client

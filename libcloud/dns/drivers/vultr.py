@@ -89,6 +89,7 @@ class VultrDNSDriver(DNSDriver):
                 raise NotImplementedError(
                     "No Vultr driver found for API version: %s" % (api_version)
                 )
+
         return super().__new__(cls)
 
 
@@ -130,6 +131,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
 
         :rtype: list of :class: `Record`
         """
+
         if not isinstance(zone, Zone):
             raise ZoneRequiredException("zone should be of type Zone")
 
@@ -212,13 +214,17 @@ class VultrDNSDriverV1(VultrDNSDriver):
                       (e.g. {'serverip':'127.0.0.1'})
         """
         extra = extra or {}
+
         if extra and extra.get("serverip"):
             serverip = extra["serverip"]
+        else:
+            raise ValueError("Missing servertip key in extra")
 
         params = {"api_key": self.key}
         data = urlencode({"domain": domain, "serverip": serverip})
         action = "/v1/dns/create_domain"
         zones = self.list_zones()
+
         if self.ex_zone_exists(domain, zones):
             raise ZoneAlreadyExistsError(value="", driver=self, zone_id=domain)
 
@@ -257,6 +263,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         old_records_list = self.list_records(zone=zone)
         # check if record already exists
         # if exists raise RecordAlreadyExistsError
+
         for record in old_records_list:
             if record.name == name and record.data == data:
                 raise RecordAlreadyExistsError(value="", driver=self, record_id=record.id)
@@ -266,6 +273,8 @@ class VultrDNSDriverV1(VultrDNSDriver):
 
         if extra and extra.get("priority"):
             priority = int(extra["priority"])
+        else:
+            priority = None
 
         post_data = {
             "domain": zone.domain,
@@ -275,6 +284,8 @@ class VultrDNSDriverV1(VultrDNSDriver):
         }
 
         if type == MX or type == SRV:
+            if priority is None:
+                raise ValueError("Missing priority argument for MX record type")
             post_data["priority"] = priority
 
         encoded_data = urlencode(post_data)
@@ -305,6 +316,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         params = {"api_key": self.key}
         data = urlencode({"domain": zone.domain})
         zones = self.list_zones()
+
         if not self.ex_zone_exists(zone.domain, zones):
             raise ZoneDoesNotExistError(value="", driver=self, zone_id=zone.domain)
 
@@ -326,6 +338,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         data = urlencode({"RECORDID": record.id, "domain": record.zone.domain})
 
         zone_records = self.list_records(record.zone)
+
         if not self.ex_record_exists(record.id, zone_records):
             raise RecordDoesNotExistError(value="", driver=self, record_id=record.id)
 
@@ -347,6 +360,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         """
 
         zone_ids = []
+
         for zone in zones_list:
             zone_ids.append(zone.domain)
 
@@ -363,6 +377,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         :rtype: ``bool``
         """
         record_ids = []
+
         for record in records_list:
             record_ids.append(record.id)
 
@@ -400,6 +415,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
         :type items: ``list``
         """
         zones = []
+
         for item in items:
             zones.append(self._to_zone(item))
 
@@ -426,6 +442,7 @@ class VultrDNSDriverV1(VultrDNSDriver):
 
     def _to_records(self, items, zone):
         records = []
+
         for item in items:
             records.append(self._to_record(item, zone=zone))
 
@@ -453,6 +470,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :return: ``list`` of :class:`Zone`
         """
         data = self._paginated_request("/v2/domains", "domains")
+
         return [self._to_zone(item) for item in data]
 
     def get_zone(self, zone_id: str) -> Zone:
@@ -464,6 +482,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :rtype: :class:`Zone`
         """
         resp = self.connection.request("/v2/domains/%s" % zone_id)
+
         return self._to_zone(resp.object["domain"])
 
     def create_zone(
@@ -496,6 +515,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         }
 
         extra = extra or {}
+
         if "ip" in extra:
             data["ip"] = extra["ip"]
 
@@ -503,6 +523,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
             data["dns_sec"] = "enabled" if extra["dns_sec"] is True else "disabled"
 
         resp = self.connection.request("/v2/domains", data=json.dumps(data), method="POST")
+
         return self._to_zone(resp.object["domain"])
 
     def delete_zone(self, zone: Zone) -> bool:
@@ -516,6 +537,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :rtype: ``bool``
         """
         resp = self.connection.request("/v2/domains/%s" % zone.domain, method="DELETE")
+
         return resp.success()
 
     def list_records(self, zone: Zone) -> List[Record]:
@@ -527,6 +549,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :return: ``list`` of :class:`Record`
         """
         data = self._paginated_request("/v2/domains/%s/records" % zone.domain, "records")
+
         return [self._to_record(item, zone) for item in data]
 
     def get_record(self, zone_id: str, record_id: str) -> Record:
@@ -586,6 +609,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
             "data": data,
         }
         extra = extra or {}
+
         if "ttl" in extra:
             data["ttl"] = int(extra["ttl"])
 
@@ -631,6 +655,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :rtype: ``bool``
         """
         body = {}
+
         if name:
             body["name"] = name
 
@@ -638,6 +663,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
             body["data"] = data
 
         extra = extra or {}
+
         if "ttl" in extra:
             body["ttl"] = int(extra["ttl"])
 
@@ -673,6 +699,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         extra = {
             "date_created": data["date_created"],
         }
+
         return Zone(id=domain, domain=domain, driver=self, type=type_, ttl=None, extra=extra)
 
     def _to_record(self, data: Dict[str, Any], zone: Zone) -> Record:
@@ -721,8 +748,10 @@ class VultrDNSDriverV2(VultrDNSDriver):
         resp = self.connection.request(url, params=params).object
         data = list(resp.get(key, []))
         objects = data
+
         while True:
             next_page = resp["meta"]["links"]["next"]
+
             if next_page:
                 params["cursor"] = next_page
                 resp = self.connection.request(url, params=params).object

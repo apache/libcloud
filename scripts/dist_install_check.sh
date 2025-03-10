@@ -18,15 +18,16 @@
 set -e
 
 function cleanup() {
-    rm -f dist/apache*libcloud*.*
+    rm -rf dist/apache*libcloud*.*
+    pip uninstall -y apache-libcloud || true
 }
 
 cleanup
 
 trap cleanup EXIT
 
-# Verify library installs without any dependencies when using python setup.py
-# install
+# Verify library installs without any dependencies when using source
+# tarball
 echo "Running dist install checks"
 python --version
 
@@ -37,9 +38,14 @@ pip show typing && exit 1
 pip show enum34 && exit 1
 pip show apache-libcloud && exit 1
 
-# Install the library
-pip install .
+# Build and install the library
+pip install build
+python -m build
+pip install dist/apache_libcloud-*.tar.gz
+
+# Verify the library has been installed and perform basic sanity check
 pip show apache-libcloud
+python -c "import libcloud; print(libcloud.__version__)"
 
 # Verify all dependencies were installed
 pip show requests

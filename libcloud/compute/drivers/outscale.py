@@ -5427,7 +5427,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       private_ips: ``list`` of ``str``
 
         :param      secondary_private_ip_count: The secondary private IP a
-        ddress or addresses you want to assign to the NIC within the IP
+        address or addresses you want to assign to the NIC within the IP
         address range of the Subnet.
         :type       secondary_private_ip_count: ``int``
 

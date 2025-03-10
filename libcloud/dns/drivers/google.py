@@ -78,6 +78,7 @@ class GoogleDNSDriver(DNSDriver):
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
+
         if not self.project:
             raise ValueError("Project name must be specified using " '"project" keyword.')
         super().__init__(user_id, key, **kwargs)
@@ -88,6 +89,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: ``generator`` of :class:`Zone`
         """
+
         return self._get_more("zones")
 
     def iterate_records(self, zone):
@@ -99,6 +101,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: ``generator`` of :class:`Record`
         """
+
         return self._get_more("records", zone=zone)
 
     def get_zone(self, zone_id):
@@ -147,6 +150,7 @@ class GoogleDNSDriver(DNSDriver):
 
         if len(response["rrsets"]) > 0:
             zone = self.get_zone(zone_id)
+
             return self._to_record(response["rrsets"][0], zone)
 
         raise RecordDoesNotExistError(value="", driver=self.connection.driver, record_id=record_id)
@@ -188,6 +192,7 @@ class GoogleDNSDriver(DNSDriver):
 
         request = "/managedZones"
         response = self.connection.request(request, method="POST", data=data).object
+
         return self._to_zone(response)
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -217,6 +222,7 @@ class GoogleDNSDriver(DNSDriver):
         data = {"additions": [{"name": name, "type": type, "ttl": int(ttl), "rrdatas": rrdatas}]}
         request = "/managedZones/%s/changes" % (zone.id)
         response = self.connection.request(request, method="POST", data=data).object
+
         return self._to_record(response["additions"][0], zone)
 
     def delete_zone(self, zone):
@@ -232,6 +238,7 @@ class GoogleDNSDriver(DNSDriver):
         """
         request = "/managedZones/%s" % (zone.id)
         response = self.connection.request(request, method="DELETE")
+
         return response.success()
 
     def delete_record(self, record):
@@ -255,6 +262,7 @@ class GoogleDNSDriver(DNSDriver):
         }
         request = "/managedZones/%s/changes" % (record.zone.id)
         response = self.connection.request(request, method="POST", data=data)
+
         return response.success()
 
     def ex_bulk_record_changes(self, zone, records):
@@ -296,6 +304,7 @@ class GoogleDNSDriver(DNSDriver):
     def _get_more(self, rtype, **kwargs):
         last_key = None
         exhausted = False
+
         while not exhausted:
             items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
             yield from items
@@ -315,6 +324,8 @@ class GoogleDNSDriver(DNSDriver):
             request = "/managedZones/%s/rrsets" % (zone.id)
             transform_func = self._to_records
             r_key = "rrsets"
+        else:
+            raise ValueError(f"Unsupported rtype: {rtype}")
 
         response = self.connection.request(
             request,
@@ -326,6 +337,7 @@ class GoogleDNSDriver(DNSDriver):
             nextpage = response.object.get("nextPageToken", None)
             items = transform_func(response.object.get(r_key), **kwargs)
             exhausted = False if nextpage is not None else True
+
             return items, nextpage, exhausted
         else:
             return [], None, True
@@ -339,8 +351,10 @@ class GoogleDNSDriver(DNSDriver):
 
     def _to_zones(self, response):
         zones = []
+
         for r in response:
             zones.append(self._to_zone(r))
+
         return zones
 
     def _to_zone(self, r):
@@ -364,12 +378,15 @@ class GoogleDNSDriver(DNSDriver):
 
     def _to_records(self, response, zone):
         records = []
+
         for r in response:
             records.append(self._to_record(r, zone))
+
         return records
 
     def _to_record(self, r, zone):
         record_id = "{}:{}".format(r["type"], r["name"])
+
         return Record(
             id=record_id,
             name=r["name"],
@@ -384,6 +401,8 @@ class GoogleDNSDriver(DNSDriver):
     def _cleanup_domain(self, domain):
         # name can only contain lower case alphanumeric characters and hyphens
         domain = re.sub(r"[^a-zA-Z0-9-]", "-", domain)
+
         if domain[-1] == "-":
             domain = domain[:-1]
+
         return domain

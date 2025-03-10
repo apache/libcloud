@@ -72,6 +72,7 @@ class AtmosConnection(ConnectionUserAndKey):
 
         if "Content-Type" not in headers:
             headers["Content-Type"] = "application/octet-stream"
+
         if "Accept" not in headers:
             headers["Accept"] = "*/*"
 
@@ -85,8 +86,10 @@ class AtmosConnection(ConnectionUserAndKey):
     def _calculate_signature(self, params, headers):
         pathstring = urlunquote(self.action)
         driver_path = self.driver.path  # pylint: disable=no-member
+
         if pathstring.startswith(driver_path):
             pathstring = pathstring[len(driver_path) :]
+
         if params:
             if type(params) is dict:
                 params = list(params.items())
@@ -107,6 +110,7 @@ class AtmosConnection(ConnectionUserAndKey):
         signature = "\n".join(signature)
         key = base64.b64decode(self.key)
         signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
+
         return base64.b64encode(b(signature)).decode("utf-8")
 
 
@@ -129,6 +133,7 @@ class AtmosDriver(StorageDriver):
     def iterate_containers(self):
         result = self.connection.request(self._namespace_path(""))
         entries = self._list_objects(result.object, object_type="directory")
+
         for entry in entries:
             extra = {"object_id": entry["id"]}
             yield Container(entry["name"], extra, self)
@@ -143,6 +148,7 @@ class AtmosDriver(StorageDriver):
             raise ContainerDoesNotExistError(e, self, container_name)
         meta = self._emc_meta(result)
         extra = {"object_id": meta["objectid"]}
+
         return Container(container_name, extra, self)
 
     def create_container(self, container_name):
@@ -153,6 +159,7 @@ class AtmosDriver(StorageDriver):
             if e.code != 1016:
                 raise
             raise ContainerAlreadyExistsError(e, self, container_name)
+
         return self.get_container(container_name)
 
     def delete_container(self, container):
@@ -163,6 +170,7 @@ class AtmosDriver(StorageDriver):
                 raise ContainerDoesNotExistError(e, self, container.name)
             elif e.code == 1023:
                 raise ContainerIsNotEmptyError(e, self, container.name)
+
         return True
 
     def get_object(self, container_name, object_name):
@@ -185,6 +193,7 @@ class AtmosDriver(StorageDriver):
         last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", last_modified)
         extra = {"object_id": system_meta["objectid"], "last_modified": last_modified}
         data_hash = user_meta.pop("md5", "")
+
         return Object(
             object_name,
             int(system_meta["size"]),
@@ -263,7 +272,7 @@ class AtmosDriver(StorageDriver):
             iterator = iter(iterator)
 
         extra_headers = headers or {}
-        data_hash = hashlib.md5()
+        data_hash = hashlib.md5()  # nosec
         generator = read_in_chunks(iterator, CHUNK_SIZE, True)
         bytes_transferred = 0
         try:
@@ -295,7 +304,7 @@ class AtmosDriver(StorageDriver):
 
             headers.update(
                 {
-                    "x-emc-meta": "md5=" + data_hash.hexdigest(),
+                    "x-emc-meta": "md5=" + data_hash.hexdigest(),  # nosec
                     "Content-Type": content_type,
                 }
             )
@@ -311,10 +320,11 @@ class AtmosDriver(StorageDriver):
                 chunk = next(generator)
             except StopIteration:
                 break
+
             if len(chunk) == 0:
                 break
 
-        data_hash = data_hash.hexdigest()
+        data_hash = data_hash.hexdigest()  # nosec
 
         if extra is None:
             meta_data = {}
@@ -376,6 +386,7 @@ class AtmosDriver(StorageDriver):
             if e.code != 1003:
                 raise
             raise ObjectDoesNotExistError(e, self, obj.name)
+
         return True
 
     def enable_object_cdn(self, obj):
@@ -396,6 +407,7 @@ class AtmosDriver(StorageDriver):
 
         :rtype: ``str``
         """
+
         if use_object:
             path = "/rest/objects" + obj.meta_data["object_id"]
         else:
@@ -415,6 +427,7 @@ class AtmosDriver(StorageDriver):
 
         params = urlencode(params)
         path = self.path + path
+
         return urlparse.urlunparse((protocol, self.host, path, "", params, ""))
 
     def _cdn_signature(self, path, params, expiry):
@@ -427,8 +440,10 @@ class AtmosDriver(StorageDriver):
     def _list_objects(self, tree, object_type=None):
         listing = tree.find(self._emc_tag("DirectoryList"))
         entries = []
+
         for entry in listing.findall(self._emc_tag("DirectoryEntry")):
             file_type = entry.find(self._emc_tag("FileType")).text
+
             if object_type is not None and object_type != file_type:
                 continue
             entries.append(
@@ -438,6 +453,7 @@ class AtmosDriver(StorageDriver):
                     "name": entry.find(self._emc_tag("Filename")).text,
                 }
             )
+
         return entries
 
     def _clean_object_name(self, name):
@@ -455,9 +471,11 @@ class AtmosDriver(StorageDriver):
 
     def _emc_meta(self, response):
         meta = response.headers.get("x-emc-meta", "")
+
         if len(meta) == 0:
             return {}
         meta = meta.split(", ")
+
         return dict([x.split("=", 1) for x in meta])
 
     def _entries_to_objects(self, container, entries):
@@ -490,4 +508,5 @@ class AtmosDriver(StorageDriver):
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type="regular")
         objects = self._entries_to_objects(container, entries)
+
         return self._filter_listed_container_objects(objects, prefix)

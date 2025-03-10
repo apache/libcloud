@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-    RcodeZero DNS Driver
+RcodeZero DNS Driver
 """
 import re
 import json
@@ -35,6 +35,7 @@ __all__ = [
 class RcodeZeroResponse(JsonResponse):
     def success(self):
         i = int(self.status)
+
         return 200 <= i <= 299
 
     def parse_error(self):
@@ -64,6 +65,7 @@ class RcodeZeroConnection(ConnectionKey):
     def add_default_headers(self, headers):
         headers["Authorization"] = "Bearer " + self.key
         headers["Accept"] = "application/json"
+
         return headers
 
 
@@ -183,6 +185,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             ttl = extra["ttl"]
         else:
             ttl = None
+
         return Record(id=None, name=name, data=data, type=type, zone=zone, ttl=ttl, driver=self)
 
     def create_zone(self, domain, type="master", ttl=None, extra={}):
@@ -207,6 +210,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         """
         action = "%s/zones" % (self.api_root)
+
         if type.lower() == "slave" and (extra is None or extra.get("masters", None) is None):
             msg = "Master IPs required for slave zones"
             raise ValueError(msg)
@@ -221,6 +225,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             ):
                 raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self, value=e.message)
             raise e
+
         return Zone(
             id=zone_id,
             domain=domain,
@@ -254,6 +259,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         """
         action = "{}/zones/{}".format(self.api_root, domain)
+
         if type is None:
             type = zone.type
 
@@ -261,6 +267,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             msg = "Master IPs required for slave zones"
             raise ValueError(msg)
         payload = {"domain": domain.lower(), "type": type.lower()}
+
         if extra is not None:
             payload.update(extra)
         try:
@@ -271,6 +278,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             ):
                 raise ZoneAlreadyExistsError(zone_id=zone.id, driver=self, value=e.message)
             raise e
+
         return Zone(id=zone.id, domain=domain, type=type, ttl=None, driver=self, extra=extra)
 
     def delete_record(self, record):
@@ -321,6 +329,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             self.connection.request(action=action, method="DELETE")
         except BaseHTTPError:
             return False
+
         return True
 
     def get_zone(self, zone_id):
@@ -385,6 +394,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             ):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self, value=e.message)
             raise e
+
         return self._to_records(response.object["data"], zone)
 
     def list_zones(self):
@@ -395,6 +405,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         """
         action = "%s/zones?page_size=-1" % (self.api_root)
         response = self.connection.request(action=action, method="GET")
+
         return self._to_zones(response.object["data"])
 
     def update_record(self, record, name, type, data, extra=None):
@@ -434,13 +445,14 @@ class RcodeZeroDNSDriver(DNSDriver):
             ):
                 raise ZoneDoesNotExistError(zone_id=record.zone.id, driver=self, value=e.message)
             raise e
+
         if not (extra is None or extra.get("ttl", None) is None):
             ttl = extra["ttl"]
         else:
             ttl = record.ttl
 
         return Record(
-            id=hashlib.md5(str(name + " " + data).encode("utf-8")).hexdigest(),
+            id=hashlib.md5(str(name + " " + data).encode("utf-8")).hexdigest(),  # nosec
             name=name,
             data=data,
             type=type,
@@ -452,6 +464,7 @@ class RcodeZeroDNSDriver(DNSDriver):
 
     def _to_zone(self, item):
         extra = {}
+
         for e in [
             "dnssec_status",
             "dnssec_status_detail",
@@ -468,6 +481,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         ]:
             if e in item:
                 extra[e] = item[e]
+
         return Zone(
             id=item["domain"],
             domain=item["domain"],
@@ -479,12 +493,15 @@ class RcodeZeroDNSDriver(DNSDriver):
 
     def _to_zones(self, items):
         zones = []
+
         for item in items:
             zones.append(self._to_zone(item))
+
         return zones
 
     def _to_records(self, items, zone):
         records = []
+
         for item in items:
             for record in item["records"]:
                 extra = {}
@@ -493,7 +510,7 @@ class RcodeZeroDNSDriver(DNSDriver):
                 recordname = re.sub("." + zone.id + "$", "", item["name"][:-1])
                 records.append(
                     Record(
-                        id=hashlib.md5(
+                        id=hashlib.md5(  # nosec
                             str(recordname + " " + record["content"]).encode("utf-8")
                         ).hexdigest(),
                         name=recordname,
@@ -505,6 +522,7 @@ class RcodeZeroDNSDriver(DNSDriver):
                         extra=extra,
                     )
                 )
+
         return records
 
     # rcodezero supports only rrset, so we must create rrsets from the given
@@ -524,22 +542,27 @@ class RcodeZeroDNSDriver(DNSDriver):
         rrset["type"] = type
         rrset["changetype"] = action
         rrset["records"] = []
+
         if not (extra is None or extra.get("ttl", None) is None):
             rrset["ttl"] = extra["ttl"]
 
         content = {}
+
         if not action == "delete":
             content["content"] = data
+
             if not (extra is None or extra.get("disabled", None) is None):
                 content["disabled"] = extra["disabled"]
             rrset["records"].append(content)
-        id = hashlib.md5(str(name + " " + data).encode("utf-8")).hexdigest()
+        id = hashlib.md5(str(name + " " + data).encode("utf-8")).hexdigest()  # nosec
         # check if rrset contains more than one record. if yes we need to create an
         # update request
+
         for r in cur_records:
             if action == "update" and r.id == record.id:
                 # do not include records which should be updated in the update
                 # request
+
                 continue
 
             if name == r.name and r.id != id:
@@ -548,9 +571,11 @@ class RcodeZeroDNSDriver(DNSDriver):
                 rrset["changetype"] = "update"
                 content = {}
                 content["content"] = r.data
+
                 if not (r.extra is None or r.extra.get("disabled", None) is None):
                     content["disabled"] = r.extra["disabled"]
                 rrset["records"].append(content)
         request = list()
         request.append(rrset)
+
         return request

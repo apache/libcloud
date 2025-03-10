@@ -36,10 +36,12 @@ class GandiException(Exception):
 
     def __str__(self):
         # pylint: disable=unsubscriptable-object
+
         return "({}) {}".format(self.args[0], self.args[1])
 
     def __repr__(self):
         # pylint: disable=unsubscriptable-object
+
         return '<GandiException code {} "{}">'.format(self.args[0], self.args[1])
 
 
@@ -83,6 +85,7 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
 
     def request(self, method, *args):
         args = (self.key,) + args
+
         return super().request(method, *args)
 
 
@@ -106,6 +109,7 @@ class BaseGandiDriver:
 
                 if op["step"] == "DONE":
                     return True
+
                 if op["step"] in ["ERROR", "CANCEL"]:
                     return False
             except (KeyError, IndexError):
@@ -114,6 +118,7 @@ class BaseGandiDriver:
                 raise GandiException(1002, e)
 
             time.sleep(check_interval)
+
         return False
 
 
@@ -147,7 +152,8 @@ class BaseObject:
         same UUID!
         """
         hashstring = "{}:{}:{}".format(self.uuid_prefix, self.id, self.driver.type)
-        return hashlib.sha1(b(hashstring)).hexdigest()
+
+        return hashlib.sha1(b(hashstring)).hexdigest()  # nosec
 
 
 class IPAddress(BaseObject):

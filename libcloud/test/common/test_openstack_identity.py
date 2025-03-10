@@ -333,7 +333,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             # Token is cached
             self.assertEqual(len(auth_cache), 1)
 
-            # New client, token from cache is re-used
+            # New client, token from cache is reused
             osa = cls(auth_url=auth_url, parent_conn=connection, **kwargs)
             osa.request = Mock(wraps=osa.request)
             osa = osa.authenticate()

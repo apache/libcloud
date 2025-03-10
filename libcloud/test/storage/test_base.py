@@ -30,10 +30,12 @@ from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 class BaseMockRawResponse(MockHttp):
     def _(self, method, url, body, headers):
         body = "ab"
+
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def root(self, method, url, body, headers):
         body = "ab"
+
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
@@ -161,7 +163,7 @@ class BaseStorageTests(unittest.TestCase):
             object_name="test1", content_type=None, request_path="/", stream=iterator
         )
 
-        hasher = hashlib.md5()
+        hasher = hashlib.md5()  # nosec
         hasher.update(b("a") * size)
         expected_hash = hasher.hexdigest()
 
@@ -196,7 +198,7 @@ class BaseStorageTests(unittest.TestCase):
             object_name="test2", content_type=None, request_path="/", stream=iterator
         )
 
-        hasher = hashlib.md5()
+        hasher = hashlib.md5()  # nosec
         hasher.update(b("b") * size)
         expected_hash = hasher.hexdigest()
 
@@ -226,7 +228,7 @@ class BaseStorageTests(unittest.TestCase):
             object_name="test1", content_type=None, request_path="/", stream=iterator
         )
 
-        hasher = hashlib.md5()
+        hasher = hashlib.md5()  # nosec
         hasher.update(b("a") * size)
         expected_hash = hasher.hexdigest()
 
@@ -284,6 +286,7 @@ class BaseStorageTests(unittest.TestCase):
         def raise_on_second(*_, **__):
             nonlocal count
             count += 1
+
             if count > 1:
                 raise SecondException()
             else:
@@ -307,9 +310,11 @@ class BaseStorageTests(unittest.TestCase):
         def succeed_on_second(*_, **__) -> mock.MagicMock:
             nonlocal count
             count += 1
+
             if count > 1:
                 successful_response = mock.MagicMock()
                 successful_response.status_code = 200
+
                 return successful_response
             else:
                 raise RateLimitReachedError()

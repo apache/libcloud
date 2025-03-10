@@ -20,7 +20,8 @@
 set -e
 
 function cleanup() {
-    rm -f dist/apache*libcloud*.*
+    rm -rf dist/apache*libcloud*.*
+    pip uninstall -y apache-libcloud || true
 }
 
 cleanup
@@ -41,6 +42,10 @@ rm -rf dist/apache_libcloud-*.whl
 pip install build
 python -m build
 pip install dist/apache_libcloud-*.whl
+
+# Verify the library has been installed and perform basic sanity check
+pip show apache-libcloud
+python -c "import libcloud; print(libcloud.__version__)"
 
 # Verify all dependencies were installed
 pip show requests
