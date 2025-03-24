@@ -764,7 +764,7 @@ class ParamikoSSHClient(BaseSSHClient):
         """
         Create SFTP client from the underlying SSH client.
 
-        This method tries to re-use the existing self.sftp_client (if it
+        This method tries to reuse the existing self.sftp_client (if it
         exists) and it also tries to verify the connection is opened and if
         it's not, it will try to re-establish it.
         """

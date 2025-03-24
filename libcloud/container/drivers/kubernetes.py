@@ -59,10 +59,13 @@ def to_n_bytes(memory_str: str) -> int:
     """Convert memory string to number of bytes
     (e.g. '1234Mi'-> 1293942784)
     """
+
     if memory_str.startswith("0"):
         return 0
+
     if memory_str.isnumeric():
         return int(memory_str)
+
     for unit, multiplier in K8S_UNIT_MAP.items():
         if memory_str.endswith(unit):
             return int(memory_str.strip(unit)) * multiplier
@@ -72,19 +75,23 @@ def to_memory_str(n_bytes: int, unit: Optional[str] = None) -> str:
     """Convert number of bytes to k8s memory string
     (e.g. 1293942784 -> '1234Mi')
     """
+
     if n_bytes == 0:
         return "0K"
     n_bytes = int(n_bytes)
     memory_str = None
+
     if unit is None:
         for unit, multiplier in reversed(K8S_UNIT_MAP.items()):
             converted_n_bytes_float = n_bytes / multiplier
             converted_n_bytes = n_bytes // multiplier
             memory_str = f"{converted_n_bytes}{unit}"
+
             if converted_n_bytes_float % 1 == 0:
                 break
     elif K8S_UNIT_MAP.get(unit):
         memory_str = f"{n_bytes // K8S_UNIT_MAP[unit]}{unit}"
+
     return memory_str
 
 
@@ -92,15 +99,19 @@ def to_cpu_str(n_cpus: Union[int, float]) -> str:
     """Convert number of cpus to cpu string
     (e.g. 0.5 -> '500m')
     """
+
     if n_cpus == 0:
         return "0"
     millicores = n_cpus * 1000
+
     if millicores % 1 == 0:
         return f"{int(millicores)}m"
     microcores = n_cpus * 1000000
+
     if microcores % 1 == 0:
         return f"{int(microcores)}u"
     nanocores = n_cpus * 1000000000
+
     return f"{int(nanocores)}n"
 
 
@@ -108,6 +119,7 @@ def to_n_cpus(cpu_str: str) -> Union[int, float]:
     """Convert cpu string to number of cpus
     (e.g. '500m' -> 0.5, '2000000000n' -> 2)
     """
+
     if cpu_str.endswith("n"):
         return int(cpu_str.strip("n")) / 1000000000
     elif cpu_str.endswith("u"):
@@ -123,9 +135,11 @@ def to_n_cpus(cpu_str: str) -> Union[int, float]:
 def sum_resources(*resource_dicts):
     total_cpu = 0
     total_memory = 0
+
     for rd in resource_dicts:
         total_cpu += to_n_cpus(rd.get("cpu", "0m"))
         total_memory += to_n_bytes(rd.get("memory", "0K"))
+
     return {"cpu": to_cpu_str(total_cpu), "memory": to_memory_str(total_memory)}
 
 
@@ -222,6 +236,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             result = self.connection.request(ROOT_URL + "v1/pods").object
         except Exception as exc:
             errno = getattr(exc, "errno", None)
+
             if errno == 111:
                 raise KubernetesException(
                     errno,
@@ -231,8 +246,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         pods = [self._to_pod(value) for value in result["items"]]
         containers = []
+
         for pod in pods:
             containers.extend(pod.containers)
+
         return containers
 
     def get_container(self, id: str) -> Container:
@@ -246,6 +263,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         containers = self.list_containers()
         match = [container for container in containers if container.id == id]
+
         return match[0]
 
     def list_namespaces(self) -> List[KubernetesNamespace]:
@@ -258,6 +276,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             result = self.connection.request(ROOT_URL + "v1/namespaces/").object
         except Exception as exc:
             errno = getattr(exc, "errno", None)
+
             if errno == 111:
                 raise KubernetesException(
                     errno,
@@ -266,6 +285,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             raise
 
         namespaces = [self._to_namespace(value) for value in result["items"]]
+
         return namespaces
 
     def get_namespace(self, id: str) -> KubernetesNamespace:
@@ -291,6 +311,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         self.connection.request(
             ROOT_URL + "v1/namespaces/%s" % namespace.id, method="DELETE"
         ).object
+
         return True
 
     def create_namespace(self, name: str) -> KubernetesNamespace:
@@ -306,6 +327,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         result = self.connection.request(
             ROOT_URL + "v1/namespaces", method="POST", data=json.dumps(request)
         ).object
+
         return self._to_namespace(result)
 
     def deploy_container(
@@ -338,6 +360,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: :class:`.Container`
         """
+
         if namespace is None:
             namespace = "default"
         else:
@@ -351,6 +374,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             method="POST",
             data=json.dumps(request),
         ).object
+
         return self._to_namespace(result)
 
     def destroy_container(self, container: Container) -> bool:
@@ -363,6 +387,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``bool``
         """
+
         return self.ex_destroy_pod(container.extra["namespace"], container.extra["pod"])
 
     def ex_list_pods(self, fetch_metrics: bool = False) -> List[KubernetesPod]:
@@ -376,6 +401,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         result = self.connection.request(ROOT_URL + "v1/pods").object
         metrics = None
+
         if fetch_metrics:
             try:
                 metrics = {
@@ -407,6 +433,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             ROOT_URL + "v1/namespaces/{}/pods/{}".format(namespace, pod_name),
             method="DELETE",
         ).object
+
         return True
 
     def ex_list_nodes(self) -> List[Node]:
@@ -416,6 +443,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``list`` of :class:`.Node`
         """
         result = self.connection.request(ROOT_URL + "v1/nodes").object
+
         return [self._to_node(node) for node in result["items"]]
 
     def ex_destroy_node(self, node_name: str) -> bool:
@@ -428,6 +456,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``bool``
         """
         self.connection.request(ROOT_URL + f"v1/nodes/{node_name}", method="DELETE").object
+
         return True
 
     def ex_get_version(self) -> str:
@@ -435,6 +464,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``str``
         """
+
         return self.connection.request("/version").object["gitVersion"]
 
     def ex_list_nodes_metrics(self) -> List[Dict[str, Any]]:
@@ -442,6 +472,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``list`` of ``dict``
         """
+
         return self.connection.request("/apis/metrics.k8s.io/v1beta1/nodes").object["items"]
 
     def ex_list_pods_metrics(self) -> List[Dict[str, Any]]:
@@ -449,6 +480,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``list`` of ``dict``
         """
+
         return self.connection.request("/apis/metrics.k8s.io/v1beta1/pods").object["items"]
 
     def ex_list_services(self) -> List[Dict[str, Any]]:
@@ -456,6 +488,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``list`` of ``dict``
         """
+
         return self.connection.request(ROOT_URL + "v1/services").object["items"]
 
     def ex_list_deployments(self) -> List[KubernetesDeployment]:
@@ -464,6 +497,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``list`` of :class:`.KubernetesDeployment`
         """
         items = self.connection.request("/apis/apps/v1/deployments").object["items"]
+
         return [self._to_deployment(item) for item in items]
 
     def _to_deployment(self, data):
@@ -483,6 +517,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             "available_replicas": data["status"]["availableReplicas"],
             "conditions": data["status"]["conditions"],
         }
+
         return KubernetesDeployment(
             id=id_,
             name=name,
@@ -502,12 +537,13 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         driver = self.connection.driver
         memory = data["status"].get("capacity", {}).get("memory", "0K")
         cpu = data["status"].get("capacity", {}).get("cpu", "1")
+
         if isinstance(cpu, str) and not cpu.isnumeric():
             cpu = to_n_cpus(cpu)
         image_name = data["status"]["nodeInfo"].get("osImage")
         image = NodeImage(image_name, image_name, driver)
         size_name = f"{cpu} vCPUs, {memory} Ram"
-        size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
+        size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()  # nosec
         extra_size = {"cpus": cpu}
         size = NodeSize(
             id=size_id,
@@ -523,13 +559,16 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         extra["os"] = data["status"]["nodeInfo"].get("operatingSystem")
         extra["kubeletVersion"] = data["status"]["nodeInfo"]["kubeletVersion"]
         extra["provider_id"] = data.get("spec", {}).get("providerID")
+
         for condition in data["status"]["conditions"]:
             if condition["type"] == "Ready" and condition["status"] == "True":
                 state = NodeState.RUNNING
+
                 break
         else:
             state = NodeState.UNKNOWN
         public_ips, private_ips = [], []
+
         for address in data["status"]["addresses"]:
             if address["type"] == "InternalIP":
                 private_ips.append(address["address"])
@@ -538,6 +577,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         created_at = datetime.datetime.strptime(
             data["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
         )
+
         return Node(
             id=ID,
             name=name,
@@ -563,6 +603,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         container_statuses = data["status"].get("containerStatuses", {})
         containers = []
         extra = {"resources": {}}
+
         if metrics:
             try:
                 extra["metrics"] = metrics[name, namespace]
@@ -570,6 +611,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                 pass
 
         # response contains the status of the containers in a separate field
+
         for container in data["spec"]["containers"]:
             if container_statuses:
                 spec = list(filter(lambda i: i["name"] == container["name"], container_statuses))[0]
@@ -609,8 +651,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         state = container_status.get("state")
         created_at = None
+
         if state:
             started_at = list(state.values())[0].get("startedAt")
+
             if started_at:
                 created_at = datetime.datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%SZ")
         extra = {
@@ -618,8 +662,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             "namespace": pod_data["metadata"]["namespace"],
         }
         resources = data.get("resources")
+
         if resources:
             extra["resources"] = resources
+
         return Container(
             id=container_status.get("containerID") or data["name"],
             name=data["name"],
@@ -641,6 +687,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         Convert an API node data object to a `KubernetesNamespace` object
         """
+
         return KubernetesNamespace(
             id=data["metadata"]["name"],
             name=data["metadata"]["name"],
@@ -655,4 +702,5 @@ def ts_to_str(timestamp):
     """
     date = datetime.datetime.fromtimestamp(timestamp)
     date_string = date.strftime("%d/%m/%Y %H:%M %Z")
+
     return date_string

@@ -1,5 +1,10 @@
+# NOTE: We still need to use MANIFEST.in for backward compatibility with past
+# distributions since pyproject.toml + setuptools backend doesn't support
+# as flexible includes and excludes as we need.
 global-exclude *.py[cod]
 global-exclude .pytest_cache
+
+# Include common files at the repository root
 include LICENSE
 include NOTICE
 include example_*.py
@@ -23,3 +28,16 @@ prune docs/
 prune demos/
 prune integration/
 prune pylint_plugins/
+prune __pycache__
+
+# Recursively include all files under the fixture directories
+recursive-include libcloud/test/backup/fixtures *
+recursive-include libcloud/test/common/fixtures *
+recursive-include libcloud/test/compute/fixtures *
+recursive-include libcloud/test/container/fixtures *
+recursive-include libcloud/test/dns/fixtures *
+recursive-include libcloud/test/loadbalancer/fixtures *
+recursive-include libcloud/test/storage/fixtures *
+
+# Exclude __pycache__ directories
+prune **/__pycache__

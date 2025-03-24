@@ -33,12 +33,14 @@ except ImportError:
 
 
 def _to_md5_fingerprint(data):
-    hashed = hashlib.md5(data).digest()
+    hashed = hashlib.md5(data).digest()  # nosec
+
     return ":".join(hexadigits(hashed))
 
 
 def get_pubkey_openssh_fingerprint(pubkey):
     # We import and export the key to make sure it is in OpenSSH format
+
     if not cryptography_available:
         raise RuntimeError("cryptography is not available")
     public_key = serialization.load_ssh_public_key(b(pubkey), backend=default_backend())
@@ -48,12 +50,14 @@ def get_pubkey_openssh_fingerprint(pubkey):
     )[
         7:
     ]  # strip ssh-rsa prefix
+
     return _to_md5_fingerprint(base64_decode_string(pub_openssh))
 
 
 def get_pubkey_ssh2_fingerprint(pubkey):
     # This is the format that EC2 shows for public key fingerprints in its
     # KeyPair mgmt API
+
     if not cryptography_available:
         raise RuntimeError("cryptography is not available")
     public_key = serialization.load_ssh_public_key(b(pubkey), backend=default_backend())
@@ -61,13 +65,16 @@ def get_pubkey_ssh2_fingerprint(pubkey):
         encoding=serialization.Encoding.DER,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
+
     return _to_md5_fingerprint(pub_der)
 
 
 def get_pubkey_comment(pubkey, default=None):
     if pubkey.startswith("ssh-"):
         # This is probably an OpenSSH key
+
         return pubkey.strip().split(" ", 3)[2]
+
     if default:
         return default
     raise ValueError("Public key is not in a supported format")

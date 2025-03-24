@@ -22,7 +22,7 @@ Supported Features:
 - dedicated IP addresses (optional)
 
 Read more at https://www.rcodezero.at/en or get the API documentation
-at https://my.rcodezero.at/api-doc
+at https://my.rcodezero.at/openapi
 
 Instantiating the driver
 ------------------------
@@ -38,6 +38,5 @@ API Docs
 
 .. autoclass:: libcloud.dns.drivers.rcodezero.RcodeZeroDNSDriver
     :members:
-    :inherited-members:
-
+    
 .. _`RcodeZero`: https://my.rcodezero.at/en

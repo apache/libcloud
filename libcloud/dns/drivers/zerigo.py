@@ -67,6 +67,7 @@ class ZerigoDNSResponse(XmlResponse):
                 raise InvalidCredsError(self.body)
         elif status == 404:
             context = self.connection.context
+
             if context["resource"] == "zone":
                 raise ZoneDoesNotExistError(value="", driver=self, zone_id=context["id"])
             elif context["resource"] == "record":
@@ -78,6 +79,7 @@ class ZerigoDNSResponse(XmlResponse):
                 raise MalformedResponseError("Failed to parse XML", body=self.body)
 
             errors = []
+
             for error in findall(element=body, xpath="error"):
                 errors.append(error.text)
 
@@ -94,16 +96,19 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         auth_b64 = base64.b64encode(b("{}:{}".format(self.user_id, self.key)))
         headers["Authorization"] = "Basic %s" % (auth_b64.decode("utf-8"))
+
         return headers
 
     def request(self, action, params=None, data="", headers=None, method="GET"):
         if not headers:
             headers = {}
+
         if not params:
             params = {}
 
         if method in ("POST", "PUT"):
             headers = {"Content-Type": "application/xml; charset=UTF-8"}
+
         return super().request(
             action=action, params=params, data=data, method=method, headers=headers
         )
@@ -142,6 +147,7 @@ class ZerigoDNSDriver(DNSDriver):
         self.connection.set_context({"resource": "zone", "id": zone_id})
         data = self.connection.request(path).object
         zone = self._to_zone(elem=data)
+
         return zone
 
     def get_record(self, zone_id, record_id):
@@ -150,6 +156,7 @@ class ZerigoDNSDriver(DNSDriver):
         path = API_ROOT + "hosts/%s.xml" % (record_id)
         data = self.connection.request(path).object
         record = self._to_record(elem=data, zone=zone)
+
         return record
 
     def create_zone(self, domain, type="master", ttl=None, extra=None):
@@ -167,6 +174,7 @@ class ZerigoDNSDriver(DNSDriver):
             action=path, data=ET.tostring(zone_elem), method="POST"
         ).object
         zone = self._to_zone(elem=data)
+
         return zone
 
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
@@ -178,6 +186,7 @@ class ZerigoDNSDriver(DNSDriver):
 
         @inherits: :class:`DNSDriver.update_zone`
         """
+
         if domain:
             raise LibcloudError("Domain cannot be changed", driver=self)
 
@@ -194,6 +203,7 @@ class ZerigoDNSDriver(DNSDriver):
         updated_zone = get_new_obj(
             obj=zone, klass=Zone, attributes={"type": type, "ttl": ttl, "extra": merged}
         )
+
         return updated_zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -212,6 +222,7 @@ class ZerigoDNSDriver(DNSDriver):
         )
         assert response.status == httplib.CREATED
         record = self._to_record(elem=response.object, zone=zone)
+
         return record
 
     def update_record(self, record, name=None, type=None, data=None, extra=None):
@@ -230,18 +241,21 @@ class ZerigoDNSDriver(DNSDriver):
             klass=Record,
             attributes={"type": type, "data": data, "extra": merged},
         )
+
         return updated_record
 
     def delete_zone(self, zone):
         path = API_ROOT + "zones/%s.xml" % (zone.id)
         self.connection.set_context({"resource": "zone", "id": zone.id})
         response = self.connection.request(action=path, method="DELETE")
+
         return response.status == httplib.OK
 
     def delete_record(self, record):
         path = API_ROOT + "hosts/%s.xml" % (record.id)
         self.connection.set_context({"resource": "record", "id": record.id})
         response = self.connection.request(action=path, method="DELETE")
+
         return response.status == httplib.OK
 
     def ex_get_zone_by_domain(self, domain):
@@ -257,6 +271,7 @@ class ZerigoDNSDriver(DNSDriver):
         self.connection.set_context({"resource": "zone", "id": domain})
         data = self.connection.request(path).object
         zone = self._to_zone(elem=data)
+
         return zone
 
     def ex_force_slave_axfr(self, zone):
@@ -272,6 +287,7 @@ class ZerigoDNSDriver(DNSDriver):
         self.connection.set_context({"resource": "zone", "id": zone.id})
         response = self.connection.request(path, method="POST")
         assert response.status == httplib.ACCEPTED
+
         return zone
 
     def _to_zone_elem(self, domain=None, type=None, ttl=None, extra=None):
@@ -299,6 +315,7 @@ class ZerigoDNSDriver(DNSDriver):
             elif type == "std_master":
                 # TODO: Each driver should provide supported zone types
                 # Slave name servers are elsewhere
+
                 if not extra or "slave-nameservers" not in extra:
                     raise LibcloudError(
                         "slave-nameservers extra "
@@ -390,6 +407,7 @@ class ZerigoDNSDriver(DNSDriver):
             "tags": tags,
         }
         zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl), driver=self, extra=extra)
+
         return zone
 
     def _to_records(self, elem, zone):
@@ -438,6 +456,7 @@ class ZerigoDNSDriver(DNSDriver):
             ttl=ttl,
             extra=extra,
         )
+
         return record
 
     def _get_more(self, rtype, **kwargs):
@@ -467,6 +486,8 @@ class ZerigoDNSDriver(DNSDriver):
             self.connection.set_context({"resource": "zone", "id": zone.id})
             response = self.connection.request(path, params=params)
             transform_func = self._to_records
+        else:
+            raise ValueError(f"Unsupported rtype: {rtype}")
 
         exhausted = False
         result_count = int(response.headers.get("x-query-count", 0))
@@ -476,6 +497,7 @@ class ZerigoDNSDriver(DNSDriver):
 
         if response.status == httplib.OK:
             items = transform_func(elem=response.object, **kwargs)
+
             return items, params["page"], exhausted
         else:
             return [], None, True

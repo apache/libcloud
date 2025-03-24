@@ -8,11 +8,10 @@ preserve the old behavior when this is possible.
 Libcloud 3.9.0
 --------------
 
-* Support for Python 3.7 which has been EOL for more than a year now has been
-  removed.
+* Support for Python 3.7 and 3.8 which have been EOL has been removed.
 
-  If you still want to use Libcloud with Python 3.7, you should use an older
-  release which still supports Python 3.7.
+  If you still want to use Libcloud with Python 3.7 or 3.8, you should use an older
+  release which still supports Python 3.7 and 3.8.
 
 * [AZURE ARM] Added a new argument to destroy_node() to also delete node's managed
   OS disk as part of the node's deletion. Defaults to true. This can be reverted by

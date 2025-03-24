@@ -15,8 +15,8 @@
 
 [build-system]
 requires = [
-    "setuptools~=70.1.1",
-    "wheel~=0.43.0"
+    "setuptools~=75.3.0",
+    "wheel~=0.45.1"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -42,11 +42,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -74,7 +74,7 @@ Changelog = "https://github.com/apache/libcloud/blob/trunk/CHANGES.rst"
 
 [project.optional-dependencies]
 build = [
-    "build==1.2.1"
+    "build==1.2.2"
 ]
 publish = [
     "twine==5.1.1"
@@ -89,9 +89,20 @@ where = ["./"]
 include = ["libcloud", "libcloud.test*", "libcloud.*" ]
 
 [tool.setuptools.package-data]
-"*" = ["*.json", "*.xml", "*.pub", "*.key", "*.pem", "*.crt", "*.csv", "*.txt", "*.html"]
-"libcloud.test.compute.fixtures.misc" = ["*"]
-"libcloud.test.dns.fixtures.worldwidedns" = ["*"]
+"libcloud.data" = [
+    "pricing.json"
+]
+"libcloud.test" = [
+    "**/*.json",
+    "**/*.xml",
+    "**/*.pub",
+    "**/*.key",
+    "**/*.pem",
+    "**/*.crt",
+    "**/*.csv",
+    "**/*.txt",
+    "**/*.html",
+]
 
 [tool.setuptools]
 include-package-data = true
@@ -102,12 +113,11 @@ version = {attr = "libcloud.__version__"}
 readme = {file = ["README.rst"], content-type = "text/x-rst"}
 
 [tool.distutils.bdist_wheel]
-universal = true
 
 
 [tool.black]
 line_length = 100
-target_version = ['py37', 'py38', 'py39', 'py310', 'py311']
+target_version = ['py39', 'py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 exclude = '''
 (

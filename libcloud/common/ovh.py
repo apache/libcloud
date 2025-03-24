@@ -109,11 +109,13 @@ class OvhConnection(ConnectionUserAndKey):
 
     def __init__(self, user_id, *args, **kwargs):
         region = kwargs.pop("region", "")
+
         if region:
             self.host = ("{}.{}".format(region, API_HOST)).lstrip(".")
         else:
             self.host = API_HOST
         self.consumer_key = kwargs.pop("ex_consumer_key", None)
+
         if self.consumer_key is None:
             consumer_key_json = self.request_consumer_key(user_id)
             msg = (
@@ -145,27 +147,32 @@ class OvhConnection(ConnectionUserAndKey):
 
         json_response = response.parse_body()
         httpcon.close()
+
         return json_response
 
     def get_timestamp(self):
         if not self._timedelta:
             url = "https://{}{}/auth/time".format(self.host, API_ROOT)
             response = get_response_object(url=url, method="GET", headers={})
+
             if not response or not response.body:
                 raise Exception("Failed to get current time from Ovh API")
 
             timestamp = int(response.body)
             self._timedelta = timestamp - int(time.time())
+
         return int(time.time()) + self._timedelta
 
     def make_signature(self, method, action, params, data, timestamp):
         full_url = "https://{}{}".format(self.host, action)
+
         if params:
             full_url += "?"
+
             for key, value in params.items():
                 full_url += "{}={}&".format(key, value)
             full_url = full_url[:-1]
-        sha1 = hashlib.sha1()
+        sha1 = hashlib.sha1()  # nosec
         base_signature = "+".join(
             [
                 self.key,
@@ -178,6 +185,7 @@ class OvhConnection(ConnectionUserAndKey):
         )
         sha1.update(base_signature.encode())
         signature = "$1$" + sha1.hexdigest()
+
         return signature
 
     def add_default_params(self, params):
@@ -191,6 +199,7 @@ class OvhConnection(ConnectionUserAndKey):
                 "Content-type": "application/json",
             }
         )
+
         return headers
 
     def request(self, action, params=None, data=None, headers=None, method="GET", raw=False):

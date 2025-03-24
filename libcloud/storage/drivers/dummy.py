@@ -43,6 +43,7 @@ class DummyFileObject(file):
 
     def _get_chunk(self, chunk_len):
         chunk = [str(x) for x in random.randint(97, 120)]
+
         return chunk
 
     def __len__(self):
@@ -51,12 +52,12 @@ class DummyFileObject(file):
 
 class DummyIterator:
     def __init__(self, data=None):
-        self.hash = hashlib.md5()
+        self.hash = hashlib.md5()  # nosec
         self._data = data or []
         self._current_item = 0
 
     def get_md5_hash(self):
-        return self.hash.hexdigest()
+        return self.hash.hexdigest()  # nosec
 
     def next(self):
         if self._current_item == len(self._data):
@@ -65,6 +66,7 @@ class DummyIterator:
         value = self._data[self._current_item]
         self.hash.update(b(value))
         self._current_item += 1
+
         return value
 
     def __next__(self):
@@ -137,8 +139,10 @@ class DummyStorageDriver(StorageDriver):
         )
 
         bytes_used = 0
+
         for container in self._containers:
             objects = self._containers[container]["objects"]
+
             for _, obj in objects.items():
                 bytes_used += obj.size
 
@@ -183,6 +187,7 @@ class DummyStorageDriver(StorageDriver):
 
         container = self.get_container(container.name)
         objects = self._containers[container.name]["objects"].values()
+
         return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
@@ -258,6 +263,7 @@ class DummyStorageDriver(StorageDriver):
 
         self.get_container(container_name)
         container_objects = self._containers[container_name]["objects"]
+
         if object_name not in container_objects:
             raise ObjectDoesNotExistError(object_name=object_name, value=None, driver=self)
 
@@ -283,6 +289,7 @@ class DummyStorageDriver(StorageDriver):
 
         container_name = obj.container.name
         container_objects = self._containers[container_name]["objects"]
+
         if obj.name not in container_objects:
             raise ObjectDoesNotExistError(object_name=obj.name, value=None, driver=self)
 
@@ -317,6 +324,7 @@ class DummyStorageDriver(StorageDriver):
             "objects": {},
             "cdn_url": "http://www.test.com/container/%s" % (container_name.replace(" ", "_")),
         }
+
         return container
 
     def delete_container(self, container):
@@ -352,14 +360,17 @@ class DummyStorageDriver(StorageDriver):
         """
 
         container_name = container.name
+
         if container_name not in self._containers:
             raise ContainerDoesNotExistError(container_name=container_name, value=None, driver=self)
 
         container = self._containers[container_name]
+
         if len(container["objects"]) > 0:
             raise ContainerIsNotEmptyError(container_name=container_name, value=None, driver=self)
 
         del self._containers[container_name]
+
         return True
 
     def download_object(
@@ -425,6 +436,7 @@ class DummyStorageDriver(StorageDriver):
             raise LibcloudError(value="File %s does not exist" % (file_path), driver=self)
 
         size = os.path.getsize(file_path)
+
         return self._add_object(
             container=container, object_name=object_name, size=size, extra=extra
         )
@@ -445,6 +457,7 @@ class DummyStorageDriver(StorageDriver):
         """
 
         size = len(iterator)
+
         return self._add_object(
             container=container, object_name=object_name, size=size, extra=extra
         )
@@ -476,6 +489,7 @@ class DummyStorageDriver(StorageDriver):
         obj = self.get_object(container_name=container_name, object_name=object_name)
 
         del self._containers[container_name]["objects"][object_name]
+
         return True
 
     def _add_object(self, container, object_name, size, extra=None):
@@ -497,6 +511,7 @@ class DummyStorageDriver(StorageDriver):
         )
 
         self._containers[container.name]["objects"][object_name] = obj
+
         return obj
 
 

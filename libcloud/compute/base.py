@@ -144,14 +144,18 @@ class UuidMixin:
 
         :rtype: ``str``
         """
+
         if not self._uuid:
-            self._uuid = hashlib.sha1(b("{}:{}".format(self.id, self.driver.type))).hexdigest()
+            self._uuid = hashlib.sha1(
+                b("{}:{}".format(self.id, self.driver.type))
+            ).hexdigest()  # nosec
 
         return self._uuid
 
     @property
     def uuid(self):
         # type: () -> str
+
         return self.get_uuid()
 
 
@@ -280,6 +284,7 @@ class Node(UuidMixin):
         >>> node.state == NodeState.REBOOTING
         True
         """
+
         return self.driver.reboot_node(self)
 
     def start(self):
@@ -289,6 +294,7 @@ class Node(UuidMixin):
 
         :return: ``bool``
         """
+
         return self.driver.start_node(self)
 
     def stop_node(self):
@@ -298,6 +304,7 @@ class Node(UuidMixin):
 
         :return: ``bool``
         """
+
         return self.driver.stop_node(self)
 
     def destroy(self):
@@ -321,6 +328,7 @@ class Node(UuidMixin):
         False
 
         """
+
         return self.driver.destroy_node(self)
 
     def __repr__(self):
@@ -688,6 +696,7 @@ class StorageVolume(UuidMixin):
         """
         :rtype: ``list`` of ``VolumeSnapshot``
         """
+
         return self.driver.list_volume_snapshots(volume=self)
 
     def attach(self, node, device=None):
@@ -705,6 +714,7 @@ class StorageVolume(UuidMixin):
         :return: ``True`` if attach was successful, ``False`` otherwise.
         :rtype: ``bool``
         """
+
         return self.driver.attach_volume(node=node, volume=self, device=device)
 
     def detach(self):
@@ -715,6 +725,7 @@ class StorageVolume(UuidMixin):
         :return: ``True`` if detach was successful, ``False`` otherwise.
         :rtype: ``bool``
         """
+
         return self.driver.detach_volume(volume=self)
 
     def snapshot(self, name):
@@ -725,6 +736,7 @@ class StorageVolume(UuidMixin):
         :return: Created snapshot.
         :rtype: ``VolumeSnapshot``
         """
+
         return self.driver.create_volume_snapshot(volume=self, name=name)
 
     def destroy(self):
@@ -804,6 +816,7 @@ class VolumeSnapshot:
 
         :rtype: ``bool``
         """
+
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
     def __repr__(self):
@@ -1148,6 +1161,7 @@ class NodeDriver(BaseDriver):
         :type wait_period: ``int``
 
         """
+
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError(
                 "paramiko is not installed. You can install " + "it using pip: pip install paramiko"
@@ -1163,6 +1177,7 @@ class NodeDriver(BaseDriver):
             pass
         elif "create_node" in self.features:
             f = self.features["create_node"]
+
             if "generates_password" not in f and "password" not in f:
                 raise NotImplementedError("deploy_node not implemented for this driver")
         else:
@@ -1181,6 +1196,7 @@ class NodeDriver(BaseDriver):
         try:
             # NOTE: We only pass auth to the method if auth argument is
             # provided
+
             if auth:
                 node = self.create_node(auth=auth, **create_node_kwargs)
             else:
@@ -1188,6 +1204,7 @@ class NodeDriver(BaseDriver):
         except TypeError as e:
             msg_1_re = r"create_node\(\) missing \d+ required " "positional arguments.*"
             msg_2_re = r"create_node\(\) takes at least \d+ arguments.*"
+
             if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
                 # pylint: disable=unexpected-keyword-arg
                 node = self.create_node(  # type: ignore
@@ -1211,6 +1228,7 @@ class NodeDriver(BaseDriver):
             atexit.register(at_exit_func, driver=self, node=node)
 
         password = None
+
         if auth:
             if isinstance(auth, NodeAuthPassword):
                 password = auth.password
@@ -1261,6 +1279,7 @@ class NodeDriver(BaseDriver):
             else:
                 # Script successfully executed, don't try alternate username
                 deploy_error = None
+
                 break
 
         if deploy_error is not None:
@@ -1674,8 +1693,10 @@ class NodeDriver(BaseDriver):
             """
             Return True for supported address.
             """
+
             if force_ipv4 and not is_valid_ip_address(address=address, family=socket.AF_INET):
                 return False
+
             return True
 
         def filter_addresses(addresses):
@@ -1683,6 +1704,7 @@ class NodeDriver(BaseDriver):
             """
             Return list of supported addresses.
             """
+
             return [address for address in addresses if is_supported(address)]
 
         if ssh_interface not in ["public_ips", "private_ips"]:
@@ -1708,8 +1730,10 @@ class NodeDriver(BaseDriver):
 
             running_nodes = [node for node in matching_nodes if node.state == NodeState.RUNNING]
             addresses = []
+
             for node in running_nodes:
                 node_addresses = filter_addresses(getattr(node, ssh_interface))
+
                 if len(node_addresses) >= 1:
                     addresses.append(node_addresses)
 
@@ -1717,6 +1741,7 @@ class NodeDriver(BaseDriver):
                 return list(zip(running_nodes, addresses))
             else:
                 time.sleep(wait_period)
+
                 continue
 
         raise LibcloudError(value="Timed out after %s seconds" % (timeout), driver=self)
@@ -1757,6 +1782,7 @@ class NodeDriver(BaseDriver):
             # Some providers require password to also include uppercase
             # characters so convert some characters to uppercase
             password = ""
+
             for char in value:
                 if not char.isdigit() and char.islower():
                     if random.randint(0, 1) == 1:
@@ -1784,6 +1810,7 @@ class NodeDriver(BaseDriver):
         # type: (Node, float, int, str, bool) -> List[Tuple[Node, List[str]]]
         # This is here for backward compatibility and will be removed in the
         # next major release
+
         return self.wait_until_running(
             nodes=[node],
             wait_period=wait_period,
@@ -1836,6 +1863,7 @@ class NodeDriver(BaseDriver):
                     pass
 
                 time.sleep(wait_period)
+
                 continue
             else:
                 return ssh_client
@@ -1881,6 +1909,7 @@ class NodeDriver(BaseDriver):
         node = self._run_deployment_script(
             task=task, node=node, ssh_client=ssh_client, max_tries=max_tries
         )
+
         return node
 
     def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
@@ -1918,7 +1947,7 @@ class NodeDriver(BaseDriver):
 
                 if "ssh session not active" in str(e).lower():
                     # Sometimes connection gets closed or disconnected half
-                    # way through for wahtever reason.
+                    # way through for whatever reason.
                     # If this happens, we try to re-connect before
                     # re-attempting to run the step.
                     try:
@@ -1940,6 +1969,7 @@ class NodeDriver(BaseDriver):
             else:
                 # Deployment succeeded
                 ssh_client.close()
+
                 return node
 
         return node
@@ -1949,6 +1979,7 @@ class NodeDriver(BaseDriver):
         """
         Return pricing information for the provided size id.
         """
+
         return get_size_price(driver_type="compute", driver_name=self.api_name, size_id=size_id)
 
 

@@ -279,7 +279,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :param region: ID of the region which should be used.
         :type region: ``str``
         """
-        # This is here for backard compatibility
+        # This is here for backward compatibility
         if "ex_force_service_region" in kwargs:
             region = kwargs["ex_force_service_region"]
 

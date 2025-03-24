@@ -84,6 +84,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
     def list_nodes(self, location=None):
         namespaces = []
+
         if location is not None:
             if isinstance(location, NodeLocation):
                 namespaces.append(location.name)
@@ -97,18 +98,22 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         dormant = []
         live = []
+
         for ns in namespaces:
             req = KUBEVIRT_URL + "namespaces/" + ns + "/virtualmachines"
             result = self.connection.request(req)
+
             if result.status != 200:
                 continue
             result = result.object
+
             for item in result["items"]:
                 if not item["spec"]["running"]:
                     dormant.append(item)
                 else:
                     live.append(item)
         vms = []
+
         for vm in dormant:
             vms.append(self._to_node(vm, is_stopped=True))
 
@@ -126,13 +131,21 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param name: name of the vm
         :type name: ``str``
         """
+
         if not id and not name:
             raise ValueError("This method needs id or name to be specified")
         nodes = self.list_nodes()
+
+        node_gen = None
+
         if id:
             node_gen = filter(lambda x: x.id == id, nodes)
+
         if name:
             node_gen = filter(lambda x: x.name == name, nodes)
+
+        if not node_gen:
+            raise ValueError("node_gen is not defined")
 
         try:
             return next(node_gen)
@@ -149,6 +162,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :rtype: ``bool``
         """
         # make sure it is stopped
+
         if node.state is NodeState.RUNNING:
             return True
         name = node.name
@@ -176,6 +190,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :rtype: ``bool``
         """
         # check if running
+
         if node.state is NodeState.STOPPED:
             return True
         name = node.name
@@ -215,6 +230,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             return result.status in VALID_RESPONSE_CODES
         except Exception:
             raise
+
         return
 
     def destroy_node(self, node):
@@ -231,6 +247,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         name = node.name
         # find and delete services for this VM only
         services = self.ex_list_services(namespace=namespace, node_name=name)
+
         for service in services:
             service_name = service["metadata"]["name"]
             self.ex_delete_service(namespace=namespace, service_name=service_name)
@@ -241,6 +258,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 KUBEVIRT_URL + "namespaces/" + namespace + "/virtualmachines/" + name,
                 method="DELETE",
             )
+
             return result.status in VALID_RESPONSE_CODES
         except Exception:
             raise
@@ -282,10 +300,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :return:
         """
         # k8s object checks
+
         if template.get("apiVersion", "") != "kubevirt.io/v1alpha3":
             raise ValueError("The template must have an apiVersion: kubevirt.io/v1alpha3")
+
         if template.get("kind", "") != "VirtualMachine":
             raise ValueError("The template must contain kind: VirtualMachine")
+
         if name != template.get("metadata", {}).get("name"):
             raise ValueError(
                 "The name of the VM must be the same as the name in the template. "
@@ -293,6 +314,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     name, template.get("metadata", {}).get("name")
                 )
             )
+
         if template.get("spec", {}).get("running", False):
             warnings.warn(
                 "The VM will be created in a stopped state, and then started. "
@@ -316,9 +338,11 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         # Or self.get_node()?
         # I don't think a for loop over list_nodes is necessary.
         nodes = self.list_nodes(location=namespace)
+
         for node in nodes:
             if node.name == name:
                 self.start_node(node)
+
                 return node
 
         raise ValueError(
@@ -339,8 +363,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         :return: dict: A skeleton VM template.
         """
+
         if not name:
             name = uuid.uuid4()
+
         return {
             "apiVersion": "kubevirt.io/v1alpha3",
             "kind": "VirtualMachine",
@@ -407,6 +433,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         ignored_non_none_param_keys = list(
             filter(lambda x: other_params[x] is not None, other_params)
         )
+
         if ignored_non_none_param_keys:
             warnings.warn(
                 "ex_template is provided, ignoring the following non-None "
@@ -473,11 +500,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         def _format_memory(memory_value):  # type: (int) -> str
             assert isinstance(memory_value, int), "memory must be an int in MiB"
+
             return str(memory_value) + "Mi"
 
         if ex_memory_limit is not None:
             memory = _format_memory(ex_memory_limit)
             vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"] = memory
+
         if ex_memory_request is not None:
             memory = _format_memory(ex_memory_request)
             vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["memory"] = memory
@@ -499,6 +528,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         if ex_cpu_limit is not None:
             cpu = _format_cpu(ex_cpu_limit)
             vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"] = cpu
+
         if ex_cpu_request is not None:
             cpu = _format_cpu(ex_cpu_request)
             vm["spec"]["template"]["spec"]["domain"]["resources"]["requests"]["cpu"] = cpu
@@ -543,6 +573,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :return: None
         """
         # ex_network -> network and interface
+
         if ex_network is not None:
             try:
                 if isinstance(ex_network, dict):
@@ -572,13 +603,17 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         # ex_ports -> network.ports
         ex_ports = ex_ports or {}
+
         if ex_ports.get("ports_tcp"):
             ports_to_expose = []
+
             for port in ex_ports["ports_tcp"]:
                 ports_to_expose.append({"port": port, "protocol": "TCP"})
             interface_dict[interface]["ports"] = ports_to_expose
+
         if ex_ports.get("ports_udp"):
             ports_to_expose = interface_dict[interface].get("ports", [])
+
             for port in ex_ports.get("ports_udp"):
                 ports_to_expose.append({"port": port, "protocol": "UDP"})
             interface_dict[interface]["ports"] = ports_to_expose
@@ -601,6 +636,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         # auth requires cloud-init,
         # and only one cloud-init volume is supported by kubevirt.
         # So if both auth and cloud-init are provided, raise an error.
+
         for volume in vm["spec"]["template"]["spec"]["volumes"]:
             if "cloudInitNoCloud" in volume or "cloudInitConfigDrive" in volume:
                 raise ValueError(
@@ -617,6 +653,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         }
 
         # cloud_init_config reference: https://kubevirt.io/user-guide/virtual_machines/startup_scripts/#injecting-ssh-keys-with-cloud-inits-cloud-config
+
         if isinstance(auth, NodeAuthSSHKey):
             public_key = auth.pubkey.strip()
             public_key = json.dumps(public_key)
@@ -678,6 +715,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             # depending on disk_type, in the future,
             # when more will be supported,
             # additional elif should be added
+
             if disk_type == "containerDisk":
                 try:
                     image = disk["volume_spec"]["image"]
@@ -688,6 +726,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             elif disk_type == "persistentVolumeClaim":
                 if "volume_spec" not in disk:
                     raise KeyError("You must provide a volume_spec dictionary")
+
                 if "claim_name" not in disk["volume_spec"]:
                     msg = (
                         "You must provide either a claim_name of an "
@@ -760,6 +799,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
         # image -> containerDisk
         # adding image in a container Disk
+
         if isinstance(image, NodeImage):
             image = image.name
 
@@ -916,7 +956,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                                        be used for the creation of the
                                        Persistent Volume Claim.
                                        Make sure it allows for
-                                       dymamic provisioning.
+                                       dynamic provisioning.
             - optional:
                 - access_mode: default is ReadWriteOnce
                 - volume_mode: default is `Filesystem`, it can also be `Block`
@@ -1061,6 +1101,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
 
         # location -> namespace
+
         if isinstance(location, NodeLocation):
             if location.name not in map(lambda x: x.name, self.list_locations()):
                 raise ValueError("The location must be one of the available namespaces")
@@ -1069,10 +1110,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             namespace = "default"
 
         # ex_template exists, use it to create the vm, ignore other parameters
+
         if ex_template is not None:
             vm = self._create_node_vm_from_ex_template(
                 name=name, ex_template=ex_template, other_args=locals()
             )
+
             return self._create_node_with_template(name=name, template=vm, namespace=namespace)
         # else (ex_template is None): create a vm with other parameters
         vm = self._base_vm_template(name=name)
@@ -1084,6 +1127,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         self._create_node_disks(vm, ex_disks, image, namespace, location)
 
         # auth -> cloud-init
+
         if auth is not None:
             self._create_node_auth(vm, auth)
 
@@ -1093,6 +1137,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         self._create_node_network(vm, ex_network, ex_ports)
 
         # terminationGracePeriodSeconds
+
         if ex_termination_grace_period is not None:
             self._create_node_termination_grace_period(vm, ex_termination_grace_period)
 
@@ -1104,11 +1149,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         in that location will be provided. Otherwise all of them.
         """
         nodes = self.list_nodes()
+
         if location:
             namespace = location.name
             nodes = list(filter(lambda x: x["extra"]["namespace"] == namespace, nodes))
         name_set = set()
         images = []
+
         for node in nodes:
             if node.image.name in name_set:
                 continue
@@ -1125,20 +1172,24 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         namespaces = []
         result = self.connection.request(req).object
+
         for item in result["items"]:
             name = item["metadata"]["name"]
             ID = item["metadata"]["uid"]
             namespaces.append(
                 NodeLocation(id=ID, name=name, country="", driver=self.connection.driver)
             )
+
         return namespaces
 
     def list_sizes(self, location=None):
         namespace = ""
+
         if location:
             namespace = location.name
         nodes = self.list_nodes()
         sizes = []
+
         for node in nodes:
             if not namespace:
                 sizes.append(node.size)
@@ -1205,6 +1256,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                               for awsElasticBlockStore volume_type
                               {fsType: 'ext4', volumeID: "1234"}
         """
+
         if ex_dynamic:
             if location is None:
                 msg = "Please provide a namespace for the PVC."
@@ -1217,6 +1269,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 volume_mode=ex_volume_mode,
                 access_mode=ex_access_mode,
             )
+
             return vol
         else:
             if ex_volume_type is None or ex_volume_params is None:
@@ -1252,6 +1305,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             raise
         # make sure that the volume was created
         volumes = self.list_volumes()
+
         for volume in volumes:
             if volume.name == name:
                 return volume
@@ -1323,6 +1377,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(req, method=method, data=data)
         except Exception:
             raise
+
         if result.object["status"]["phase"] != "Bound":
             for _ in range(3):
                 req = ROOT_URL + "namespaces/" + namespace + "/persistentvolumeclaims/" + name
@@ -1330,12 +1385,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     result = self.connection.request(req).object
                 except Exception:
                     raise
+
                 if result["status"]["phase"] == "Bound":
                     break
                 time.sleep(3)
 
         # check that the pv was created and bound
         volumes = self.list_volumes()
+
         for volume in volumes:
             if volume.extra["pvc"]["name"] == name:
                 return volume
@@ -1346,6 +1403,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         It will bind them to a pvc so they can be used by
         a kubernetes resource.
         """
+
         if volume.extra["is_bound"]:
             return  # volume already bound
 
@@ -1363,11 +1421,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             namespace=namespace,
             access_mode=access_mode,
         )
+
         return vol
 
     def destroy_volume(self, volume):
         # first delete the pvc
         method = "DELETE"
+
         if volume.extra["is_bound"]:
             pvc = volume.extra["pvc"]["name"]
             namespace = volume.extra["pvc"]["namespace"]
@@ -1383,6 +1443,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         try:
             result = self.connection.request(req, method=method)
+
             return result.status
         except Exception:
             raise
@@ -1392,8 +1453,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         params: bus, name , device (disk or lun)
         """
         # volume must be bound to a claim
+
         if not volume.extra["is_bound"]:
             volume = self._bind_volume(volume, node.extra["namespace"])
+
             if volume is None:
                 raise LibcloudError(
                     "Selected Volume (PV) could not be bound "
@@ -1402,6 +1465,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 )
 
         claimName = volume.extra["pvc"]["name"]
+
         if ex_name is None:
             name = claimName
         else:
@@ -1410,6 +1474,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         # check if vm is stopped
         self.stop_node(node)
         # check if it is the same namespace
+
         if node.extra["namespace"] != namespace:
             msg = "The PVC and the VM must be in the same namespace"
             raise ValueError(msg)
@@ -1442,10 +1507,12 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(
                 req, method="PATCH", data=json.dumps(data), headers=headers
             )
+
             if "pvcs" in node.extra:
                 node.extra["pvcs"].append(claimName)
             else:
                 node.extra["pvcs"] = [claimName]
+
             return result in VALID_RESPONSE_CODES
         except Exception:
             raise
@@ -1472,12 +1539,15 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         disks = result["spec"]["template"]["spec"]["domain"]["devices"]["disks"]
         volumes = result["spec"]["template"]["spec"]["volumes"]
         to_delete = None
+
         for volume in volumes:
             if "persistentVolumeClaim" in volume:
                 if volume["persistentVolumeClaim"]["claimName"] == claimName:
                     to_delete = volume["name"]
                     volumes.remove(volume)
+
                     break
+
         if not to_delete:
             msg = "The given volume is not attached to the given VM"
             raise ValueError(msg)
@@ -1485,6 +1555,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         for disk in disks:
             if disk["name"] == to_delete:
                 disks.remove(disk)
+
                 break
         # now patch the new volumes and disks lists into the resource
         data = {
@@ -1502,6 +1573,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 req, method="PATCH", data=json.dumps(data), headers=headers
             )
             ex_node.extra["pvcs"].remove(claimName)
+
             return result in VALID_RESPONSE_CODES
         except Exception:
             raise
@@ -1513,6 +1585,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         except Exception:
             raise
         pvcs = [item["metadata"]["name"] for item in result["items"]]
+
         return pvcs
 
     def ex_list_storage_classes(self):
@@ -1550,6 +1623,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             extra["is_bound"] = item["status"]["phase"] == "Bound"
             extra["access_modes"] = item["spec"]["accessModes"]
             extra["volume_mode"] = item["spec"]["volumeMode"]
+
             if extra["is_bound"]:
                 extra["pvc"]["name"] = item["spec"]["claimRef"]["name"]
                 extra["pvc"]["namespace"] = item["spec"]["claimRef"]["namespace"]
@@ -1566,10 +1640,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
+
         if hasattr(self, "key_file"):
             kwargs["key_file"] = self.key_file
+
         if hasattr(self, "cert_file"):
             kwargs["cert_file"] = self.cert_file
+
         return kwargs
 
     def _to_node(self, vm, is_stopped=False):  # type: (dict, bool) -> Node
@@ -1592,6 +1669,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         extra["pvcs"] = []
 
         memory = 0
+
         if "limits" in vm["spec"]["template"]["spec"]["domain"]["resources"]:
             if "memory" in vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]:
                 memory = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["memory"]
@@ -1607,12 +1685,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             .get("requests", {})
             .get("memory", None)
         )
+
         if memory_req:
             memory_req = _memory_in_MB(memory_req)
         else:
             memory_req = memory
 
         cpu = 1
+
         if vm["spec"]["template"]["spec"]["domain"]["resources"].get("limits", None):
             if vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"].get("cpu", None):
                 cpu = vm["spec"]["template"]["spec"]["domain"]["resources"]["limits"]["cpu"]
@@ -1623,6 +1703,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             cpu_req = cpu
         elif vm["spec"]["template"]["spec"]["domain"].get("cpu", None):
             cpu = vm["spec"]["template"]["spec"]["domain"]["cpu"].get("cores", 1)
+
         if not isinstance(cpu, int):
             cpu = int(cpu.rstrip("m"))
 
@@ -1631,12 +1712,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             .get("requests", {})
             .get("cpu", None)
         )
+
         if cpu_req is None:
             cpu_req = cpu
 
         extra_size = {"cpu": cpu, "cpu_request": cpu_req, "ram": memory, "ram_request": memory_req}
         size_name = "{} vCPUs, {}MB Ram".format(str(cpu), str(memory))
-        size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
+        size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()  # nosec
         size = NodeSize(
             id=size_id,
             name=size_name,
@@ -1652,12 +1734,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         extra["cpu"] = cpu
 
         image_name = "undefined"
+
         for volume in vm["spec"]["template"]["spec"]["volumes"]:
             for k, v in volume.items():
                 if type(v) is dict:
                     if "image" in v:
                         image_name = v["image"]
         image = NodeImage(image_name, image_name, driver)
+
         if "volumes" in vm["spec"]["template"]["spec"]:
             for volume in vm["spec"]["template"]["spec"]["volumes"]:
                 if "persistentVolumeClaim" in volume:
@@ -1665,8 +1749,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         port_forwards = []
         services = self.ex_list_services(namespace=extra["namespace"], node_name=name)
+
         for service in services:
             service_type = service["spec"].get("type")
+
             for port_pair in service["spec"]["ports"]:
                 protocol = port_pair.get("protocol")
                 public_port = port_pair.get("port")
@@ -1689,6 +1775,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             state = NodeState.STOPPED
             public_ips = None
             private_ips = None
+
             return Node(
                 id=ID,
                 name=name,
@@ -1705,14 +1792,17 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         req = ROOT_URL + "namespaces/" + extra["namespace"] + "/pods"
         result = self.connection.request(req).object
         pod = None
+
         for pd in result["items"]:
             if "metadata" in pd and "ownerReferences" in pd["metadata"]:
                 if pd["metadata"]["ownerReferences"][0]["name"] == name:
                     pod = pd
+
         if pod is None or "containerStatuses" not in pod["status"]:
             state = NodeState.PENDING
             public_ips = None
             private_ips = None
+
             return Node(
                 id=ID,
                 name=name,
@@ -1725,8 +1815,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 extra=extra,
             )
         extra["pod"] = {"name": pod["metadata"]["name"]}
+
         for cont_status in pod["status"]["containerStatuses"]:
             # only 2 containers are present the launcher and the vmi
+
             if cont_status["name"] != "compute":
                 image = NodeImage(ID, cont_status["image"], driver)
                 state = (
@@ -1759,16 +1851,21 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         concern the node.
         """
         params = None
+
         if service_name is not None:
             params = {"fieldSelector": "metadata.name={}".format(service_name)}
         req = ROOT_URL + "/namespaces/{}/services".format(namespace)
         result = self.connection.request(req, params=params).object["items"]
+
         if node_name:
             res = []
+
             for service in result:
                 if node_name in service["metadata"].get("name", ""):
                     res.append(service)
+
             return res
+
         return result
 
     def ex_create_service(
@@ -1830,11 +1927,14 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         ports_to_expose = []
         # if ports has a falsey value like None or 0
+
         if not ports:
             ports = []
+
         for port_group in ports:
             if not port_group.get("target_port", None):
                 port_group["target_port"] = port_group["port"]
+
             if not port_group.get("name", ""):
                 port_group["name"] = "port-{}".format(port_group["port"])
             ports_to_expose.append(
@@ -1847,18 +1947,22 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             )
         headers = None
         data = None
+
         if len(service_list) > 0:
             if not ports:
                 result = True
+
                 for service in service_list:
                     service_name = service["metadata"]["name"]
                     result = result and self.ex_delete_service(
                         namespace=namespace, service_name=service_name
                     )
+
                 return result
             else:
                 method = "PATCH"
                 spec = {"ports": ports_to_expose}
+
                 if not override_existing_ports:
                     existing_ports = service_list[0]["spec"]["ports"]
                     spec = {"ports": existing_ports.extend(ports_to_expose)}
@@ -1887,8 +1991,10 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             }
             service["spec"]["ports"] = ports_to_expose
             service["spec"]["type"] = service_type
+
             if cluster_ip is not None:
                 service["spec"]["clusterIP"] = cluster_ip
+
             if service_type == "LoadBalancer" and load_balancer_ip is not None:
                 service["spec"]["loadBalancerIP"] = load_balancer_ip
             data = json.dumps(service)
@@ -1897,6 +2003,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(req, method=method, data=data, headers=headers)
         except Exception:
             raise
+
         return result.status in VALID_RESPONSE_CODES
 
     def ex_delete_service(self, namespace, service_name):
@@ -1906,6 +2013,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             result = self.connection.request(req, method="DELETE", headers=headers)
         except Exception:
             raise
+
         return result.status in VALID_RESPONSE_CODES
 
 
@@ -1938,6 +2046,7 @@ def _deep_merge_dict(source: dict, destination: dict) -> dict:
 
     :return: dict: Updated destination.
     """
+
     for key, value in source.items():
         if isinstance(value, dict):  # recurse for dicts
             node = destination.setdefault(key, {})  # get node or create one
@@ -1975,6 +2084,7 @@ def _memory_in_MB(memory):  # type: (Union[str, int]) -> int
 
     try:
         mem_bytes = int(memory)
+
         return mem_bytes // 1024 // 1024
     except ValueError:
         pass
@@ -2039,7 +2149,8 @@ def KubeVirtNodeSize(
     extra["ram_request"] = ram_request or ram
 
     name = "{} vCPUs, {}MB Ram".format(str(cpu), str(ram))
-    size_id = hashlib.md5(name.encode("utf-8")).hexdigest()
+    size_id = hashlib.md5(name.encode("utf-8")).hexdigest()  # nosec
+
     return NodeSize(
         id=size_id,
         name=name,
@@ -2065,5 +2176,6 @@ def KubeVirtNodeImage(name):  # type: (str) -> NodeImage
         containerDisk image (e.g. ``"quay.io/containerdisks/ubuntu:22.04"``)
     :rtype: :class:`NodeImage`
     """
-    image_id = hashlib.md5(name.encode("utf-8")).hexdigest()
+    image_id = hashlib.md5(name.encode("utf-8")).hexdigest()  # nosec
+
     return NodeImage(id=image_id, name=name, driver=KubeVirtNodeDriver)

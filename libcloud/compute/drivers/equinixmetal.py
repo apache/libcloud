@@ -292,6 +292,7 @@ def _list_async(driver):
                 raise Exception("ex_project_id needs to be specified")
 
         location_code = location.extra["code"]
+
         if not self._valid_location:
             raise ValueError(
                 "Failed to create node: valid parameter metro [code] is required in the input"
@@ -464,6 +465,11 @@ def _list_async(driver):
 
         if "ip_addresses" in data and data["ip_addresses"] is not None:
             ips = self._parse_ips(data["ip_addresses"])
+            public_ips = ips["public"]
+            private_ips = ips["private"]
+        else:
+            public_ips = []
+            private_ips = []
 
         if "operating_system" in data and data["operating_system"] is not None:
             image = self._to_image(data["operating_system"])
@@ -479,6 +485,7 @@ def _list_async(driver):
 
         if "facility" in data:
             extra["facility"] = data["facility"]
+
         if "metro" in data and data["metro"] is not None:
             extra["metro"] = data["metro"]
 
@@ -490,8 +497,8 @@ def _list_async(driver):
             id=data["id"],
             name=data["hostname"],
             state=state,
-            public_ips=ips["public"],
-            private_ips=ips["private"],
+            public_ips=public_ips,
+            private_ips=private_ips,
             size=size,
             image=image,
             extra=extra,
@@ -776,9 +783,11 @@ def _list_async(driver):
         if not metro_code:
             return False
         metros = self.connection.request("/metal/v1/locations/metros").object["metros"]
+
         for metro in metros:
             if metro["code"] == metro_code:
                 return True
+
         return False
 
 

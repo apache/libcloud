@@ -73,6 +73,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
         # Old US accounts can access UK API endpoint, but they don't
         # have this endpoint in the service catalog. Same goes for the
         # old UK accounts and US endpoint.
+
         if self.region == "us":
             # Old UK account, which only have uk endpoint in the catalog
             public_url = public_url.replace("https://lon.servers.api", "https://servers.api")
@@ -100,6 +101,7 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         :param region: Region ID which should be used
         :type region: ``str``
         """
+
         if region not in ["us", "uk"]:
             raise ValueError("Invalid region: %s" % (region))
 
@@ -122,16 +124,20 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
 
         @inherits: :class:`OpenStack_1_0_NodeDriver.list_locations`
         """
+
         if self.region == "us":
             locations = [NodeLocation(0, "Rackspace DFW1/ORD1", "US", self)]
         elif self.region == "uk":
             locations = [NodeLocation(0, "Rackspace UK London", "UK", self)]
+        else:
+            locations = []
 
         return locations
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()
         kwargs["region"] = self.region
+
         return kwargs
 
 
@@ -151,6 +157,7 @@ class RackspaceConnection(OpenStack_1_1_Connection):
     def get_service_name(self):
         if not self.get_endpoint_args:
             # if they used ex_force_base_url, assume the Rackspace default
+
             return SERVICE_NAME_GEN2
 
         return self.get_endpoint_args.get("name", SERVICE_NAME_GEN2)
@@ -246,6 +253,7 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
             state=state,
             name=api_node["displayName"],
         )
+
         return snapshot
 
     def _ex_connection_class_kwargs(self):
@@ -253,4 +261,5 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         kwargs = self.openstack_connection_kwargs()
         kwargs["region"] = self.region
         kwargs["get_endpoint_args"] = endpoint_args
+
         return kwargs

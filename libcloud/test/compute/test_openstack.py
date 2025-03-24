@@ -155,7 +155,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
 
         count = 5
 
-        # Test authentication and token re-use
+        # Test authentication and token reuse
         con = cls("username", "key")
         osa = con.get_auth_class()
 
@@ -2567,6 +2567,16 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(hosts[0].id, "1")
         self.assertEqual(hosts[0].hypervisor_hostname, "compute-1")
         self.assertEqual(hosts[0].vcpus, 4)
+
+    def test_ex_attach_floating_ip_to_node(self):
+        image = NodeImage(id=11, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
+        size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name="racktest", image=image, size=size)
+        node.id = 4242
+        ip = "42.42.42.42"
+        port_id = "ce531f90-199f-48c0-816c-13e38010b442"
+
+        self.assertTrue(self.driver.ex_attach_floating_ip_to_node(node, ip, port_id))
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):

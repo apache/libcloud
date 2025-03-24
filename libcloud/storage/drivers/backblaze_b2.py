@@ -81,6 +81,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
                       token.
         :type force: ``bool``
         """
+
         if not self._is_authentication_needed(force=force):
             return self
 
@@ -147,6 +148,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         response = self._request(
             auth_conn=auth_conn, action=action, params=params, method=method, raw=raw
         )
+
         return response
 
     def upload_request(self, action, headers, upload_host, auth_token, data):
@@ -168,6 +170,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
             raw=raw,
             auth_token=auth_token,
         )
+
         return response
 
     def request(
@@ -190,10 +193,12 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         self._set_host(host=auth_conn.api_host)
 
         # Include Content-Type
+
         if not raw and data:
             headers["Content-Type"] = "application/json"
 
         # Include account id
+
         if include_account_id:
             if method == "GET":
                 params["accountId"] = auth_conn.account_id
@@ -202,6 +207,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
                 data["accountId"] = auth_conn.account_id
 
         action = API_PATH + action
+
         if data:
             data = json.dumps(data)
 
@@ -214,6 +220,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
             headers=headers,
             raw=raw,
         )
+
         return response
 
     def _request(
@@ -244,6 +251,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
             headers=headers,
             raw=raw,
         )
+
         return response
 
     def _set_host(self, host):
@@ -272,6 +280,7 @@ class BackblazeB2StorageDriver(StorageDriver):
             action="b2_list_buckets", method="GET", include_account_id=True
         )
         containers = self._to_containers(data=resp.object)
+
         return containers
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
@@ -298,11 +307,13 @@ class BackblazeB2StorageDriver(StorageDriver):
         params = {"bucketId": container.extra["id"]}
         resp = self.connection.request(action="b2_list_file_names", method="GET", params=params)
         objects = self._to_objects(data=resp.object, container=container)
+
         return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         containers = self.iterate_containers()
         container = next((c for c in containers if c.name == container_name), None)
+
         if container:
             return container
         else:
@@ -328,6 +339,7 @@ class BackblazeB2StorageDriver(StorageDriver):
             action="b2_create_bucket", data=data, method="POST", include_account_id=True
         )
         container = self._to_container(item=resp.object)
+
         return container
 
     def delete_container(self, container):
@@ -337,6 +349,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         resp = self.connection.request(
             action="b2_delete_bucket", data=data, method="POST", include_account_id=True
         )
+
         return resp.status == httplib.OK
 
     def download_object(
@@ -347,6 +360,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         response = self.connection.download_request(action=action)
 
         # TODO: Include metadata from response headers
+
         return self._get_object(
             obj=obj,
             callback=self._save_object,
@@ -438,6 +452,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         data["fileName"] = obj.name
         data["fileId"] = obj.extra["fileId"]
         resp = self.connection.request(action="b2_delete_file_version", data=data, method="POST")
+
         return resp.status == httplib.OK
 
     def ex_get_object(self, object_id):
@@ -445,6 +460,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         params["fileId"] = object_id
         resp = self.connection.request(action="b2_get_file_info", method="GET", params=params)
         obj = self._to_object(item=resp.object, container=None)
+
         return obj
 
     def ex_hide_object(self, container_id, object_name):
@@ -453,6 +469,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         data["fileName"] = object_name
         resp = self.connection.request(action="b2_hide_file", data=data, method="POST")
         obj = self._to_object(item=resp.object, container=None)
+
         return obj
 
     def ex_list_object_versions(
@@ -476,6 +493,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         resp = self.connection.request(action="b2_list_file_versions", params=params, method="GET")
         objects = self._to_objects(data=resp.object, container=None)
+
         return objects
 
     def ex_get_upload_data(self, container_id):
@@ -489,6 +507,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         params = {}
         params["bucketId"] = container_id
         response = self.connection.request(action="b2_get_upload_url", method="GET", params=params)
+
         return response.object
 
     def ex_get_upload_url(self, container_id):
@@ -499,10 +518,12 @@ class BackblazeB2StorageDriver(StorageDriver):
         """
         result = self.ex_get_upload_data(container_id=container_id)
         upload_url = result["uploadUrl"]
+
         return upload_url
 
     def _to_containers(self, data):
         result = []
+
         for item in data["buckets"]:
             container = self._to_container(item=item)
             result.append(container)
@@ -514,10 +535,12 @@ class BackblazeB2StorageDriver(StorageDriver):
         extra["id"] = item["bucketId"]
         extra["bucketType"] = item["bucketType"]
         container = Container(name=item["bucketName"], extra=extra, driver=self)
+
         return container
 
     def _to_objects(self, data, container):
         result = []
+
         for item in data["files"]:
             obj = self._to_object(item=item, container=container)
             result.append(obj)
@@ -540,6 +563,7 @@ class BackblazeB2StorageDriver(StorageDriver):
             container=container,
             driver=self,
         )
+
         return obj
 
     def _get_object_download_path(self, container, obj):
@@ -549,6 +573,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         :rtype: ``str``
         """
         path = container.name + "/" + obj.name
+
         return path
 
     def _perform_upload(
@@ -569,11 +594,12 @@ class BackblazeB2StorageDriver(StorageDriver):
         headers["X-Bz-File-Name"] = object_name
         headers["Content-Type"] = content_type
 
-        sha1 = hashlib.sha1()
+        sha1 = hashlib.sha1()  # nosec
         sha1.update(b(data))
         headers["X-Bz-Content-Sha1"] = sha1.hexdigest()
 
         # Include optional meta-data (up to 10 items)
+
         for key, value in meta_data.items():
             # TODO: Encode / escape key
             headers["X-Bz-Info-%s" % (key)] = value
@@ -596,6 +622,7 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         if response.status == httplib.OK:
             obj = self._to_object(item=response.object, container=container)
+
             return obj
         else:
             body = response.response.read()
