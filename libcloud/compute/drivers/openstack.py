@@ -2467,6 +2467,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 power_state=api_node.get("OS-EXT-STS:power_state", None),
                 progress=api_node.get("progress", None),
                 fault=api_node.get("fault"),
+                hypervisor_hostname=api_node.get("OS-EXT-SRV-ATTR:hypervisor_hostname"),
             ),
         )
 
