@@ -4487,7 +4487,9 @@ class OpenStack_2_Lease:
         self.driver = driver
 
     def __repr__(self):
-        return "<OpenStack_2_Lease: id={}, name={}, status={}>".format(self.id, self.name, self.status)
+        return "<OpenStack_2_Lease: id={}, name={}, status={}>".format(
+            self.id, self.name, self.status
+        )
 
 
 class OpenStack_1_1_FloatingIpPool:

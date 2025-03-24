@@ -4047,6 +4047,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
+
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
