@@ -4457,7 +4457,7 @@ class OpenStack_2_Host:
         self.service_name = service_name
 
     def __repr__(self):
-        return "<OpenStack_2_Host: id=%s, hypervisor_hostname=%s>" % (
+        return "<OpenStack_2_Host: id={}, hypervisor_hostname={}>".format(
             self.id,
             self.hypervisor_hostname,
         )
@@ -4487,7 +4487,7 @@ class OpenStack_2_Lease:
         self.driver = driver
 
     def __repr__(self):
-        return "<OpenStack_2_Lease: id=%s, name=%s, status=%s>" % (self.id, self.name, self.status)
+        return "<OpenStack_2_Lease: id={}, name={}, status={}>".format(self.id, self.name, self.status)
 
 
 class OpenStack_1_1_FloatingIpPool:
