@@ -60,7 +60,6 @@ class Provider:
     ROUTE53 = "route53"
     VULTR = "vultr"
     WORLDWIDEDNS = "worldwidedns"
-    ZERIGO = "zerigo"
     ZONOMI = "zonomi"
     DNSPOD = "dnspod"
     # Deprecated
