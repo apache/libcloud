@@ -3,11 +3,10 @@
 ================= ========== ============ =========== =========== ============= ============= =========== =============
 Provider          list zones list records create zone update zone create record update record delete zone delete record
 ================= ========== ============ =========== =========== ============= ============= =========== =============
-`AuroraDNS`_      yes        yes          yes         no          yes           yes           yes         yes          
-`BuddyNS DNS`_    yes        no           yes         no          no            no            yes         no           
+`BuddyNS DNS`_    yes        no           yes         no          no            no            yes         no
 `CloudFlare DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
-`DigitalOcean`_   yes        yes          yes         no          yes           yes           yes         yes          
-`DNSimple`_       yes        yes          yes         no          yes           yes           yes         yes          
+`DNSimple`_       yes        yes          yes         no          yes           yes           yes         yes
+`DigitalOcean`_   yes        yes          yes         no          yes           yes           yes         yes
 `DurableDNS`_     yes        yes          yes         yes         yes           yes           yes         yes          
 `Gandi DNS`_      yes        yes          yes         yes         yes           yes           yes         yes          
 `Gandi LiveDNS`_  yes        yes          yes         no          yes           yes           no          yes          
@@ -30,11 +29,10 @@ Provider          list zones list records create zone update zone create record 
 `Zonomi DNS`_     yes        yes          yes         no          yes           no            yes         yes          
 ================= ========== ============ =========== =========== ============= ============= =========== =============
 
-.. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`BuddyNS DNS`: https://www.buddyns.com
 .. _`CloudFlare DNS`: https://www.cloudflare.com
-.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DurableDNS`: https://durabledns.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Gandi LiveDNS`: http://www.gandi.net/domain

@@ -6,15 +6,13 @@ Provider                       list images get image create image delete image c
 `Abiquo`_                      yes         no        no           no           no        
 `Aliyun ECS`_                  yes         yes       yes          yes          yes       
 `PCextreme AuroraCompute`_     yes         no        no           no           no        
-`Azure Virtual machines`_      yes         no        no           no           no        
-`Azure Virtual machines`_      yes         yes       no           no           no        
+`Azure Virtual machines`_      yes         yes       no           no           no
 `Brightbox`_                   yes         no        no           no           no        
 `Cloudscale`_                  yes         no        no           no           no        
 `CloudSigma (API v2.0)`_       yes         no        no           no           no        
 `CloudStack`_                  yes         no        no           no           no        
 `DigitalOcean`_                yes         yes       yes          yes          no        
-`DimensionData`_               yes         no        no           no           no        
-`Amazon EC2`_                  yes         yes       yes          yes          yes       
+`Amazon EC2`_                  yes         yes       yes          yes          yes
 `EquinixMetal`_                yes         no        no           no           no        
 `Eucalyptus`_                  yes         yes       yes          yes          yes       
 `Exoscale`_                    yes         no        no           no           no        
@@ -23,8 +21,7 @@ Provider                       list images get image create image delete image c
 `GiG G8 Node Provider`_        yes         no        no           no           no        
 `Gridscale`_                   yes         yes       yes          yes          no        
 `Ikoula`_                      yes         no        no           no           no        
-`InternetSolutions`_           yes         no        no           no           no        
-`Kamatera`_                    yes         no        no           no           no        
+`Kamatera`_                    yes         no        no           no           no
 `KTUCloud`_                    yes         no        no           no           no        
 `kubevirt`_                    yes         no        no           no           no        
 `Libvirt`_                     no          no        no           no           no        
@@ -57,7 +54,6 @@ Provider                       list images get image create image delete image c
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
-.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
@@ -73,7 +69,6 @@ Provider                       list images get image create image delete image c
 .. _`GiG G8 Node Provider`: https://gig.tech
 .. _`Gridscale`: https://gridscale.io
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
-.. _`InternetSolutions`: http://www.is.co.za/
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`kubevirt`: https://www.kubevirt.io
@@ -94,7 +89,6 @@ Provider                       list images get image create image delete image c
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`Scaleway`: https://www.scaleway.com/
-.. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Upcloud`: https://www.upcloud.com
 .. _`VCL`: http://incubator.apache.org/vcl/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/

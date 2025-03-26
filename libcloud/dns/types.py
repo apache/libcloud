@@ -37,7 +37,6 @@ class Provider:
     """
 
     DUMMY = "dummy"
-    AURORADNS = "auroradns"
     BUDDYNS = "buddyns"
     CLOUDFLARE = "cloudflare"
     DIGITAL_OCEAN = "digitalocean"
