@@ -30,7 +30,6 @@ __all__ = ["DRIVERS", "get_driver", "set_driver"]
 DRIVERS = {
     Provider.DUMMY: ("libcloud.dns.drivers.dummy", "DummyDNSDriver"),
     Provider.LINODE: ("libcloud.dns.drivers.linode", "LinodeDNSDriver"),
-    Provider.ZERIGO: ("libcloud.dns.drivers.zerigo", "ZerigoDNSDriver"),
     Provider.RACKSPACE: ("libcloud.dns.drivers.rackspace", "RackspaceDNSDriver"),
     Provider.ROUTE53: ("libcloud.dns.drivers.route53", "Route53DNSDriver"),
     Provider.GANDI: ("libcloud.dns.drivers.gandi", "GandiDNSDriver"),
