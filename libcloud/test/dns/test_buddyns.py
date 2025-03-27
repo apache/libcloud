@@ -28,6 +28,7 @@ from libcloud.dns.drivers.buddyns import BuddyNSDNSDriver
 class BuddyNSDNSTests(unittest.TestCase):
     def setUp(self):
         BuddyNSMockHttp.type = None
+        BuddyNSMockHttp.history.clear()
         BuddyNSDNSDriver.connectionCls.conn_class = BuddyNSMockHttp
         self.driver = BuddyNSDNSDriver(*DNS_PARAMS_BUDDYNS)
         self.test_zone = Zone(
@@ -43,11 +44,23 @@ class BuddyNSDNSTests(unittest.TestCase):
         BuddyNSMockHttp.type = "EMPTY_ZONES_LIST"
         zones = self.driver.list_zones()
 
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v2/zone/")
+
         self.assertEqual(zones, [])
 
     def test_list_zones_success(self):
         BuddyNSMockHttp.type = "LIST_ZONES"
         zones = self.driver.list_zones()
+
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v2/zone/")
 
         self.assertEqual(len(zones), 2)
 
@@ -73,11 +86,23 @@ class BuddyNSDNSTests(unittest.TestCase):
         else:
             self.fail("Exception was not thrown")
 
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/api/v2/zone/{self.test_zone.domain}")
+
     def test_delete_zone_success(self):
         BuddyNSMockHttp.type = "DELETE_ZONE_SUCCESS"
         status = self.driver.delete_zone(zone=self.test_zone)
 
         self.assertTrue(status)
+
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/api/v2/zone/{self.test_zone.domain}")
 
     def test_get_zone_zone_does_not_exist(self):
         BuddyNSMockHttp.type = "GET_ZONE_ZONE_DOES_NOT_EXIST"
@@ -88,9 +113,21 @@ class BuddyNSDNSTests(unittest.TestCase):
         else:
             self.fail("Exception was not thrown")
 
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v2/zone/zonedoesnotexist.com")
+
     def test_get_zone_success(self):
         BuddyNSMockHttp.type = "GET_ZONE_SUCCESS"
         zone = self.driver.get_zone(zone_id="myexample.com")
+
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v2/zone/myexample.com")
 
         self.assertEqual(zone.id, "myexample.com")
         self.assertEqual(zone.domain, "myexample.com")
@@ -101,6 +138,13 @@ class BuddyNSDNSTests(unittest.TestCase):
     def test_create_zone_success(self):
         BuddyNSMockHttp.type = "CREATE_ZONE_SUCCESS"
         zone = self.driver.create_zone(domain="microsoft.com")
+
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/api/v2/zone/")
+        self.assertEqual(sent.json["name"], "microsoft.com")
 
         self.assertEqual(zone.id, "microsoft.com")
         self.assertEqual(zone.domain, "microsoft.com")
@@ -117,9 +161,18 @@ class BuddyNSDNSTests(unittest.TestCase):
         else:
             self.fail("Exception was not thrown")
 
+        reqs = BuddyNSMockHttp.history
+        self.assertEqual(len(reqs), 1)
+        sent = reqs.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/api/v2/zone/")
+        self.assertEqual(sent.json["name"], "newzone.com")
+        self.assertEqual(sent.json["master"], "13.0.0.1")
+
 
 class BuddyNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("buddyns")
+    keep_history = True
 
     def _api_v2_zone_EMPTY_ZONES_LIST(self, method, url, body, headers):
         body = self.fixtures.load("empty_zones_list.json")
