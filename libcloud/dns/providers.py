@@ -40,7 +40,6 @@ DRIVERS = {
         "DigitalOceanDNSDriver",
     ),
     Provider.WORLDWIDEDNS: ("libcloud.dns.drivers.worldwidedns", "WorldWideDNSDriver"),
-    Provider.DNSIMPLE: ("libcloud.dns.drivers.dnsimple", "DNSimpleDNSDriver"),
     Provider.POINTDNS: ("libcloud.dns.drivers.pointdns", "PointDNSDriver"),
     Provider.VULTR: ("libcloud.dns.drivers.vultr", "VultrDNSDriver"),
     Provider.LIQUIDWEB: ("libcloud.dns.drivers.liquidweb", "LiquidWebDNSDriver"),
@@ -57,6 +56,7 @@ DRIVERS = {
     Provider.ONAPP: ("libcloud.dns.drivers.onapp", "OnAppDNSDriver"),
     Provider.RCODEZERO: ("libcloud.dns.drivers.rcodezero", "RcodeZeroDNSDriver"),
     # Deprecated
+    Provider.DNSIMPLE: ("libcloud.dns.drivers.dnsimple", "DNSimpleDNSDriver"),
     Provider.RACKSPACE_US: ("libcloud.dns.drivers.rackspace", "RackspaceUSDNSDriver"),
     Provider.RACKSPACE_UK: ("libcloud.dns.drivers.rackspace", "RackspaceUKDNSDriver"),
 }
