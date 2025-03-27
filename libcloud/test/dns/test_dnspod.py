@@ -25,7 +25,7 @@ from libcloud.dns.types import (
     RecordDoesNotExistError,
     RecordAlreadyExistsError,
 )
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, parse_qs
 from libcloud.test.secrets import DNS_PARAMS_DNSPOD
 from libcloud.dns.drivers.dnspod import DNSPodDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
@@ -34,6 +34,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 class DNSPodDNSTests(unittest.TestCase):
     def setUp(self):
         DNSPodMockHttp.type = None
+        DNSPodMockHttp.history.clear()
         DNSPodDNSDriver.connectionCls.conn_class = DNSPodMockHttp
         self.driver = DNSPodDNSDriver(*DNS_PARAMS_DNSPOD)
         self.test_zone = Zone(
@@ -67,6 +68,10 @@ class DNSPodDNSTests(unittest.TestCase):
         DNSPodMockHttp.type = "LIST_ZONES"
         zones = self.driver.list_zones()
 
+        sent = DNSPodMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Domain.List")
+
         self.assertEqual(len(zones), 1)
 
         zone = zones[0]
@@ -89,6 +94,12 @@ class DNSPodDNSTests(unittest.TestCase):
         DNSPodMockHttp.type = "GET_ZONE_SUCCESS"
         zone = self.driver.get_zone(zone_id="6")
 
+        sent = DNSPodMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Domain.Info")
+        data = parse_qs(sent.body)
+        self.assertIn("6", data["domain_id"])
+
         self.assertEqual(zone.id, "6")
         self.assertEqual(zone.domain, "dnspod.com")
         self.assertIsNone(zone.type)
@@ -99,6 +110,12 @@ class DNSPodDNSTests(unittest.TestCase):
         DNSPodMockHttp.type = "DELETE_ZONE_SUCCESS"
         zone = self.test_zone
         status = self.driver.delete_zone(zone=zone)
+
+        sent = DNSPodMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Domain.Remove")
+        data = parse_qs(sent.body)
+        self.assertIn(zone.id, data["domain_id"])
 
         self.assertEqual(status, True)
 
@@ -114,7 +131,13 @@ class DNSPodDNSTests(unittest.TestCase):
 
     def test_create_zone_success(self):
         DNSPodMockHttp.type = "CREATE_ZONE_SUCCESS"
-        zone = self.driver.create_zone(domain="example.org")
+        zone = self.driver.create_zone(domain="api2.com")
+
+        sent = DNSPodMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Domain.Create")
+        data = parse_qs(sent.body)
+        self.assertIn("api2.com", data["domain"])
 
         self.assertEqual(zone.id, "3")
         self.assertEqual(zone.domain, "api2.com")
@@ -135,6 +158,13 @@ class DNSPodDNSTests(unittest.TestCase):
         DNSPodMockHttp.type = "LIST_RECORDS_SUCCESS"
         zone = self.test_zone
         records = self.driver.list_records(zone=zone)
+
+        sent = DNSPodMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Record.List")
+        data = parse_qs(sent.body)
+        self.assertIn(zone.id, data["domain_id"])
+
         first_record = records[0]
 
         self.assertEqual(len(records), 5)
@@ -145,7 +175,14 @@ class DNSPodDNSTests(unittest.TestCase):
 
     def test_get_record_success(self):
         DNSPodMockHttp.type = "GET_RECORD_SUCCESS"
-        record = self.driver.get_record(zone_id="31", record_id="31")
+        record = self.driver.get_record(zone_id="6", record_id="50")
+
+        sent = DNSPodMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Record.Info")
+        body = parse_qs(sent.body)
+        self.assertIn("6", body["domain_id"])
+        self.assertIn("50", body["record_id"])
 
         self.assertEqual(record.id, "50")
         self.assertEqual(record.type, "A")
@@ -178,6 +215,20 @@ class DNSPodDNSTests(unittest.TestCase):
             data="96.126.115.73",
             extra={"ttl": 13, "record_line": "default"},
         )
+
+        # [0] /Record.Create
+        # [1] /Record.Info
+        sent = DNSPodMockHttp.history[0]
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/Record.Create")
+        data = parse_qs(sent.body)
+        self.assertIn(self.test_zone.id, data["domain_id"])
+        self.assertIn("A", data["record_type"])
+        self.assertIn("@", data["sub_domain"])
+        self.assertIn("96.126.115.73", data["value"])
+        self.assertIn("13", data["ttl"])
+        self.assertIn("default", data["record_line"])
+
         self.assertEqual(record.id, "50")
         self.assertEqual(record.name, "@")
         self.assertEqual(record.data, "96.126.115.73")
@@ -201,6 +252,7 @@ class DNSPodDNSTests(unittest.TestCase):
 
 class DNSPodMockHttp(MockHttp):
     fixtures = DNSFileFixtures("dnspod")
+    keep_history = True
 
     def _Domain_List_EMPTY_ZONES_LIST(self, method, url, body, headers):
         body = self.fixtures.load("empty_zones_list.json")
