@@ -28,6 +28,7 @@ class GandiTests(unittest.TestCase):
     def setUp(self):
         GandiDNSDriver.connectionCls.conn_class = GandiMockHttp
         GandiMockHttp.type = None
+        GandiMockHttp.history.clear()
         self.driver = GandiDNSDriver(*DNS_GANDI)
 
     def test_list_record_types(self):
@@ -37,6 +38,12 @@ class GandiTests(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = GandiMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        self.assertIn("<methodName>domain.zone.list</", sent.body)
+
         self.assertEqual(len(zones), 5)
 
         zone = zones[0]
@@ -47,6 +54,14 @@ class GandiTests(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+
+        sent = GandiMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.record.list</", data)
+        self.assertIn("<value><int>47234</int></", data)
+
         self.assertEqual(len(records), 4)
 
         record = records[1]
@@ -65,6 +80,14 @@ class GandiTests(unittest.TestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id="47234")
+
+        sent = GandiMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.info</", data)
+        self.assertIn("<value><int>47234</int></", data)
+
         self.assertEqual(zone.id, "47234")
         self.assertEqual(zone.type, "master")
         self.assertEqual(zone.domain, "t.com")
@@ -119,18 +142,39 @@ class GandiTests(unittest.TestCase):
 
     def test_create_zone(self):
         zone = self.driver.create_zone(domain="t.com", type="master", ttl=None, extra=None)
+
+        sent = GandiMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.create</", data)
+        self.assertIn("<value><string>t.com</string></", data)
+
         self.assertEqual(zone.id, "47234")
         self.assertEqual(zone.domain, "t.com")
 
     def test_update_zone(self):
-        zone = self.driver.get_zone(zone_id="47234")
-        zone = self.driver.update_zone(zone, domain="t.com")
+        pre_zone = self.driver.get_zone(zone_id="47234")
+        zone = self.driver.update_zone(pre_zone, domain="other.com")
+
+        sent = GandiMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.update</", data)
+        self.assertIn("<value><int>47234</int></", data)
+        self.assertIn("<value><string>other.com</string></", data)
+
+        self.assertEqual(pre_zone.domain, "t.com")
+
         self.assertEqual(zone.id, "47234")
         self.assertEqual(zone.type, "master")
-        self.assertEqual(zone.domain, "t.com")
+        self.assertEqual(zone.domain, "other.com")
 
     def test_create_record(self):
         zone = self.driver.list_zones()[0]
+        GandiMockHttp.history.clear()
+
         record = self.driver.create_record(
             name="www",
             zone=zone,
@@ -138,6 +182,19 @@ class GandiTests(unittest.TestCase):
             data="127.0.0.1",
             extra={"ttl": 30},
         )
+
+        # [0] domain.version.new
+        # [1] domain.zone.record.add
+        # [2] domain.version.set
+        sent = GandiMockHttp.history[1]
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.record.add</", data)
+        self.assertIn(f"<value><int>{zone.id}</int></", data)
+        self.assertIn("<value><string>www</string></", data)
+        self.assertIn("<value><string>127.0.0.1</string></", data)
+        self.assertIn("<value><int>30</int></", data)
 
         self.assertEqual(record.id, "A:www")
         self.assertEqual(record.name, "www")
@@ -148,6 +205,7 @@ class GandiTests(unittest.TestCase):
     def test_update_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[1]
+        GandiMockHttp.history.clear()
 
         params = {
             "record": record,
@@ -157,6 +215,21 @@ class GandiTests(unittest.TestCase):
             "extra": {"ttl": 30},
         }
         updated_record = self.driver.update_record(**params)
+
+        # [0] domain.version.new
+        # [1] domain.zone.record.delete
+        # [2] domain.zone.record.add
+        # [3] domain.version.set
+        sent = GandiMockHttp.history[2]
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.record.add</", data)
+        self.assertIn(f"<value><int>{zone.id}</int></", data)
+        self.assertIn("<value><string>www</string></", data)
+        self.assertIn("<value><string>A</string></", data)
+        self.assertIn("<value><string>127.0.0.1</string></", data)
+        self.assertIn("<value><int>30</int></", data)
 
         self.assertEqual(record.data, "208.111.35.173")
 
@@ -169,6 +242,14 @@ class GandiTests(unittest.TestCase):
     def test_delete_zone(self):
         zone = self.driver.list_zones()[0]
         status = self.driver.delete_zone(zone=zone)
+
+        sent = GandiMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.delete</", data)
+        self.assertIn(f"<value><int>{zone.id}</int></", data)
+
         self.assertTrue(status)
 
     def test_delete_zone_does_not_exist(self):
@@ -186,7 +267,22 @@ class GandiTests(unittest.TestCase):
     def test_delete_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[0]
+        GandiMockHttp.history.clear()
+
         status = self.driver.delete_record(record=record)
+
+        # [0] domain.version.new
+        # [1] domain.zone.record.delete
+        # [2] domain.version.set
+        sent = GandiMockHttp.history[1]
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/xmlrpc/")
+        data = sent.body.replace(">/n<", "><")
+        self.assertIn("<methodName>domain.zone.record.delete</", data)
+        self.assertIn(f"<value><int>{zone.id}</int></", data)
+        self.assertIn("<value><int>1</int></", data)
+        self.assertIn(f"<value><string>{record.name}</string></", data)
+
         self.assertTrue(status)
 
     def test_delete_record_does_not_exist(self):
@@ -203,13 +299,14 @@ class GandiTests(unittest.TestCase):
 
 class GandiMockHttp(BaseGandiMockHttp):
     fixtures = DNSFileFixtures("gandi")
+    keep_history = True
 
     def _xmlrpc__domain_zone_create(self, method, url, body, headers):
         body = self.fixtures.load("create_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_update(self, method, url, body, headers):
-        body = self.fixtures.load("get_zone.xml")
+        body = self.fixtures.load("update_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_list(self, method, url, body, headers):
