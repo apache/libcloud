@@ -14,11 +14,13 @@
 # limitations under the License.
 
 import os
+import json
 import random
 import unittest
 
 import requests
 import requests_mock
+from requests.structures import CaseInsensitiveDict
 
 from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import PY2, httplib, parse_qs, urlparse, urlquote, parse_qsl
@@ -87,6 +89,19 @@ class BodyStream(StringIO):
         return StringIO.read(self)
 
 
+class MockRequest:
+    def __init__(self, method, url, query, body, headers):
+        self.method = method
+        self.url = url
+        self.query = parse_qs(query)
+        self.headers = CaseInsensitiveDict(headers)
+        self.body = body
+
+    @property
+    def json(self):
+        return json.loads(self.body)
+
+
 class MockHttp(LibcloudConnection, unittest.TestCase):
     """
     A mock HTTP client/server suitable for testing purposes. This replaces
@@ -102,6 +117,8 @@ class MockHttp(LibcloudConnection, unittest.TestCase):
     use_param = None  # will use this param to namespace the request function
     test = None  # TestCase instance which is using this mock
     proxy_url = None
+    keep_history = False
+    history = []
 
     def __init__(self, *args, **kwargs):
         # Load assertion methods into the class, in case people want to assert
@@ -118,6 +135,10 @@ class MockHttp(LibcloudConnection, unittest.TestCase):
         # Find a method we can use for this request
         parsed = urlparse.urlparse(url)
         _, _, path, _, query, _ = parsed
+
+        if self.keep_history:
+            self.history.append(MockRequest(method, path, query, body, headers))
+
         qs = parse_qs(query)
         if path.endswith("/"):
             path = path[:-1]
