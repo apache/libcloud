@@ -134,7 +134,7 @@ class NsOneTests(unittest.TestCase):
 
     def test_get_record_success(self):
         NsOneMockHttp.type = "GET_RECORD_SUCCESS"
-        record = self.driver.get_record(zone_id="getrecord.com", record_id="A")
+        record = self.driver.get_record(zone_id="example.com", record_id="520519509f782d58bb4df419")
 
         self.assertEqual(record.id, "520519509f782d58bb4df419")
         self.assertEqual(record.name, "www.example.com")
@@ -301,14 +301,14 @@ class NsOneMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getrecord_com_getrecord_com_A_GET_RECORD_SUCCESS(
+    def _v1_zones_example_com_example_com_520519509f782d58bb4df419_GET_RECORD_SUCCESS(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("get_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getrecord_com_GET_RECORD_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_example_com_GET_RECORD_SUCCESS(self, method, url, body, headers):
         body = self.fixtures.load("get_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
