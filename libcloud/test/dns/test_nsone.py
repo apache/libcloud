@@ -37,6 +37,14 @@ class NsOneTests(unittest.TestCase):
         NsOneMockHttp.type = None
         NsOneDNSDriver.connectionCls.conn_class = NsOneMockHttp
         self.driver = NsOneDNSDriver(*DNS_PARAMS_NSONE)
+        self.example_zone = Zone(
+            id="example.com",
+            type="master",
+            ttl=None,
+            domain="example.com",
+            extra={},
+            driver=self,
+        )
         self.test_zone = Zone(
             id="test.com",
             type="master",
@@ -159,7 +167,7 @@ class NsOneTests(unittest.TestCase):
 
     def test_list_records_success(self):
         NsOneMockHttp.type = "LIST_RECORDS_SUCCESS"
-        records = self.driver.list_records(zone=self.test_zone)
+        records = self.driver.list_records(zone=self.example_zone)
         self.assertEqual(len(records), 2)
 
         arecord = records[1]
@@ -274,7 +282,7 @@ class NsOneMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_LIST_RECORDS_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_example_com_LIST_RECORDS_SUCCESS(self, method, url, body, headers):
         body = self.fixtures.load("get_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
