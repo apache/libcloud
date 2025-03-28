@@ -238,7 +238,28 @@ class LiquidWebTests(unittest.TestCase):
             self.fail("Exception was not thrown")
 
     def test_create_record_success(self):
-        pass
+        LiquidWebMockHttp.type = "CREATE_RECORD_SUCCESS"
+        zone = Zone(
+            id="13",
+            type="master",
+            ttl=None,
+            domain="domain.com",
+            extra={},
+            driver=self.driver,
+        )
+        record = self.driver.create_record(
+            name="nerd.domain.com",
+            zone=zone,
+            type=RecordType.A,
+            data="127.0.0.1",
+            extra={"ttl": 300},
+        )
+
+        self.assertEqual(record.id, "13")
+        self.assertEqual(record.type, "A")
+        self.assertEqual(record.name, "nerd.domain.com")
+        self.assertEqual(record.data, "127.0.0.1")
+        self.assertEqual(record.extra.get("ttl"), 300)
 
     def test_record_already_exists_error(self):
         pass
@@ -322,7 +343,7 @@ class LiquidWebMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_Network_DNS_Record_create_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load("")
+        body = self.fixtures.load("get_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_Network_DNS_Record_ALREADY_EXISTS_ERROR(self, method, url, body, headers):
