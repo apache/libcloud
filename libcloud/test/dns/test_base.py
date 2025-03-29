@@ -63,6 +63,26 @@ class BaseTestCase(unittest.TestCase):
         self.driver = DNSDriver("none", "none")
         self.tmp_file = tempfile.mkstemp()
         self.tmp_path = self.tmp_file[1]
+        self.master_zone = Zone(
+            id=1, domain="example.com", type="master", ttl=900, driver=self.driver
+        )
+
+    def test_zone_helpers(self):
+        zone = self.master_zone
+
+        for func in (zone.prefix, zone.hostname, zone.fqdn):
+            with self.assertRaises(AttributeError):
+                self.assertEqual(func(None))
+
+        for apex in ("", "example.com", "example.com."):
+            self.assertEqual(zone.prefix(apex), "")
+            self.assertEqual(zone.hostname(apex), "example.com")
+            self.assertEqual(zone.fqdn(apex), "example.com.")
+
+        for sub in ("sub", "sub.example.com", "sub.example.com."):
+            self.assertEqual(zone.prefix(sub), "sub")
+            self.assertEqual(zone.hostname(sub), "sub.example.com")
+            self.assertEqual(zone.fqdn(sub), "sub.example.com.")
 
     def test_export_zone_to_bind_format_slave_should_throw(self):
         zone = Zone(id=1, domain="example.com", type="slave", ttl=900, driver=self.driver)
