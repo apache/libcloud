@@ -102,6 +102,70 @@ class Zone:
             self.driver.name,
         )
 
+    def prefix(self, subname):
+        """
+        Accept subordinate (or identity) names in multiple convenience formats.
+
+        In the following examples, "www" is returned:
+
+        |     Format      |       subname      |  self.domain  |
+        |-----------------|--------------------|---------------|
+        |  Bare host name | "www"              | "example.com" |
+        | FQDN (unrooted) | "www.example.com"  | "example.com" |
+        |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        :param subname: Hostname or FQDN.
+        :type subname: ``str``
+
+        :return: Bare record name, without domain part.
+        :rtype: ``str``
+        """
+
+        return subname.rstrip(".").removesuffix(self.domain).rstrip(".")
+
+    def hostname(self, subname):
+        """
+        Accept subordinate (or identity) names in multiple convenience formats.
+
+        In the following examples, "www.example.com" is returned:
+
+        |     Format      |       subname      |  self.domain  |
+        |-----------------|--------------------|---------------|
+        |  Bare host name | "www"              | "example.com" |
+        | FQDN (unrooted) | "www.example.com"  | "example.com" |
+        |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        :param subname: Hostname or FQDN.
+        :type subname: ``str``
+
+        :return: Complete hostname, including domain part.
+        :rtype: ``str``
+        """
+
+        prefix = self.prefix(subname)
+        return f"{prefix}.{self.domain}" if prefix else self.domain
+
+    def fqdn(self, subname):
+        """
+        Accept subordinate (or identity) names in multiple convenience formats.
+
+        In the following examples, "www.example.com." is returned:
+
+        |     Format      |       subname      |  self.domain  |
+        |-----------------|--------------------|---------------|
+        |  Bare host name | "www"              | "example.com" |
+        | FQDN (unrooted) | "www.example.com"  | "example.com" |
+        |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        :param subname: Hostname or FQDN.
+        :type subname: ``str``
+
+        :return: Complete hostname, including domain part.
+        :rtype: ``str``
+        """
+
+        return f"{self.hostname(subname)}."
+
 
 class Record:
     """
