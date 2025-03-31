@@ -28,6 +28,7 @@ class Route53Tests(unittest.TestCase):
     def setUp(self):
         Route53DNSDriver.connectionCls.conn_class = Route53MockHttp
         Route53MockHttp.type = None
+        Route53MockHttp.history.clear()
         self.driver = Route53DNSDriver(*DNS_PARAMS_ROUTE53)
 
     def test_list_record_types(self):
@@ -37,6 +38,11 @@ class Route53Tests(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone")
+
         self.assertEqual(len(zones), 5)
 
         zone = zones[0]
@@ -47,6 +53,11 @@ class Route53Tests(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234/rrset")
+
         self.assertEqual(len(records), 10)
 
         record = records[1]
@@ -81,6 +92,13 @@ class Route53Tests(unittest.TestCase):
 
     def test_get_record(self):
         record = self.driver.get_record(zone_id="47234", record_id="CNAME:wibble")
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234/rrset")
+        self.assertIn("wibble.t.com", sent.query["name"])
+        self.assertIn("CNAME", sent.query["type"])
+
         self.assertEqual(record.name, "wibble")
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, "t.com")
@@ -130,6 +148,13 @@ class Route53Tests(unittest.TestCase):
 
     def test_create_zone(self):
         zone = self.driver.create_zone(domain="t.com", type="master", ttl=None, extra=None)
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone")
+        xml = sent.body.decode()
+        self.assertIn("<Name>t.com</Name>", xml)
+
         self.assertEqual(zone.id, "47234")
         self.assertEqual(zone.domain, "t.com")
 
@@ -138,6 +163,16 @@ class Route53Tests(unittest.TestCase):
         record = self.driver.create_record(
             name="www", zone=zone, type=RecordType.A, data="127.0.0.1", extra={"ttl": 0}
         )
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234/rrset")
+        xml = sent.body.decode()
+        self.assertIn("<Action>CREATE</Action>", xml)
+        self.assertIn("<Name>www.t.com</Name>", xml)
+        self.assertIn("<Type>A</Type>", xml)
+        self.assertIn("<Value>127.0.0.1</Value>", xml)
+        self.assertIn("<TTL>0</TTL>", xml)
 
         self.assertEqual(record.id, "A:www")
         self.assertEqual(record.name, "www")
@@ -150,6 +185,16 @@ class Route53Tests(unittest.TestCase):
         record = self.driver.create_record(
             name="", zone=zone, type=RecordType.A, data="127.0.0.1", extra={"ttl": 0}
         )
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234/rrset")
+        xml = sent.body.decode()
+        self.assertIn("<Action>CREATE</Action>", xml)
+        self.assertIn("<Name>t.com</Name>", xml)
+        self.assertIn("<Type>A</Type>", xml)
+        self.assertIn("<Value>127.0.0.1</Value>", xml)
+        self.assertIn("<TTL>0</TTL>", xml)
 
         self.assertEqual(record.id, "A:")
         self.assertEqual(record.name, "")
@@ -249,9 +294,22 @@ class Route53Tests(unittest.TestCase):
             "name": "www",
             "type": RecordType.AAAA,
             "data": "::1",
-            "extra": {"ttle": 0},
+            "extra": {"ttl": 0},
         }
         updated_record = self.driver.update_record(**params)
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234/rrset")
+        xml = sent.body.decode()
+        self.assertIn("<Name>www.t.com</Name>", xml)
+        self.assertIn("<Action>DELETE</Action>", xml)
+        self.assertIn(f"<Type>{record.type}</Type>", xml)
+        self.assertIn(f"<Value>{record.data}</Value>", xml)
+        self.assertIn("<Action>CREATE</Action>", xml)
+        self.assertIn("<Type>AAAA</Type>", xml)
+        self.assertIn("<Value>::1</Value>", xml)
+        self.assertIn("<TTL>0</TTL>", xml)
 
         self.assertEqual(record.data, "208.111.35.173")
 
@@ -264,6 +322,11 @@ class Route53Tests(unittest.TestCase):
     def test_delete_zone(self):
         zone = self.driver.list_zones()[0]
         status = self.driver.delete_zone(zone=zone)
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234")
+
         self.assertTrue(status)
 
     def test_delete_zone_does_not_exist(self):
@@ -282,6 +345,15 @@ class Route53Tests(unittest.TestCase):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[0]
         status = self.driver.delete_record(record=record)
+
+        sent = Route53MockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/2012-02-29/hostedzone/47234/rrset")
+        xml = sent.body.decode()
+        self.assertIn("<Action>DELETE</Action>", xml)
+        self.assertIn("<Name>wibble.t.com</Name>", xml)
+        self.assertIn("<Type>CNAME</Type>", xml)
+
         self.assertTrue(status)
 
     def test_delete_record_does_not_exist(self):
@@ -298,6 +370,7 @@ class Route53Tests(unittest.TestCase):
 
 class Route53MockHttp(MockHttp):
     fixtures = DNSFileFixtures("route53")
+    keep_history = True
 
     def _2012_02_29_hostedzone_47234(self, method, url, body, headers):
         body = self.fixtures.load("get_zone.xml")
