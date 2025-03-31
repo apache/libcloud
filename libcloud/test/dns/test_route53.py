@@ -249,7 +249,7 @@ class Route53Tests(unittest.TestCase):
         params = {
             "record": record,
             "name": "www",
-            "type": RecordType.A,
+            "type": RecordType.AAAA,
             "data": "::1",
             "extra": {"ttle": 0},
         }
@@ -257,10 +257,10 @@ class Route53Tests(unittest.TestCase):
 
         self.assertEqual(record.data, "208.111.35.173")
 
-        self.assertEqual(updated_record.id, "A:www")
+        self.assertEqual(updated_record.id, "AAAA:www")
         self.assertEqual(updated_record.name, "www")
         self.assertEqual(updated_record.zone, record.zone)
-        self.assertEqual(updated_record.type, RecordType.A)
+        self.assertEqual(updated_record.type, RecordType.AAAA)
         self.assertEqual(updated_record.data, "::1")
 
     def test_delete_zone(self):
