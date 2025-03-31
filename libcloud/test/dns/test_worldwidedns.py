@@ -28,6 +28,7 @@ class WorldWideDNSTests(unittest.TestCase):
     def setUp(self):
         WorldWideDNSDriver.connectionCls.conn_class = WorldWideDNSMockHttp
         WorldWideDNSMockHttp.type = None
+        WorldWideDNSMockHttp.history.clear()
         self.driver = WorldWideDNSDriver(*DNS_PARAMS_WORLDWIDEDNS)
 
     def assertHasKeys(self, dictionary, keys):
@@ -46,6 +47,11 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
+
+        sent = WorldWideDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_list_domain.asp")
+
         self.assertEqual(len(zones), 1)
 
         zone = zones[0]
@@ -76,6 +82,12 @@ class WorldWideDNSTests(unittest.TestCase):
     def test_list_records_success(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+
+        sent = WorldWideDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_list_domain.asp")
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+
         self.assertEqual(len(records), 3)
 
         www = records[0]
@@ -97,6 +109,12 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_get_zone_success(self):
         zone = self.driver.get_zone(zone_id="niteowebsponsoredthisone.com")
+
+        sent = WorldWideDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_list_domain.asp")
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+
         self.assertEqual(zone.id, "niteowebsponsoredthisone.com")
         self.assertEqual(zone.type, "master")
         self.assertEqual(zone.domain, "niteowebsponsoredthisone.com")
@@ -156,6 +174,17 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_create_zone_success(self):
         zone = self.driver.create_zone(domain="niteowebsponsoredthisone.com", type="master")
+
+        # [0] /api_dns_new_domain.asp
+        # [1] /api_dns_list.asp
+        # [2] /api_dns_list_domain.asp
+        sent = WorldWideDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_new_domain.asp")
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+        self.assertIn("1", sent.query["DYN"])
+        self.assertIn("0", sent.query["TYPE"])
+
         self.assertEqual(zone.id, "niteowebsponsoredthisone.com")
         self.assertEqual(zone.domain, "niteowebsponsoredthisone.com")
         self.assertEqual(zone.ttl, "43200")
@@ -173,6 +202,8 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_update_zone_success(self):
         zone = self.driver.list_zones()[0]
+        WorldWideDNSMockHttp.history.clear()
+
         WorldWideDNSMockHttp.type = "UPDATE_ZONE"
         updated_zone = self.driver.update_zone(
             zone=zone,
@@ -180,6 +211,14 @@ class WorldWideDNSTests(unittest.TestCase):
             ttl=3800,
             extra={"HOSTMASTER": "mail.niteowebsponsoredthisone.com"},
         )  # noqa
+
+        sent = WorldWideDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_modify.asp")
+        self.assertNotIn("ID", sent.query)
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+        self.assertIn("3800", sent.query["TTL"])
+        self.assertIn("mail.niteowebsponsoredthisone.com", sent.query["HOSTMASTER"])
 
         self.assertEqual(zone.extra["HOSTMASTER"], "hostmaster.niteowebsponsoredthisone.com")
 
@@ -204,6 +243,8 @@ class WorldWideDNSTests(unittest.TestCase):
 
     def test_create_record_success(self):
         zone = self.driver.list_zones()[0]
+        WorldWideDNSMockHttp.history.clear()
+
         WorldWideDNSMockHttp.type = "CREATE_RECORD"
         record = self.driver.create_record(
             name="domain4",
@@ -212,6 +253,18 @@ class WorldWideDNSTests(unittest.TestCase):
             data="0.0.0.4",
             extra={"entry": 4},
         )
+
+        # [0] /api_dns_modify.asp
+        # [1] /api_dns_list_domain.asp
+        sent = WorldWideDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_modify.asp")
+        self.assertNotIn("ID", sent.query)
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+        self.assertIn("domain4", sent.query["S4"])
+        self.assertIn("A", sent.query["T4"])
+        self.assertIn("0.0.0.4", sent.query["D4"])
+        self.assertIn("43200", sent.query["TTL"])
 
         self.assertEqual(record.id, "4")
         self.assertEqual(record.name, "domain4")
@@ -279,6 +332,8 @@ class WorldWideDNSTests(unittest.TestCase):
     def test_update_record_success(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.get_record(zone.id, "1")
+        WorldWideDNSMockHttp.history.clear()
+
         WorldWideDNSMockHttp.type = "UPDATE_RECORD"
         record = self.driver.update_record(
             record=record,
@@ -287,6 +342,18 @@ class WorldWideDNSTests(unittest.TestCase):
             data="0.0.0.1",
             extra={"entry": 1},
         )
+
+        # [0] /api_dns_modify.asp
+        # [1] /api_dns_list_domain.asp
+        sent = WorldWideDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_modify.asp")
+        self.assertNotIn("ID", sent.query)
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+        self.assertIn("domain1", sent.query["S1"])
+        self.assertIn("A", sent.query["T1"])
+        self.assertIn("0.0.0.1", sent.query["D1"])
+        self.assertIn("43200", sent.query["TTL"])
 
         self.assertEqual(record.id, "1")
         self.assertEqual(record.name, "domain1")
@@ -298,6 +365,12 @@ class WorldWideDNSTests(unittest.TestCase):
     def test_delete_zone_success(self):
         zone = self.driver.list_zones()[0]
         status = self.driver.delete_zone(zone=zone)
+
+        sent = WorldWideDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_delete_domain.asp")
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+
         self.assertTrue(status)
 
     def test_delete_zone_does_not_exist(self):
@@ -315,10 +388,25 @@ class WorldWideDNSTests(unittest.TestCase):
     def test_delete_record_success(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+        WorldWideDNSMockHttp.history.clear()
+
         self.assertEqual(len(records), 3)
         record = records[1]
+
         WorldWideDNSMockHttp.type = "DELETE_RECORD"
         status = self.driver.delete_record(record=record)
+
+        # [0] /api_dns_modify.asp
+        # [1] /api_dns_list.asp
+        # [2] /api_dns_list_domain.asp
+        sent = WorldWideDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api_dns_modify.asp")
+        self.assertIn("niteowebsponsoredthisone.com", sent.query["DOMAIN"])
+        self.assertIn("www", sent.query["S1"])
+        self.assertIn("NONE", sent.query["T2"])
+        self.assertIn("@", sent.query["S3"])
+
         self.assertTrue(status)
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
@@ -327,6 +415,7 @@ class WorldWideDNSTests(unittest.TestCase):
 
 class WorldWideDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("worldwidedns")
+    keep_history = True
 
     def _api_dns_list_asp(self, method, url, body, headers):
         body = self.fixtures.load("api_dns_list")
