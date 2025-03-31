@@ -262,15 +262,15 @@ class WorldWideDNSDriver(DNSDriver):
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
 
-        :param extra: Contains 'entry' Entry position (1 thru 40)
+        :param extra: Extra attributes (driver specific). (optional).
         :type extra: ``dict``
 
         :rtype: :class:`Record`
         """
 
-        if (extra is None) or ("entry" not in extra):
-            raise WorldWideDNSError(value="You must enter 'entry' parameter", driver=self)
-        record_id = extra.get("entry")
+        record_id = record.id
+        if "entry" in extra and str(extra["entry"]) != record_id:
+            raise WorldWideDNSError(value="Inconsistent 'entry' parameter", driver=self)
 
         if name == "":
             name = "@"
@@ -437,13 +437,7 @@ class WorldWideDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         zone = record.zone
-
-        for index in range(MAX_RECORD_ENTRIES):
-            if record.name == zone.extra["S%s" % (index + 1)]:
-                entry = index + 1
-
-                break
-        extra = {"S%s" % entry: "", "T%s" % entry: "NONE", "D%s" % entry: ""}
+        extra = {"S%s" % record.id: "", "T%s" % record.id: "NONE", "D%s" % record.id: ""}
         self.update_zone(zone, zone.domain, extra=extra)
 
         return True
