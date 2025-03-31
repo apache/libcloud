@@ -226,18 +226,18 @@ class WorldWideDNSDriver(DNSDriver):
         if extra is not None:
             params.update(extra)
 
+        method = "GET"
         if ex_raw:
             action = "/api_dns_modify_raw.asp"
 
             if self.reseller_id is not None:
                 action = "/api_dns_modify_raw_reseller.asp"
             method = "POST"
+        elif self.reseller_id is not None:
+            params["ID"] = self.reseller_id
+            action = "/api_dns_modify_reseller.asp"
         else:
             action = "/api_dns_modify.asp"
-
-            if self.reseller_id is not None:
-                action = "/api_dns_modify_reseller.asp"
-            method = "GET"
         response = self.connection.request(action, params=params, method=method)  # noqa
         zone = self.get_zone(zone.id)
 
