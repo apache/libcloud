@@ -330,10 +330,12 @@ class WorldWideDNSDriver(DNSDriver):
         else:
             dyn = 1
         params = {"DOMAIN": domain, "TYPE": _type}
-        action = "/api_dns_new_domain.asp"
 
-        if self.reseller_id is not None:
+        if self.reseller_id is None:
             params["DYN"] = dyn
+            action = "/api_dns_new_domain.asp"
+        else:
+            params["ID"] = self.reseller_id
             action = "/api_dns_new_domain_reseller.asp"
         self.connection.request(action, params=params)
         zone = self.get_zone(domain)
