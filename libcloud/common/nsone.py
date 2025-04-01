@@ -24,10 +24,10 @@ API_HOST = "api.nsone.net"
 
 
 class NsOneResponse(JsonResponse):
-    errors = []  # type: List[Dict]
-    objects = []  # type: List[Dict]
-
     def __init__(self, response, connection):
+        self.errors = []  # type: List[Dict]
+        self.objects = []  # type: List[Dict]
+
         super().__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
