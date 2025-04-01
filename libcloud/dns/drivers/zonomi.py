@@ -54,7 +54,7 @@ class ZonomiDNSDriver(DNSDriver):
         :return: ``list`` of :class:`Zone`
         """
         action = "/app/dns/dyndns.jsp?"
-        params = {"action": "QUERYZONES", "api_key": self.key}
+        params = {"action": "QUERYZONES"}
 
         response = self.connection.request(action=action, params=params)
         zones = self._to_zones(response.objects)
