@@ -54,9 +54,9 @@ class NsOneTests(unittest.TestCase):
             driver=self,
         )
         self.test_record = Record(
-            id="13",
+            id="A",
             type=RecordType.A,
-            name="example.com",
+            name="test.com",
             zone=self.test_zone,
             data="127.0.0.1",
             driver=self,
@@ -75,13 +75,13 @@ class NsOneTests(unittest.TestCase):
         self.assertEqual(len(zones), 2)
 
         zone = zones[0]
-        self.assertEqual(zone.id, "520422af9f782d37dffb588b")
+        self.assertEqual(zone.id, "example.com")
         self.assertIsNone(zone.type)
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.ttl, 3600)
 
         zone = zones[1]
-        self.assertEqual(zone.id, "520422c99f782d37dffb5892")
+        self.assertEqual(zone.id, "nsoneisgreat.com")
         self.assertIsNone(zone.type)
         self.assertEqual(zone.domain, "nsoneisgreat.com")
         self.assertEqual(zone.ttl, 3600)
@@ -115,7 +115,7 @@ class NsOneTests(unittest.TestCase):
         NsOneMockHttp.type = "CREATE_ZONE_SUCCESS"
         zone = self.driver.create_zone(domain="newzone.com")
 
-        self.assertEqual(zone.id, "52051b2c9f782d58bb4df41b")
+        self.assertEqual(zone.id, "newzone.com")
         self.assertEqual(zone.domain, "newzone.com")
         self.assertIsNone(zone.type),
         self.assertEqual(zone.ttl, 3600)
@@ -134,7 +134,7 @@ class NsOneTests(unittest.TestCase):
         NsOneMockHttp.type = "GET_RECORD_DOES_NOT_EXIST"
 
         try:
-            self.driver.get_record(zone_id="getrecord.com", record_id="A")
+            self.driver.get_record(zone_id="example.com", record_id="A")
         except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, "A")
         else:
@@ -142,9 +142,9 @@ class NsOneTests(unittest.TestCase):
 
     def test_get_record_success(self):
         NsOneMockHttp.type = "GET_RECORD_SUCCESS"
-        record = self.driver.get_record(zone_id="example.com", record_id="520519509f782d58bb4df419")
+        record = self.driver.get_record(zone_id="example.com", record_id="A:www")
 
-        self.assertEqual(record.id, "520519509f782d58bb4df419")
+        self.assertEqual(record.id, "A:www")
         self.assertEqual(record.name, "www.example.com")
         self.assertEqual(record.data, ["1.1.1.1"])
         self.assertEqual(record.type, RecordType.A)
@@ -171,7 +171,7 @@ class NsOneTests(unittest.TestCase):
         self.assertEqual(len(records), 2)
 
         arecord = records[1]
-        self.assertEqual(arecord.id, "520519509f782d58bb4df419")
+        self.assertEqual(arecord.id, "A:www")
         self.assertEqual(arecord.name, "www.example.com")
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, ["1.2.3.4"])
@@ -185,7 +185,7 @@ class NsOneTests(unittest.TestCase):
             self.test_record.data,
             self.test_record.extra,
         )
-        self.assertEqual(arecord.id, "608f9619ebe68600ac9f807d")
+        self.assertEqual(arecord.id, "A")
         self.assertEqual(arecord.name, "test.com")
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, ["127.0.0.1"])
@@ -297,19 +297,19 @@ class NsOneMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_A_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
+    def _v1_zones_test_com_test_com_A_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("record_does_not_exist.json")
 
         return 404, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_A_DELETE_RECORD_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_test_com_test_com_A_DELETE_RECORD_SUCCESS(self, method, url, body, headers):
         body = self.fixtures.load("delete_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_example_com_example_com_520519509f782d58bb4df419_GET_RECORD_SUCCESS(
+    def _v1_zones_example_com_www_example_com_A_GET_RECORD_SUCCESS(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("get_record_success.json")
@@ -321,28 +321,31 @@ class NsOneMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getrecord_com_getrecord_com_A_GET_RECORD_DOES_NOT_EXIST(
+    def _v1_zones_example_com_example_com_A_GET_RECORD_DOES_NOT_EXIST(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("record_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_test_com_A_CREATE_RECORD_SUCCESS(
+    def _v1_zones_example_com_GET_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        return self._v1_zones_example_com_GET_RECORD_SUCCESS(method, url, body, headers)
+
+    def _v1_zones_test_com_test_com_A_CREATE_RECORD_SUCCESS(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("create_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_test_com_A_CREATE_RECORD_ALREADY_EXISTS(
+    def _v1_zones_test_com_test_com_A_CREATE_RECORD_ALREADY_EXISTS(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("create_record_already_exists.json")
 
         return 404, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_test_com_example_com_test_com_A_CREATE_RECORD_ZONE_NOT_FOUND(
+    def _v1_zones_test_com_test_com_A_CREATE_RECORD_ZONE_NOT_FOUND(
         self, method, url, body, headers
     ):
         body = self.fixtures.load("create_record_zone_not_found.json")

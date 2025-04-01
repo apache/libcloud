@@ -163,12 +163,15 @@ class NsOneDNSDriver(DNSDriver):
         :param zone_id: The id of the zone where to search for
         the record (e.g. example.com)
         :type zone_id: ``str``
-        :param record_id: The type of record to search for
-        (e.g. A, AAA, MX etc)
+        :param record_id: The record type joined with the record
+        name by a colon, if non-empty (e.g. A, AAAA:www, MX:mail, etc)
 
         :return: :class:`Record`
         """
-        action = "/v1/zones/{}/{}/{}".format(zone_id, zone_id, record_id)
+        zone = self.get_zone(zone_id=zone_id)
+        parts = self.from_default_id(zone, record_id)
+        rdomain = zone.hostname(parts.name)
+        action = f"/v1/zones/{zone.domain}/{rdomain}/{parts.type}"
         try:
             response = self.connection.request(action=action, method="GET")
         except NsOneException as e:
@@ -176,7 +179,6 @@ class NsOneDNSDriver(DNSDriver):
                 raise RecordDoesNotExistError(value=e.message, driver=self, record_id=record_id)
             else:
                 raise e
-        zone = self.get_zone(zone_id=zone_id)
         record = self._to_record(item=response.parse_body(), zone=zone)
 
         return record
@@ -213,7 +215,7 @@ class NsOneDNSDriver(DNSDriver):
         :type extra: ``dict``
         :return: :class:`Record`
         """
-        record_name = "{}.{}".format(name, zone.domain) if name != "" else zone.domain  # noqa
+        record_name = zone.hostname(name)
 
         action = "/v1/zones/{}/{}/{}".format(zone.domain, record_name, type)
         if type == RecordType.MX:
@@ -258,7 +260,7 @@ class NsOneDNSDriver(DNSDriver):
         zone = record.zone
         action = "/v1/zones/{}/{}/{}".format(
             zone.domain,
-            "{}.{}".format(name, zone.domain),
+            zone.hostname(name),
             type,
         )
         raw_data = {"answers": [{"answer": [data]}]}
@@ -300,9 +302,10 @@ class NsOneDNSDriver(DNSDriver):
             if key not in common_attr:
                 extra[key] = item.get(key)
 
+        zdomain = item["zone"]
         zone = Zone(
-            domain=item["zone"],
-            id=item["id"],
+            domain=zdomain,
+            id=zdomain,
             type=item.get("type"),
             extra=extra,
             ttl=extra.get("ttl"),
@@ -328,10 +331,12 @@ class NsOneDNSDriver(DNSDriver):
             data = item.get("answers")[0]["answer"]
         else:
             data = item.get("short_answers")
+        rdomain = item["domain"]
+        rtype = item["type"]
         record = Record(
-            id=item["id"],
-            name=item["domain"],
-            type=item["type"],
+            id=self.to_default_id(zone, rdomain, rtype),
+            name=rdomain,
+            type=rtype,
             data=data,
             zone=zone,
             driver=self,
