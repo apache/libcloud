@@ -111,6 +111,15 @@ class NsOneTests(unittest.TestCase):
         else:
             self.fail("Exception was not thrown")
 
+    def test_get_zone_success(self):
+        NsOneMockHttp.type = "GET_ZONE_SUCCESS"
+        zone = self.driver.get_zone(zone_id="example.com")
+
+        self.assertEqual(zone.id, "example.com")
+        self.assertEqual(zone.domain, "example.com")
+        self.assertIsNone(zone.type),
+        self.assertEqual(zone.ttl, 3600)
+
     def test_create_zone_success(self):
         NsOneMockHttp.type = "CREATE_ZONE_SUCCESS"
         zone = self.driver.create_zone(domain="newzone.com")
@@ -250,7 +259,7 @@ class NsOneMockHttp(MockHttp):
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _v1_zones_getzone_com_GET_ZONE_SUCCESS(self, method, url, body, headers):
+    def _v1_zones_example_com_GET_ZONE_SUCCESS(self, method, url, body, headers):
         body = self.fixtures.load("get_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
@@ -331,9 +340,7 @@ class NsOneMockHttp(MockHttp):
     def _v1_zones_example_com_GET_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         return self._v1_zones_example_com_GET_RECORD_SUCCESS(method, url, body, headers)
 
-    def _v1_zones_test_com_test_com_A_CREATE_RECORD_SUCCESS(
-        self, method, url, body, headers
-    ):
+    def _v1_zones_test_com_test_com_A_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
         body = self.fixtures.load("create_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
