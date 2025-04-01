@@ -34,6 +34,7 @@ class ZonomiTests(unittest.TestCase):
     def setUp(self):
         ZonomiDNSDriver.connectionCls.conn_class = ZonomiMockHttp
         ZonomiMockHttp.type = None
+        ZonomiMockHttp.history.clear()
         self.driver = ZonomiDNSDriver(*DNS_PARAMS_ZONOMI)
         self.test_zone = Zone(
             id="zone.com",
@@ -68,6 +69,11 @@ class ZonomiTests(unittest.TestCase):
 
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
+
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("QUERYZONES", sent.query["action"])
 
         self.assertEqual(len(zones), 3)
 
@@ -105,6 +111,11 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = "GET_ZONE_SUCCESS"
         zone = self.driver.get_zone(zone_id="gamertest.com")
 
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("QUERYZONES", sent.query["action"])
+
         self.assertEqual(zone.id, "gamertest.com")
         self.assertEqual(zone.domain, "gamertest.com")
         self.assertEqual(zone.type, "master")
@@ -124,6 +135,12 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = "DELETE_ZONE_SUCCESS"
         status = self.driver.delete_zone(zone=self.test_zone)
 
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("DELETEZONE", sent.query["action"])
+        self.assertIn("zone.com", sent.query["name"])
+
         self.assertEqual(status, True)
 
     def test_create_zone_already_exists(self):
@@ -140,6 +157,11 @@ class ZonomiTests(unittest.TestCase):
 
         zone = self.driver.create_zone(domain="myzone.com")
 
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/addzone.jsp")
+        self.assertIn("myzone.com", sent.query["name"])
+
         self.assertEqual(zone.id, "myzone.com")
         self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.type, "master")
@@ -152,6 +174,12 @@ class ZonomiTests(unittest.TestCase):
     def test_list_records_success(self):
         ZonomiMockHttp.type = "LIST_RECORDS_SUCCESS"
         records = self.driver.list_records(zone=self.test_zone)
+
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("QUERY", sent.query["action"])
+        self.assertIn("**.zone.com", sent.query["name"])
 
         self.assertEqual(len(records), 4)
 
@@ -213,6 +241,12 @@ class ZonomiTests(unittest.TestCase):
         self.driver.get_zone = MagicMock(return_value=zone)
         record = self.driver.get_record(record_id="oltjano", zone_id="zone.com")
 
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("QUERY", sent.query["action"])
+        self.assertIn("**.zone.com", sent.query["name"])
+
         self.assertEqual(record.id, "oltjano")
         self.assertEqual(record.name, "oltjano")
         self.assertEqual(record.type, "A")
@@ -232,6 +266,13 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = "DELETE_RECORD_SUCCESS"
         record = self.test_record
         status = self.driver.delete_record(record=record)
+
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("DELETE", sent.query["action"])
+        self.assertIn("record.zone.com", sent.query["name"])
+        self.assertIn("A", sent.query["type"])
 
         self.assertEqual(status, True)
 
@@ -253,6 +294,14 @@ class ZonomiTests(unittest.TestCase):
         record = self.driver.create_record(
             name="createrecord", zone=zone, type="A", data="127.0.0.1", extra={}
         )
+
+        sent = ZonomiMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/app/dns/dyndns.jsp")
+        self.assertIn("SET", sent.query["action"])
+        self.assertIn("createrecord.zone.com", sent.query["name"])
+        self.assertIn("A", sent.query["type"])
+        self.assertIn("127.0.0.1", sent.query["value"])
 
         self.assertEqual(record.id, "createrecord")
         self.assertEqual(record.name, "createrecord")
@@ -293,6 +342,7 @@ class ZonomiTests(unittest.TestCase):
 
 class ZonomiMockHttp(MockHttp):
     fixtures = DNSFileFixtures("zonomi")
+    keep_history = True
 
     def _app_dns_dyndns_jsp_EMPTY_ZONES_LIST(self, method, url, body, headers):
         body = self.fixtures.load("empty_zones_list.xml")
