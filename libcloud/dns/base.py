@@ -14,11 +14,13 @@
 # limitations under the License.
 
 
+import re
 import datetime
 from typing import Any, Dict, List, Type, Union, Iterator, Optional
+from collections import namedtuple
 
 from libcloud import __version__
-from libcloud.dns.types import RecordType
+from libcloud.dns.types import RecordType, RecordDoesNotExistError
 from libcloud.common.base import BaseDriver, Connection, ConnectionUserAndKey
 
 __all__ = ["Zone", "Record", "DNSDriver"]
@@ -276,6 +278,11 @@ class DNSDriver(BaseDriver):
 
     # Map libcloud record type enum to provider record type name
     RECORD_TYPE_MAP = {}  # type: Dict[RecordType, str]
+
+    # "A"     -> type: "A", prefix: None
+    # "A:www" -> type: "A", prefix: "www"
+    DEFAULT_ID_RE = re.compile(r"(?P<type>[A-Z]+)(\:(?P<name>.+))?")
+    DefaultID = namedtuple("DefaultID", "type,name")
 
     def __init__(
         self,
@@ -640,3 +647,19 @@ class DNSDriver(BaseDriver):
         string = string.upper()
         record_type = getattr(RecordType, string)
         return record_type
+
+    @staticmethod
+    def to_default_id(zone, name, type):
+        prefix = zone.prefix(name)
+        return f"{type}:{prefix}" if prefix else str(type)
+
+    @classmethod
+    def from_default_id(cls, zone, record_id):
+        match = cls.DEFAULT_ID_RE.match(record_id)
+        if match is None:
+            raise RecordDoesNotExistError(
+                value="malformed record ID", driver=cls, record_id=record_id
+            )
+
+        name = match.group("name")
+        return cls.DefaultID(match.group("type"), "" if name is None else zone.prefix(name))
