@@ -1,6 +1,6 @@
 {
   "id": 31,
-  "name": "example.com.",
+  "name": "example.org.",
   "type": "MX",
   "content": "10 mail.example.com.",
   "ttl": 300,
