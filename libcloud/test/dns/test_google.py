@@ -85,15 +85,15 @@ class GoogleTests(GoogleTestCase):
         zone = self.driver.list_zones()[0]
         GoogleDNSMockHttp.history.clear()
 
-        record = self.driver.get_record(zone.id, "A:foo.example.com.")
+        record = self.driver.get_record(zone.id, "A:foo")
 
-        # [0] /dns/v1/projects/project_name/managedZones/{zone.id}/rrsets
-        # [1] /dns/v1/projects/project_name/managedZones/{zone.id}
-        sent = GoogleDNSMockHttp.history.pop(0)
+        # [0] /dns/v1/projects/project_name/managedZones/{zone.id}
+        # [1] /dns/v1/projects/project_name/managedZones/{zone.id}/rrsets
+        sent = GoogleDNSMockHttp.history.pop()
         self.assertEqual(sent.method, "GET")
         self.assertEqual(sent.url, f"/dns/v1/projects/project_name/managedZones/{zone.id}/rrsets")
 
-        self.assertEqual(record.id, "A:foo.example.com.")
+        self.assertEqual(record.id, "A:foo")
         self.assertEqual(record.fqdn, "foo.example.com.")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.zone.id, "example-com")
@@ -102,7 +102,7 @@ class GoogleTests(GoogleTestCase):
         GoogleDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
 
         try:
-            self.driver.get_record("example-com", "a:a")
+            self.driver.get_record("example-com", "A:a")
         except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, "example-com")
         else:

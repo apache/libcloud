@@ -134,11 +134,12 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        (record_type, record_name) = record_id.split(":", 1)
+        zone = self.get_zone(zone_id)
+        parts = self.from_default_id(zone, record_id)
 
         params = {
-            "name": record_name,
-            "type": record_type,
+            "name": parts.name,
+            "type": parts.type,
         }
 
         request = "/managedZones/%s/rrsets" % (zone_id)
@@ -149,8 +150,6 @@ class GoogleDNSDriver(DNSDriver):
             raise ZoneDoesNotExistError(value="", driver=self.connection.driver, zone_id=zone_id)
 
         if len(response["rrsets"]) > 0:
-            zone = self.get_zone(zone_id)
-
             return self._to_record(response["rrsets"][0], zone)
 
         raise RecordDoesNotExistError(value="", driver=self.connection.driver, record_id=record_id)
@@ -386,10 +385,8 @@ class GoogleDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, r, zone):
-        record_id = "{}:{}".format(r["type"], r["name"])
-
         return Record(
-            id=record_id,
+            id=self.to_default_id(zone, r["name"], r["type"]),
             name=r["name"],
             type=r["type"],
             data=r,
