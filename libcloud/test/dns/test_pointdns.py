@@ -92,7 +92,7 @@ class PointDNSTests(unittest.TestCase):
 
         record2 = records[1]
         self.assertEqual(record2.id, "150")
-        self.assertEqual(record2.name, "site.example1.com")
+        self.assertEqual(record2.name, "site1.example.com")
         self.assertEqual(record2.type, RecordType.A)
         self.assertEqual(record2.data, "1.2.3.6")
         self.assertHasKeys(record2.extra, ["ttl", "zone_id", "aux"])

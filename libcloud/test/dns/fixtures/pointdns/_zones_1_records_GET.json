@@ -11,7 +11,7 @@
 },
 {
     "zone_record": {
-        "name": "site.example1.com",
+        "name": "site1.example.com",
         "data": "1.2.3.6",
         "id": 150,
         "aux": null,
