@@ -45,7 +45,7 @@ class ZonomiTests(unittest.TestCase):
             extra={},
         )
         self.test_record = Record(
-            id="record.zone.com",
+            id="A:record",
             name="record.zone.com",
             data="127.0.0.1",
             type="A",
@@ -184,28 +184,28 @@ class ZonomiTests(unittest.TestCase):
         self.assertEqual(len(records), 4)
 
         record = records[0]
-        self.assertEqual(record.id, "zone.com")
+        self.assertEqual(record.id, "SOA")
         self.assertEqual(record.type, "SOA")
         self.assertEqual(record.data, "ns1.zonomi.com. soacontact.zonomi.com. 13")
         self.assertEqual(record.name, "zone.com")
         self.assertEqual(record.zone, self.test_zone)
 
         second_record = records[1]
-        self.assertEqual(second_record.id, "zone.com")
+        self.assertEqual(second_record.id, "NS")
         self.assertEqual(second_record.name, "zone.com")
         self.assertEqual(second_record.type, "NS")
         self.assertEqual(second_record.data, "ns1.zonomi.com")
         self.assertEqual(second_record.zone, self.test_zone)
 
         third_record = records[2]
-        self.assertEqual(third_record.id, "oltjano")
+        self.assertEqual(third_record.id, "A:oltjano")
         self.assertEqual(third_record.name, "oltjano")
         self.assertEqual(third_record.type, "A")
         self.assertEqual(third_record.data, "127.0.0.1")
         self.assertEqual(third_record.zone, self.test_zone)
 
         fourth_record = records[3]
-        self.assertEqual(fourth_record.id, "zone.com")
+        self.assertEqual(fourth_record.id, "NS")
         self.assertEqual(fourth_record.name, "zone.com")
         self.assertEqual(fourth_record.type, "NS")
         self.assertEqual(fourth_record.data, "ns5.zonomi.com")
@@ -239,7 +239,7 @@ class ZonomiTests(unittest.TestCase):
             driver=self.driver,
         )
         self.driver.get_zone = MagicMock(return_value=zone)
-        record = self.driver.get_record(record_id="oltjano", zone_id="zone.com")
+        record = self.driver.get_record(record_id="A:oltjano", zone_id="zone.com")
 
         sent = ZonomiMockHttp.history.pop()
         self.assertEqual(sent.method, "GET")
@@ -247,7 +247,7 @@ class ZonomiTests(unittest.TestCase):
         self.assertIn("QUERY", sent.query["action"])
         self.assertIn("**.zone.com", sent.query["name"])
 
-        self.assertEqual(record.id, "oltjano")
+        self.assertEqual(record.id, "A:oltjano")
         self.assertEqual(record.name, "oltjano")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "127.0.0.1")
@@ -303,7 +303,7 @@ class ZonomiTests(unittest.TestCase):
         self.assertIn("A", sent.query["type"])
         self.assertIn("127.0.0.1", sent.query["value"])
 
-        self.assertEqual(record.id, "createrecord")
+        self.assertEqual(record.id, "A:createrecord")
         self.assertEqual(record.name, "createrecord")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "127.0.0.1")
