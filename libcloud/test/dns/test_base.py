@@ -182,6 +182,36 @@ class BaseTestCase(unittest.TestCase):
         result = record._get_numeric_id()
         self.assertEqual(result, "")
 
+    def test_driver_to_default_id(self):
+        data = [
+            # name, type, id (expected)
+            ("", "A", "A"),
+            ("example.com", "A", "A"),
+            ("example.com.", "A", "A"),
+            ("mail", "MX", "MX:mail"),
+            ("mail.example.com", "MX", "MX:mail"),
+            ("mail.example.com.", "MX", "MX:mail"),
+        ]
+        for rname, rtype, rexpect in data:
+            rid = self.driver.to_default_id(self.master_zone, rname, rtype)
+            self.assertEqual(rid, rexpect)
+
+    def test_driver_from_default_id(self):
+        data = [
+            # id, name (expected), type (expected)
+            ("A", "", "A"),  # without trailing colon
+            ("A:", "", "A"),  # with trailing colon
+            ("A:example.com", "", "A"),
+            ("A:example.com.", "", "A"),
+            ("MX:mail", "mail", "MX"),
+            ("MX:mail.example.com", "mail", "MX"),
+            ("MX:mail.example.com.", "mail", "MX"),
+        ]
+        for rid, rname, rtype in data:
+            rparts = self.driver.from_default_id(self.master_zone, rid)
+            self.assertEqual(rparts.name, rname)
+            self.assertEqual(rparts.type, rtype)
+
 
 def zero_pad(value: int) -> str:
     if value < 10:
