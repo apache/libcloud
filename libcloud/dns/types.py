@@ -21,6 +21,7 @@ __all__ = [
     "ZoneError",
     "ZoneDoesNotExistError",
     "ZoneAlreadyExistsError",
+    "ZoneNotRelatedError",
     "RecordError",
     "RecordDoesNotExistError",
     "RecordAlreadyExistsError",
@@ -137,6 +138,10 @@ class ZoneDoesNotExistError(ZoneError):
 
 class ZoneAlreadyExistsError(ZoneError):
     error_type = "ZoneAlreadyExistsError"
+
+
+class ZoneNotRelatedError(ZoneError):
+    error_type = "ZoneNotRelatedError"
 
 
 class RecordError(LibcloudError):

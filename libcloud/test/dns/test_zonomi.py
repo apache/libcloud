@@ -187,12 +187,12 @@ class ZonomiTests(unittest.TestCase):
         self.assertEqual(record.id, "SOA")
         self.assertEqual(record.type, "SOA")
         self.assertEqual(record.data, "ns1.zonomi.com. soacontact.zonomi.com. 13")
-        self.assertEqual(record.name, "zone.com")
+        self.assertEqual(record.hostname, "zone.com")
         self.assertEqual(record.zone, self.test_zone)
 
         second_record = records[1]
         self.assertEqual(second_record.id, "NS")
-        self.assertEqual(second_record.name, "zone.com")
+        self.assertEqual(second_record.hostname, "zone.com")
         self.assertEqual(second_record.type, "NS")
         self.assertEqual(second_record.data, "ns1.zonomi.com")
         self.assertEqual(second_record.zone, self.test_zone)
@@ -206,7 +206,7 @@ class ZonomiTests(unittest.TestCase):
 
         fourth_record = records[3]
         self.assertEqual(fourth_record.id, "NS")
-        self.assertEqual(fourth_record.name, "zone.com")
+        self.assertEqual(fourth_record.hostname, "zone.com")
         self.assertEqual(fourth_record.type, "NS")
         self.assertEqual(fourth_record.data, "ns5.zonomi.com")
         self.assertEqual(fourth_record.zone, self.test_zone)

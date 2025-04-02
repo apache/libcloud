@@ -190,7 +190,7 @@ class NsOneDNSDriver(DNSDriver):
 
         :return: Boolean
         """
-        action = "/v1/zones/{}/{}/{}".format(record.zone.domain, record.name, record.type)
+        action = "/v1/zones/{}/{}/{}".format(record.zone.domain, record.hostname, record.type)
         try:
             response = self.connection.request(action=action, method="DELETE")
         except NsOneException as e:

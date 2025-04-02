@@ -68,7 +68,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         self.assertEqual(rrset[0]["changetype"], "REPLACE")
 
         self.assertIsNone(record.id)
-        self.assertEqual(record.name, "newrecord.example.com")
+        self.assertEqual(record.hostname, "newrecord.example.com")
         self.assertEqual(record.data, "192.0.5.4")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 86400)
@@ -164,7 +164,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         self.assertEqual(rrset[1]["changetype"], "REPLACE")
 
         self.assertIsNone(record.id)
-        self.assertEqual(record.name, "newrecord.example.com")
+        self.assertEqual(record.hostname, "newrecord.example.com")
         self.assertEqual(record.data, "127.0.0.1")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 300)

@@ -177,7 +177,7 @@ class LuadnsTests(unittest.TestCase):
         record = records[0]
         self.assertEqual(record.id, "6683")
         self.assertEqual(record.type, "NS")
-        self.assertEqual(record.name, "example.com.")
+        self.assertEqual(record.fqdn, "example.com.")
         self.assertEqual(record.data, "b.ns.luadns.net.")
         self.assertEqual(record.zone, self.test_zone)
         self.assertEqual(record.zone.id, "11")
@@ -185,7 +185,7 @@ class LuadnsTests(unittest.TestCase):
         second_record = records[1]
         self.assertEqual(second_record.id, "6684")
         self.assertEqual(second_record.type, "NS")
-        self.assertEqual(second_record.name, "example.com.")
+        self.assertEqual(second_record.fqdn, "example.com.")
         self.assertEqual(second_record.data, "a.ns.luadns.net.")
         self.assertEqual(second_record.zone, self.test_zone)
 
@@ -208,7 +208,7 @@ class LuadnsTests(unittest.TestCase):
 
         self.assertEqual(record.id, "31")
         self.assertEqual(record.type, "MX")
-        self.assertEqual(record.name, "example.org.")
+        self.assertEqual(record.fqdn, "example.org.")
         self.assertEqual(record.data, "10 mail.example.com.")
 
     def test_delete_record_success(self):
@@ -251,7 +251,7 @@ class LuadnsTests(unittest.TestCase):
         self.assertEqual(sent.json["ttl"], 13)
 
         self.assertEqual(record.id, "31")
-        self.assertEqual(record.name, "example.com.")
+        self.assertEqual(record.fqdn, "example.com.")
         self.assertEqual(record.data, "127.0.0.1")
         self.assertIsNone(record.ttl)
 

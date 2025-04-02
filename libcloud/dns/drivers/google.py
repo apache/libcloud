@@ -185,7 +185,7 @@ class GoogleDNSDriver(DNSDriver):
             name = self._cleanup_domain(domain)
 
         data = {
-            "dnsName": domain,
+            "dnsName": Zone.rooted(domain),
             "name": name,
             "description": description,
         }
@@ -216,6 +216,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
+        name = zone.fqdn(name)
         ttl = data.get("ttl", 0)
         rrdatas = data.get("rrdatas", [])
 
@@ -253,7 +254,7 @@ class GoogleDNSDriver(DNSDriver):
         data = {
             "deletions": [
                 {
-                    "name": record.name,
+                    "name": record.fqdn,
                     "type": record.type,
                     "rrdatas": record.data["rrdatas"],
                     "ttl": record.data["ttl"],

@@ -312,7 +312,7 @@ class LiquidWebTests(unittest.TestCase):
 
         self.assertEqual(record.id, "13")
         self.assertEqual(record.type, "A")
-        self.assertEqual(record.name, "nerd.domain.com")
+        self.assertEqual(record.hostname, "nerd.domain.com")
         self.assertEqual(record.data, "127.0.0.1")
         self.assertEqual(record.extra.get("ttl"), 300)
 

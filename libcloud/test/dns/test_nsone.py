@@ -178,7 +178,7 @@ class NsOneTests(unittest.TestCase):
         self.assertEqual(sent.url, "/v1/zones/example.com/www.example.com/A")
 
         self.assertEqual(record.id, "A:www")
-        self.assertEqual(record.name, "www.example.com")
+        self.assertEqual(record.hostname, "www.example.com")
         self.assertEqual(record.data, ["1.1.1.1"])
         self.assertEqual(record.type, RecordType.A)
 
@@ -210,7 +210,7 @@ class NsOneTests(unittest.TestCase):
 
         arecord = records[1]
         self.assertEqual(arecord.id, "A:www")
-        self.assertEqual(arecord.name, "www.example.com")
+        self.assertEqual(arecord.hostname, "www.example.com")
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, ["1.2.3.4"])
 
@@ -233,7 +233,7 @@ class NsOneTests(unittest.TestCase):
         self.assertIn({"answer": ["127.0.0.1"]}, sent.json["answers"])
 
         self.assertEqual(arecord.id, "A")
-        self.assertEqual(arecord.name, "test.com")
+        self.assertEqual(arecord.hostname, "test.com")
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, ["127.0.0.1"])
 
