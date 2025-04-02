@@ -24,6 +24,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.dns.drivers.rcodezero import RcodeZeroDNSDriver
 
 
+@unittest.skip("v1 API is deprecated")
 class RcodeZeroDNSTestCase(LibcloudTestCase):
     def setUp(self):
         RcodeZeroDNSDriver.connectionCls.conn_class = RcodeZeroDNSMockHttp

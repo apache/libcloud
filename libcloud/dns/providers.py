@@ -54,11 +54,11 @@ DRIVERS = {
     Provider.BUDDYNS: ("libcloud.dns.drivers.buddyns", "BuddyNSDNSDriver"),
     Provider.POWERDNS: ("libcloud.dns.drivers.powerdns", "PowerDNSDriver"),
     Provider.ONAPP: ("libcloud.dns.drivers.onapp", "OnAppDNSDriver"),
-    Provider.RCODEZERO: ("libcloud.dns.drivers.rcodezero", "RcodeZeroDNSDriver"),
     # Deprecated
     Provider.DNSIMPLE: ("libcloud.dns.drivers.dnsimple", "DNSimpleDNSDriver"),
     Provider.RACKSPACE_US: ("libcloud.dns.drivers.rackspace", "RackspaceUSDNSDriver"),
     Provider.RACKSPACE_UK: ("libcloud.dns.drivers.rackspace", "RackspaceUKDNSDriver"),
+    Provider.RCODEZERO: ("libcloud.dns.drivers.rcodezero", "RcodeZeroDNSDriver"),
 }
 
 
