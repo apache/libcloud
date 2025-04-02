@@ -118,9 +118,10 @@ class ZonomiDNSDriver(DNSDriver):
         record = None
         zone = self.get_zone(zone_id=zone_id)
         records = self.list_records(zone=zone)
+        parts = self.from_default_id(zone, record_id)
 
         for r in records:
-            if r.id == record_id:
+            if r.name == parts.name and r.type == parts.type:
                 record = r
 
         if record is None:
@@ -320,11 +321,12 @@ class ZonomiDNSDriver(DNSDriver):
             record_name = full_domain[:index]
         else:
             record_name = zone.domain
+        rtype = item["type"]
         record = Record(
-            id=record_name,
+            id=self.to_default_id(zone, item["name"], rtype),
             name=record_name,
             data=item["content"],
-            type=item["type"],
+            type=rtype,
             zone=zone,
             driver=self,
             ttl=ttl,
