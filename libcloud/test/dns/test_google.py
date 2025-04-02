@@ -123,7 +123,7 @@ class GoogleTests(GoogleTestCase):
 
     def test_create_zone(self):
         extra = {"description": "new domain for example.org"}
-        zone = self.driver.create_zone("example.org.", extra)
+        zone = self.driver.create_zone("example.org", extra)
 
         sent = GoogleDNSMockHttp.history.pop()
         self.assertEqual(sent.method, "POST")
