@@ -90,7 +90,7 @@ class DurableDNSTests(LibcloudTestCase):
         self.assertEqual(len(zones), 2)
         zone = zones[0]
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, 1300)
         self.assertEqual(zone.extra["ns"], "ns1.durabledns.com.")
         self.assertEqual(zone.extra["mbox"], "mail.myzone.com")
@@ -187,7 +187,7 @@ class DurableDNSTests(LibcloudTestCase):
         self.assertIn(":zonename>myzone.com.</", data)
 
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, 1300)
         self.assertEqual(zone.extra["ns"], "ns1.durabledns.com.")
         self.assertEqual(zone.extra["mbox"], "mail.myzone.com")
@@ -254,7 +254,7 @@ class DurableDNSTests(LibcloudTestCase):
         )
         extra = ZONE_EXTRA_PARAMS_DEFAULT_VALUES
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, 4000)
         self.assertEqual(zone.extra["ns"], extra["ns"])
         self.assertEqual(zone.extra["mbox"], "mail.myzone.com")
@@ -272,7 +272,7 @@ class DurableDNSTests(LibcloudTestCase):
         zone = self.driver.create_zone(domain="myzone.com.")
         extra = ZONE_EXTRA_PARAMS_DEFAULT_VALUES
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, DEFAULT_TTL)
         self.assertEqual(zone.extra["ns"], extra["ns"])
         self.assertEqual(zone.extra["mbox"], extra["mbox"])
@@ -392,7 +392,7 @@ class DurableDNSTests(LibcloudTestCase):
         self.assertIn(":zonename>deletedzone.com.</", sent.body)
 
         self.assertEqual(updated_zone.id, "myzone.com.")
-        self.assertEqual(updated_zone.domain, "myzone.com.")
+        self.assertEqual(updated_zone.domain, "myzone.com")
         self.assertEqual(updated_zone.ttl, 4000)
         self.assertEqual(updated_zone.extra["ns"], z_extra["ns"])
         self.assertEqual(updated_zone.extra["mbox"], z_extra["mbox"])

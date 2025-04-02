@@ -68,7 +68,7 @@ class GoogleTests(GoogleTestCase):
         self.assertEqual(sent.url, "/dns/v1/projects/project_name/managedZones/example-com")
 
         self.assertEqual(zone.id, "example-com")
-        self.assertEqual(zone.domain, "example.com.")
+        self.assertEqual(zone.domain, "example.com")
 
     def test_get_zone_does_not_exist(self):
         GoogleDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
@@ -94,7 +94,7 @@ class GoogleTests(GoogleTestCase):
         self.assertEqual(sent.url, f"/dns/v1/projects/project_name/managedZones/{zone.id}/rrsets")
 
         self.assertEqual(record.id, "A:foo.example.com.")
-        self.assertEqual(record.name, "foo.example.com.")
+        self.assertEqual(record.fqdn, "foo.example.com.")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.zone.id, "example-com")
 
@@ -127,7 +127,7 @@ class GoogleTests(GoogleTestCase):
         self.assertEqual(sent.json["name"], "example-org")
         self.assertEqual(sent.json["dnsName"], "example.org.")
 
-        self.assertEqual(zone.domain, "example.org.")
+        self.assertEqual(zone.domain, "example.org")
         self.assertEqual(zone.extra["description"], extra["description"])
         self.assertEqual(len(zone.extra["nameServers"]), 4)
 
@@ -145,10 +145,10 @@ class GoogleTests(GoogleTestCase):
         zone = self.driver.get_zone("example-com")
         records = self.driver.ex_bulk_record_changes(zone, {})
 
-        self.assertEqual(records["additions"][0].name, "foo.example.com.")
+        self.assertEqual(records["additions"][0].fqdn, "foo.example.com.")
         self.assertEqual(records["additions"][0].type, "A")
 
-        self.assertEqual(records["deletions"][0].name, "bar.example.com.")
+        self.assertEqual(records["deletions"][0].fqdn, "bar.example.com.")
         self.assertEqual(records["deletions"][0].type, "A")
 
 

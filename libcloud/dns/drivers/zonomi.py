@@ -176,10 +176,7 @@ class ZonomiDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         action = "/app/dns/dyndns.jsp?"
-        if name:
-            record_name = name + "." + zone.domain
-        else:
-            record_name = zone.domain
+        record_name = zone.hostname(name)
         params = {"action": "SET", "name": record_name, "value": data, "type": type}
 
         if type == "MX" and extra is not None:
@@ -237,7 +234,7 @@ class ZonomiDNSDriver(DNSDriver):
         :rtype: Bool
         """
         action = "/app/dns/dyndns.jsp?"
-        params = {"action": "DELETE", "name": record.name, "type": record.type}
+        params = {"action": "DELETE", "name": record.hostname, "type": record.type}
         try:
             response = self.connection.request(action=action, params=params)
         except ZonomiException as e:
@@ -315,16 +312,11 @@ class ZonomiDNSDriver(DNSDriver):
         else:
             ttl = None
         extra = {"ttl": ttl, "prio": item.get("prio")}
-        if len(item["name"]) > len(zone.domain):
-            full_domain = item["name"]
-            index = full_domain.index("." + zone.domain)
-            record_name = full_domain[:index]
-        else:
-            record_name = zone.domain
+        rname = item["name"]
         rtype = item["type"]
         record = Record(
-            id=self.to_default_id(zone, item["name"], rtype),
-            name=record_name,
+            id=self.to_default_id(zone, rname, rtype),
+            name=rname,
             data=item["content"],
             type=rtype,
             zone=zone,

@@ -80,7 +80,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertEqual(sent.url, "/client/v4/zones/1234/dns_records/364797364")
 
         self.assertEqual(record.id, "364797364")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "192.30.252.153")
 
@@ -104,7 +104,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         record = records[0]
         self.assertEqual(record.id, "364797364")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "192.30.252.153")
         self.assertEqual(record.extra["priority"], None)
@@ -123,7 +123,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         record = [r for r in records if r.type == "MX"][0]
         self.assertEqual(record.id, "78526")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "")
         self.assertEqual(record.type, "MX")
         self.assertEqual(record.data, "aspmx3.googlemail.com")
         self.assertEqual(record.extra["priority"], 30)

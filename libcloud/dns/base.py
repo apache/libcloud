@@ -60,7 +60,7 @@ class Zone:
         :type extra: ``dict``
         """
         self.id = str(id) if id else None
-        self.domain = domain
+        self.domain = self.unrooted(domain)
         self.type = type
         self.ttl = ttl or None
         self.driver = driver
@@ -103,6 +103,16 @@ class Zone:
             self.ttl,
             self.driver.name,
         )
+
+    @staticmethod
+    def unrooted(domain):
+        """Return the provided domain as an unrooted domain"""
+        return domain.rstrip(".")
+
+    @staticmethod
+    def rooted(domain):
+        """Return the provided domain as an unrooted domain"""
+        return domain if domain.endswith(".") else f"{domain}."
 
     def prefix(self, subname):
         """
@@ -211,7 +221,17 @@ class Record:
         :type extra: ``dict``
         """
         self.id = str(id) if id else None
-        self.name = name
+
+        # Support callers that have:
+        #   1. used None, rather than the empty string to indicate apex/naked
+        #      records, while consistently setting the empty string.
+        #   2. used the full hostname (i.e. including domain), rather than the
+        #      bare prefix (i.e. excluding domain)
+        #   3. used the fully qualified domain name (i.e. including domain and
+        #      trailing dot), rather than the bare prefix.
+        #
+        self.name = "" if name is None else zone.prefix(name)
+
         self.type = type
         self.data = data
         self.zone = zone
@@ -251,6 +271,19 @@ class Record:
             return record_id_int
 
         return record_id
+
+    @property
+    def hostname(self):
+        """Return the complete hostname, including domain, for this record."""
+        return self.zone.hostname(self.name)
+
+    @property
+    def fqdn(self):
+        """
+        Return the traditional fully qualified domain name, including full-stop
+        trailing dot, for this record.
+        """
+        return self.zone.fqdn(self.name)
 
     def __repr__(self):
         # type: () -> str

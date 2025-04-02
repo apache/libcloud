@@ -85,14 +85,14 @@ class PointDNSTests(unittest.TestCase):
 
         record1 = records[0]
         self.assertEqual(record1.id, "141")
-        self.assertEqual(record1.name, "site.example.com")
+        self.assertEqual(record1.hostname, "site.example.com")
         self.assertEqual(record1.type, RecordType.A)
         self.assertEqual(record1.data, "1.2.3.4")
         self.assertHasKeys(record1.extra, ["ttl", "zone_id", "aux"])
 
         record2 = records[1]
         self.assertEqual(record2.id, "150")
-        self.assertEqual(record2.name, "site1.example.com")
+        self.assertEqual(record2.hostname, "site1.example.com")
         self.assertEqual(record2.type, RecordType.A)
         self.assertEqual(record2.data, "1.2.3.6")
         self.assertHasKeys(record2.extra, ["ttl", "zone_id", "aux"])
@@ -131,7 +131,7 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(sent.url, "/zones/1/records/141")
 
         self.assertEqual(record.id, "141")
-        self.assertEqual(record.name, "site.example.com")
+        self.assertEqual(record.hostname, "site.example.com")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "1.2.3.4")
         self.assertHasKeys(record.extra, ["ttl", "zone_id", "aux"])
@@ -185,7 +185,7 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(sent.json["zone_record"]["data"], "1.2.3.4")
 
         self.assertEqual(record.id, "143")
-        self.assertEqual(record.name, "site.example.com")
+        self.assertEqual(record.hostname, "site.example.com")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "1.2.3.4")
         self.assertHasKeys(record.extra, ["ttl", "zone_id", "aux"])
@@ -251,10 +251,10 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(sent.json["zone_record"]["data"], "1.2.3.5")
         self.assertEqual(sent.json["zone_record"]["ttl"], 4500)
 
-        self.assertEqual(record.name, "site.example.com")
+        self.assertEqual(record.hostname, "site.example.com")
         self.assertEqual(record.data, "1.2.3.4")
         self.assertEqual(record.extra.get("ttl"), 3600)
-        self.assertEqual(record1.name, "updated.example.com")
+        self.assertEqual(record1.hostname, "updated.example.com")
         self.assertEqual(record1.data, "1.2.3.5")
         self.assertEqual(record1.extra.get("ttl"), 4500)
 

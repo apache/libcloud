@@ -176,7 +176,7 @@ class LuadnsTests(unittest.TestCase):
         record = records[0]
         self.assertEqual(record.id, "6683")
         self.assertEqual(record.type, "NS")
-        self.assertEqual(record.name, "example.org.")
+        self.assertEqual(record.fqdn, "example.com.")
         self.assertEqual(record.data, "b.ns.luadns.net.")
         self.assertEqual(record.zone, self.test_zone)
         self.assertEqual(record.zone.id, "11")
@@ -184,7 +184,7 @@ class LuadnsTests(unittest.TestCase):
         second_record = records[1]
         self.assertEqual(second_record.id, "6684")
         self.assertEqual(second_record.type, "NS")
-        self.assertEqual(second_record.name, "example.org.")
+        self.assertEqual(second_record.fqdn, "example.com.")
         self.assertEqual(second_record.data, "a.ns.luadns.net.")
         self.assertEqual(second_record.zone, self.test_zone)
 
@@ -207,7 +207,7 @@ class LuadnsTests(unittest.TestCase):
 
         self.assertEqual(record.id, "31")
         self.assertEqual(record.type, "MX")
-        self.assertEqual(record.name, "example.com.")
+        self.assertEqual(record.fqdn, "example.org.")
         self.assertEqual(record.data, "10 mail.example.com.")
 
     def test_delete_record_success(self):
@@ -234,7 +234,7 @@ class LuadnsTests(unittest.TestCase):
     def test_create_record_success(self):
         LuadnsMockHttp.type = "CREATE_RECORD_SUCCESS"
         record = self.driver.create_record(
-            name="test.com.",
+            name="example.com.",
             zone=self.test_zone,
             type="A",
             data="127.0.0.1",
@@ -244,13 +244,13 @@ class LuadnsTests(unittest.TestCase):
         sent = LuadnsMockHttp.history.pop()
         self.assertEqual(sent.method, "POST")
         self.assertEqual(sent.url, f"/v1/zones/{self.test_zone.id}/records")
-        self.assertEqual(sent.json["name"], "test.com.")
+        self.assertEqual(sent.json["name"], "example.com.")
         self.assertEqual(sent.json["type"], "A")
         self.assertEqual(sent.json["content"], "127.0.0.1")
         self.assertEqual(sent.json["ttl"], 13)
 
         self.assertEqual(record.id, "31")
-        self.assertEqual(record.name, "test.com.")
+        self.assertEqual(record.fqdn, "example.com.")
         self.assertEqual(record.data, "127.0.0.1")
         self.assertIsNone(record.ttl)
 

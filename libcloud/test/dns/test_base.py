@@ -84,6 +84,30 @@ class BaseTestCase(unittest.TestCase):
             self.assertEqual(zone.hostname(sub), "sub.example.com")
             self.assertEqual(zone.fqdn(sub), "sub.example.com.")
 
+    def test_record_init(self):
+        common = {
+            "id": None,
+            "name": None,
+            "type": RecordType.A,
+            "data": "0.0.0.0",
+            "zone": self.master_zone,
+            "driver": self.master_zone,
+        }
+
+        for apex in (None, "", "example.com", "example.com."):
+            common["name"] = apex
+            r1 = Record(**common)
+            self.assertEqual(r1.name, "")
+            self.assertEqual(r1.hostname, "example.com")
+            self.assertEqual(r1.fqdn, "example.com.")
+
+        for sub in ("sub", "sub.example.com", "sub.example.com."):
+            common["name"] = sub
+            r2 = Record(**common)
+            self.assertEqual(r2.name, "sub")
+            self.assertEqual(r2.hostname, "sub.example.com")
+            self.assertEqual(r2.fqdn, "sub.example.com.")
+
     def test_export_zone_to_bind_format_slave_should_throw(self):
         zone = Zone(id=1, domain="example.com", type="slave", ttl=900, driver=self.driver)
         self.assertRaises(ValueError, zone.export_to_bind_format)
@@ -159,7 +183,7 @@ class BaseTestCase(unittest.TestCase):
     def test_get_numeric_id(self):
         values = MOCK_RECORDS_VALUES[0].copy()
         values["driver"] = self.driver
-        values["zone"] = None
+        values["zone"] = self.master_zone
         record = Record(**values)
 
         record.id = "abcd"

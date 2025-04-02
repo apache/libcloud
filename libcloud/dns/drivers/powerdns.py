@@ -185,18 +185,19 @@ class PowerDNSDriver(DNSDriver):
         if extra is None or extra.get("ttl", None) is None:
             raise ValueError("PowerDNS requires a ttl value for every record")
 
+        hostname = zone.hostname(name)
         if self._pdns_version() == 3:
             record = {
                 "content": data,
                 "disabled": False,
-                "name": name,
+                "name": hostname,
                 "ttl": extra["ttl"],
                 "type": type,
             }
             payload = {
                 "rrsets": [
                     {
-                        "name": name,
+                        "name": hostname,
                         "type": type,
                         "changetype": "REPLACE",
                         "records": [record],
@@ -212,7 +213,7 @@ class PowerDNSDriver(DNSDriver):
             payload = {
                 "rrsets": [
                     {
-                        "name": name,
+                        "name": hostname,
                         "type": type,
                         "changetype": "REPLACE",
                         "ttl": extra["ttl"],
@@ -426,19 +427,20 @@ class PowerDNSDriver(DNSDriver):
         if extra is None or extra.get("ttl", None) is None:
             raise ValueError("PowerDNS requires a ttl value for every record")
 
+        hostname = record.zone.hostname(name)
         if self._pdns_version() == 3:
             updated_record = {
                 "content": data,
                 "disabled": False,
-                "name": name,
+                "name": hostname,
                 "ttl": extra["ttl"],
                 "type": type,
             }
             payload = {
                 "rrsets": [
-                    {"name": record.name, "type": record.type, "changetype": "DELETE"},
+                    {"name": record.hostname, "type": record.type, "changetype": "DELETE"},
                     {
-                        "name": name,
+                        "name": hostname,
                         "type": type,
                         "changetype": "REPLACE",
                         "records": [updated_record],
@@ -457,7 +459,7 @@ class PowerDNSDriver(DNSDriver):
             payload = {
                 "rrsets": [
                     {
-                        "name": name,
+                        "name": hostname,
                         "type": type,
                         "changetype": "REPLACE",
                         "ttl": extra["ttl"],

@@ -280,7 +280,7 @@ class PointDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        r_json = {"name": name, "data": data, "record_type": type}
+        r_json = {"name": zone.hostname(name), "data": data, "record_type": type}
         if extra is not None:
             r_json.update(extra)
         r_data = json.dumps({"zone_record": r_json})
@@ -354,7 +354,7 @@ class PointDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         zone = record.zone
-        r_json = {"name": name, "data": data, "record_type": type}
+        r_json = {"name": zone.hostname(name), "data": data, "record_type": type}
         if extra is not None:
             r_json.update(extra)
         r_data = json.dumps({"zone_record": r_json})
