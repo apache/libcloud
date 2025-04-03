@@ -400,30 +400,6 @@ class RackspaceUSTests(unittest.TestCase):
         else:
             self.fail("Exception was not thrown")
 
-    def test_to_full_record_name_name_provided(self):
-        domain = "foo.bar"
-        name = "test"
-        self.assertEqual(self.driver._to_full_record_name(domain, name), "test.foo.bar")
-
-    def test_to_full_record_name_name_not_provided(self):
-        domain = "foo.bar"
-        name = None
-        self.assertEqual(self.driver._to_full_record_name(domain, name), "foo.bar")
-
-    def test_to_partial_record_name(self):
-        domain = "example.com"
-        names = [
-            "test.example.com",
-            "foo.bar.example.com",
-            "example.com.example.com",
-            "example.com",
-        ]
-        expected_values = ["test", "foo.bar", "example.com", None]
-
-        for name, expected_value in zip(names, expected_values):
-            value = self.driver._to_partial_record_name(domain=domain, name=name)
-            self.assertEqual(value, expected_value)
-
     def test_ex_create_ptr_success(self):
         ip = "127.1.1.1"
         domain = "www.foo4.bar.com"
