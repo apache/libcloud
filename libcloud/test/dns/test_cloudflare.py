@@ -311,7 +311,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         sent = CloudFlareMockHttp.history.pop()
         self.assertEqual(sent.method, "POST")
-        self.assertEqual(sent.url, f"/client/v4/zones")
+        self.assertEqual(sent.url, "/client/v4/zones")
         self.assertEqual(sent.json["type"], "full")
         self.assertEqual(sent.json["name"], "example2.com")
         self.assertEqual(sent.json["jump_start"], False)
