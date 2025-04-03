@@ -169,9 +169,7 @@ class GandiLiveTests(unittest.TestCase):
     def test_get_record(self):
         record = self.driver.get_record(self.test_zone.id, "A:bob")
 
-        # [0] /api/v5/domains/example.com/records/bob/A
-        # [1] /api/v5/domains/example.com
-        sent = GandiLiveMockHttp.history.pop(0)
+        sent = GandiLiveMockHttp.history.pop()
         self.assertEqual(sent.method, "GET")
         self.assertEqual(sent.url, "/api/v5/domains/example.com/records/bob/A")
 
