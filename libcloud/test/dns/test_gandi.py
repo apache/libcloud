@@ -72,7 +72,7 @@ class GandiTests(unittest.TestCase):
 
         record = records[3]
         self.assertEqual(record.name, "")
-        self.assertEqual(record.id, "MX:")
+        self.assertEqual(record.id, "MX")
         self.assertEqual(record.type, RecordType.MX)
         self.assertEqual(record.data, "aspmx.l.google.com")
         self.assertEqual(record.extra["priority"], 15)
@@ -366,7 +366,7 @@ class GandiMockHttp(BaseGandiMockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_info_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load("list_zones.xml")
+        body = self.fixtures.load("get_zone.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_record_delete_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
