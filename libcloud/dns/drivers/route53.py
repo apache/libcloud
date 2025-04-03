@@ -129,14 +129,11 @@ class Route53DNSDriver(DNSDriver):
 
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
-        record_type, name = record_id.split(":", 1)
-
-        if name:
-            full_name = ".".join((name, zone.domain))
-        else:
-            full_name = zone.domain
+        rparts = self.from_default_id(zone, record_id)
         self.connection.set_context({"zone_id": zone_id})
-        params = urlencode({"name": full_name, "type": record_type, "maxitems": "1"})
+        params = urlencode(
+            {"name": zone.hostname(rparts.name), "type": rparts.type, "maxitems": "1"}
+        )
         uri = API_ROOT + "hostedzone/" + zone_id + "/rrset?" + params
         data = self.connection.request(uri).object
 
@@ -145,9 +142,9 @@ class Route53DNSDriver(DNSDriver):
         # A cute aspect of the /rrset filters is that they are more pagination
         # hints than filters!!
         # So will return a result even if its not what you asked for.
-        record_type_num = self._string_to_record_type(record_type)
+        record_type_num = self._string_to_record_type(rparts.type)
 
-        if record.name != name or record.type != record_type_num:
+        if record.name != rparts.name or record.type != record_type_num:
             raise RecordDoesNotExistError(value="", driver=self, record_id=record_id)
 
         return record
@@ -186,10 +183,9 @@ class Route53DNSDriver(DNSDriver):
         extra = extra or {}
         batch = [("CREATE", name, type, data, extra)]
         self._post_changeset(zone, batch)
-        id = ":".join((self.RECORD_TYPE_MAP[type], name))
 
         return Record(
-            id=id,
+            id=self.to_default_id(zone, name, type),
             name=name,
             type=type,
             data=data,
@@ -221,10 +217,8 @@ class Route53DNSDriver(DNSDriver):
                 record=record, name=name, type=type, data=data, extra=extra
             )
 
-        id = ":".join((self.RECORD_TYPE_MAP[type], name))
-
         return Record(
-            id=id,
+            id=self.to_default_id(record.zone, name, type),
             name=name,
             type=type,
             data=data,
@@ -262,7 +256,7 @@ class Route53DNSDriver(DNSDriver):
         ET.SubElement(change, "Action").text = "CREATE"
 
         rrs = ET.SubElement(change, "ResourceRecordSet")
-        ET.SubElement(rrs, "Name").text = name + "." + zone.domain
+        ET.SubElement(rrs, "Name").text = zone.hostname(name)
         ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type]
         ET.SubElement(rrs, "TTL").text = str(extra.get("ttl", "0"))
 
@@ -280,13 +274,11 @@ class Route53DNSDriver(DNSDriver):
         self.connection.set_context({"zone_id": zone.id})
         self.connection.request(uri, method="POST", data=data)
 
-        id = ":".join((self.RECORD_TYPE_MAP[type], name))
-
         records = []
 
         for value in values:
             record = Record(
-                id=id,
+                id=self.to_default_id(zone, name, type),
                 name=name,
                 type=type,
                 data=value,
@@ -338,12 +330,7 @@ class Route53DNSDriver(DNSDriver):
 
         rrs = ET.SubElement(change, "ResourceRecordSet")
 
-        if record.name:
-            record_name = record.name + "." + record.zone.domain
-        else:
-            record_name = record.zone.domain
-
-        ET.SubElement(rrs, "Name").text = record_name
+        ET.SubElement(rrs, "Name").text = record.hostname
         ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[record.type]
         ET.SubElement(rrs, "TTL").text = str(record.extra.get("ttl", "0"))
 
@@ -363,12 +350,7 @@ class Route53DNSDriver(DNSDriver):
 
         rrs = ET.SubElement(change, "ResourceRecordSet")
 
-        if name:
-            record_name = name + "." + record.zone.domain
-        else:
-            record_name = record.zone.domain
-
-        ET.SubElement(rrs, "Name").text = record_name
+        ET.SubElement(rrs, "Name").text = record.zone.hostname(name)
         ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type]
         ET.SubElement(rrs, "TTL").text = str(extra.get("ttl", "0"))
 
@@ -399,12 +381,7 @@ class Route53DNSDriver(DNSDriver):
 
             rrs = ET.SubElement(change, "ResourceRecordSet")
 
-            if name:
-                record_name = name + "." + zone.domain
-            else:
-                record_name = zone.domain
-
-            ET.SubElement(rrs, "Name").text = record_name
+            ET.SubElement(rrs, "Name").text = zone.hostname(name)
             ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type_]
             ET.SubElement(rrs, "TTL").text = str(extra.get("ttl", "0"))
 
@@ -528,9 +505,8 @@ class Route53DNSDriver(DNSDriver):
             extra["weight"] = int(weight)
             extra["port"] = int(port)
 
-        id = ":".join((self.RECORD_TYPE_MAP[type], name))
         record = Record(
-            id=id,
+            id=self.to_default_id(zone, name, type),
             name=name,
             type=type,
             data=data,
