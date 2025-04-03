@@ -198,7 +198,7 @@ class Route53Tests(unittest.TestCase):
         self.assertIn("<Value>127.0.0.1</Value>", xml)
         self.assertIn("<TTL>0</TTL>", xml)
 
-        self.assertEqual(record.id, "A:")
+        self.assertEqual(record.id, "A")
         self.assertEqual(record.name, "")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
@@ -210,7 +210,7 @@ class Route53Tests(unittest.TestCase):
         """
         zone = self.driver.list_zones()[0]
         record = self.driver.create_record(name="", zone=zone, type=RecordType.TXT, data="test")
-        self.assertEqual(record.id, "TXT:")
+        self.assertEqual(record.id, "TXT")
         self.assertEqual(record.name, "")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.TXT)
@@ -222,7 +222,7 @@ class Route53Tests(unittest.TestCase):
         """
         zone = self.driver.list_zones()[0]
         record = self.driver.create_record(name="", zone=zone, type=RecordType.TXT, data='"test"')
-        self.assertEqual(record.id, "TXT:")
+        self.assertEqual(record.id, "TXT")
         self.assertEqual(record.name, "")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.TXT)
@@ -234,7 +234,7 @@ class Route53Tests(unittest.TestCase):
         """
         zone = self.driver.list_zones()[0]
         record = self.driver.create_record(name="", zone=zone, type=RecordType.SPF, data="test")
-        self.assertEqual(record.id, "SPF:")
+        self.assertEqual(record.id, "SPF")
         self.assertEqual(record.name, "")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.SPF)
@@ -246,7 +246,7 @@ class Route53Tests(unittest.TestCase):
         """
         zone = self.driver.list_zones()[0]
         record = self.driver.create_record(name="", zone=zone, type=RecordType.SPF, data='"test"')
-        self.assertEqual(record.id, "SPF:")
+        self.assertEqual(record.id, "SPF")
         self.assertEqual(record.name, "")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.SPF)
@@ -260,7 +260,7 @@ class Route53Tests(unittest.TestCase):
         record = self.driver.create_record(
             name="", zone=zone, type=RecordType.TXT, data='test "with"'
         )
-        self.assertEqual(record.id, "TXT:")
+        self.assertEqual(record.id, "TXT")
         self.assertEqual(record.name, "")
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.TXT)
