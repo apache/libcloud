@@ -275,7 +275,9 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: pip install -r requirements-ci.txt
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-ci.txt
 
       - name: Install Library Into Virtualenv
         run: |
