@@ -275,14 +275,13 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Install Library Into Virtualenv
         run: |
           python -m venv venv/
           source venv/bin/activate
+          python -m pip install --upgrade pip
           python -m pip install .
 
       - name: Run Pip Audit Check On Main Library Dependencies
