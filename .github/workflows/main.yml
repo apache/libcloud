@@ -44,12 +44,9 @@ jobs:
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -59,7 +56,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', '') }}
@@ -67,17 +64,14 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Run unit tests tox target
-        run: |
-         tox -e py${{ matrix.python_version }}
+        run: tox -e py${{ matrix.python_version }}
 
       - name: Run dist install checks tox target
         if: ${{ matrix.python_version != 'pypy-3.9' && matrix.python_version != 'pypy-3.10' }}
-        run: |
-         tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
+        run: tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
 
   code_coverage:
     name: Generate Code Coverage
@@ -85,15 +79,12 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -103,7 +94,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
@@ -111,12 +102,10 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Run Checks
-        run: |
-          tox -e coverage-ci
+        run: tox -e coverage-ci
 
       - name: Upload Coverage to codecov.io
         uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
@@ -133,15 +122,12 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -151,7 +137,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
@@ -159,16 +145,13 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Run shellcheck
-        run: |
-          shellcheck dist/*.sh contrib/*.sh
+        run: shellcheck dist/*.sh contrib/*.sh
 
       - name: Run Python Checks
-        run: |
-          tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint,mypy
+        run: tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint,mypy
 
   build_test_release_artifact:
     name: Build and Test Release Artifact
@@ -176,20 +159,17 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
@@ -253,17 +233,12 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Build Testing Docker Image
-        run: |
-          docker build -f contrib/Dockerfile -t libcloud_runtest_img .
-
+        run: docker build -f contrib/Dockerfile -t libcloud_runtest_img .
       - name: Verify Image Works
         # This step runs checks under various Python versions and it's slow so
         # we only run it on nightly basis
@@ -273,29 +248,26 @@ jobs:
 
   security_checks:
     name: Run Security Checks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
@@ -303,8 +275,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Install Library Into Virtualenv
         run: |
@@ -324,8 +295,7 @@ jobs:
             PYSEC-2023-228
 
       - name: Cleanup
-        run: |
-          rm -rf venv/ || true
+        run: rm -rf venv/ || true
 
       - name: Run Pip Audit Check On All Development And Test Dependencies
         uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
@@ -336,8 +306,7 @@ jobs:
             GHSA-r9hx-vwmv-q579
 
       - name: Run Bandit Check
-        run: |
-          tox -e bandit
+        run: tox -e bandit
 
   micro-benchmarks:
     name: Micro Benchmarks
@@ -345,15 +314,12 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -363,7 +329,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
@@ -371,12 +337,10 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Run Micro Benchmarks
-        run: |
-          tox -e micro-benchmarks
+        run: tox -e micro-benchmarks
 
   docs:
     name: Build and upload Documentation
@@ -384,22 +348,17 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ 3.9 ]
 
     steps:
-      - name: Print Environment Info
-        id: printenv
-        run: |
-          printenv | sort
-
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+
+      - name: Print Environment Info
+        run: printenv | sort
 
       - name: Install OS / deb dependencies
         run: |
@@ -407,7 +366,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements-docs.txt') }}
@@ -415,12 +374,10 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: pip install -r requirements-ci.txt
 
       - name: Build Docs
-        run: |
-          tox -e docs
+        run: tox -e docs
 
       - name: Trigger ReadTheDocs build
         if: ${{ github.ref_name == 'trunk' }}
