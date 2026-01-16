@@ -27,7 +27,7 @@ jobs:
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Print Environment Info
         run: printenv | sort
