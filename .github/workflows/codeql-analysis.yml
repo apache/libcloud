@@ -22,7 +22,7 @@ jobs:
       security-events: write  # for github/codeql-action/autobuild to send a status report
     name: Analyze
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
 
     strategy:
       fail-fast: false
@@ -30,16 +30,12 @@ jobs:
         language: [ 'python' ]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@master
-
+    - uses: actions/checkout@v6
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
-
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
