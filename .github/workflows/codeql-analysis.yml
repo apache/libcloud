@@ -1,4 +1,4 @@
-name: CodeQL Analysis
+name: "CodeQL Analysis"
 
 on:
   push:
@@ -24,12 +24,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+
     steps:
     - uses: actions/checkout@v6
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: python
+        languages: ${{ matrix.language }}
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
     - name: Perform CodeQL Analysis
