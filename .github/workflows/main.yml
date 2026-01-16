@@ -159,7 +159,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.12" ]
+        python_version: [ "3.9" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -205,7 +205,7 @@ jobs:
           tar -xzvf "${TARBALL_FILENAME}"
 
           cd "apache_libcloud-${VERSION}/" 
-          tox -c tox.ini -epy3.12
+          tox -c tox.ini -epy3.9
 
       - name: Verify Wheel Release Artifact
         run: |
