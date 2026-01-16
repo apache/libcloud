@@ -13,5 +13,5 @@ pyopenssl==25.0.0
 
 # Required by subset of tests
 fasteners
-paramiko==3.4.0; platform_python_implementation != 'PyPy'
-libvirt-python==10.2.0
+paramiko==3.5.1; platform_python_implementation != 'PyPy'
+libvirt-python==11.10.0
