@@ -225,7 +225,7 @@ jobs:
           cp ../../tox.ini .
           cp ../../requirements-tests.txt .
           cp ../../libcloud/test/secrets.py-dist libcloud/test/secrets.py-dist
-          tox -c tox.ini -epy3.10
+          tox -c tox.ini -epy3.9
 
   build_test_docker_image:
     name: Build and Verify Docker Image
