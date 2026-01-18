@@ -334,7 +334,7 @@ jobs:
         run: rm -rf venv/ || true
 
       - name: Export Development Requirements
-        run: uv export --extra test --extra lint --extra mypy --extra docs --format requirements.txt --output-file requirements-dev.txt
+        run: uv export --extra test --extra lint --extra mypy --extra docs --format requirements.txt --no-hashes --no-emit-project --output-file requirements-dev.txt
 
       - name: Run Pip Audit Check On All Development And Test Dependencies
         uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
