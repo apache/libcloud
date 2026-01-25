@@ -54,5 +54,4 @@ notifications:
   jobs: notifications@libcloud.apache.org
   issues: notifications@libcloud.apache.org
   pullrequests: notifications@libcloud.apache.org
-  jobs: notifications@libcloud.apache.org
   jira_options: link label comment
