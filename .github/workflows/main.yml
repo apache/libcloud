@@ -285,7 +285,7 @@ jobs:
           python -m pip install .
 
       - name: Run Pip Audit Check On Main Library Dependencies
-        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
+        uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
         with:
           virtual-environment: venv/
           # setuptools which we don't install or depend on directly
@@ -299,7 +299,7 @@ jobs:
         run: rm -rf venv/ || true
 
       - name: Run Pip Audit Check On All Development And Test Dependencies
-        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
+        uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
         with:
           inputs: requirements-tests.txt requirements-lint.txt requirements-mypy.txt requirements-docs.txt
           # setuptools which we don't install or depend on directly
