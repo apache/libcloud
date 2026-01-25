@@ -43,14 +43,13 @@ github:
     trunk:
       required_status_checks:
         contexts:
-          - "Unit Tests (Python 3.9)"
           - "Unit Tests (Python 3.10)"
           - "Unit Tests (Python 3.11)"
           - "Unit Tests (Python 3.12)"
           - "Unit Tests (Python 3.13)"
           - "Dependency Review"
-          - "Run Various Lint and Other Checks (3.10)"
-          - "Build and upload Documentation (3.10)"
+          - "Run Various Lint and Other Checks"
+          - "Build and upload Documentation"
 
 notifications:
   jobs: notifications@libcloud.apache.org
