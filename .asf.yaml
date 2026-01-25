@@ -13,10 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# File with ASF Github metadata, see 
-# https://cwiki.apache.org/confluence/display/INFRA/Git+-+.asf.yaml+features
-# for more details
+
+# All configurations could be found here: https://github.com/apache/infrastructure-asfyaml/
+
 github:
   description: "Apache Libcloud is a Python library that hides differences between different cloud provider APIs and allows you to manage different cloud resources through a unified and easy-to-use API."
   homepage: https://libcloud.apache.org
