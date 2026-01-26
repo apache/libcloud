@@ -34,7 +34,7 @@ EXTENSIONS[1]="-py2.py3-none-any.whl"
 
 APACHE_MIRROR_URL="http://www.apache.org/dist/libcloud"
 PYPI_MIRROR_URL_SOURCE="https://pypi.python.org/packages/source/a/apache-libcloud"
-PYPI_MIRROR_URL_WHEEL="https://files.pythonhosted.org/packages/py3/a/apache-libcloud"
+PYPI_SIMPLE_URL="https://pypi.org/simple/apache-libcloud/"
 
 # From http://tldp.org/LDP/abs/html/debugging.html#ASSERT
 function assert ()                 #  If condition false,
@@ -78,7 +78,8 @@ do
     pypi_url="${PYPI_MIRROR_URL}/${file_name}"
 
     if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
-        pypi_url="${PYPI_MIRROR_URL_WHEEL}/${file_name}"
+        # Get the wheel full URL from PyPi Simple index
+        pypi_url=$(curl -s ${PYPI_SIMPLE_URL} | grep ${file_name} | sed -n 's/.*href="\([^"]*\)".*/\1/p')
     else
         pypi_url="${PYPI_MIRROR_URL_SOURCE}/${file_name}"
     fi
