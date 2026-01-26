@@ -18,8 +18,8 @@ Getting started with contributing to Libcloud
 ---------------------------------------------
 
 We use ``uv`` to lock and manage development dependencies. Dependency groups are
-defined as extras in ``pyproject.toml`` and the ``uv.lock`` file replaces the
-legacy ``requirements-*.txt`` files.
+defined under ``[dependency-groups]`` in ``pyproject.toml`` and ``uv.lock`` is
+the source of truth for local development and documentation tooling.
 
 To create or update the lockfile, run:
 
@@ -30,17 +30,24 @@ To create or update the lockfile, run:
 If ``uv lock`` fails while building ``libvirt-python``, install the system
 dependencies (``pkg-config`` and ``libvirt-dev``).
 
-To set up a local development environment with common tooling:
+To set up a local development environment with common tooling (tests, linting,
+type checking, tox):
 
 .. sourcecode:: bash
 
-    uv sync --extra test --extra lint --extra docs --extra mypy --extra ci
+    uv sync --group dev
 
-If you only need a subset, sync just those extras (for example, tests only):
+If you only need a subset, sync just those groups (for example, tests only):
 
 .. sourcecode:: bash
 
-    uv sync --extra test
+    uv sync --group test --no-dev
+
+If you also work on documentation, add the docs group:
+
+.. sourcecode:: bash
+
+    uv sync --group dev --group docs
 
 Commit ``uv.lock`` whenever dependency versions change.
 

@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          uv sync --extra ci
+          uv sync --group ci --no-dev
           echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Generate and publish pricing data
