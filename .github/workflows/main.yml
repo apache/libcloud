@@ -436,15 +436,3 @@ jobs:
         run: |
           python -m pip install requests
           python ./contrib/trigger_rtd_build.py
-
-  old_check_name:
-    name: Build and upload Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "OK"
-
-  old_check_name_2:
-    name: Run Various Lint and Other Checks
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "OK"
