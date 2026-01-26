@@ -38,23 +38,26 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
-      - name: Cache Python Dependencies
+      - name: Cache uv
         uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', 'integration/storage/requirements.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
         run: |
-          pip install -r requirements-ci.txt
+          uv sync --extra ci
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run tox target
         run: |
