@@ -434,5 +434,5 @@ jobs:
           RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
           BRANCH_NAME: "trunk"
         run: |
-          python -m pip install requests
+          uv pip install requests
           python ./contrib/trigger_rtd_build.py
