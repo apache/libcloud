@@ -79,7 +79,7 @@ do
 
     if [ "${extension}" = "-py2.py3-none-any.whl" ]; then
         # Get the wheel full URL from PyPi Simple index
-        pypi_url=$(curl -s ${PYPI_SIMPLE_URL} | grep ${file_name} | sed -n 's/.*href="\([^"]*\)".*/\1/p')
+        pypi_url=$(curl -s ${PYPI_SIMPLE_URL} | grep "${file_name}" | sed -n 's/.*href="\([^"]*\)".*/\1/p')
     else
         pypi_url="${PYPI_MIRROR_URL_SOURCE}/${file_name}"
     fi
