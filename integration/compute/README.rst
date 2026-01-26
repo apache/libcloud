@@ -8,7 +8,7 @@ Running the API service
 
 .. code-block:: bash
 
-  pip install -r integration/compute/requirements.txt
+  uv sync --extra integration-compute
   python -m integration.compute.api
 
 Running the tests
