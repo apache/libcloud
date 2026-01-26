@@ -63,7 +63,7 @@ certificate, you can do that using two different approaches:
 
     SSL_CERT_FILE=/home/user/path-to-your-ca-file.crt python my_script.py
 
-2. Setting ``libcloud.security.CA_CERTS_PATH`` variable in your script to 
+2. Setting ``libcloud.security.CA_CERTS_PATH`` variable in your script to
    point to your CA file
 
 .. sourcecode:: python
