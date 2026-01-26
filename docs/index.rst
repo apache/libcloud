@@ -2,6 +2,9 @@ Welcome to Apache Libcloud's documentation!
 ===========================================
 
 .. note::
+   Libcloud now only supports Python >= 3.10. Support for Python 3.9 has been
+   dropped.
+
    Libcloud v3.5.0 dropped support for Python 3.5 and now only supports Python
    >= 3.6.
 
@@ -10,8 +13,8 @@ Welcome to Apache Libcloud's documentation!
 
    If you still need to us Libcloud with one of the now unsupported Python
    versions, you can do that by using an older release of Libcloud which still
-   supports that Python version (Libcloud v3.4.x for Python 3.5 and Libcloud
-   v2.8.x for Python 2.7 and Python 3.4).
+   supports that Python version (Libcloud v3.9.x for Python 3.9, Libcloud
+   v3.4.x for Python 3.5 and Libcloud v2.8.x for Python 2.7 and Python 3.4).
 
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources through
