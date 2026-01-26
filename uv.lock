@@ -32,12 +32,42 @@ dependencies = [
     { name = "requests" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 build = [
     { name = "build" },
 ]
 ci = [
     { name = "tox" },
+]
+dev = [
+    { name = "astroid" },
+    { name = "bandit", extra = ["toml"] },
+    { name = "black", marker = "implementation_name == 'cpython'" },
+    { name = "codespell" },
+    { name = "coverage", extra = ["toml"] },
+    { name = "cryptography" },
+    { name = "fasteners" },
+    { name = "flake8" },
+    { name = "isort" },
+    { name = "libvirt-python" },
+    { name = "mypy", marker = "implementation_name == 'cpython'" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'" },
+    { name = "pep8" },
+    { name = "pylint" },
+    { name = "pyopenssl" },
+    { name = "pytest" },
+    { name = "pytest-benchmark", extra = ["histogram"] },
+    { name = "pytest-timeout" },
+    { name = "pytest-xdist" },
+    { name = "pyupgrade" },
+    { name = "requests" },
+    { name = "requests-mock" },
+    { name = "rstcheck" },
+    { name = "tox" },
+    { name = "types-certifi" },
+    { name = "types-requests" },
+    { name = "types-simplejson" },
+    { name = "types-urllib3" },
 ]
 docs = [
     { name = "fasteners" },
@@ -80,10 +110,6 @@ mypy = [
 publish = [
     { name = "twine" },
 ]
-rtd = [
-    { name = "sphinx" },
-    { name = "sphinx-rtd-theme" },
-]
 test = [
     { name = "coverage", extra = ["toml"] },
     { name = "cryptography" },
@@ -100,55 +126,93 @@ test = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "astroid", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==3.3.8" },
-    { name = "azure-identity", marker = "extra == 'integration-storage'" },
-    { name = "azure-mgmt-resource", marker = "extra == 'integration-storage'" },
-    { name = "azure-mgmt-storage", marker = "extra == 'integration-storage'" },
-    { name = "bandit", extras = ["toml"], marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==1.7.8" },
-    { name = "black", marker = "python_full_version >= '3.10' and implementation_name == 'cpython' and extra == 'lint'", specifier = "==25.1.0" },
-    { name = "boto3", marker = "extra == 'integration-storage'" },
-    { name = "bottle", marker = "extra == 'integration-compute'" },
-    { name = "build", marker = "extra == 'build'", specifier = "==1.2.2" },
-    { name = "codespell", marker = "extra == 'lint'", specifier = "==2.4.1" },
-    { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10' and extra == 'test'", specifier = "==7.2.7" },
-    { name = "cryptography", marker = "extra == 'test'", specifier = "==44.0.2" },
-    { name = "docker", marker = "extra == 'integration-storage'" },
-    { name = "fasteners", marker = "extra == 'docs'" },
-    { name = "fasteners", marker = "extra == 'test'" },
-    { name = "flake8", marker = "extra == 'lint'", specifier = "==5.0.4" },
-    { name = "isort", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==6.0.1" },
-    { name = "libvirt-python", marker = "extra == 'test'", specifier = "==10.2.0" },
-    { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython' and extra == 'mypy'", specifier = "==1.15.0" },
-    { name = "paramiko", marker = "platform_python_implementation != 'PyPy' and extra == 'lint'", specifier = "==3.5.1" },
-    { name = "paramiko", marker = "platform_python_implementation != 'PyPy' and extra == 'test'", specifier = "==3.5.1" },
-    { name = "pep8", marker = "extra == 'lint'", specifier = "==1.7.1" },
-    { name = "pylint", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==3.3.4" },
-    { name = "pyopenssl", marker = "extra == 'test'", specifier = "==25.0.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==8.3.5" },
-    { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10' and extra == 'test'", specifier = "==5.1.0" },
-    { name = "pytest-timeout", marker = "extra == 'test'", specifier = "==2.3.1" },
-    { name = "pytest-xdist", marker = "extra == 'test'", specifier = "==3.6.1" },
-    { name = "pyupgrade", marker = "extra == 'lint'", specifier = "==3.3.1" },
-    { name = "requests", specifier = ">=2.26.0" },
-    { name = "requests", marker = "extra == 'integration-storage'" },
-    { name = "requests", marker = "extra == 'lint'", specifier = ">=2.27.1" },
-    { name = "requests", marker = "extra == 'test'", specifier = ">=2.31.0" },
-    { name = "requests-mock", marker = "extra == 'test'", specifier = "==1.11.0" },
-    { name = "rstcheck", marker = "python_full_version >= '3.10' and extra == 'docs'", specifier = "==6.2.4" },
-    { name = "rstcheck", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==6.2.4" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = "==6.2.1" },
-    { name = "sphinx", marker = "extra == 'rtd'", specifier = "==6.2.1" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = "==2.0.0" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'rtd'", specifier = "==2.0.0" },
-    { name = "tox", marker = "extra == 'ci'", specifier = "==4.24.1" },
-    { name = "twine", marker = "extra == 'publish'", specifier = "==5.1.1" },
-    { name = "types-certifi", marker = "extra == 'mypy'" },
-    { name = "types-requests", marker = "extra == 'mypy'" },
-    { name = "types-simplejson", marker = "extra == 'mypy'" },
-    { name = "types-urllib3", marker = "extra == 'mypy'" },
+requires-dist = [{ name = "requests", specifier = ">=2.26.0" }]
+
+[package.metadata.requires-dev]
+build = [{ name = "build", specifier = "==1.2.2" }]
+ci = [{ name = "tox", specifier = "==4.24.1" }]
+dev = [
+    { name = "astroid", marker = "python_full_version >= '3.10'", specifier = "==3.3.8" },
+    { name = "bandit", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==1.7.8" },
+    { name = "black", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==25.1.0" },
+    { name = "codespell", specifier = "==2.4.1" },
+    { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==7.2.7" },
+    { name = "cryptography", specifier = "==44.0.2" },
+    { name = "fasteners" },
+    { name = "flake8", specifier = "==5.0.4" },
+    { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
+    { name = "libvirt-python", specifier = "==10.2.0" },
+    { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
+    { name = "pep8", specifier = "==1.7.1" },
+    { name = "pylint", marker = "python_full_version >= '3.10'", specifier = "==3.3.4" },
+    { name = "pyopenssl", specifier = "==25.0.0" },
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
+    { name = "pytest-timeout", specifier = "==2.3.1" },
+    { name = "pytest-xdist", specifier = "==3.6.1" },
+    { name = "pyupgrade", specifier = "==3.3.1" },
+    { name = "requests", specifier = ">=2.27.1" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "requests-mock", specifier = "==1.11.0" },
+    { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.4" },
+    { name = "tox", specifier = "==4.24.1" },
+    { name = "types-certifi" },
+    { name = "types-requests" },
+    { name = "types-simplejson" },
+    { name = "types-urllib3" },
 ]
-provides-extras = ["build", "ci", "docs", "integration-compute", "integration-storage", "lint", "mypy", "publish", "rtd", "test"]
+docs = [
+    { name = "fasteners" },
+    { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.4" },
+    { name = "sphinx", specifier = "==6.2.1" },
+    { name = "sphinx-rtd-theme", specifier = "==2.0.0" },
+]
+integration-compute = [{ name = "bottle" }]
+integration-storage = [
+    { name = "azure-identity" },
+    { name = "azure-mgmt-resource" },
+    { name = "azure-mgmt-storage" },
+    { name = "boto3" },
+    { name = "docker" },
+    { name = "requests" },
+]
+lint = [
+    { name = "astroid", marker = "python_full_version >= '3.10'", specifier = "==3.3.8" },
+    { name = "bandit", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==1.7.8" },
+    { name = "black", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==25.1.0" },
+    { name = "codespell", specifier = "==2.4.1" },
+    { name = "flake8", specifier = "==5.0.4" },
+    { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
+    { name = "pep8", specifier = "==1.7.1" },
+    { name = "pylint", marker = "python_full_version >= '3.10'", specifier = "==3.3.4" },
+    { name = "pyupgrade", specifier = "==3.3.1" },
+    { name = "requests", specifier = ">=2.27.1" },
+    { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.4" },
+]
+mypy = [
+    { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
+    { name = "types-certifi" },
+    { name = "types-requests" },
+    { name = "types-simplejson" },
+    { name = "types-urllib3" },
+]
+publish = [{ name = "twine", specifier = "==5.1.1" }]
+test = [
+    { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==7.2.7" },
+    { name = "cryptography", specifier = "==44.0.2" },
+    { name = "fasteners" },
+    { name = "libvirt-python", specifier = "==10.2.0" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
+    { name = "pyopenssl", specifier = "==25.0.0" },
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
+    { name = "pytest-timeout", specifier = "==2.3.1" },
+    { name = "pytest-xdist", specifier = "==3.6.1" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "requests-mock", specifier = "==1.11.0" },
+]
 
 [[package]]
 name = "astroid"
