@@ -97,7 +97,7 @@ lint = [
     "flake8==5.0.4",
     "astroid==3.3.8; python_version >= '3.10'",
     "pylint==3.3.4; python_version >= '3.10'",
-    "bandit[toml]==1.7.8; python_version >= '3.10'",
+    "bandit[toml]==1.9.3; python_version >= '3.10'",
     "black==25.1.0; python_version >= '3.10' and implementation_name == \"cpython\"",
     "isort==6.0.1; python_version >= '3.10'",
     "pyupgrade==3.3.1",
