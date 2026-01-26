@@ -43,7 +43,6 @@ github:
     trunk:
       required_status_checks:
         contexts:
-          - "Unit Tests (Python 3.9)"
           - "Unit Tests (Python 3.10)"
           - "Unit Tests (Python 3.11)"
           - "Unit Tests (Python 3.12)"
