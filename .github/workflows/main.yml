@@ -48,7 +48,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -91,7 +91,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -139,7 +139,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -187,7 +187,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
@@ -286,7 +286,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -362,7 +362,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -401,7 +401,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Print Environment Info
         run: printenv | sort
