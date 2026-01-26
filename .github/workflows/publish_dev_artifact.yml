@@ -23,20 +23,14 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Print Environment Info
-        id: printenv
-        run: |
-          printenv | sort
-
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
+      - name: Print Environment Info
+        run: printenv | sort
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
@@ -52,7 +46,7 @@ jobs:
           ls -la dist | grep .whl
 
       - name: Store dev artifacts - .tar.gz
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: libcloud-dev-tarball
           retention-days: 60
@@ -61,7 +55,7 @@ jobs:
             dist/*.tar.gz
 
       - name: Store dev artifacts - .whl
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: libcloud-dev-wheel
           retention-days: 60

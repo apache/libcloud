@@ -13,36 +13,26 @@ permissions:
 jobs:
   install_and_verify:
     name: Install
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 2
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - "ubuntu-latest"
         python_version:
-          - 3.7
-          - 3.8
-          - 3.9
+          - "3.8"
+          - "3.9"
           - "3.10"
           - "3.11"
-          - "pypy-3.7"
-          - "pypy-3.8"
+          - "3.12"
+          - "3.13"
           - "pypy-3.9"
-        include:
-          # python 3.6 is not supported with ubuntu-latest anymore so we need to
-          # use ubuntu 20.04
-          - python_version: 3.6
-            os: ubuntu-20.04
+          - "pypy-3.10"
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 
@@ -58,13 +48,10 @@ jobs:
   verify_checksums:
     name: Verify Artifacts Checksum
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Verify Checksums
         run: |
           LAST_STABLE_VERSION=$(curl -s --fail https://pypi.org/pypi/apache-libcloud/json | jq ".releases | to_entries | last | .key" -r)
