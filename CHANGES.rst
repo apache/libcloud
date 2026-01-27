@@ -894,8 +894,8 @@ Compute
   (#1615)
   [Miguel Caballer - @micafer]
 
-- [CloudSigma] Various updates, improvements and new functionality in the 
-  driver (support for new regions, instance types, additional standard API an 
+- [CloudSigma] Various updates, improvements and new functionality in the
+  driver (support for new regions, instance types, additional standard API an
   extension methods, etc.).
 
   (#1558)
@@ -1060,7 +1060,7 @@ Compute
   (#1492)
   [Miguel Caballer - @micafer]
 
-- [EC2] Update supported EC2 regions and instance sizes and add support 
+- [EC2] Update supported EC2 regions and instance sizes and add support
   for eu-north-1 region.
   (#1486)
   [Arturo Noha - @r2ronoha]

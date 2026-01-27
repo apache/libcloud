@@ -48,7 +48,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -91,7 +91,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -116,7 +116,7 @@ jobs:
         run: tox -e coverage-ci
 
       - name: Upload Coverage to codecov.io
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           # We utilize secret for more realiable builds. Without secret being set, upload step
           # fails fairly often.
@@ -139,7 +139,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -187,7 +187,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
@@ -229,7 +229,7 @@ jobs:
           # Unpack tarball and verify + run the tests
           tar -xzvf "${TARBALL_FILENAME}"
 
-          cd "apache_libcloud-${VERSION}/" 
+          cd "apache_libcloud-${VERSION}/"
           tox -c tox.ini -epy3.10
 
       - name: Verify Wheel Release Artifact
@@ -286,7 +286,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -359,7 +359,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
@@ -398,7 +398,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Print Environment Info
         run: printenv | sort

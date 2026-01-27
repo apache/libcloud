@@ -7,7 +7,7 @@ Replacement of httplib with `requests`
 --------------------------------------
 
 Apache Libcloud supports Python 2.6, 2.7 - 3.3 and beyond. To achieve this a package was written within the
-Libcloud library to create a generic HTTP client for Python 2 and 3. This package has a custom implementation of a certificate store, searching and TLS preference configuration. One of the first errors to greet new users of Libcloud would be "No CA Certificates were found in CA_CERTS_PATH."... 
+Libcloud library to create a generic HTTP client for Python 2 and 3. This package has a custom implementation of a certificate store, searching and TLS preference configuration. One of the first errors to greet new users of Libcloud would be "No CA Certificates were found in CA_CERTS_PATH."...
 
 In 2.0 this implementation has been replaced with the `requests` package, and SSL verification should work against any publicly signed HTTPS endpoint by default, without having to provide a CA cert store.
 
@@ -70,7 +70,7 @@ This code example would set a HTTP/HTTPS proxy and use a client-generated certif
 
   import os
   os.environ.set('http_proxy', 'http://localhost:8888/')
-  
+
   import libcloud.security
   libcloud.security.VERIFY_SSL_CERT = True
   libcloud.security.CA_CERTS_PATH = '/Users/anthonyshaw/charles.pem'
@@ -87,23 +87,23 @@ Performance improvements and introduction of sessions
 
 Each instance of libcloud.common.base.Connection will have a LibcloudConnection instance under the `connection` property. In 1.5.0<, there would be 2 connection
 class instances, LibcloudHttpConnection and LibcloudHttpsConnection, stored as an instance property `conn_classes`. In 2.0.0 this has been replaced with a single type,
-:class:`libcloud.common.base.LibcloudHTTPConnection` that handles both HTTP and HTTPS connections. 
+:class:`libcloud.common.base.LibcloudHTTPConnection` that handles both HTTP and HTTPS connections.
 
 .. code-block:: Python
 
   def test():
       import libcloud
       import libcloud.compute.providers
-      
+
       d = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.DIMENSIONDATA)
       instance = d('anthony', 'mypassword!', 'dd-au')
       instance.list_nodes() # is paged
       instance.list_images() # is paged
-  
+
   if __name__ == '__main__':
       import timeit
       print(timeit.timeit("test()", setup="from __main__ import test", number=5))
-      
+
 
 This simple test shows a 10% performance improvement between Libcloud 1.5.0 and 2.0.0.
 
