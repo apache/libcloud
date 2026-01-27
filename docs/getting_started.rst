@@ -41,7 +41,7 @@ with any of the Libcloud drivers.
     from pprint import pprint
 
     import libcloud
-    
+
     cls = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.RACKSPACE)
 
 
@@ -71,9 +71,9 @@ see provider-specific documentation and the driver docstrings.
     from pprint import pprint
 
     import libcloud
-    
+
     cls = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.RACKSPACE)
-    
+
     driver = cls('my username', 'my api key')
 
     pprint(driver.list_sizes())
