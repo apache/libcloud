@@ -42,7 +42,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -51,7 +50,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "requests>=2.26.0",
 ]
@@ -80,8 +79,64 @@ publish = [
     "twine==5.1.1"
 ]
 test = [
-    "pytest",
-    "requests_mock",
+    "coverage[toml]==7.2.7; python_version >= '3.10'",
+    "requests>=2.31.0",
+    "requests_mock==1.11.0",
+    "pytest==8.3.5",
+    "pytest-xdist==3.6.1",
+    "pytest-timeout==2.3.1",
+    "pytest-benchmark[histogram]==5.1.0; python_version >= '3.10'",
+    "cryptography==44.0.2",
+    "pyopenssl==25.0.0",
+    "fasteners",
+    "paramiko==3.5.1; platform_python_implementation != 'PyPy'",
+    "libvirt-python==10.2.0",
+]
+lint = [
+    "pep8==1.7.1",
+    "flake8==5.0.4",
+    "astroid==3.3.8; python_version >= '3.10'",
+    "pylint==3.3.4; python_version >= '3.10'",
+    "bandit[toml]==1.9.3; python_version >= '3.10'",
+    "black==25.1.0; python_version >= '3.10' and implementation_name == \"cpython\"",
+    "isort==6.0.1; python_version >= '3.10'",
+    "pyupgrade==3.3.1",
+    "rstcheck==6.2.4; python_version >= '3.10'",
+    "codespell==2.4.1",
+    "prek>=0.2.17",
+    "requests>=2.27.1",
+    "paramiko==3.5.1; platform_python_implementation != 'PyPy'",
+]
+docs = [
+    "rstcheck==6.2.4; python_version >= '3.10'",
+    "fasteners",
+    "sphinx_rtd_theme==2.0.0",
+    "sphinx==6.2.1",
+]
+mypy = [
+    "mypy==1.15.0; python_version >= '3.10' and implementation_name == \"cpython\"",
+    "types-simplejson",
+    "types-certifi",
+    "types-requests",
+    "types-urllib3",
+]
+ci = [
+    "tox==4.24.1"
+]
+rtd = [
+    "sphinx==6.2.1",
+    "sphinx_rtd_theme==2.0.0",
+]
+integration-compute = [
+    "bottle"
+]
+integration-storage = [
+    "azure-identity",
+    "azure-mgmt-resource",
+    "azure-mgmt-storage",
+    "boto3",
+    "docker",
+    "requests",
 ]
 
 [tool.setuptools.packages.find]
@@ -117,7 +172,7 @@ readme = {file = ["README.rst"], content-type = "text/x-rst"}
 
 [tool.black]
 line_length = 100
-target_version = ['py39', 'py310', 'py311', 'py312', 'py313']
+target_version = ['py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 exclude = '''
 (
@@ -178,7 +233,7 @@ indent-string = "    "
 
 
 [tool.mypy]
-python_version = 3.8
+python_version = "3.10"
 platform = "linux"
 show_error_context = true
 show_column_numbers = true
