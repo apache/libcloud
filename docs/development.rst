@@ -444,12 +444,12 @@ include extra code to make sure it works in all the supported versions.
 
 Some examples which show how to handle those cases are described below.
 
-Context Managers
+Type annotation for unions
 ~~~~~~~~~~~~~~~~
 
-Context managers aren't available in Python 2.5 by default. If you want to use
-them make sure to put from ``__future__ import with_statement`` on top of the
-file where you use them.
+In Python 3.9 and below, the pipe character (``|``) cannot be used for union 
+types in type annotations. Instead, you should use ``Union`` from the ``typing``
+module:
 
 Utility functions for cross-version compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
