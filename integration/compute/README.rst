@@ -8,7 +8,7 @@ Running the API service
 
 .. code-block:: bash
 
-  uv sync --extra integration-compute
+  uv sync --group integration-compute
   python -m integration.compute.api
 
 Running the tests
@@ -17,4 +17,3 @@ Running the tests
 .. code-block:: bash
 
    python -m integration.compute
-   

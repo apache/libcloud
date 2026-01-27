@@ -26,14 +26,14 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
 
       - name: Print Environment Info
         run: printenv | sort
 
       - name: Install Python Dependencies
         run: |
-          uv sync --extra ci
+          uv sync --group ci --no-dev
           echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Generate and publish pricing data

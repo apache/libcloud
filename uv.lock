@@ -32,12 +32,43 @@ dependencies = [
     { name = "requests" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 build = [
     { name = "build" },
 ]
 ci = [
     { name = "tox" },
+]
+dev = [
+    { name = "astroid" },
+    { name = "bandit", extra = ["toml"] },
+    { name = "black", marker = "implementation_name == 'cpython'" },
+    { name = "codespell" },
+    { name = "coverage", extra = ["toml"] },
+    { name = "cryptography" },
+    { name = "fasteners" },
+    { name = "flake8" },
+    { name = "isort" },
+    { name = "libvirt-python" },
+    { name = "mypy", marker = "implementation_name == 'cpython'" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'" },
+    { name = "pep8" },
+    { name = "prek" },
+    { name = "pylint" },
+    { name = "pyopenssl" },
+    { name = "pytest" },
+    { name = "pytest-benchmark", extra = ["histogram"] },
+    { name = "pytest-timeout" },
+    { name = "pytest-xdist" },
+    { name = "pyupgrade" },
+    { name = "requests" },
+    { name = "requests-mock" },
+    { name = "rstcheck" },
+    { name = "tox" },
+    { name = "types-certifi" },
+    { name = "types-requests" },
+    { name = "types-simplejson" },
+    { name = "types-urllib3" },
 ]
 docs = [
     { name = "fasteners" },
@@ -65,6 +96,7 @@ lint = [
     { name = "isort" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pep8" },
+    { name = "prek" },
     { name = "pylint" },
     { name = "pyupgrade" },
     { name = "requests" },
@@ -79,10 +111,6 @@ mypy = [
 ]
 publish = [
     { name = "twine" },
-]
-rtd = [
-    { name = "sphinx" },
-    { name = "sphinx-rtd-theme" },
 ]
 test = [
     { name = "coverage", extra = ["toml"] },
@@ -100,55 +128,95 @@ test = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "astroid", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==3.3.8" },
-    { name = "azure-identity", marker = "extra == 'integration-storage'" },
-    { name = "azure-mgmt-resource", marker = "extra == 'integration-storage'" },
-    { name = "azure-mgmt-storage", marker = "extra == 'integration-storage'" },
-    { name = "bandit", extras = ["toml"], marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==1.7.8" },
-    { name = "black", marker = "python_full_version >= '3.10' and implementation_name == 'cpython' and extra == 'lint'", specifier = "==25.1.0" },
-    { name = "boto3", marker = "extra == 'integration-storage'" },
-    { name = "bottle", marker = "extra == 'integration-compute'" },
-    { name = "build", marker = "extra == 'build'", specifier = "==1.2.2" },
-    { name = "codespell", marker = "extra == 'lint'", specifier = "==2.4.1" },
-    { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10' and extra == 'test'", specifier = "==7.2.7" },
-    { name = "cryptography", marker = "extra == 'test'", specifier = "==44.0.2" },
-    { name = "docker", marker = "extra == 'integration-storage'" },
-    { name = "fasteners", marker = "extra == 'docs'" },
-    { name = "fasteners", marker = "extra == 'test'" },
-    { name = "flake8", marker = "extra == 'lint'", specifier = "==5.0.4" },
-    { name = "isort", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==6.0.1" },
-    { name = "libvirt-python", marker = "extra == 'test'", specifier = "==10.2.0" },
-    { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython' and extra == 'mypy'", specifier = "==1.15.0" },
-    { name = "paramiko", marker = "platform_python_implementation != 'PyPy' and extra == 'lint'", specifier = "==3.5.1" },
-    { name = "paramiko", marker = "platform_python_implementation != 'PyPy' and extra == 'test'", specifier = "==3.5.1" },
-    { name = "pep8", marker = "extra == 'lint'", specifier = "==1.7.1" },
-    { name = "pylint", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==3.3.4" },
-    { name = "pyopenssl", marker = "extra == 'test'", specifier = "==25.0.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==8.3.5" },
-    { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10' and extra == 'test'", specifier = "==5.1.0" },
-    { name = "pytest-timeout", marker = "extra == 'test'", specifier = "==2.3.1" },
-    { name = "pytest-xdist", marker = "extra == 'test'", specifier = "==3.6.1" },
-    { name = "pyupgrade", marker = "extra == 'lint'", specifier = "==3.3.1" },
-    { name = "requests", specifier = ">=2.26.0" },
-    { name = "requests", marker = "extra == 'integration-storage'" },
-    { name = "requests", marker = "extra == 'lint'", specifier = ">=2.27.1" },
-    { name = "requests", marker = "extra == 'test'", specifier = ">=2.31.0" },
-    { name = "requests-mock", marker = "extra == 'test'", specifier = "==1.11.0" },
-    { name = "rstcheck", marker = "python_full_version >= '3.10' and extra == 'docs'", specifier = "==6.2.4" },
-    { name = "rstcheck", marker = "python_full_version >= '3.10' and extra == 'lint'", specifier = "==6.2.4" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = "==6.2.1" },
-    { name = "sphinx", marker = "extra == 'rtd'", specifier = "==6.2.1" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = "==2.0.0" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'rtd'", specifier = "==2.0.0" },
-    { name = "tox", marker = "extra == 'ci'", specifier = "==4.24.1" },
-    { name = "twine", marker = "extra == 'publish'", specifier = "==5.1.1" },
-    { name = "types-certifi", marker = "extra == 'mypy'" },
-    { name = "types-requests", marker = "extra == 'mypy'" },
-    { name = "types-simplejson", marker = "extra == 'mypy'" },
-    { name = "types-urllib3", marker = "extra == 'mypy'" },
+requires-dist = [{ name = "requests", specifier = ">=2.26.0" }]
+
+[package.metadata.requires-dev]
+build = [{ name = "build", specifier = "==1.2.2" }]
+ci = [{ name = "tox", specifier = "==4.24.1" }]
+dev = [
+    { name = "astroid", marker = "python_full_version >= '3.10'", specifier = "==3.3.8" },
+    { name = "bandit", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==1.9.3" },
+    { name = "black", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==25.1.0" },
+    { name = "codespell", specifier = "==2.4.1" },
+    { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==7.2.7" },
+    { name = "cryptography", specifier = "==44.0.2" },
+    { name = "fasteners" },
+    { name = "flake8", specifier = "==5.0.4" },
+    { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
+    { name = "libvirt-python", specifier = "==10.2.0" },
+    { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
+    { name = "pep8", specifier = "==1.7.1" },
+    { name = "prek", specifier = ">=0.2.17" },
+    { name = "pylint", marker = "python_full_version >= '3.10'", specifier = "==3.3.4" },
+    { name = "pyopenssl", specifier = "==25.0.0" },
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
+    { name = "pytest-timeout", specifier = "==2.3.1" },
+    { name = "pytest-xdist", specifier = "==3.6.1" },
+    { name = "pyupgrade", specifier = "==3.3.1" },
+    { name = "requests", specifier = ">=2.27.1" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "requests-mock", specifier = "==1.11.0" },
+    { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.4" },
+    { name = "tox", specifier = "==4.24.1" },
+    { name = "types-certifi" },
+    { name = "types-requests" },
+    { name = "types-simplejson" },
+    { name = "types-urllib3" },
 ]
-provides-extras = ["build", "ci", "docs", "integration-compute", "integration-storage", "lint", "mypy", "publish", "rtd", "test"]
+docs = [
+    { name = "fasteners" },
+    { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.4" },
+    { name = "sphinx", specifier = "==6.2.1" },
+    { name = "sphinx-rtd-theme", specifier = "==2.0.0" },
+]
+integration-compute = [{ name = "bottle" }]
+integration-storage = [
+    { name = "azure-identity" },
+    { name = "azure-mgmt-resource" },
+    { name = "azure-mgmt-storage" },
+    { name = "boto3" },
+    { name = "docker" },
+    { name = "requests" },
+]
+lint = [
+    { name = "astroid", marker = "python_full_version >= '3.10'", specifier = "==3.3.8" },
+    { name = "bandit", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==1.9.3" },
+    { name = "black", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==25.1.0" },
+    { name = "codespell", specifier = "==2.4.1" },
+    { name = "flake8", specifier = "==5.0.4" },
+    { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
+    { name = "pep8", specifier = "==1.7.1" },
+    { name = "prek", specifier = ">=0.2.17" },
+    { name = "pylint", marker = "python_full_version >= '3.10'", specifier = "==3.3.4" },
+    { name = "pyupgrade", specifier = "==3.3.1" },
+    { name = "requests", specifier = ">=2.27.1" },
+    { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.4" },
+]
+mypy = [
+    { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
+    { name = "types-certifi" },
+    { name = "types-requests" },
+    { name = "types-simplejson" },
+    { name = "types-urllib3" },
+]
+publish = [{ name = "twine", specifier = "==5.1.1" }]
+test = [
+    { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==7.2.7" },
+    { name = "cryptography", specifier = "==44.0.2" },
+    { name = "fasteners" },
+    { name = "libvirt-python", specifier = "==10.2.0" },
+    { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
+    { name = "pyopenssl", specifier = "==25.0.0" },
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
+    { name = "pytest-timeout", specifier = "==2.3.1" },
+    { name = "pytest-xdist", specifier = "==3.6.1" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "requests-mock", specifier = "==1.11.0" },
+]
 
 [[package]]
 name = "astroid"
@@ -261,7 +329,7 @@ wheels = [
 
 [[package]]
 name = "bandit"
-version = "1.7.8"
+version = "1.9.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -269,9 +337,9 @@ dependencies = [
     { name = "rich" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/92/60/3f6e0e58f3f53bbb7227daf61654c9b22ff651e670e44cdc08a0f1d0f493/bandit-1.7.8.tar.gz", hash = "sha256:36de50f720856ab24a24dbaa5fee2c66050ed97c1477e0a1159deab1775eab6b", size = 1983678, upload-time = "2024-03-08T19:25:56.173Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/89/76/a7f3e639b78601118aaa4a394db2c66ae2597fbd8c39644c32874ed11e0c/bandit-1.9.3.tar.gz", hash = "sha256:ade4b9b7786f89ef6fc7344a52b34558caec5da74cb90373aed01de88472f774", size = 4242154, upload-time = "2026-01-19T04:05:22.802Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/88/03935559af80b39cb64a00a4731d62ed2f79f4799c1758eadb01a4ef6b8d/bandit-1.7.8-py3-none-any.whl", hash = "sha256:509f7af645bc0cd8fd4587abc1a038fc795636671ee8204d502b933aee44f381", size = 127633, upload-time = "2024-03-08T19:25:54.618Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/0b/8bdc52111c83e2dc2f97403dc87c0830b8989d9ae45732b34b686326fb2c/bandit-1.9.3-py3-none-any.whl", hash = "sha256:4745917c88d2246def79748bde5e08b9d5e9b92f877863d43fab70cd8814ce6a", size = 134451, upload-time = "2026-01-19T04:05:20.938Z" },
 ]
 
 [package.optional-dependencies]
@@ -1313,6 +1381,30 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412, upload-time = "2025-05-15T12:30:07.975Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538, upload-time = "2025-05-15T12:30:06.134Z" },
+]
+
+[[package]]
+name = "prek"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/1e/6c23d3470145be1d6ff29d93f2a521864788827d22e509e2b978eb5bb4cb/prek-0.3.0.tar.gz", hash = "sha256:e70f16bbaf2803e490b866cfa997ea5cc46e7ada55d61f0cdd84bc90b8d5ca7f", size = 316063, upload-time = "2026-01-22T04:00:01.648Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/49/469219c19bb00db678806f79fc084ac1ce9952004a183a798db26f6df22b/prek-0.3.0-py3-none-linux_armv6l.whl", hash = "sha256:7e5d40b22deff23e36f7ad91e24b8e62edf32f30f6dad420459f7ec7188233c3", size = 4317493, upload-time = "2026-01-22T03:59:51.769Z" },
+    { url = "https://files.pythonhosted.org/packages/87/9f/f7afc49cc0fd92d1ba492929dc1573cb7004d09b61341aa6ee32a5288657/prek-0.3.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:6712b58cbb5a7db0aaef180c489ce9f3462e0293d54e54baeedd75fc0d9d8c28", size = 4323961, upload-time = "2026-01-22T03:59:56.92Z" },
+    { url = "https://files.pythonhosted.org/packages/42/94/ba36dc29e71d476bf71c3bac2b0c89cfcfc4b8973a0a6b20728f429f4560/prek-0.3.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:5f2c446fd9012a98c5690b4badf3f7dfb8d424cf0c6798a2d08ee56511f0a670", size = 3970121, upload-time = "2026-01-22T03:59:55.722Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/93/6131dd9f6cde3d72815b978b766de21b2ac9cc15fc38f5c22267cc7e574d/prek-0.3.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:10f3da7cda2397f7d2f3ff7f2be0d7486c15d4941f7568095b7168e57a9c88c5", size = 4307430, upload-time = "2026-01-22T03:59:47.484Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/08/7c55a765d96028d38dc984e66a096a969d80e56f66a47801acc86dede856/prek-0.3.0-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:2f747bb4a4322fea35d548cd2c1bd24477f56ed009f3d62a2b97ecbfc88096ac", size = 4238032, upload-time = "2026-01-22T04:00:02.606Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/a7/59d9bf902b749c8a0cef9e8ac073cc5c886634cd09404c00af4a76470b3b/prek-0.3.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:40bd61f11d8caabc0e2a5d4c326639d6ff558b580ef4388aabec293ddb5afd35", size = 4493295, upload-time = "2026-01-22T03:59:45.964Z" },
+    { url = "https://files.pythonhosted.org/packages/08/dc/902b2e4ddff59ad001ddc2cda3b47e457ab1ee811698a4002b3e4f84faf1/prek-0.3.0-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:1d096b5e273d17a1300b20a7101a9e5a624a8104825eb59659776177f7fccea1", size = 5033370, upload-time = "2026-01-22T03:59:44.806Z" },
+    { url = "https://files.pythonhosted.org/packages/15/cd/277a3d2768b80bb1ff3c2ea8378687bb4c527d88a8b543bf6f364f8a0dc9/prek-0.3.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:df39face5f1298851fbae495267ddf60f1694ea594ed5c6cdb88bdd6de14f6a4", size = 4549792, upload-time = "2026-01-22T03:59:41.518Z" },
+    { url = "https://files.pythonhosted.org/packages/26/21/53aeabd3822ef7fa350aac66d099d4d97b05e8383a2df35499229389a642/prek-0.3.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:9462f80a576d661490aa058d4493a991a34c7532dea76b7b004a17c8bc6b80f2", size = 4323158, upload-time = "2026-01-22T03:59:54.284Z" },
+    { url = "https://files.pythonhosted.org/packages/27/c2/3a7392b0e7fd07e339d89701b49b12a89d85256a57279877195028215957/prek-0.3.0-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:33d3fa40eecf996ed14bab2d006c39d21ae344677d62599963efd9b27936558e", size = 4344632, upload-time = "2026-01-22T04:00:03.71Z" },
+    { url = "https://files.pythonhosted.org/packages/71/89/8254ac981d75d0ce2826bcac74fed901540d629cb2d9f4d73ce62f8ce843/prek-0.3.0-py3-none-musllinux_1_1_armv7l.whl", hash = "sha256:d8c6abfd53a23718afdf4e6107418db1d74c5d904e9b7ec7900e285f8da90723", size = 4216608, upload-time = "2026-01-22T03:59:58.527Z" },
+    { url = "https://files.pythonhosted.org/packages/20/f5/854d57d89376fac577ee647a1dba1b87e27b2baeca7edc3d40295adeb7c8/prek-0.3.0-py3-none-musllinux_1_1_i686.whl", hash = "sha256:eb4c80c3e7c0e16bf307947809112bfef3715a1b83c2b03f5937707934635617", size = 4371174, upload-time = "2026-01-22T03:59:53.088Z" },
+    { url = "https://files.pythonhosted.org/packages/03/38/8927619411da8d3f189415c452ec7a463f09dea69e272888723f37b4b18f/prek-0.3.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:602bcce070c50900167acd89dcdf95d27894412f8a7b549c8eb66de612a99653", size = 4659113, upload-time = "2026-01-22T03:59:43.166Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/4d/16baeef633b8b230dde878b858c0e955149c860feef518b5eb5aac640eec/prek-0.3.0-py3-none-win32.whl", hash = "sha256:a69229365ce33c68c05db7ae73ad1ef8bc7f0914ab3bc484ab7781256bcdfb7a", size = 3937103, upload-time = "2026-01-22T03:59:48.719Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/f2/c7395b4afd1bba32cad2b24c30fd7781e94c1e41137348cd150bbef001d6/prek-0.3.0-py3-none-win_amd64.whl", hash = "sha256:a0379afd8d31bd5da6ee8977820fdb3c30601bed836b39761e6f605451dbccaa", size = 4290763, upload-time = "2026-01-22T03:59:59.938Z" },
+    { url = "https://files.pythonhosted.org/packages/df/83/97ed76ab5470025992cd50cb1ebdeb21fcf6c25459f9ffc49ac7bf040cf4/prek-0.3.0-py3-none-win_arm64.whl", hash = "sha256:82e2c64f75dc1ea6f2023f4322500eb8da5d0557baf06c88677bddf163e1542a", size = 4041580, upload-time = "2026-01-22T03:59:50.082Z" },
 ]
 
 [[package]]
