@@ -38,7 +38,6 @@ class Provider:
 
     :cvar DUMMY: Example provider
     :cvar ALIYUN_OSS: Aliyun OSS storage driver
-    :cvar AURORAOBJECTS: AuroraObjects storage driver
     :cvar AZURE_BLOBS: Azure Blob Storage driver
     :cvar BACKBLAZE_B2: Backblaze B2 Cloud Storage driver
     :cvar CLOUDFILES: CloudFiles
@@ -50,31 +49,30 @@ class Provider:
     :cvar NINEFOLD: Ninefold
     :cvar OPENSTACK_SWIFT: OpenStack Swift driver
     :cvar S3: Amazon S3 US
-    :cvar S3_AP_NORTHEAST: Amazon S3 Asia North East (Tokyo)
     :cvar S3_AP_NORTHEAST1: Amazon S3 Asia North East (Tokyo)
     :cvar S3_AP_NORTHEAST2: Amazon S3 Asia North East (Seoul)
+    :cvar S3_AP_NORTHEAST: Amazon S3 Asia North East (Tokyo)
     :cvar S3_AP_SOUTH: Amazon S3 Asia South (Mumbai)
-    :cvar S3_AP_SOUTHEAST: Amazon S3 Asia South East (Singapore)
     :cvar S3_AP_SOUTHEAST2: Amazon S3 Asia South East 2 (Sydney)
+    :cvar S3_AP_SOUTHEAST: Amazon S3 Asia South East (Singapore)
     :cvar S3_CA_CENTRAL: Amazon S3 Canada (Central)
     :cvar S3_CN_NORTH: Amazon S3 CN North (Beijing)
-    :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
-    :cvar S3_EU_WEST2: Amazon S3 EU West 2 (London)
-    :cvar S3_EU_WEST3: Amazon S3 EU West 3 (Paris)
     :cvar S3_EU_CENTRAL: Amazon S3 EU Central (Frankfurt)
     :cvar S3_EU_NORTH1: Amazon S3 EU North 1 (Stockholm)
-    :cvar S3_SA_EAST: Amazon S3 South America East (Sao Paulo)
-    :cvar S3_US_EAST2: Amazon S3 US East 2 (Ohio)
-    :cvar S3_US_WEST: Amazon S3 US West (Northern California)
-    :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
-    :cvar S3_US_GOV_WEST: Amazon S3 GovCloud (US)
+    :cvar S3_EU_WEST2: Amazon S3 EU West 2 (London)
+    :cvar S3_EU_WEST3: Amazon S3 EU West 3 (Paris)
+    :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     :cvar S3_RGW: S3 RGW
     :cvar S3_RGW_OUTSCALE: OUTSCALE S3 RGW
+    :cvar S3_SA_EAST: Amazon S3 South America East (Sao Paulo)
+    :cvar S3_US_EAST2: Amazon S3 US East 2 (Ohio)
+    :cvar S3_US_GOV_WEST: Amazon S3 GovCloud (US)
+    :cvar S3_US_WEST: Amazon S3 US West (Northern California)
+    :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     """
 
     DUMMY = "dummy"
     ALIYUN_OSS = "aliyun_oss"
-    AURORAOBJECTS = "auroraobjects"
     AZURE_BLOBS = "azure_blobs"
     BACKBLAZE_B2 = "backblaze_b2"
     CLOUDFILES = "cloudfiles"
@@ -82,9 +80,11 @@ class Provider:
     GOOGLE_STORAGE = "google_storage"
     KTUCLOUD = "ktucloud"
     LOCAL = "local"
+    MINIO = "minio"
     NIMBUS = "nimbus"
     NINEFOLD = "ninefold"
     OPENSTACK_SWIFT = "openstack_swift"
+    OVH = "ovh"
     S3 = "s3"
     S3_AP_NORTHEAST = "s3_ap_northeast"
     S3_AP_NORTHEAST1 = "s3_ap_northeast_1"
@@ -95,21 +95,19 @@ class Provider:
     S3_CA_CENTRAL = "s3_ca_central"
     S3_CN_NORTH = "s3_cn_north"
     S3_CN_NORTHWEST = "s3_cn_northwest"
+    S3_EU_CENTRAL = "s3_eu_central"
+    S3_EU_NORTH1 = "s3_eu_north_1"
     S3_EU_WEST = "s3_eu_west"
     S3_EU_WEST2 = "s3_eu_west_2"
     S3_EU_WEST3 = "s3_eu_west_3"
-    S3_EU_CENTRAL = "s3_eu_central"
-    S3_EU_NORTH1 = "s3_eu_north_1"
-    S3_SA_EAST = "s3_sa_east"
-    S3_US_EAST2 = "s3_us_east_2"
-    S3_US_WEST = "s3_us_west"
-    S3_US_WEST_OREGON = "s3_us_west_oregon"
-    S3_US_GOV_WEST = "s3_us_gov_west"
     S3_RGW = "s3_rgw"
     S3_RGW_OUTSCALE = "s3_rgw_outscale"
-    MINIO = "minio"
+    S3_SA_EAST = "s3_sa_east"
+    S3_US_EAST2 = "s3_us_east_2"
+    S3_US_GOV_WEST = "s3_us_gov_west"
+    S3_US_WEST = "s3_us_west"
+    S3_US_WEST_OREGON = "s3_us_west_oregon"
     SCALEWAY = "scaleway"
-    OVH = "ovh"
 
     # Deprecated
     CLOUDFILES_US = "cloudfiles_us"

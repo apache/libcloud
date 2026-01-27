@@ -3,11 +3,10 @@
 ================= ========================================= ================= ==================== ======================================== ==============================
 Provider          Documentation                             Provider Constant Supported Regions    Module                                   Class Name                    
 ================= ========================================= ================= ==================== ======================================== ==============================
-`AuroraDNS`_      :doc:`Click </dns/drivers/auroradns>`     AURORADNS         single region driver :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`      
-`BuddyNS DNS`_    :doc:`Click </dns/drivers/buddyns>`       BUDDYNS           single region driver :mod:`libcloud.dns.drivers.buddyns`      :class:`BuddyNSDNSDriver`     
+`BuddyNS DNS`_    :doc:`Click </dns/drivers/buddyns>`       BUDDYNS           single region driver :mod:`libcloud.dns.drivers.buddyns`      :class:`BuddyNSDNSDriver`
 `CloudFlare DNS`_ :doc:`Click </dns/drivers/cloudflare>`    CLOUDFLARE        single region driver :mod:`libcloud.dns.drivers.cloudflare`   :class:`CloudFlareDNSDriver`  
+`DNSimple`_       :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          single region driver :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`
 `DigitalOcean`_   :doc:`Click </dns/drivers/digital_ocean>` DIGITAL_OCEAN     single region driver :mod:`libcloud.dns.drivers.digitalocean` :class:`DigitalOceanDNSDriver`
-`DNSimple`_       :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          single region driver :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
 `DurableDNS`_     :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        single region driver :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
 `Gandi DNS`_                                                GANDI             single region driver :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
 `Gandi LiveDNS`_                                            GANDI_LIVE        single region driver :mod:`libcloud.dns.drivers.gandi_live`   :class:`GandiLiveDNSDriver`   
@@ -30,11 +29,10 @@ Provider          Documentation                             Provider Constant Su
 `Zonomi DNS`_     :doc:`Click </dns/drivers/zonomi>`        ZONOMI            single region driver :mod:`libcloud.dns.drivers.zonomi`       :class:`ZonomiDNSDriver`      
 ================= ========================================= ================= ==================== ======================================== ==============================
 
-.. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns
 .. _`BuddyNS DNS`: https://www.buddyns.com
 .. _`CloudFlare DNS`: https://www.cloudflare.com
-.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DNSimple`: https://dnsimple.com/
+.. _`DigitalOcean`: https://www.digitalocean.com
 .. _`DurableDNS`: https://durabledns.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Gandi LiveDNS`: http://www.gandi.net/domain

@@ -48,11 +48,10 @@ class Provider(Type):
     :cvar DUMMY: Example provider
     :cvar ABIQUO: Abiquo driver
     :cvar ALIYUN_ECS: Aliyun ECS driver.
-    :cvar AURORACOMPUTE: Aurora Compute driver.
     :cvar AZURE: Azure (classic) driver.
     :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
-    :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSCALE: cloudscale.ch
+    :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
@@ -86,20 +85,19 @@ class Provider(Type):
     :cvar VULTR: vultr driver.
     """
 
-    AZURE = "azure"
-    AZURE_ARM = "azure_arm"
-    DUMMY = "dummy"
     ABIQUO = "abiquo"
     ALIYUN_ECS = "aliyun_ecs"
-    AURORACOMPUTE = "aurora_compute"
+    AZURE = "azure"
+    AZURE_ARM = "azure_arm"
     BRIGHTBOX = "brightbox"
     CISCOCCS = "ciscoccs"
     CLOUDFRAMES = "cloudframes"
-    CLOUDSIGMA = "cloudsigma"
     CLOUDSCALE = "cloudscale"
+    CLOUDSIGMA = "cloudsigma"
     CLOUDSTACK = "cloudstack"
     DIGITAL_OCEAN = "digitalocean"
     DIMENSIONDATA = "dimensiondata"
+    DUMMY = "dummy"
     EC2 = "ec2"
     EQUINIXMETAL = "equinixmetal"
     EUCALYPTUS = "eucalyptus"
@@ -110,7 +108,6 @@ class Provider(Type):
     GRIDSCALE = "gridscale"
     IBM = "ibm"
     IKOULA = "ikoula"
-    INTERNETSOLUTIONS = "internetsolutions"
     KAMATERA = "kamatera"
     KTUCLOUD = "ktucloud"
     KUBEVIRT = "kubevirt"
@@ -124,9 +121,9 @@ class Provider(Type):
     OPENNEBULA = "opennebula"
     OPENSTACK = "openstack"
     OPSOURCE = "opsource"
+    OUTSCALE = "outscale"
     OUTSCALE_INC = "outscale_inc"
     OUTSCALE_SAS = "outscale_sas"
-    OUTSCALE = "outscale"
     OVH = "ovh"
     RACKSPACE = "rackspace"
     RACKSPACE_FIRST_GEN = "rackspace_first_gen"
@@ -152,20 +149,20 @@ class Provider(Type):
     RACKSPACE_NOVA_LON = "rackspace_nova_lon"
     RACKSPACE_NOVA_ORD = "rackspace_nova_ord"
 
-    EC2_US_EAST = "ec2_us_east"
-    EC2_US_EAST_OHIO = "ec2_us_east_ohio"
-    EC2_EU = "ec2_eu_west"  # deprecated name
-    EC2_EU_WEST = "ec2_eu_west"
-    EC2_EU_WEST2 = "ec2_eu_west_london"
-    EC2_US_WEST = "ec2_us_west"
-    EC2_AP_SOUTHEAST = "ec2_ap_southeast"
     EC2_AP_NORTHEAST = "ec2_ap_northeast"
     EC2_AP_NORTHEAST1 = "ec2_ap_northeast_1"
     EC2_AP_NORTHEAST2 = "ec2_ap_northeast_2"
-    EC2_US_WEST_OREGON = "ec2_us_west_oregon"
-    EC2_SA_EAST = "ec2_sa_east"
+    EC2_AP_SOUTHEAST = "ec2_ap_southeast"
     EC2_AP_SOUTHEAST2 = "ec2_ap_southeast_2"
     EC2_CA_CENTRAL1 = "ec2_ca_central_1"
+    EC2_EU = "ec2_eu_west"  # deprecated name
+    EC2_EU_WEST = "ec2_eu_west"
+    EC2_EU_WEST2 = "ec2_eu_west_london"
+    EC2_SA_EAST = "ec2_sa_east"
+    EC2_US_EAST = "ec2_us_east"
+    EC2_US_EAST_OHIO = "ec2_us_east_ohio"
+    EC2_US_WEST = "ec2_us_west"
+    EC2_US_WEST_OREGON = "ec2_us_west_oregon"
 
     CLOUDSIGMA_US = "cloudsigma_us"
 
@@ -188,20 +185,20 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
     Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE,
     # AWS
-    Provider.EC2_US_EAST: Provider.EC2,
-    Provider.EC2_US_EAST_OHIO: Provider.EC2,
-    Provider.EC2_EU: Provider.EC2,
-    Provider.EC2_EU_WEST: Provider.EC2,
-    Provider.EC2_EU_WEST2: Provider.EC2,
-    Provider.EC2_US_WEST: Provider.EC2,
-    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
-    Provider.EC2_AP_SOUTHEAST2: Provider.EC2,
-    Provider.EC2_AP_NORTHEAST: Provider.EC2,
     Provider.EC2_AP_NORTHEAST1: Provider.EC2,
     Provider.EC2_AP_NORTHEAST2: Provider.EC2,
-    Provider.EC2_US_WEST_OREGON: Provider.EC2,
-    Provider.EC2_SA_EAST: Provider.EC2,
+    Provider.EC2_AP_NORTHEAST: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST2: Provider.EC2,
+    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
     Provider.EC2_CA_CENTRAL1: Provider.EC2,
+    Provider.EC2_EU: Provider.EC2,
+    Provider.EC2_EU_WEST2: Provider.EC2,
+    Provider.EC2_EU_WEST: Provider.EC2,
+    Provider.EC2_SA_EAST: Provider.EC2,
+    Provider.EC2_US_EAST: Provider.EC2,
+    Provider.EC2_US_EAST_OHIO: Provider.EC2,
+    Provider.EC2_US_WEST: Provider.EC2,
+    Provider.EC2_US_WEST_OREGON: Provider.EC2,
 }
 
 

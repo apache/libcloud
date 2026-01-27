@@ -20,7 +20,6 @@ Drivers for working with different providers
 __all__ = [
     "abiquo",
     "brightbox",
-    "dimensiondata",
     "dummy",
     "ec2",
     "cloudsigma",

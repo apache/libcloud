@@ -78,10 +78,6 @@ DRIVERS = {
         "AzureBlobsStorageDriver",
     ),
     Provider.KTUCLOUD: ("libcloud.storage.drivers.ktucloud", "KTUCloudStorageDriver"),
-    Provider.AURORAOBJECTS: (
-        "libcloud.storage.drivers.auroraobjects",
-        "AuroraObjectsStorageDriver",
-    ),
     Provider.BACKBLAZE_B2: (
         "libcloud.storage.drivers.backblaze_b2",
         "BackblazeB2StorageDriver",
