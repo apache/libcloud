@@ -17,4 +17,3 @@ Running the tests
 .. code-block:: bash
 
    python -m integration.compute
-   

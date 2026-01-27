@@ -355,5 +355,3 @@ API Access Rules
 * ``ex_delete_api_access_rule`` - Returns a ``bool``
 * ``ex_read_api_access_rules`` - Returns a ``list`` of ``dict``
 * ``ex_update_api_access_rule`` - Returns a ``dict``
-
-

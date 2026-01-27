@@ -229,7 +229,7 @@ jobs:
           # Unpack tarball and verify + run the tests
           tar -xzvf "${TARBALL_FILENAME}"
 
-          cd "apache_libcloud-${VERSION}/" 
+          cd "apache_libcloud-${VERSION}/"
           tox -c tox.ini -epy3.10
 
       - name: Verify Wheel Release Artifact
