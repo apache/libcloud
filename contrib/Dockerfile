@@ -29,13 +29,11 @@ RUN set -e && \
     add-apt-repository ppa:pypy/ppa && \
     apt-get update && \
     apt-get -y install \
-      python3.9 \
       python3.10 \
       python3.11 \
       python3.12 \
       python3.13 \
       python3-dev \
-      python3.9-dev \
       python3.10-dev \
       python3.11-dev \
       python3.12-dev \
@@ -45,7 +43,7 @@ RUN set -e && \
       pypy3-dev \
       python3-pip \
       python3-distutils \
-      python3.9-distutils \
+      python3.10-distutils \
       libvirt-dev \
       # Needed by libvirt driver
       pkg-config
@@ -58,6 +56,6 @@ RUN if [ ! -f "/libcloud/README.rst" ]; then echo "libcloud/README.rst file not 
 WORKDIR /libcloud
 
 RUN set -e && \
-    python3.9 -m pip install --no-cache-dir -r requirements-ci.txt
+    python3.10 -m pip install --no-cache-dir ".[ci]"
 
-CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.9,py3.10,py3.11,py3.12,py3.13,pypypy3.10"]
+CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.10,py3.11,py3.12,py3.13,pypypy3.10"]

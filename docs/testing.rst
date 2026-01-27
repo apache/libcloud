@@ -12,8 +12,17 @@ Prerequisites
     dependencies, because tox automatically installs them for you in an virtual
     environment.
 
-To run the libcloud test suite you need to have the following extra
-dependencies installed:
+If you use ``uv``, you can install all test dependencies in one step:
+
+.. sourcecode:: bash
+
+    uv sync --extra test --extra ci
+
+Drop ``--extra ci`` if you don't plan to run ``tox``.
+If ``uv.lock`` is missing or out of date, run ``uv lock`` first.
+
+If you don't use ``uv``, you need to have the following extra dependencies
+installed:
 
 * ``tox`` (``pip install tox``) - you only need this library if you want to
   use tox to run the tests with all the supported Python versions
