@@ -194,9 +194,10 @@ def scrape_ec2_pricing():
                 skus[current_sku]["location"] = value
             # only get prices of compute instances atm
             elif (prefix, event) == (f"products.{current_sku}", "end_map"):
-                if (
-                    "Compute Instance" not in skus[current_sku]["family"]
-                    and "Dedicated Host" not in skus[current_sku]["family"]
+                family = skus[current_sku].get("family")
+
+                if family is None or (
+                    "Compute Instance" not in family and "Dedicated Host" not in family
                 ):
                     del skus[current_sku]
 
@@ -217,7 +218,7 @@ def scrape_ec2_pricing():
         if skus[sku]["locationType"] != "AWS Region":
             continue
         # skip any SQL
-        if skus[sku]["preInstalledSw"] != "NA":
+        if skus[sku].get("preInstalledSw") != "NA":
             continue
 
         os = skus[sku]["os"]
@@ -318,7 +319,7 @@ def sort_key_by_numeric_other(key_value):
 def main():
     print(
         "Scraping EC2 pricing data (if this runs for the first time "
-        "it has to download a 3GB file, depending on your bandwith "
+        "it has to download a 7GB file, depending on your bandwith "
         "it might take a while)...."
     )
 
