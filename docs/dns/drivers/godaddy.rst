@@ -24,8 +24,8 @@ Instantiating the driver
 
 Before you instantiate a driver, you will need a GoDaddy account.
 
-Once you have an account you need to request a Production key on the GoDaddy API website: 
-https://developer.godaddy.com/getstarted#access 
+Once you have an account you need to request a Production key on the GoDaddy API website:
+https://developer.godaddy.com/getstarted#access
 
 You can then use these details to instantiate a driver with the arguments:
 
