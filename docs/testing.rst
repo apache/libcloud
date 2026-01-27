@@ -16,12 +16,12 @@ If you use ``uv``, you can install all test dependencies in one step:
 
 .. sourcecode:: bash
 
-    uv sync --extra test --extra ci
+    uv sync --group test --group ci --no-dev
 
-Drop ``--extra ci`` if you don't plan to run ``tox``.
+Drop ``--group ci`` if you don't plan to run ``tox``.
 If ``uv.lock`` is missing or out of date, run ``uv lock`` first.
 
-If you don't use ``uv``, you need to have the following extra dependencies
+If you don't use ``uv``, you need to have the following additional dependencies
 installed:
 
 * ``tox`` (``pip install tox``) - you only need this library if you want to

@@ -8,7 +8,7 @@ Setting up the test suite
 
 .. code-block:: bash
 
-  uv sync --extra integration-storage
+  uv sync --group integration-storage
 
 Running the tests
 -----------------

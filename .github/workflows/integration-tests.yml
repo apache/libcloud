@@ -44,7 +44,7 @@ jobs:
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
       - name: Cache uv
         uses: actions/cache@v5
@@ -56,7 +56,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          uv sync --extra ci
+          uv sync --group ci --no-dev
           echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run tox target
