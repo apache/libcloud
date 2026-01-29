@@ -117,7 +117,7 @@ To run it:
 your local GPG database.
 
 This should result in a set of
-``apache-libcloud-${VERSION}.{tar.gz,whl}{,asc,md5,sha1}`` files that
+``apache-libcloud-${VERSION}.{tar.gz,whl}{,asc,sha256,sha512}`` files that
 are suitable to be uploaded for a release.
 
 Copy the artifacts in another directory, unpack one of them and test it with ``tox``.
@@ -140,8 +140,9 @@ For example:
 5. Upload the release artifacts and start a [VOTE] thread
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Upload all release artifacts including the ``whl`` files to your people.apache.org
-space. Then start a [VOTE] thread on the dev@libcloud.apache.org mailing list.
+Upload all release artifacts including the ``whl`` files to the dist dev SVN
+repository at https://dist.apache.org/repos/dist/dev/libcloud/. Then start a
+[VOTE] thread on the dev@libcloud.apache.org mailing list.
 
 Once the vote has passed tag the release with a new tag, removing the ``-tentative`` postfix.
 Upload the release artifacts to Apache servers and Pypi.
@@ -161,7 +162,7 @@ key.
 6. Uploading release artifacts to Apache servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Add release artifacts to the dist SVN repository at
+* Add release artifacts to the release dist SVN repository at
   https://dist.apache.org/repos/dist/release/libcloud/
 
   It may take up to a day for the artifacts to be available on all the
