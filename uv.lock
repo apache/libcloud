@@ -143,7 +143,7 @@ dev = [
     { name = "fasteners" },
     { name = "flake8", specifier = "==5.0.4" },
     { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
-    { name = "libvirt-python", specifier = "==10.2.0" },
+    { name = "libvirt-python", specifier = "==12.0.0" },
     { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
     { name = "pep8", specifier = "==1.7.1" },
@@ -207,7 +207,7 @@ test = [
     { name = "coverage", extras = ["toml"], marker = "python_full_version >= '3.10'", specifier = "==7.2.7" },
     { name = "cryptography", specifier = "==44.0.2" },
     { name = "fasteners" },
-    { name = "libvirt-python", specifier = "==10.2.0" },
+    { name = "libvirt-python", specifier = "==12.0.0" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==3.5.1" },
     { name = "pyopenssl", specifier = "==25.0.0" },
     { name = "pytest", specifier = "==8.3.5" },
@@ -1056,9 +1056,9 @@ wheels = [
 
 [[package]]
 name = "libvirt-python"
-version = "10.2.0"
+version = "12.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/47/f7/5c5112f79761616bf0388b97bb4d0ea1de1d015fb46a40672fe56fdc8ef0/libvirt-python-10.2.0.tar.gz", hash = "sha256:483a2e38ffc2e65f743e4c819ccb45135dbe50b594a0a2cd60b73843dcfde694", size = 246954, upload-time = "2024-04-02T11:47:48.669Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/cd/a8fdd1c691f2a6a6dc8b0711b42473a7342e4d1a7a1e9ef90677a236eb73/libvirt_python-12.0.0.tar.gz", hash = "sha256:7b4de7d2dde2bc380cf4e108d1eeb8aad50beb3ae351ab9265a7fedc587742bc", size = 243300, upload-time = "2026-01-15T09:14:43.074Z" }
 
 [[package]]
 name = "markdown-it-py"
