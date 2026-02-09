@@ -8,10 +8,10 @@ preserve the old behavior when this is possible.
 Libcloud 3.9.0
 --------------
 
-* Support for Python 3.7 and 3.8 which have been EOL has been removed.
+* Support for Python 3.7, 3.8 and 3.9 which have been EOL has been removed.
 
-  If you still want to use Libcloud with Python 3.7 or 3.8, you should use an older
-  release which still supports Python 3.7 and 3.8.
+  If you still want to use Libcloud with Python 3.7, 3.8 or 3.9, you should
+  use an older release which still supports Python 3.7, 3.8 and 3.9.
 
 * [AZURE ARM] Added a new argument to destroy_node() to also delete node's managed
   OS disk as part of the node's deletion. Defaults to true. This can be reverted by
@@ -29,10 +29,10 @@ Libcloud 3.9.0
   If your code is using those arguments / passing them to the `create_node()`
   method it needs to be updated and those arguments removed.
 
-* [KubeVirt] Changes to the `create_node()` method: 
+* [KubeVirt] Changes to the `create_node()` method:
 
-  - The `ports` argument has been renamed to `ex_ports`. 
-  - The `ex_disks` argument has been redefined to support all volume types. 
+  - The `ports` argument has been renamed to `ex_ports`.
+  - The `ex_disks` argument has been redefined to support all volume types.
 
   The deprecated `ex_disks` format, which only supports `PersistentVolumeClaim`,
   is as follows:
@@ -47,9 +47,9 @@ Libcloud 3.9.0
 
     ex_disks=[{"bus": "", "device": "", "disk_type": "", "name": "", "volume_spec": {...}}]
 
-  Here, `volume_spec` is the `disk_type` specific settings, which aligns with the 
-  KubeVirt user guide on disks and volumes 
-  (https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes). 
+  Here, `volume_spec` is the `disk_type` specific settings, which aligns with the
+  KubeVirt user guide on disks and volumes
+  (https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes).
 
   For example, for PVC:
 

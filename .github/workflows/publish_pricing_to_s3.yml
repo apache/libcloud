@@ -17,34 +17,31 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - name: Print Environment Info
-        id: printenv
-        run: |
-          printenv | sort
-
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Print Environment Info
+        run: printenv | sort
 
       - name: Install Python Dependencies
         run: |
-          pip install -r requirements-ci.txt
+          uv sync --group ci --no-dev
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Generate and publish pricing data
         env:
           GCE_API_KEY: ${{ secrets.GCE_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_ACCESS_KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
-        run: |
-          script -e -c "tox -escrape-and-publish-provider-prices"
+        run: script -e -c "tox -escrape-and-publish-provider-prices"
 
       - name: Verify files can be downloaded
         # Verify that the permissions are correct and files can be downloaded publicly

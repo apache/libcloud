@@ -1,3 +1,0 @@
-# Requirements for ReadTheDocs
-sphinx==6.2.1
-sphinx_rtd_theme==2.0.0
