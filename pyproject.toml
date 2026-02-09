@@ -90,7 +90,7 @@ test = [
     "pyopenssl==25.0.0",
     "fasteners",
     "paramiko==3.5.1; platform_python_implementation != 'PyPy'",
-    "libvirt-python==10.2.0",
+    "libvirt-python==12.0.0",
 ]
 lint = [
     "pep8==1.7.1",
