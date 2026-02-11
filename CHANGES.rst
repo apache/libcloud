@@ -1,6 +1,24 @@
 Changelog
 =========
 
+Changes in Apache Libcloud 3.9.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Initial Blazar support
+
+  This is an initial implementation of Blazar support in Libcloud. It currently
+  supports listing the available leases and hosts.
+  (#2094)
+  [Miguel Caballer - @micafer]
+
+
+- [Azure ARM] Update US GovCloud AD endpoint for AZURE_ARM provider.
+  (#2062)
+  [Chris Clifford - @CrCliff]
+
 Changes in Apache Libcloud 3.9.0
 --------------------------------
 
