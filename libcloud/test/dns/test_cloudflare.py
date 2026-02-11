@@ -70,7 +70,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         record = self.driver.get_record("1234", "364797364")
 
         self.assertEqual(record.id, "364797364")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "example.com")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "192.30.252.153")
 
@@ -89,7 +89,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         record = records[0]
         self.assertEqual(record.id, "364797364")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "example.com")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "192.30.252.153")
         self.assertEqual(record.extra["priority"], None)
@@ -108,7 +108,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         record = [r for r in records if r.type == "MX"][0]
         self.assertEqual(record.id, "78526")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "foo.bar")
         self.assertEqual(record.type, "MX")
         self.assertEqual(record.data, "aspmx3.googlemail.com")
         self.assertEqual(record.extra["priority"], 30)
@@ -143,7 +143,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             extra={"proxied": True},
         )
         self.assertEqual(record.id, "412561327")
-        self.assertEqual(record.name, "test5")
+        self.assertEqual(record.name, "test5.example.com")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "127.0.0.3")
 
@@ -155,7 +155,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             name="test_sshfp", zone=zone, type=RecordType.SSHFP, data="2 1 ABCDEF12345"
         )
         self.assertEqual(record.id, "200")
-        self.assertEqual(record.name, "test_sshfp")
+        self.assertEqual(record.name, "test_sshfp.example.com")
         self.assertEqual(record.type, "SSHFP")
         self.assertEqual(record.data, "2 1 ABCDEF12345")
 
@@ -167,7 +167,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             name="test5", zone=zone, type=RecordType.CAA, data="0 issue caa.example.com"
         )
         self.assertEqual(record.id, "412561327")
-        self.assertEqual(record.name, "test5")
+        self.assertEqual(record.name, "test5.example.com")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "127.0.0.3")
 
@@ -214,7 +214,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             extra={"proxied": True},
         )
 
-        self.assertEqual(updated_record.name, "test6")
+        self.assertEqual(updated_record.name, "test6.example.com")
         self.assertEqual(updated_record.type, "A")
         self.assertEqual(updated_record.data, "127.0.0.4")
         self.assertEqual(updated_record.extra["proxied"], True)
