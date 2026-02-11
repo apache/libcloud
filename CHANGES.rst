@@ -1,17 +1,57 @@
 Changelog
 =========
 
+Changes in Apache Libcloud 3.9.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Initial Blazar support
+
+  This is an initial implementation of Blazar support in Libcloud. It currently
+  supports listing the available leases and hosts.
+  (#2094)
+  [Miguel Caballer - @micafer]
+
+
+- [Azure ARM] Update US GovCloud AD endpoint for AZURE_ARM provider.
+  (#2062)
+  [Chris Clifford - @CrCliff]
+
+- [OpenStack] Add hypervisor_hostname attribute to OpenStack node.
+  (#2063)
+  [Miguel Caballer - @micafer]
+
+
+- [GCP]  Use the fully-qualified name for the GCP IMDS endpoint.
+  (#2060)
+  [Frederic Hemery - @Arkelenia]
+
+DNS
+~~~~
+
+- [Cloudflare] Removal of zone_name from Cloudflare record response following API deprecation
+
+  This change will cause that record name returned by the Cloudflare driver to be fully
+  qualified (e.g. "www.example.com") instead of relative to the zone (e.g. "www").
+  This is due to the fact that Cloudflare has deprecated the "zone_name" field in their
+  API response and it is no longer available.
+  (#2068)
+  [Chris Smith - cha0tic87]
+
 Changes in Apache Libcloud 3.9.0
 --------------------------------
 
 Common
 ~~~~~~
 
-- Unused ``setup.py`` file has been removed. The project has switched
-  to ``pyproject.toml`` a while ago and unused file has been removed to
-  reduce potential confusion.
-  (#2024)
-  [Tomaz Muraus - @Kami]
+- Support for Python 3.9 which is EOL has been removed.
+
+  If you still want to use Libcloud with Python 3.9, you should use an older
+  release which still supports Python 3.9.
+  (#2093, #2085)
+  [Zili Chen - @tisonkun,  Chojan Shang - @PsiACE]
 
 - Indicate we also support Python 3.12 (non beta) and Python 3.13.
   (#2050)
@@ -146,6 +186,14 @@ Storage
 
 Other / Development
 ~~~~~~~~~~~~~~~~~~~
+
+- Adopt uv for dependency management.
+
+  This should make it easier to manage dependencies and update them in the
+  future.
+
+  (#2102)
+  [Chojan Shang - @PsiACE]
 
 - pytest library used for running tests and microbenchmarks has been upgraded to
   v8.1.
@@ -894,8 +942,8 @@ Compute
   (#1615)
   [Miguel Caballer - @micafer]
 
-- [CloudSigma] Various updates, improvements and new functionality in the 
-  driver (support for new regions, instance types, additional standard API an 
+- [CloudSigma] Various updates, improvements and new functionality in the
+  driver (support for new regions, instance types, additional standard API an
   extension methods, etc.).
 
   (#1558)
@@ -1060,7 +1108,7 @@ Compute
   (#1492)
   [Miguel Caballer - @micafer]
 
-- [EC2] Update supported EC2 regions and instance sizes and add support 
+- [EC2] Update supported EC2 regions and instance sizes and add support
   for eu-north-1 region.
   (#1486)
   [Arturo Noha - @r2ronoha]

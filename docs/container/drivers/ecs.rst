@@ -14,7 +14,7 @@ To provide API key access, you should apply one of the roles:
 
 Instantiating the driver
 ------------------------
-        
+
 .. literalinclude:: /examples/container/ecs/instantiate_driver.py
    :language: python
 

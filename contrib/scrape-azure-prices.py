@@ -48,7 +48,7 @@ def get_azure_prices():
             continue
         size = size_raw[2] + size_raw[1]
         prices = {}
-        if not value["prices"].get("perhour"):
+        if not value.get("prices", {}).get("perhour"):
             continue
         for reg, price in value["prices"]["perhour"].items():
             region = region_map[reg].lower().replace(" ", "")
