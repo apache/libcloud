@@ -7,11 +7,12 @@ Changes in Apache Libcloud 3.9.0
 Common
 ~~~~~~
 
-- Unused ``setup.py`` file has been removed. The project has switched
-  to ``pyproject.toml`` a while ago and unused file has been removed to
-  reduce potential confusion.
-  (#2024)
-  [Tomaz Muraus - @Kami]
+- Support for Python 3.9 which is EOL has been removed.
+
+  If you still want to use Libcloud with Python 3.9, you should use an older
+  release which still supports Python 3.9.
+  (#2093, #2085)
+  [Zili Chen - @tisonkun,  Chojan Shang - @PsiACE]
 
 - Indicate we also support Python 3.12 (non beta) and Python 3.13.
   (#2050)
@@ -146,6 +147,14 @@ Storage
 
 Other / Development
 ~~~~~~~~~~~~~~~~~~~
+
+- Adopt uv for dependency management.
+
+  This should make it easier to manage dependencies and update them in the
+  future.
+
+  (#2102)
+  [Chojan Shang - @PsiACE]
 
 - pytest library used for running tests and microbenchmarks has been upgraded to
   v8.1.
@@ -894,8 +903,8 @@ Compute
   (#1615)
   [Miguel Caballer - @micafer]
 
-- [CloudSigma] Various updates, improvements and new functionality in the 
-  driver (support for new regions, instance types, additional standard API an 
+- [CloudSigma] Various updates, improvements and new functionality in the
+  driver (support for new regions, instance types, additional standard API an
   extension methods, etc.).
 
   (#1558)
@@ -1060,7 +1069,7 @@ Compute
   (#1492)
   [Miguel Caballer - @micafer]
 
-- [EC2] Update supported EC2 regions and instance sizes and add support 
+- [EC2] Update supported EC2 regions and instance sizes and add support
   for eu-north-1 region.
   (#1486)
   [Arturo Noha - @r2ronoha]
