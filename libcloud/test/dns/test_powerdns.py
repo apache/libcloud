@@ -28,6 +28,7 @@ class PowerDNSTestCase(LibcloudTestCase):
     def setUp(self):
         PowerDNSDriver.connectionCls.conn_class = PowerDNSMockHttp
         PowerDNSMockHttp.type = None
+        PowerDNSMockHttp.history.clear()
         self.driver = PowerDNSDriver("testsecret")
 
         self.test_zone = Zone(
@@ -40,7 +41,7 @@ class PowerDNSTestCase(LibcloudTestCase):
         )
         self.test_record = Record(
             id=None,
-            name="",
+            name="example.com",
             data="192.0.2.1",
             type=RecordType.A,
             zone=self.test_zone,
@@ -55,8 +56,19 @@ class PowerDNSTestCase(LibcloudTestCase):
             data="192.0.5.4",
             extra={"ttl": 86400},
         )
+
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, "/servers/localhost/zones/example.com.")
+        rrset = sent.json["rrsets"]
+        self.assertEqual(len(rrset), 1)
+        self.assertEqual(rrset[0]["name"], "newrecord.example.com")
+        self.assertEqual(rrset[0]["type"], "A")
+        self.assertEqual(rrset[0]["records"][0]["content"], "192.0.5.4")
+        self.assertEqual(rrset[0]["changetype"], "REPLACE")
+
         self.assertIsNone(record.id)
-        self.assertEqual(record.name, "newrecord.example.com")
+        self.assertEqual(record.hostname, "newrecord.example.com")
         self.assertEqual(record.data, "192.0.5.4")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 86400)
@@ -64,6 +76,12 @@ class PowerDNSTestCase(LibcloudTestCase):
     def test_create_zone(self):
         extra = {"nameservers": ["ns1.example.org", "ns2.example.org"]}
         zone = self.driver.create_zone("example.org", extra=extra)
+
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/servers/localhost/zones")
+        self.assertEqual(sent.json["name"], "example.org")
+
         self.assertEqual(zone.id, "example.org.")
         self.assertEqual(zone.domain, "example.org")
         self.assertIsNone(zone.type)
@@ -75,12 +93,21 @@ class PowerDNSTestCase(LibcloudTestCase):
     def test_delete_zone(self):
         self.assertTrue(self.test_zone.delete())
 
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/servers/localhost/zones/example.com.")
+
     def test_get_record(self):
         with self.assertRaises(NotImplementedError):
             self.driver.get_record("example.com.", "12345")
 
     def test_get_zone(self):
         zone = self.driver.get_zone("example.com.")
+
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/servers/localhost/zones/example.com.")
+
         self.assertEqual(zone.id, "example.com.")
         self.assertEqual(zone.domain, "example.com")
         self.assertIsNone(zone.type)
@@ -92,10 +119,20 @@ class PowerDNSTestCase(LibcloudTestCase):
 
     def test_list_records(self):
         records = self.driver.list_records(self.test_zone)
+
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/servers/localhost/zones/example.com.")
+
         self.assertEqual(len(records), 4)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/servers/localhost/zones")
+
         self.assertEqual(zones[0].id, "example.com.")
         self.assertEqual(zones[0].domain, "example.com")
         self.assertIsNone(zones[0].type)
@@ -113,8 +150,21 @@ class PowerDNSTestCase(LibcloudTestCase):
             data="127.0.0.1",
             extra={"ttl": 300},
         )
+
+        sent = PowerDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, "/servers/localhost/zones/example.com.")
+        rrset = sent.json["rrsets"]
+        self.assertEqual(len(rrset), 2)
+        self.assertEqual(rrset[0]["name"], "example.com")
+        self.assertEqual(rrset[0]["changetype"], "DELETE")
+        self.assertEqual(rrset[1]["name"], "newrecord.example.com")
+        self.assertEqual(rrset[1]["type"], "A")
+        self.assertEqual(rrset[1]["records"][0]["content"], "127.0.0.1")
+        self.assertEqual(rrset[1]["changetype"], "REPLACE")
+
         self.assertIsNone(record.id)
-        self.assertEqual(record.name, "newrecord.example.com")
+        self.assertEqual(record.hostname, "newrecord.example.com")
         self.assertEqual(record.data, "127.0.0.1")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 300)
@@ -147,6 +197,7 @@ class PowerDNSTestCase(LibcloudTestCase):
 
 class PowerDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("powerdns")
+    keep_history = True
     base_headers = {"content-type": "application/json"}
 
     def _servers_localhost_zones(self, method, url, body, headers):

@@ -63,6 +63,50 @@ class BaseTestCase(unittest.TestCase):
         self.driver = DNSDriver("none", "none")
         self.tmp_file = tempfile.mkstemp()
         self.tmp_path = self.tmp_file[1]
+        self.master_zone = Zone(
+            id=1, domain="example.com", type="master", ttl=900, driver=self.driver
+        )
+
+    def test_zone_helpers(self):
+        zone = self.master_zone
+
+        for func in (zone.prefix, zone.hostname, zone.fqdn):
+            with self.assertRaises(AttributeError):
+                self.assertEqual(func(None))
+
+        for apex in ("", "example.com", "example.com."):
+            self.assertEqual(zone.prefix(apex), "")
+            self.assertEqual(zone.hostname(apex), "example.com")
+            self.assertEqual(zone.fqdn(apex), "example.com.")
+
+        for sub in ("sub", "sub.example.com", "sub.example.com."):
+            self.assertEqual(zone.prefix(sub), "sub")
+            self.assertEqual(zone.hostname(sub), "sub.example.com")
+            self.assertEqual(zone.fqdn(sub), "sub.example.com.")
+
+    def test_record_init(self):
+        common = {
+            "id": None,
+            "name": None,
+            "type": RecordType.A,
+            "data": "0.0.0.0",
+            "zone": self.master_zone,
+            "driver": self.master_zone,
+        }
+
+        for apex in (None, "", "example.com", "example.com."):
+            common["name"] = apex
+            r1 = Record(**common)
+            self.assertEqual(r1.name, "")
+            self.assertEqual(r1.hostname, "example.com")
+            self.assertEqual(r1.fqdn, "example.com.")
+
+        for sub in ("sub", "sub.example.com", "sub.example.com."):
+            common["name"] = sub
+            r2 = Record(**common)
+            self.assertEqual(r2.name, "sub")
+            self.assertEqual(r2.hostname, "sub.example.com")
+            self.assertEqual(r2.fqdn, "sub.example.com.")
 
     def test_export_zone_to_bind_format_slave_should_throw(self):
         zone = Zone(id=1, domain="example.com", type="slave", ttl=900, driver=self.driver)
@@ -139,7 +183,7 @@ class BaseTestCase(unittest.TestCase):
     def test_get_numeric_id(self):
         values = MOCK_RECORDS_VALUES[0].copy()
         values["driver"] = self.driver
-        values["zone"] = None
+        values["zone"] = self.master_zone
         record = Record(**values)
 
         record.id = "abcd"
@@ -161,6 +205,36 @@ class BaseTestCase(unittest.TestCase):
         record.id = None
         result = record._get_numeric_id()
         self.assertEqual(result, "")
+
+    def test_driver_to_default_id(self):
+        data = [
+            # name, type, id (expected)
+            ("", "A", "A"),
+            ("example.com", "A", "A"),
+            ("example.com.", "A", "A"),
+            ("mail", "MX", "MX:mail"),
+            ("mail.example.com", "MX", "MX:mail"),
+            ("mail.example.com.", "MX", "MX:mail"),
+        ]
+        for rname, rtype, rexpect in data:
+            rid = self.driver.to_default_id(self.master_zone, rname, rtype)
+            self.assertEqual(rid, rexpect)
+
+    def test_driver_from_default_id(self):
+        data = [
+            # id, name (expected), type (expected)
+            ("A", "", "A"),  # without trailing colon
+            ("A:", "", "A"),  # with trailing colon
+            ("A:example.com", "", "A"),
+            ("A:example.com.", "", "A"),
+            ("MX:mail", "mail", "MX"),
+            ("MX:mail.example.com", "mail", "MX"),
+            ("MX:mail.example.com.", "mail", "MX"),
+        ]
+        for rid, rname, rtype in data:
+            rparts = self.driver.from_default_id(self.master_zone, rid)
+            self.assertEqual(rparts.name, rname)
+            self.assertEqual(rparts.type, rtype)
 
 
 def zero_pad(value: int) -> str:

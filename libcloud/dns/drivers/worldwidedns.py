@@ -226,18 +226,18 @@ class WorldWideDNSDriver(DNSDriver):
         if extra is not None:
             params.update(extra)
 
+        method = "GET"
         if ex_raw:
             action = "/api_dns_modify_raw.asp"
 
             if self.reseller_id is not None:
                 action = "/api_dns_modify_raw_reseller.asp"
             method = "POST"
+        elif self.reseller_id is not None:
+            params["ID"] = self.reseller_id
+            action = "/api_dns_modify_reseller.asp"
         else:
             action = "/api_dns_modify.asp"
-
-            if self.reseller_id is not None:
-                action = "/api_dns_modify_reseller.asp"
-            method = "GET"
         response = self.connection.request(action, params=params, method=method)  # noqa
         zone = self.get_zone(zone.id)
 
@@ -262,15 +262,15 @@ class WorldWideDNSDriver(DNSDriver):
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
 
-        :param extra: Contains 'entry' Entry position (1 thru 40)
+        :param extra: Extra attributes (driver specific). (optional).
         :type extra: ``dict``
 
         :rtype: :class:`Record`
         """
 
-        if (extra is None) or ("entry" not in extra):
-            raise WorldWideDNSError(value="You must enter 'entry' parameter", driver=self)
-        record_id = extra.get("entry")
+        record_id = record.id
+        if "entry" in extra and str(extra["entry"]) != record_id:
+            raise WorldWideDNSError(value="Inconsistent 'entry' parameter", driver=self)
 
         if name == "":
             name = "@"
@@ -330,10 +330,12 @@ class WorldWideDNSDriver(DNSDriver):
         else:
             dyn = 1
         params = {"DOMAIN": domain, "TYPE": _type}
-        action = "/api_dns_new_domain.asp"
 
-        if self.reseller_id is not None:
+        if self.reseller_id is None:
             params["DYN"] = dyn
+            action = "/api_dns_new_domain.asp"
+        else:
+            params["ID"] = self.reseller_id
             action = "/api_dns_new_domain_reseller.asp"
         self.connection.request(action, params=params)
         zone = self.get_zone(domain)
@@ -435,13 +437,7 @@ class WorldWideDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         zone = record.zone
-
-        for index in range(MAX_RECORD_ENTRIES):
-            if record.name == zone.extra["S%s" % (index + 1)]:
-                entry = index + 1
-
-                break
-        extra = {"S%s" % entry: "", "T%s" % entry: "NONE", "D%s" % entry: ""}
+        extra = {"S%s" % record.id: "", "T%s" % record.id: "NONE", "D%s" % record.id: ""}
         self.update_zone(zone, zone.domain, extra=extra)
 
         return True

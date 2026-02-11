@@ -38,6 +38,7 @@ class GandiLiveTests(unittest.TestCase):
     def setUp(self):
         GandiLiveDNSDriver.connectionCls.conn_class = GandiLiveMockHttp
         GandiLiveMockHttp.type = None
+        GandiLiveMockHttp.history.clear()
         self.driver = GandiLiveDNSDriver(*DNS_GANDI_LIVE)
         self.test_zone = Zone(
             id="example.com",
@@ -76,6 +77,11 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v5/domains")
+
         self.assertEqual(len(zones), 2)
         zone = zones[0]
         self.assertEqual(zone.id, "example.com")
@@ -90,18 +96,47 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_create_zone(self):
         zone = self.driver.create_zone("example.org", extra={"name": "Example"})
+
+        # [0] /api/v5/domains (create)
+        # [1] /api/v5/domains/example.org (modify)
+        sent = GandiLiveMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/api/v5/zones")
+        self.assertEqual(sent.json["name"], "Example")
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, "/api/v5/domains/example.org")
+        self.assertEqual(sent.json["zone_uuid"], "54321")
+
         self.assertEqual(zone.id, "example.org")
         self.assertEqual(zone.domain, "example.org")
         self.assertEqual(zone.extra["zone_uuid"], "54321")
 
     def test_create_zone_without_name(self):
         zone = self.driver.create_zone("example.org")
+
+        # [0] /api/v5/domains (create)
+        # [1] /api/v5/domains/example.org (modify)
+        sent = GandiLiveMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/api/v5/zones")
+        self.assertEqual(sent.json["name"], "example.org zone")
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, "/api/v5/domains/example.org")
+        self.assertEqual(sent.json["zone_uuid"], "54321")
+
         self.assertEqual(zone.id, "example.org")
         self.assertEqual(zone.domain, "example.org")
         self.assertEqual(zone.extra["zone_uuid"], "54321")
 
     def test_get_zone(self):
         zone = self.driver.get_zone("example.com")
+
+        sent = GandiLiveMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v5/domains/example.com")
+
         self.assertEqual(zone.id, "example.com")
         self.assertEqual(zone.type, "master")
         self.assertEqual(zone.domain, "example.com")
@@ -109,6 +144,11 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_list_records(self):
         records = self.driver.list_records(self.test_zone)
+
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v5/domains/example.com/records")
+
         self.assertEqual(len(records), 3)
         record = records[0]
         self.assertEqual(record.id, "A:@")
@@ -128,6 +168,11 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_get_record(self):
         record = self.driver.get_record(self.test_zone.id, "A:bob")
+
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/api/v5/domains/example.com/records/bob/A")
+
         self.assertEqual(record.id, "A:bob")
         self.assertEqual(record.name, "bob")
         self.assertEqual(record.type, RecordType.A)
@@ -137,6 +182,15 @@ class GandiLiveTests(unittest.TestCase):
         record = self.driver.create_record(
             "alice", self.test_zone, "AAAA", "::1", extra={"ttl": 400}
         )
+
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/api/v5/domains/example.com/records")
+        self.assertEqual(sent.json["rrset_name"], "alice")
+        self.assertEqual(sent.json["rrset_type"], "AAAA")
+        self.assertIn("::1", sent.json["rrset_values"])
+        self.assertEqual(sent.json["rrset_ttl"], 400)
+
         self.assertEqual(record.id, "AAAA:alice")
         self.assertEqual(record.name, "alice")
         self.assertEqual(record.type, RecordType.AAAA)
@@ -168,6 +222,13 @@ class GandiLiveTests(unittest.TestCase):
         record = self.driver.update_record(
             self.test_record, "bob", RecordType.A, "192.168.0.2", {"ttl": 500}
         )
+
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/api/v5/domains/example.com/records/bob/A")
+        self.assertIn("192.168.0.2", sent.json["rrset_values"])
+        self.assertEqual(sent.json["rrset_ttl"], 500)
+
         self.assertEqual(record.id, "A:bob")
         self.assertEqual(record.name, "bob")
         self.assertEqual(record.type, RecordType.A)
@@ -175,6 +236,11 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_delete_record(self):
         success = self.driver.delete_record(self.test_record)
+
+        sent = GandiLiveMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/api/v5/domains/example.com/records/bob/A")
+
         self.assertTrue(success)
 
     def test_export_bind(self):
@@ -259,6 +325,7 @@ class GandiLiveTests(unittest.TestCase):
 
 class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     fixtures = DNSFileFixtures("gandi_live")
+    keep_history = True
 
     def _json_api_v5_domains_get(self, method, url, body, headers):
         body = self.fixtures.load("list_zones.json")

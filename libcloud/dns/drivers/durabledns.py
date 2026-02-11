@@ -293,7 +293,7 @@ class DurableDNSDriver(DNSDriver):
         params = {
             "apiuser": self.key,
             "apikey": self.secret,
-            "zonename": domain,
+            "zonename": Zone.rooted(domain),
             "ttl": ttl or DEFAULT_TTL,
         }
         params.update(extra)
@@ -312,7 +312,7 @@ class DurableDNSDriver(DNSDriver):
         req_data = skel % (
             self.key,
             self.secret,
-            domain,
+            Zone.rooted(domain),
             extra.get("ns"),
             extra.get("mbox"),
             extra.get("refresh"),
@@ -366,6 +366,7 @@ class DurableDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
+        name = zone.prefix(name)
         if extra is None:
             extra = RECORD_EXTRA_PARAMS_DEFAULT_VALUES
         else:
@@ -476,7 +477,7 @@ class DurableDNSDriver(DNSDriver):
         params = {
             "apiuser": self.key,
             "apikey": self.secret,
-            "zonename": domain,
+            "zonename": Zone.rooted(domain),
             "ttl": ttl,
         }
         params.update(extra)
@@ -495,7 +496,7 @@ class DurableDNSDriver(DNSDriver):
         req_data = skel % (
             self.key,
             self.secret,
-            domain,
+            Zone.rooted(domain),
             extra["ns"],
             extra["mbox"],
             extra["refresh"],
@@ -545,6 +546,7 @@ class DurableDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         zone = record.zone
+        name = zone.prefix(name)
         if extra is None:
             extra = record.extra
         else:

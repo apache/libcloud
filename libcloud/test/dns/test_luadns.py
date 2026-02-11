@@ -33,6 +33,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 class LuadnsTests(unittest.TestCase):
     def setUp(self):
         LuadnsMockHttp.type = None
+        LuadnsMockHttp.history.clear()
         LuadnsDNSDriver.connectionCls.conn_class = LuadnsMockHttp
         self.driver = LuadnsDNSDriver(*DNS_PARAMS_LUADNS)
         self.test_zone = Zone(
@@ -66,6 +67,10 @@ class LuadnsTests(unittest.TestCase):
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
 
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/zones")
+
         self.assertEqual(len(zones), 2)
 
         zone = zones[0]
@@ -95,6 +100,10 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = "GET_ZONE_SUCCESS"
         zone = self.driver.get_zone(zone_id="31")
 
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/zones/31")
+
         self.assertEqual(zone.id, "31")
         self.assertEqual(zone.domain, "example.org")
         self.assertIsNone(zone.type)
@@ -105,6 +114,10 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = "DELETE_ZONE_SUCCESS"
         zone = self.test_zone
         status = self.driver.delete_zone(zone=zone)
+
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/v1/zones/{zone.id}")
 
         self.assertEqual(status, True)
 
@@ -121,6 +134,11 @@ class LuadnsTests(unittest.TestCase):
     def test_create_zone_success(self):
         LuadnsMockHttp.type = "CREATE_ZONE_SUCCESS"
         zone = self.driver.create_zone(domain="example.org")
+
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/zones")
+        self.assertEqual(sent.json["name"], "example.org")
 
         self.assertEqual(zone.id, "3")
         self.assertEqual(zone.domain, "example.org")
@@ -149,12 +167,16 @@ class LuadnsTests(unittest.TestCase):
         zone = self.test_zone
         records = self.driver.list_records(zone=zone)
 
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, f"/v1/zones/{zone.id}/records")
+
         self.assertEqual(len(records), 2)
 
         record = records[0]
         self.assertEqual(record.id, "6683")
         self.assertEqual(record.type, "NS")
-        self.assertEqual(record.name, "example.org.")
+        self.assertEqual(record.fqdn, "example.com.")
         self.assertEqual(record.data, "b.ns.luadns.net.")
         self.assertEqual(record.zone, self.test_zone)
         self.assertEqual(record.zone.id, "11")
@@ -162,7 +184,7 @@ class LuadnsTests(unittest.TestCase):
         second_record = records[1]
         self.assertEqual(second_record.id, "6684")
         self.assertEqual(second_record.type, "NS")
-        self.assertEqual(second_record.name, "example.org.")
+        self.assertEqual(second_record.fqdn, "example.com.")
         self.assertEqual(second_record.data, "a.ns.luadns.net.")
         self.assertEqual(second_record.zone, self.test_zone)
 
@@ -179,15 +201,23 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = "GET_RECORD_SUCCESS"
         record = self.driver.get_record(zone_id="31", record_id="31")
 
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/zones/31/records/31")
+
         self.assertEqual(record.id, "31")
         self.assertEqual(record.type, "MX")
-        self.assertEqual(record.name, "example.com.")
+        self.assertEqual(record.fqdn, "example.org.")
         self.assertEqual(record.data, "10 mail.example.com.")
 
     def test_delete_record_success(self):
         LuadnsMockHttp.type = "DELETE_RECORD_SUCCESS"
         record = self.test_record
         status = self.driver.delete_record(record=record)
+
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/v1/zones/{record.zone.id}/records/{record.id}")
 
         self.assertEqual(status, True)
 
@@ -204,14 +234,23 @@ class LuadnsTests(unittest.TestCase):
     def test_create_record_success(self):
         LuadnsMockHttp.type = "CREATE_RECORD_SUCCESS"
         record = self.driver.create_record(
-            name="test.com.",
+            name="example.com.",
             zone=self.test_zone,
             type="A",
             data="127.0.0.1",
             extra={"ttl": 13},
         )
+
+        sent = LuadnsMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, f"/v1/zones/{self.test_zone.id}/records")
+        self.assertEqual(sent.json["name"], "example.com.")
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["content"], "127.0.0.1")
+        self.assertEqual(sent.json["ttl"], 13)
+
         self.assertEqual(record.id, "31")
-        self.assertEqual(record.name, "test.com.")
+        self.assertEqual(record.fqdn, "example.com.")
         self.assertEqual(record.data, "127.0.0.1")
         self.assertIsNone(record.ttl)
 
@@ -221,6 +260,7 @@ class LuadnsTests(unittest.TestCase):
 
 class LuadnsMockHttp(MockHttp):
     fixtures = DNSFileFixtures("luadns")
+    keep_history = True
 
     def _v1_zones(self, method, url, body, headers):
         body = self.fixtures.load("zones_list.json")

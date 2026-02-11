@@ -39,6 +39,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         CloudFlareDNSDriver.MEMBERSHIPS_PAGE_SIZE = 5
         CloudFlareMockHttp.type = None
         CloudFlareMockHttp.use_param = "a"
+        CloudFlareMockHttp.history.clear()
         self.driver = CloudFlareDNSDriver(*DNS_PARAMS_CLOUDFLARE)
 
     def test_auth_key(self):
@@ -56,6 +57,11 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url.rsplit("?")[0], "/client/v4/zones")
+
         self.assertEqual(len(zones), 1)
 
         zone = zones[0]
@@ -69,8 +75,12 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_get_record(self):
         record = self.driver.get_record("1234", "364797364")
 
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/client/v4/zones/1234/dns_records/364797364")
+
         self.assertEqual(record.id, "364797364")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "192.30.252.153")
 
@@ -85,11 +95,16 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url.rsplit("?")[0], f"/client/v4/zones/{zone.id}/dns_records")
+
         self.assertEqual(len(records), 11)
 
         record = records[0]
         self.assertEqual(record.id, "364797364")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, "192.30.252.153")
         self.assertEqual(record.extra["priority"], None)
@@ -108,7 +123,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         record = [r for r in records if r.type == "MX"][0]
         self.assertEqual(record.id, "78526")
-        self.assertIsNone(record.name)
+        self.assertEqual(record.name, "")
         self.assertEqual(record.type, "MX")
         self.assertEqual(record.data, "aspmx3.googlemail.com")
         self.assertEqual(record.extra["priority"], 30)
@@ -121,6 +136,11 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id="1234")
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/client/v4/zones/1234")
+
         self.assertEqual(zone.id, "1234")
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.type, "master")
@@ -142,6 +162,15 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             data="127.0.0.3",
             extra={"proxied": True},
         )
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}/dns_records")
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["name"], "test5")
+        self.assertEqual(sent.json["content"], "127.0.0.3")
+        self.assertEqual(sent.json["proxied"], True)
+
         self.assertEqual(record.id, "412561327")
         self.assertEqual(record.name, "test5")
         self.assertEqual(record.type, "A")
@@ -154,6 +183,17 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         record = self.driver.create_record(
             name="test_sshfp", zone=zone, type=RecordType.SSHFP, data="2 1 ABCDEF12345"
         )
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}/dns_records")
+        self.assertEqual(sent.json["type"], "SSHFP")
+        self.assertEqual(sent.json["name"], "test_sshfp")
+        self.assertEqual(sent.json["content"], None)
+        self.assertEqual(
+            sent.json["data"], {"algorithm": "2", "type": "1", "fingerprint": "ABCDEF12345"}
+        )
+
         self.assertEqual(record.id, "200")
         self.assertEqual(record.name, "test_sshfp")
         self.assertEqual(record.type, "SSHFP")
@@ -166,6 +206,14 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         record = self.driver.create_record(
             name="test5", zone=zone, type=RecordType.CAA, data="0 issue caa.example.com"
         )
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}/dns_records")
+        self.assertEqual(sent.json["type"], "CAA")
+        self.assertEqual(sent.json["name"], "test5")
+        self.assertEqual(sent.json["content"], "0\tissue\tcaa.example.com")
+
         self.assertEqual(record.id, "412561327")
         self.assertEqual(record.name, "test5")
         self.assertEqual(record.type, "A")
@@ -214,6 +262,14 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             extra={"proxied": True},
         )
 
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}/dns_records/{record.id}")
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["name"], "test6")
+        self.assertEqual(sent.json["content"], "127.0.0.4")
+        self.assertEqual(sent.json["extra"]["proxied"], True)
+
         self.assertEqual(updated_record.name, "test6")
         self.assertEqual(updated_record.type, "A")
         self.assertEqual(updated_record.data, "127.0.0.4")
@@ -233,15 +289,33 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         zone = self.driver.list_zones()[0]
         record = zone.list_records()[0]
         result = self.driver.delete_record(record=record)
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}/dns_records/{record.id}")
+
         self.assertTrue(result)
 
     def test_delete_zone(self):
         zone = self.driver.list_zones()[0]
         result = self.driver.delete_zone(zone=zone)
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}")
+
         self.assertTrue(result)
 
     def test_create_zone(self):
         zone = self.driver.create_zone(domain="example2.com", extra={"jump_start": False})
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/client/v4/zones")
+        self.assertEqual(sent.json["type"], "full")
+        self.assertEqual(sent.json["name"], "example2.com")
+        self.assertEqual(sent.json["jump_start"], False)
+
         self.assertEqual(zone.id, "6789")
         self.assertEqual(zone.domain, "example2.com")
 
@@ -256,6 +330,11 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         zone = self.driver.list_zones()[0]
 
         updated_zone = self.driver.update_zone(zone=zone, domain="", extra={"paused": True})
+
+        sent = CloudFlareMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, f"/client/v4/zones/{zone.id}")
+        self.assertEqual(sent.json["paused"], True)
 
         self.assertEqual(zone.id, updated_zone.id)
         self.assertEqual(zone.domain, updated_zone.domain)
@@ -312,6 +391,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
 class CloudFlareMockHttp(MockHttp, unittest.TestCase):
     fixtures = DNSFileFixtures("cloudflare")
+    keep_history = True
 
     def _client_v4_memberships(self, method, url, body, headers):
         if method not in {"GET"}:

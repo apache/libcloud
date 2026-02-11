@@ -31,6 +31,8 @@ __all__ = [
     "RcodeZeroDNSDriver",
 ]
 
+# FIXME: v1 API is deprecated
+
 
 class RcodeZeroResponse(JsonResponse):
     def success(self):

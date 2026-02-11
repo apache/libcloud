@@ -65,6 +65,7 @@ class RackspaceUSTests(unittest.TestCase):
     def setUp(self):
         self.klass.connectionCls.conn_class = RackspaceMockHttp
         RackspaceMockHttp.type = None
+        RackspaceMockHttp.history.clear()
 
         driver_kwargs = {"region": self.region}
         self.driver = self.klass(*DNS_PARAMS_RACKSPACE, **driver_kwargs)
@@ -108,6 +109,10 @@ class RackspaceUSTests(unittest.TestCase):
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
 
+        sent = RackspaceMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1.0/11111/domains")
+
         self.assertEqual(len(zones), 6)
         self.assertEqual(zones[0].domain, "foo4.bar.com")
         self.assertEqual(zones[0].extra["comment"], "wazaaa")
@@ -130,6 +135,10 @@ class RackspaceUSTests(unittest.TestCase):
     def test_list_records_success(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+
+        sent = RackspaceMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063")
 
         self.assertEqual(len(records), 3)
         self.assertEqual(records[0].name, "test3")
@@ -160,6 +169,10 @@ class RackspaceUSTests(unittest.TestCase):
         RackspaceMockHttp.type = "GET_ZONE"
         zone = self.driver.get_zone(zone_id="2946063")
 
+        sent = RackspaceMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063")
+
         self.assertEqual(zone.id, "2946063")
         self.assertEqual(zone.domain, "foo4.bar.com")
         self.assertEqual(zone.type, "master")
@@ -176,7 +189,12 @@ class RackspaceUSTests(unittest.TestCase):
             self.fail("Exception was not thrown")
 
     def test_get_record_success(self):
-        record = self.driver.get_record(zone_id="12345678", record_id="23456789")
+        record = self.driver.get_record(zone_id="12345678", record_id="A-7423034")
+
+        sent = RackspaceMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/12345678/records/A-7423034")
+
         self.assertEqual(record.id, "A-7423034")
         self.assertEqual(record.name, "test3")
         self.assertEqual(record.type, RecordType.A)
@@ -211,6 +229,17 @@ class RackspaceUSTests(unittest.TestCase):
             ttl=None,
             extra={"email": "test@test.com"},
         )
+
+        # [0] POST /v2.0/tokens
+        # [1] POST /v1.0/{account}/domains
+        # [2] GET  /v1.0/{account}/status/...
+        sent = RackspaceMockHttp.history.pop(1)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1.0/11111/domains")
+        domain = sent.json["domains"][0]
+        self.assertEqual(domain["name"], "bar.foo1.com")
+        self.assertEqual(domain["emailAddress"], "test@test.com")
+
         self.assertEqual(zone.id, "2946173")
         self.assertEqual(zone.domain, "bar.foo1.com")
         self.assertEqual(zone.type, "master")
@@ -238,7 +267,16 @@ class RackspaceUSTests(unittest.TestCase):
 
     def test_update_zone_success(self):
         zone = self.driver.list_zones()[0]
+        sent = RackspaceMockHttp.history.clear()
+
         updated_zone = self.driver.update_zone(zone=zone, extra={"comment": "bar foo"})
+
+        # [0] PUT "/v1.0/{account}/domains/{zone.id}"
+        # [1] GET "/v1.0/{account}/status/...
+        sent = RackspaceMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063")
+        self.assertIn("comment", sent.json)
 
         self.assertEqual(zone.extra["comment"], "wazaaa")
 
@@ -260,11 +298,22 @@ class RackspaceUSTests(unittest.TestCase):
 
     def test_create_record_success(self):
         zone = self.driver.list_zones()[0]
+        sent = RackspaceMockHttp.history.clear()
 
         RackspaceMockHttp.type = "CREATE_RECORD"
         record = self.driver.create_record(
             name="www", zone=zone, type=RecordType.A, data="127.1.1.1"
         )
+
+        # [0] POST /v1.0/{account}/domains/{zone.id}/records
+        # [1] GET /v1.0/{account}/status/...
+        sent = RackspaceMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063/records")
+        records = sent.json["records"]
+        self.assertEqual(records[0]["name"], "www.foo4.bar.com")
+        self.assertEqual(records[0]["type"], "A")
+        self.assertEqual(records[0]["data"], "127.1.1.1")
 
         self.assertEqual(record.id, "A-7423317")
         self.assertEqual(record.name, "www")
@@ -276,7 +325,17 @@ class RackspaceUSTests(unittest.TestCase):
     def test_update_record_success(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[0]
+        sent = RackspaceMockHttp.history.clear()
+
         updated_record = self.driver.update_record(record=record, data="127.3.3.3")
+
+        # [0] POST /v1.0/{account}/domains/{zone.id}/records/{record.id}
+        # [1] GET /v1.0/{account}/status/...
+        sent = RackspaceMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063/records/A-7423034")
+        self.assertEqual(sent.json["name"], "test3.foo4.bar.com")
+        self.assertEqual(sent.json["data"], "127.3.3.3")
 
         self.assertEqual(record.name, "test3")
         self.assertEqual(record.data, "127.7.7.7")
@@ -289,7 +348,16 @@ class RackspaceUSTests(unittest.TestCase):
 
     def test_delete_zone_success(self):
         zone = self.driver.list_zones()[0]
+        sent = RackspaceMockHttp.history.clear()
+
         status = self.driver.delete_zone(zone=zone)
+
+        # [0] DELETE /v1.0/{account}/domains/{zone.id}
+        # [1] GET /v1.0/{account}/status/...
+        sent = RackspaceMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063")
+
         self.assertTrue(status)
 
     def test_delete_zone_does_not_exist(self):
@@ -307,7 +375,16 @@ class RackspaceUSTests(unittest.TestCase):
     def test_delete_record_success(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[0]
+        sent = RackspaceMockHttp.history.clear()
+
         status = self.driver.delete_record(record=record)
+
+        # [0] DELETE /v1.0/{account}/domains/{zone.id}/records/{record.id}
+        # [1] GET /v1.0/{account}/status/...
+        sent = RackspaceMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v1.0/11111/domains/2946063/records/A-7423034")
+
         self.assertTrue(status)
 
     def test_delete_record_does_not_exist(self):
@@ -322,30 +399,6 @@ class RackspaceUSTests(unittest.TestCase):
             self.assertEqual(e.record_id, record.id)
         else:
             self.fail("Exception was not thrown")
-
-    def test_to_full_record_name_name_provided(self):
-        domain = "foo.bar"
-        name = "test"
-        self.assertEqual(self.driver._to_full_record_name(domain, name), "test.foo.bar")
-
-    def test_to_full_record_name_name_not_provided(self):
-        domain = "foo.bar"
-        name = None
-        self.assertEqual(self.driver._to_full_record_name(domain, name), "foo.bar")
-
-    def test_to_partial_record_name(self):
-        domain = "example.com"
-        names = [
-            "test.example.com",
-            "foo.bar.example.com",
-            "example.com.example.com",
-            "example.com",
-        ]
-        expected_values = ["test", "foo.bar", "example.com", None]
-
-        for name, expected_value in zip(names, expected_values):
-            value = self.driver._to_partial_record_name(domain=domain, name=name)
-            self.assertEqual(value, expected_value)
 
     def test_ex_create_ptr_success(self):
         ip = "127.1.1.1"
@@ -416,6 +469,7 @@ class RackspaceUKTests(RackspaceUSTests):
 
 class RackspaceMockHttp(MockHttp):
     fixtures = DNSFileFixtures("rackspace")
+    keep_history = True
     base_headers = {"content-type": "application/json"}
 
     def _v2_0_tokens(self, method, url, body, headers):
@@ -482,7 +536,7 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load("get_zone_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_11111_domains_12345678_records_23456789(self, method, url, body, headers):
+    def _v1_0_11111_domains_12345678_records_A_7423034(self, method, url, body, headers):
         body = self.fixtures.load("get_record_success.json")
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 

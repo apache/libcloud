@@ -31,6 +31,7 @@ class GoogleTests(GoogleTestCase):
         GoogleDNSDriver.connectionCls.conn_class = GoogleDNSMockHttp
         GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GoogleDNSMockHttp.type = None
+        GoogleDNSMockHttp.history.clear()
         kwargs = DNS_KEYWORD_PARAMS_GOOGLE.copy()
         kwargs["auth_type"] = "IA"
         self.driver = GoogleDNSDriver(*DNS_PARAMS_GOOGLE, **kwargs)
@@ -40,17 +41,34 @@ class GoogleTests(GoogleTestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = GoogleDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns/v1/projects/project_name/managedZones")
+
         self.assertEqual(len(zones), 2)
 
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
+        GoogleDNSMockHttp.history.clear()
+
         records = self.driver.list_records(zone=zone)
+
+        sent = GoogleDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, f"/dns/v1/projects/project_name/managedZones/{zone.id}/rrsets")
+
         self.assertEqual(len(records), 3)
 
     def test_get_zone(self):
         zone = self.driver.get_zone("example-com")
+
+        sent = GoogleDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns/v1/projects/project_name/managedZones/example-com")
+
         self.assertEqual(zone.id, "example-com")
-        self.assertEqual(zone.domain, "example.com.")
+        self.assertEqual(zone.domain, "example.com")
 
     def test_get_zone_does_not_exist(self):
         GoogleDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
@@ -65,9 +83,18 @@ class GoogleTests(GoogleTestCase):
     def test_get_record(self):
         GoogleDNSMockHttp.type = "FILTER_ZONES"
         zone = self.driver.list_zones()[0]
-        record = self.driver.get_record(zone.id, "A:foo.example.com.")
-        self.assertEqual(record.id, "A:foo.example.com.")
-        self.assertEqual(record.name, "foo.example.com.")
+        GoogleDNSMockHttp.history.clear()
+
+        record = self.driver.get_record(zone.id, "A:foo")
+
+        # [0] /dns/v1/projects/project_name/managedZones/{zone.id}
+        # [1] /dns/v1/projects/project_name/managedZones/{zone.id}/rrsets
+        sent = GoogleDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, f"/dns/v1/projects/project_name/managedZones/{zone.id}/rrsets")
+
+        self.assertEqual(record.id, "A:foo")
+        self.assertEqual(record.fqdn, "foo.example.com.")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.zone.id, "example-com")
 
@@ -75,7 +102,7 @@ class GoogleTests(GoogleTestCase):
         GoogleDNSMockHttp.type = "ZONE_DOES_NOT_EXIST"
 
         try:
-            self.driver.get_record("example-com", "a:a")
+            self.driver.get_record("example-com", "A:a")
         except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, "example-com")
         else:
@@ -92,29 +119,42 @@ class GoogleTests(GoogleTestCase):
 
     def test_create_zone(self):
         extra = {"description": "new domain for example.org"}
-        zone = self.driver.create_zone("example.org.", extra)
-        self.assertEqual(zone.domain, "example.org.")
+        zone = self.driver.create_zone("example.org", extra)
+
+        sent = GoogleDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/dns/v1/projects/project_name/managedZones")
+        self.assertEqual(sent.json["name"], "example-org")
+        self.assertEqual(sent.json["dnsName"], "example.org.")
+
+        self.assertEqual(zone.domain, "example.org")
         self.assertEqual(zone.extra["description"], extra["description"])
         self.assertEqual(len(zone.extra["nameServers"]), 4)
 
     def test_delete_zone(self):
         zone = self.driver.get_zone("example-com")
         res = self.driver.delete_zone(zone)
+
+        sent = GoogleDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/dns/v1/projects/project_name/managedZones/example-com")
+
         self.assertTrue(res)
 
     def test_ex_bulk_record_changes(self):
         zone = self.driver.get_zone("example-com")
         records = self.driver.ex_bulk_record_changes(zone, {})
 
-        self.assertEqual(records["additions"][0].name, "foo.example.com.")
+        self.assertEqual(records["additions"][0].fqdn, "foo.example.com.")
         self.assertEqual(records["additions"][0].type, "A")
 
-        self.assertEqual(records["deletions"][0].name, "bar.example.com.")
+        self.assertEqual(records["deletions"][0].fqdn, "bar.example.com.")
         self.assertEqual(records["deletions"][0].type, "A")
 
 
 class GoogleDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("google")
+    keep_history = True
 
     def _dns_v1_projects_project_name_managedZones(self, method, url, body, headers):
         if method == "POST":

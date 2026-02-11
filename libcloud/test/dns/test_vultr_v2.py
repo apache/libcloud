@@ -25,6 +25,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 class VultrTests(unittest.TestCase):
     def setUp(self):
         VultrMockHttp.type = None
+        VultrMockHttp.history.clear()
         VultrDNSDriverV2.connectionCls.conn_class = VultrMockHttp
         self.driver = VultrDNSDriver("foo")
 
@@ -36,6 +37,11 @@ class VultrTests(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains")
+
         self.assertEqual(len(zones), 2)
         zone = zones[0]
         self.assertEqual(zone.id, "example.com")
@@ -44,12 +50,23 @@ class VultrTests(unittest.TestCase):
 
     def test_create_zone(self):
         zone = self.driver.create_zone("example.com")
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v2/domains")
+        self.assertEqual(sent.json["domain"], "example.com")
+
         self.assertEqual(zone.id, "example.com")
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.extra["date_created"], "2021-09-07T10:28:34+00:00")
 
     def test_get_zone(self):
         zone = self.driver.get_zone("example.com")
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains/example.com")
+
         self.assertEqual(zone.id, "example.com")
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.extra["date_created"], "2021-09-07T09:52:18+00:00")
@@ -57,11 +74,21 @@ class VultrTests(unittest.TestCase):
     def test_delete_zone(self):
         zone = self.driver.get_zone("example.com")
         response = self.driver.delete_zone(zone)
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v2/domains/example.com")
+
         self.assertTrue(response)
 
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone)
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains/example.com/records")
+
         self.assertEqual(len(records), 5)
         record = records[0]
         self.assertEqual(record.id, "123")
@@ -72,6 +99,14 @@ class VultrTests(unittest.TestCase):
     def test_create_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.create_record("test1", zone, "A", "192.168.0.11")
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v2/domains/example.com/records")
+        self.assertEqual(sent.json["name"], "test1")
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["data"], "192.168.0.11")
+
         self.assertEqual(record.id, "123")
         self.assertEqual(record.zone.domain, zone.domain)
         self.assertEqual(record.type, "A")
@@ -84,12 +119,26 @@ class VultrTests(unittest.TestCase):
         response = self.driver.update_record(
             record, name="test", data="192.168.0.0", extra=dict(ttl=300, priority=1)
         )
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, "/v2/domains/example.com/records/123")
+        self.assertEqual(sent.json["name"], "test")
+        self.assertEqual(sent.json["data"], "192.168.0.0")
+        self.assertEqual(sent.json["ttl"], 300)
+        self.assertEqual(sent.json["priority"], 1)
+
         self.assertTrue(response)
 
     def test_get_record(self):
         zone = self.driver.list_zones()[0]
         temp = self.driver.list_records(zone)[0]
         record = self.driver.get_record(zone.domain, temp.id)
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains/example.com/records/123")
+
         self.assertEqual(record.id, "123")
         self.assertEqual(record.zone.domain, zone.domain)
         self.assertEqual(record.type, "NS")
@@ -101,11 +150,17 @@ class VultrTests(unittest.TestCase):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone)[0]
         response = self.driver.delete_record(record)
+
+        sent = VultrMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v2/domains/example.com/records/123")
+
         self.assertTrue(response)
 
 
 class VultrMockHttp(MockHttp):
     fixtures = DNSFileFixtures("vultr_v2")
+    keep_history = True
 
     def _v2_domains(self, method, url, body, headers):
         if method == "GET":

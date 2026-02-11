@@ -27,6 +27,7 @@ class LinodeTests(unittest.TestCase):
     def setUp(self):
         LinodeDNSDriverV4.connectionCls.conn_class = LinodeMockHttpV4
         LinodeMockHttpV4.type = None
+        LinodeMockHttpV4.history.clear()
         self.driver = LinodeDNSDriver(*DNS_PARAMS_LINODE)
 
     def test_correct_class_is_used(self):
@@ -37,6 +38,11 @@ class LinodeTests(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v4/domains")
+
         self.assertEqual(len(zones), 3)
         zone = zones[0]
         self.assertEqual(zone.id, "123")
@@ -47,6 +53,11 @@ class LinodeTests(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone)
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v4/domains/123/records")
+
         self.assertEqual(len(records), 6)
         record = records[0]
         self.assertEqual(record.id, "123")
@@ -55,6 +66,11 @@ class LinodeTests(unittest.TestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone("123")
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v4/domains/123")
+
         self.assertEqual(zone.id, "123")
         self.assertEqual(zone.domain, "test.com")
         self.assertEqual(zone.extra["soa_email"], "admin@test.com")
@@ -67,6 +83,13 @@ class LinodeTests(unittest.TestCase):
     def test_get_record_A_RECORD(self):
         LinodeMockHttpV4.type = "A_RECORD"
         record = self.driver.get_record("123", "123")
+
+        # [0] /v4/domains/123/records/123
+        # [1] /v4/domains/123
+        sent = LinodeMockHttpV4.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v4/domains/123/records/123")
+
         self.assertEqual(record.id, "123")
         self.assertEqual(record.name, "test.example.com")
         self.assertEqual(record.type, "A")
@@ -83,6 +106,14 @@ class LinodeTests(unittest.TestCase):
         ttl = 300
         extra = {"soa_email": "admin@example.com"}
         zone = self.driver.create_zone(domain=domain, ttl=ttl, extra=extra)
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v4/domains")
+        self.assertEqual(sent.json["domain"], domain)
+        self.assertEqual(sent.json["ttl_sec"], ttl)
+        self.assertEqual(sent.json["soa_email"], extra["soa_email"])
+
         self.assertEqual(zone.ttl, 300)
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.extra["soa_email"], "admin@example.com")
@@ -93,6 +124,14 @@ class LinodeTests(unittest.TestCase):
         type = RecordType.A
         data = "200.150.100.50"
         record = self.driver.create_record(name, zone, type, data)
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v4/domains/123/records")
+        self.assertEqual(sent.json["name"], name)
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["target"], data)
+
         self.assertEqual(record.id, "123")
         self.assertEqual(record.name, name)
         self.assertEqual(record.type, "A")
@@ -104,6 +143,15 @@ class LinodeTests(unittest.TestCase):
         ttl = 300
         extra = {"description": "Testing", "soa_email": "admin@example.com"}
         updated_zone = self.driver.update_zone(zone, domain, ttl=ttl, extra=extra)
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/v4/domains/123")
+        self.assertEqual(sent.json["domain"], domain)
+        self.assertEqual(sent.json["ttl_sec"], ttl)
+        self.assertEqual(sent.json["soa_email"], extra["soa_email"])
+        self.assertEqual(sent.json["description"], extra["description"])
+
         self.assertEqual(updated_zone.domain, domain)
         self.assertEqual(updated_zone.ttl, ttl)
         self.assertEqual(updated_zone.extra["soa_email"], extra["soa_email"])
@@ -116,6 +164,14 @@ class LinodeTests(unittest.TestCase):
         data = "200.150.100.50"
         extra = {"ttl_sec": 3600}
         updated = self.driver.update_record(record, name=name, data=data, extra=extra)
+
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/v4/domains/123/records/123")
+        self.assertEqual(sent.json["name"], name)
+        self.assertEqual(sent.json["target"], data)
+        self.assertEqual(sent.json["ttl_sec"], extra["ttl_sec"])
+
         self.assertEqual(updated.name, name)
         self.assertEqual(updated.ttl, extra["ttl_sec"])
         self.assertEqual(updated.data, data)
@@ -124,14 +180,23 @@ class LinodeTests(unittest.TestCase):
         zone = self.driver.list_zones()[0]
         self.assertTrue(self.driver.delete_zone(zone))
 
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v4/domains/123")
+
     def test_delete_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone)[0]
         self.assertTrue(self.driver.delete_record(record))
 
+        sent = LinodeMockHttpV4.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v4/domains/123/records/123")
+
 
 class LinodeMockHttpV4(MockHttp):
     fixtures = DNSFileFixtures("linode_v4")
+    keep_history = True
 
     def _v4_domains(self, method, url, body, headers):
         if method == "GET":

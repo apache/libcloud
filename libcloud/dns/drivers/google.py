@@ -134,11 +134,12 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        (record_type, record_name) = record_id.split(":", 1)
+        zone = self.get_zone(zone_id)
+        parts = self.from_default_id(zone, record_id)
 
         params = {
-            "name": record_name,
-            "type": record_type,
+            "name": parts.name,
+            "type": parts.type,
         }
 
         request = "/managedZones/%s/rrsets" % (zone_id)
@@ -149,8 +150,6 @@ class GoogleDNSDriver(DNSDriver):
             raise ZoneDoesNotExistError(value="", driver=self.connection.driver, zone_id=zone_id)
 
         if len(response["rrsets"]) > 0:
-            zone = self.get_zone(zone_id)
-
             return self._to_record(response["rrsets"][0], zone)
 
         raise RecordDoesNotExistError(value="", driver=self.connection.driver, record_id=record_id)
@@ -185,7 +184,7 @@ class GoogleDNSDriver(DNSDriver):
             name = self._cleanup_domain(domain)
 
         data = {
-            "dnsName": domain,
+            "dnsName": Zone.rooted(domain),
             "name": name,
             "description": description,
         }
@@ -216,6 +215,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
+        name = zone.fqdn(name)
         ttl = data.get("ttl", 0)
         rrdatas = data.get("rrdatas", [])
 
@@ -253,7 +253,7 @@ class GoogleDNSDriver(DNSDriver):
         data = {
             "deletions": [
                 {
-                    "name": record.name,
+                    "name": record.fqdn,
                     "type": record.type,
                     "rrdatas": record.data["rrdatas"],
                     "ttl": record.data["ttl"],
@@ -385,10 +385,8 @@ class GoogleDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, r, zone):
-        record_id = "{}:{}".format(r["type"], r["name"])
-
         return Record(
-            id=record_id,
+            id=self.to_default_id(zone, r["name"], r["type"]),
             name=r["name"],
             type=r["type"],
             data=r,

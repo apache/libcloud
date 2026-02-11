@@ -14,11 +14,13 @@
 # limitations under the License.
 
 
+import re
 import datetime
 from typing import Any, Dict, List, Type, Union, Iterator, Optional
+from collections import namedtuple
 
 from libcloud import __version__
-from libcloud.dns.types import RecordType
+from libcloud.dns.types import RecordType, RecordDoesNotExistError
 from libcloud.common.base import BaseDriver, Connection, ConnectionUserAndKey
 
 __all__ = ["Zone", "Record", "DNSDriver"]
@@ -58,7 +60,7 @@ class Zone:
         :type extra: ``dict``
         """
         self.id = str(id) if id else None
-        self.domain = domain
+        self.domain = self.unrooted(domain)
         self.type = type
         self.ttl = ttl or None
         self.driver = driver
@@ -101,6 +103,80 @@ class Zone:
             self.ttl,
             self.driver.name,
         )
+
+    @staticmethod
+    def unrooted(domain):
+        """Return the provided domain as an unrooted domain"""
+        return domain.rstrip(".")
+
+    @staticmethod
+    def rooted(domain):
+        """Return the provided domain as an unrooted domain"""
+        return domain if domain.endswith(".") else f"{domain}."
+
+    def prefix(self, subname):
+        """
+        Accept subordinate (or identity) names in multiple convenience formats.
+
+        In the following examples, "www" is returned:
+
+        |     Format      |       subname      |  self.domain  |
+        |-----------------|--------------------|---------------|
+        |  Bare host name | "www"              | "example.com" |
+        | FQDN (unrooted) | "www.example.com"  | "example.com" |
+        |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        :param subname: Hostname or FQDN.
+        :type subname: ``str``
+
+        :return: Bare record name, without domain part.
+        :rtype: ``str``
+        """
+
+        return subname.rstrip(".").removesuffix(self.domain).rstrip(".")
+
+    def hostname(self, subname):
+        """
+        Accept subordinate (or identity) names in multiple convenience formats.
+
+        In the following examples, "www.example.com" is returned:
+
+        |     Format      |       subname      |  self.domain  |
+        |-----------------|--------------------|---------------|
+        |  Bare host name | "www"              | "example.com" |
+        | FQDN (unrooted) | "www.example.com"  | "example.com" |
+        |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        :param subname: Hostname or FQDN.
+        :type subname: ``str``
+
+        :return: Complete hostname, including domain part.
+        :rtype: ``str``
+        """
+
+        prefix = self.prefix(subname)
+        return f"{prefix}.{self.domain}" if prefix else self.domain
+
+    def fqdn(self, subname):
+        """
+        Accept subordinate (or identity) names in multiple convenience formats.
+
+        In the following examples, "www.example.com." is returned:
+
+        |     Format      |       subname      |  self.domain  |
+        |-----------------|--------------------|---------------|
+        |  Bare host name | "www"              | "example.com" |
+        | FQDN (unrooted) | "www.example.com"  | "example.com" |
+        |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        :param subname: Hostname or FQDN.
+        :type subname: ``str``
+
+        :return: Complete hostname, including domain part.
+        :rtype: ``str``
+        """
+
+        return f"{self.hostname(subname)}."
 
 
 class Record:
@@ -145,7 +221,17 @@ class Record:
         :type extra: ``dict``
         """
         self.id = str(id) if id else None
-        self.name = name
+
+        # Support callers that have:
+        #   1. used None, rather than the empty string to indicate apex/naked
+        #      records, while consistently setting the empty string.
+        #   2. used the full hostname (i.e. including domain), rather than the
+        #      bare prefix (i.e. excluding domain)
+        #   3. used the fully qualified domain name (i.e. including domain and
+        #      trailing dot), rather than the bare prefix.
+        #
+        self.name = "" if name is None else zone.prefix(name)
+
         self.type = type
         self.data = data
         self.zone = zone
@@ -186,6 +272,19 @@ class Record:
 
         return record_id
 
+    @property
+    def hostname(self):
+        """Return the complete hostname, including domain, for this record."""
+        return self.zone.hostname(self.name)
+
+    @property
+    def fqdn(self):
+        """
+        Return the traditional fully qualified domain name, including full-stop
+        trailing dot, for this record.
+        """
+        return self.zone.fqdn(self.name)
+
     def __repr__(self):
         # type: () -> str
         zone = self.zone.domain if self.zone.domain else self.zone.id
@@ -212,6 +311,11 @@ class DNSDriver(BaseDriver):
 
     # Map libcloud record type enum to provider record type name
     RECORD_TYPE_MAP = {}  # type: Dict[RecordType, str]
+
+    # "A"     -> type: "A", prefix: None
+    # "A:www" -> type: "A", prefix: "www"
+    DEFAULT_ID_RE = re.compile(r"(?P<type>[A-Z]+)(\:(?P<name>.+))?")
+    DefaultID = namedtuple("DefaultID", "type,name")
 
     def __init__(
         self,
@@ -576,3 +680,19 @@ class DNSDriver(BaseDriver):
         string = string.upper()
         record_type = getattr(RecordType, string)
         return record_type
+
+    @staticmethod
+    def to_default_id(zone, name, type):
+        prefix = zone.prefix(name)
+        return f"{type}:{prefix}" if prefix else str(type)
+
+    @classmethod
+    def from_default_id(cls, zone, record_id):
+        match = cls.DEFAULT_ID_RE.match(record_id)
+        if match is None:
+            raise RecordDoesNotExistError(
+                value="malformed record ID", driver=cls, record_id=record_id
+            )
+
+        name = match.group("name")
+        return cls.DefaultID(match.group("type"), "" if name is None else zone.prefix(name))
