@@ -30,11 +30,34 @@ TMP_DIR=$(mktemp -d)
 # TODO: Use json endpoint + jq to parse out the url
 # https://pypi.org/pypi/apache-libcloud/3.4.0/json
 EXTENSIONS[0]=".tar.gz"
-EXTENSIONS[1]="-py3-none-any.whl"
+EXTENSIONS[1]=".whl"
 
-APACHE_MIRROR_URL="http://www.apache.org/dist/libcloud"
-PYPI_MIRROR_URL_SOURCE="https://pypi.python.org/packages/source/a/apache-libcloud"
-PYPI_MIRROR_URL_WHEEL="https://files.pythonhosted.org/packages/py3/a/apache-libcloud"
+# Get the download URL for the given extension from PyPi JSON API
+function get_pypi_url() {
+    local extension=$1
+    local pypi_version
+
+    pypi_version=$(echo "${VERSION}" | sed -E "s/^apache[-_]libcloud-//")
+
+    curl -s "https://pypi.org/pypi/apache-libcloud/${pypi_version}/json" | \
+        jq -r  --arg ext "${extension}" \
+        '.urls[] | select(.filename | endswith($ext)) | .url' | \
+        head -n 1
+}
+
+# Get the download URL for the given extension from Apache mirror
+function get_apache_url() {
+    local extension=$1
+    local apache_version
+
+    apache_version=$(echo "${VERSION}" | sed -E "s/^apache[-_]libcloud-//")
+
+    # List files from Apache directory and find the matching file
+    curl -s "https://downloads.apache.org/libcloud/" | \
+        grep -oP "href=\"\K[^\"]*-${apache_version}[^\"]*${extension}" | \
+        head -n 1 | \
+        sed "s|^|https://downloads.apache.org/libcloud/|"
+}
 
 # From http://tldp.org/LDP/abs/html/debugging.html#ASSERT
 function assert ()                 #  If condition false,
@@ -69,18 +92,17 @@ do
     extension=${EXTENSIONS[$i]}
     file_name="${VERSION}${extension}"
 
-    if [ "${extension}" = "-py3-none-any.whl" ]; then
+    if [ "${extension}" = ".whl" ]; then
         # shellcheck disable=SC2001
         file_name=$(echo "${file_name}" | sed "s/apache-libcloud/apache_libcloud/g")
     fi
 
-    apache_url="${APACHE_MIRROR_URL}/${file_name}"
-    pypi_url="${PYPI_MIRROR_URL}/${file_name}"
+    apache_url=$(get_apache_url "${extension}")
+    pypi_url=$(get_pypi_url "${extension}")
 
-    if [ "${extension}" = "-py3-none-any.whl" ]; then
-        pypi_url="${PYPI_MIRROR_URL_WHEEL}/${file_name}"
-    else
-        pypi_url="${PYPI_MIRROR_URL_SOURCE}/${file_name}"
+    if [ -z "${pypi_url}" ]; then
+        echo "[ERR] Failed to resolve PyPi URL for ${file_name}"
+        exit 2
     fi
 
     assert "${apache_url} != ${pypi_url}", "URLs must be different"

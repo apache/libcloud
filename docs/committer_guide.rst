@@ -108,7 +108,7 @@ To run it:
 .. sourcecode:: bash
 
     # Install build dependencies
-    pip install -e ".[build]"
+    uv sync --group build --no-dev
 
     cd dist
     ./release.sh -u <yourusername>@apache.org
@@ -193,7 +193,7 @@ use this token, see:
 .. sourcecode:: bash
 
     # Install publish dependencies
-    pip install -e ".[publish]"
+    uv sync --group publish --no-dev
 
     cd dist
     ./deploy.sh

@@ -6,12 +6,12 @@ RcodeZero DNS Driver Documentation
     :width: 300
     :target: https://www.rcodezero.at/en
 
-`RcodeZero`_ is a European Anycast DNS service provided by nic.at. 
+`RcodeZero`_ is a European Anycast DNS service provided by nic.at.
 
 Supported Features:
 
 - more than 35 nodes
-- two seperate clouds with different ASes 
+- two seperate clouds with different ASes
 - full IPv4/IPv6 support
 - primary as well as secondary Nameservers
 - DNSSEC signing
@@ -38,5 +38,5 @@ API Docs
 
 .. autoclass:: libcloud.dns.drivers.rcodezero.RcodeZeroDNSDriver
     :members:
-    
+
 .. _`RcodeZero`: https://my.rcodezero.at/en
