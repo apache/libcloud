@@ -4,11 +4,9 @@ name: Integration Tests
 
 on:
   push:
-    branches:
-      - trunk
+    branches: [ trunk ]
   pull_request:
-    branches:
-      - trunk
+    branches: [ trunk ]
   schedule:
     - cron: '0 1 * * *'
 
@@ -32,34 +30,34 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', 'integration/storage/requirements.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
         run: |
-          pip install -r requirements-ci.txt
+          uv sync --group ci --no-dev
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run tox target
         run: |

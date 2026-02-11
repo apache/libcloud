@@ -539,6 +539,13 @@
         <revision>v3.8.0</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>3.9.0</name>
+        <created>2026-02-09</created>
+        <revision>v3.9.0</revision>
+      </Version>
+  </release>
 
   <repository>
       <SVNRepository>
