@@ -40,6 +40,10 @@ DNS
   (#2068)
   [Chris Smith - cha0tic87]
 
+- [Luadns] Fix example keyword arguments.
+  (#2064)
+  [Aaron Sierra - @aaron-sierra]
+
 Changes in Apache Libcloud 3.9.0
 --------------------------------
 
