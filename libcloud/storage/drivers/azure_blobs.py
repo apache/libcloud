@@ -620,6 +620,10 @@ class AzureBlobsStorageDriver(StorageDriver):
                           Defaults to 24 hours.
         :type  ex_expiry: ``float``
 
+        :param ex_method: The HTTP method for which the URL is valid.
+                          Defaults to "GET".
+        :type  ex_method: ``str``
+
         :return: A SAS URL for the object.
         :rtype: ``str``
         """

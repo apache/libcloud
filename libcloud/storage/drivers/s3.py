@@ -1295,6 +1295,10 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
                           if set.
         :type  ex_expiry: ``float``
 
+        :param ex_method: The HTTP method for which the URL is valid.
+                          Defaults to "GET".
+        :type  ex_method: ``str``
+
         :return: Presigned URL for the object.
         :rtype: ``str``
         """
