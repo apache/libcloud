@@ -63,7 +63,6 @@ LOCATIONS = {
     "SYD1": {"id": "SYD1", "name": "Sydney 1", "country": "AU"},
     "VIN1": {"id": "VIN1", "name": "Vint Hill, Virginia 1", "country": "US"},
     "WAW1": {"id": "WAW1", "name": "Warsaw 1", "country": "PL"},
-    
     "BHS": {"id": "BHS", "name": "Beauharnois, Quebec", "country": "CA"},
     "CA-EAST-TOR": {"id": "CA-EAST-TOR", "name": "Toronto, Canada", "country": "CA"},
     "DE": {"id": "DE", "name": "Germany", "country": "DE"},
