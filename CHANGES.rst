@@ -28,6 +28,10 @@ Compute
   (#2060)
   [Frederic Hemery - @Arkelenia]
 
+- [Azure ARM, Amazon S3] Add signed upload to azure and s3.
+  (#2058)
+  [Pablo Nicolás Estevez - @Polandia94]
+
 DNS
 ~~~~
 
