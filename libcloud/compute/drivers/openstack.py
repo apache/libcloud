@@ -114,6 +114,12 @@ class OpenStackVolumeV3Connection(OpenStackBaseConnection):
     service_region = "RegionOne"
 
 
+class OpenStackReservationConnection(OpenStackBaseConnection):
+    service_type = "reservation"
+    service_name = "blazar"
+    service_region = "RegionOne"
+
+
 class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
@@ -2467,6 +2473,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 power_state=api_node.get("OS-EXT-STS:power_state", None),
                 progress=api_node.get("progress", None),
                 fault=api_node.get("fault"),
+                hypervisor_hostname=api_node.get("OS-EXT-SRV-ATTR:hypervisor_hostname"),
             ),
         )
 
@@ -2813,6 +2820,15 @@ class OpenStack_2_VolumeV3Connection(OpenStackVolumeV3Connection):
         return json.dumps(data)
 
 
+class OpenStack_2_ReservationConnection(OpenStackReservationConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = "application/json"
+    default_content_type = "application/json; charset=UTF-8"
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
 class OpenStack_2_PortInterfaceState(Type):
     """
     Standard states of OpenStack_2_PortInterfaceState
@@ -2873,6 +2889,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     volumev3_connection = None
     volume_connection = None
 
+    # Connection to the Blazar reservation API
+    reservation_connectionCls = OpenStack_2_ReservationConnection
+    reservation_connection = None
+
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
@@ -2928,6 +2948,16 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         self.connectionCls = self.network_connectionCls
         super().__init__(*args, **kwargs)
         self.network_connection = self.connection
+
+        # We run the init once to get the Blazar API connection
+        # and put that on the object under self.reservation_connection.
+        if original_ex_force_base_url or kwargs.get("ex_force_reservation_url"):
+            kwargs["ex_force_base_url"] = str(
+                kwargs.pop("ex_force_reservation_url", original_ex_force_base_url)
+            )
+        self.connectionCls = self.reservation_connectionCls
+        super().__init__(*args, **kwargs)
+        self.reservation_connection = self.connection
 
         # We run the init once again to get the compute API connection
         # and that's put under self.connection as normal.
@@ -4367,6 +4397,100 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             data={"floatingip": {"port_id": None}},
         )
         return resp.status == httplib.OK
+
+    def ex_list_leases(self):
+        """
+        List leases
+
+        :rtype: ``list`` of :class:`OpenStack_2_Lease`
+        """
+        return self._to_leases(self.reservation_connection.request("/leases").object)
+
+    def _to_leases(self, obj):
+        lease_elements = obj["leases"]
+        return [self._to_lease(lease) for lease in lease_elements]
+
+    def _to_lease(self, obj):
+        return OpenStack_2_Lease(
+            id=obj["id"],
+            name=obj["name"],
+            start=obj["start_date"],
+            end=obj["end_date"],
+            status=obj["status"],
+            reservations=obj["reservations"],
+            driver=self.reservation_connection.driver,
+        )
+
+    def ex_list_hosts(self):
+        """
+        List leases
+
+        :rtype: ``list`` of :class:`OpenStack_2_Host`
+        """
+        return self._to_hosts(self.reservation_connection.request("/os-hosts").object)
+
+    def _to_hosts(self, obj):
+        host_elements = obj["hosts"]
+        return [self._to_host(host) for host in host_elements]
+
+    def _to_host(self, obj):
+        return OpenStack_2_Host(
+            id=obj["id"],
+            hypervisor_hostname=obj["hypervisor_hostname"],
+            vcpus=obj["vcpus"],
+            memory_mb=obj["memory_mb"],
+            local_gb=obj["local_gb"],
+            service_name=obj["service_name"],
+        )
+
+
+class OpenStack_2_Host:
+    """
+    Host info.
+    """
+
+    def __init__(self, id, hypervisor_hostname, vcpus, memory_mb, local_gb, service_name):
+        self.id = id
+        self.hypervisor_hostname = hypervisor_hostname
+        self.vcpus = vcpus
+        self.memory_mb = memory_mb
+        self.local_gb = local_gb
+        self.service_name = service_name
+
+    def __repr__(self):
+        return "<OpenStack_2_Host: id={}, hypervisor_hostname={}>".format(
+            self.id,
+            self.hypervisor_hostname,
+        )
+
+
+class OpenStack_2_Lease:
+    """
+    Lease info.
+    """
+
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    TERMINATED = "TERMINATED"
+    DELETED = "DELETED"
+    CREATING = "CREATING"
+    UPDATING = "UPDATING"
+    DELETING = "DELETING"
+    ERROR = "ERROR"
+
+    def __init__(self, id, name, start, end, status, reservations, driver):
+        self.id = id
+        self.name = name
+        self.start = start
+        self.end = end
+        self.status = status
+        self.reservations = reservations
+        self.driver = driver
+
+    def __repr__(self):
+        return "<OpenStack_2_Lease: id={}, name={}, status={}>".format(
+            self.id, self.name, self.status
+        )
 
 
 class OpenStack_1_1_FloatingIpPool:

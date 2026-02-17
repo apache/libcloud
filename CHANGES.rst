@@ -1,6 +1,49 @@
 Changelog
 =========
 
+Changes in Apache Libcloud 3.9.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Initial Blazar support
+
+  This is an initial implementation of Blazar support in Libcloud. It currently
+  supports listing the available leases and hosts.
+  (#2094)
+  [Miguel Caballer - @micafer]
+
+
+- [Azure ARM] Update US GovCloud AD endpoint for AZURE_ARM provider.
+  (#2062)
+  [Chris Clifford - @CrCliff]
+
+- [OpenStack] Add hypervisor_hostname attribute to OpenStack node.
+  (#2063)
+  [Miguel Caballer - @micafer]
+
+
+- [GCP]  Use the fully-qualified name for the GCP IMDS endpoint.
+  (#2060)
+  [Frederic Hemery - @Arkelenia]
+
+DNS
+~~~~
+
+- [Cloudflare] Removal of zone_name from Cloudflare record response following API deprecation
+
+  This change will cause that record name returned by the Cloudflare driver to be fully
+  qualified (e.g. "www.example.com") instead of relative to the zone (e.g. "www").
+  This is due to the fact that Cloudflare has deprecated the "zone_name" field in their
+  API response and it is no longer available.
+  (#2068)
+  [Chris Smith - cha0tic87]
+
+- [Luadns] Fix example keyword arguments.
+  (#2064)
+  [Aaron Sierra - @aaron-sierra]
+
 Changes in Apache Libcloud 3.9.0
 --------------------------------
 

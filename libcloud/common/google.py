@@ -126,7 +126,7 @@ def _from_utc_timestamp(timestamp):
 
 def _get_gce_metadata(path="", retry_failed: Optional[bool] = None):
     try:
-        url = "http://metadata/computeMetadata/v1/" + path.lstrip("/")
+        url = "http://metadata.google.internal/computeMetadata/v1/" + path.lstrip("/")
         headers = {"Metadata-Flavor": "Google"}
         response = get_response_object(url, headers=headers, retry_failed=retry_failed)
         return response.status, "", response.body
