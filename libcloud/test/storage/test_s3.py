@@ -530,6 +530,23 @@ class S3Tests(unittest.TestCase):
             with self.assertRaises(NotImplementedError):
                 self.driver.get_object_cdn_url(obj)
 
+    def test_get_object_cdn_url_put(self):
+        self.mock_response_klass.type = "get_object"
+        obj = self.driver.get_object(container_name="test2", object_name="test")
+
+        # cdn urls can only be generated using a V4 connection
+        if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
+            cdn_url = self.driver.get_object_cdn_url(obj, ex_method="PUT", ex_expiry=12)
+            url = urlparse.urlparse(cdn_url)
+            query = urlparse.parse_qs(url.query)
+
+            self.assertEqual(len(query["X-Amz-Signature"]), 1)
+            self.assertGreater(len(query["X-Amz-Signature"][0]), 0)
+            self.assertEqual(query["X-Amz-Expires"], ["43200"])
+        else:
+            with self.assertRaises(NotImplementedError):
+                self.driver.get_object_cdn_url(obj)
+
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
         # trickier

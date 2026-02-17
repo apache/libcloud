@@ -28,6 +28,10 @@ Compute
   (#2060)
   [Frederic Hemery - @Arkelenia]
 
+- [Azure ARM, Amazon S3] Add signed upload to azure and s3.
+  (#2058)
+  [Pablo Nicolás Estevez - @Polandia94]
+
 DNS
 ~~~~
 
@@ -39,6 +43,10 @@ DNS
   API response and it is no longer available.
   (#2068)
   [Chris Smith - cha0tic87]
+
+- [Luadns] Fix example keyword arguments.
+  (#2064)
+  [Aaron Sierra - @aaron-sierra]
 
 Changes in Apache Libcloud 3.9.0
 --------------------------------

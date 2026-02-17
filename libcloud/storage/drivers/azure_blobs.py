@@ -19,6 +19,7 @@ import hmac
 import base64
 import hashlib
 import binascii
+from typing import Literal
 from datetime import datetime, timedelta
 
 from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
@@ -603,7 +604,12 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         raise ObjectDoesNotExistError(value=None, driver=self, object_name=object_name)
 
-    def get_object_cdn_url(self, obj, ex_expiry=AZURE_STORAGE_CDN_URL_EXPIRY_HOURS):
+    def get_object_cdn_url(
+        self,
+        obj,
+        ex_expiry=AZURE_STORAGE_CDN_URL_EXPIRY_HOURS,
+        ex_method: Literal["GET", "PUT", "DELETE"] = "GET",
+    ):
         """
         Return a SAS URL that enables reading the given object.
 
@@ -614,6 +620,10 @@ class AzureBlobsStorageDriver(StorageDriver):
                           Defaults to 24 hours.
         :type  ex_expiry: ``float``
 
+        :param ex_method: The HTTP method for which the URL is valid.
+                          Defaults to "GET".
+        :type  ex_method: ``str``
+
         :return: A SAS URL for the object.
         :rtype: ``str``
         """
@@ -623,10 +633,17 @@ class AzureBlobsStorageDriver(StorageDriver):
         start = now - timedelta(minutes=AZURE_STORAGE_CDN_URL_START_MINUTES)
         expiry = now + timedelta(hours=ex_expiry)
 
+        if ex_method == "PUT":
+            sp = "wc"
+        elif ex_method == "DELETE":
+            sp = "d"
+        else:
+            sp = "r"
+
         params = {
             "st": start.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
             "se": expiry.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
-            "sp": "r",
+            "sp": sp,
             "spr": "https" if self.secure else "http,https",
             "sv": self.connectionCls.API_VERSION,
             "sr": "b",
