@@ -89,7 +89,7 @@ class RcodeZeroDNSTestCase(LibcloudTestCase):
 
     def test_list_records(self):
         records = self.driver.list_records(self.test_zone)
-        self.assertEqual(len(records), 3)
+        self.assertEqual(len(records), 4)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
@@ -118,6 +118,24 @@ class RcodeZeroDNSTestCase(LibcloudTestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.ttl, 300)
 
+    # test issue #2042
+    def test_add_other_type_to_existing_record(self):
+        payload = self.driver._to_patchrequest(
+            self.test_record.zone.id,
+            self.test_record,
+            "aaaaexisting",
+            RecordType.A,
+            "127.0.0.1",
+            {"ttl": 300},
+            "update",
+        )
+        self.assertEqual(payload[0]["name"], "aaaaexisting.example.at.")
+        self.assertEqual(payload[0]["type"], RecordType.A)
+        self.assertEqual(payload[0]["ttl"], 300)
+        self.assertEqual(payload[0]["changetype"], "update")
+        expected_record = [{"content": "127.0.0.1"}]
+        self.assertEqual(payload[0]["records"], expected_record)
+
     def test_update_zone(self):
         with self.assertRaises(NotImplementedError):
             self.driver.update_zone(self.test_zone, "example.at")
@@ -144,7 +162,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("rcodezero")
     base_headers = {"content-type": "application/json"}
 
-    def _api_v1_zones(self, method, url, body, headers):
+    def _api_v2_zones(self, method, url, body, headers):
         if method == "GET":
             # list_zones()
             body = self.fixtures.load("list_zones.json")
@@ -157,7 +175,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError("Unexpected method: %s" % method)
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _api_v1_zones_example_at(self, method, *args, **kwargs):
+    def _api_v2_zones_example_at(self, method, *args, **kwargs):
         if method == "GET":
             # list_records()
             body = self.fixtures.load("get_zone_details.json")
@@ -173,10 +191,10 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError("Unexpected method: %s" % method)
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _api_v1_zones_example_at__rrsets(self, method, *args, **kwargs):
-        return self._api_v1_zones_example_at_rrsets(method, *args, **kwargs)
+    def _api_v2_zones_example_at__rrsets(self, method, *args, **kwargs):
+        return self._api_v2_zones_example_at_rrsets(method, *args, **kwargs)
 
-    def _api_v1_zones_example_at_rrsets(self, method, *args, **kwargs):
+    def _api_v2_zones_example_at_rrsets(self, method, *args, **kwargs):
         if method == "GET":
             # list_records()
             body = self.fixtures.load("list_records.json")
@@ -189,7 +207,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError("Unexpected method: %s" % method)
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
-    def _api_v1_zones_EXISTS(self, method, url, body, headers):
+    def _api_v2_zones_EXISTS(self, method, url, body, headers):
         # create_zone() is a POST. Raise on all other operations to be safe.
         if method != "POST":
             raise NotImplementedError("Unexpected method: %s" % method)
@@ -203,7 +221,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             "Unprocessable Entity",
         )
 
-    def _api_v1_zones_example_com_MISSING(self, *args, **kwargs):
+    def _api_v2_zones_example_com_MISSING(self, *args, **kwargs):
         return (
             httplib.NOT_FOUND,
             '{"status": "failed","message": "Zone not found"}',
@@ -211,7 +229,7 @@ class RcodeZeroDNSMockHttp(MockHttp):
             "Unprocessable Entity",
         )
 
-    def _api_v1_zones_example_at_MISSING(self, *args, **kwargs):
+    def _api_v2_zones_example_at_MISSING(self, *args, **kwargs):
         return (
             httplib.NOT_FOUND,
             '{"status": "failed","message": "Zone not found"}',

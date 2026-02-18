@@ -112,7 +112,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         secure=True,
         host=None,
         port=None,
-        api_version="v1",
+        api_version="v2",
         **kwargs,
     ):
         """
@@ -141,6 +141,8 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         if api_version == "v1":
             self.api_root = "/api/v1"
+        elif api_version == "v2":
+            self.api_root = "/api/v2"
         else:
             raise NotImplementedError("Unsupported API version: %s" % api_version)
 
@@ -565,8 +567,8 @@ class RcodeZeroDNSDriver(DNSDriver):
 
                 continue
 
-            if name == r.name and r.id != id:
-                # we have other records with the same name so make an update
+            if name == r.name and type == r.type and r.id != id:
+                # we have other records with the same name and type so make an update
                 # request
                 rrset["changetype"] = "update"
                 content = {}

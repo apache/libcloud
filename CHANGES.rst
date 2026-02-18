@@ -32,6 +32,10 @@ Compute
   (#2058)
   [Pablo Nicolás Estevez - @Polandia94]
 
+- [RcodeZero]: Fix issue when adding a record where a record with a different type already exists
+  (#2038)
+  [Michael Braunöder - @MikeAT]
+
 DNS
 ~~~~
 
