@@ -162,7 +162,7 @@ class OvhNodeDriver(NodeDriver):
                 return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
         key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_comment = get_pubkey_comment(pubkey, default="unnamed")
-        key_name = "{}-{}".format(key_comment, key_fingerprint)
+        key_name = "{}-{}".format(key_comment, key_fingerprint.replace(":","-"))
         key_pair=self.import_key_pair_from_string(key_name, pubkey, ex_location=location)
         return {"keyName": key_pair.name, "keyFingerprint": key_pair.fingerprint}
     
