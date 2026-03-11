@@ -165,18 +165,19 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         """
         Test that proxy environment variables are respected by the underlying Requests library
         """
+
         def mock_send(self, request, **kwargs):
-            captured_proxies.update(kwargs.get('proxies', {}))
+            captured_proxies.update(kwargs.get("proxies", {}))
             nonlocal captured_url
             captured_url = request.url
             mock_response = Mock()
             mock_response.status_code = 200
-            mock_response.headers = {'content-type': 'application/json', 'location': ''}
+            mock_response.headers = {"content-type": "application/json", "location": ""}
             mock_response.text = "OK"
             mock_response.history = []  # No redirects
             return mock_response
-        
-        with patch.object(HTTPAdapter, 'send', mock_send):
+
+        with patch.object(HTTPAdapter, "send", mock_send):
             os.environ["http_proxy"] = "http://proxy.example.com:8080"
             os.environ["https_proxy"] = "https://secure-proxy.example.com:8443"
             os.environ["no_proxy"] = "localhost,127.0.0.1"
@@ -187,13 +188,15 @@ class BaseConnectionClassTestCase(unittest.TestCase):
             conn.request("GET", "/get")
 
             self.assertEqual(captured_proxies, {})
-            self.assertIn('localhost', captured_url)
+            self.assertIn("localhost", captured_url)
 
             conn = LibcloudConnection(host="test.com", port=80)
             conn.request("GET", "/get")
 
-            self.assertEqual(captured_proxies.get('http', None), 'http://proxy.example.com:8080')
-            self.assertEqual(captured_proxies.get('https', None), 'https://secure-proxy.example.com:8443')
+            self.assertEqual(captured_proxies.get("http", None), "http://proxy.example.com:8080")
+            self.assertEqual(
+                captured_proxies.get("https", None), "https://secure-proxy.example.com:8443"
+            )
 
     def test_connection_to_unusual_port(self):
         conn = LibcloudConnection(host="localhost", port=8080)
