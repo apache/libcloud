@@ -32,52 +32,50 @@ jobs:
       fail-fast: false
       matrix:
         python_version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
           # cryptography is not compatible with older PyPy versions
-          - "pypy-3.9"
           - "pypy-3.10"
         os:
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', '') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: uv sync --group ci --no-dev
+
+      - name: Add .venv to PATH
+        run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run unit tests tox target
-        run: |
-         tox -e py${{ matrix.python_version }}
+        run: tox -e py${{ matrix.python_version }}
 
       - name: Run dist install checks tox target
-        if: ${{ matrix.python_version != 'pypy-3.9' && matrix.python_version != 'pypy-3.10' }}
-        run: |
-         tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
+        if: ${{ matrix.python_version != 'pypy-3.10' }}
+        run: tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel
 
   code_coverage:
     name: Generate Code Coverage
@@ -85,41 +83,41 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: uv sync --group ci --no-dev
+
+      - name: Add .venv to PATH
+        run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run Checks
-        run: |
-          tox -e coverage-ci
+        run: tox -e coverage-ci
 
       - name: Upload Coverage to codecov.io
-        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           # We utilize secret for more realiable builds. Without secret being set, upload step
           # fails fairly often.
@@ -133,42 +131,41 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: uv sync --group ci --no-dev
+
+      - name: Add .venv to PATH
+        run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run shellcheck
-        run: |
-          shellcheck dist/*.sh contrib/*.sh
+        run: shellcheck dist/*.sh contrib/*.sh
 
       - name: Run Python Checks
-        run: |
-          tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint,mypy
+        run: tox -e black-check,isort-check,pyupgrade,checks,import-timings,lint,pylint,mypy
 
   build_test_release_artifact:
     name: Build and Test Release Artifact
@@ -176,30 +173,39 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
+      - uses: actions/checkout@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvirt-dev pkg-config gcc
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
         run: |
-          pip install -r requirements-ci.txt
-          pip install "build==1.2.2"
+          uv sync --group ci --group build --no-dev
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Build Release Artifact
         run: |
@@ -224,8 +230,8 @@ jobs:
           # Unpack tarball and verify + run the tests
           tar -xzvf "${TARBALL_FILENAME}"
 
-          cd "apache_libcloud-${VERSION}/" 
-          tox -c tox.ini -epy3.9
+          cd "apache_libcloud-${VERSION}/"
+          tox -c tox.ini -epy3.10
 
       - name: Verify Wheel Release Artifact
         run: |
@@ -243,9 +249,9 @@ jobs:
           # Since wheel doesn't include those files, we need to manually copy them over from
           # repo root so we can run the tests
           cp ../../tox.ini .
-          cp ../../requirements-tests.txt .
+          cp ../../pyproject.toml .
           cp ../../libcloud/test/secrets.py-dist libcloud/test/secrets.py-dist
-          tox -c tox.ini -epy3.9
+          tox -c tox.ini -epy3.10
 
   build_test_docker_image:
     name: Build and Verify Docker Image
@@ -253,17 +259,12 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Build Testing Docker Image
-        run: |
-          docker build -f contrib/Dockerfile -t libcloud_runtest_img .
-
+        run: docker build -f contrib/Dockerfile -t libcloud_runtest_img .
       - name: Verify Image Works
         # This step runs checks under various Python versions and it's slow so
         # we only run it on nightly basis
@@ -273,47 +274,54 @@ jobs:
 
   security_checks:
     name: Run Security Checks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v6
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v6
         with:
-          fetch-depth: 1
+          python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
-      - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          python-version: ${{ matrix.python_version }}
-
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-lint.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
+        run: uv sync --group dev --group docs
+
+      - name: Add .venv to PATH
+        run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
+
+      - name: Ensure pip is available
         run: |
-          pip install -r requirements-ci.txt
+          python -m ensurepip --upgrade
+          python -m pip install --upgrade pip
 
       - name: Install Library Into Virtualenv
         run: |
           python -m venv venv/
           source venv/bin/activate
+          python -m pip install --upgrade pip
           python -m pip install .
 
       - name: Run Pip Audit Check On Main Library Dependencies
-        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
+        uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
         with:
           virtual-environment: venv/
           # setuptools which we don't install or depend on directly
@@ -324,20 +332,18 @@ jobs:
             PYSEC-2023-228
 
       - name: Cleanup
-        run: |
-          rm -rf venv/ || true
+        run: rm -rf venv/ || true
 
       - name: Run Pip Audit Check On All Development And Test Dependencies
-        uses: ./.github/actions/gh-action-pip-audit/  # v1.0.0
+        uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
         with:
-          inputs: requirements-tests.txt requirements-lint.txt requirements-mypy.txt requirements-docs.txt
+          virtual-environment: .venv
           # setuptools which we don't install or depend on directly
           ignore-vulns: |
             GHSA-r9hx-vwmv-q579
 
       - name: Run Bandit Check
-        run: |
-          tox -e bandit
+        run: tox -e bandit
 
   micro-benchmarks:
     name: Micro Benchmarks
@@ -345,38 +351,38 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: uv sync --group ci --no-dev
+
+      - name: Add .venv to PATH
+        run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run Micro Benchmarks
-        run: |
-          tox -e micro-benchmarks
+        run: tox -e micro-benchmarks
 
   docs:
     name: Build and upload Documentation
@@ -384,43 +390,41 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [3.9]
+        python_version: [ "3.10" ]
 
     steps:
-      - name: Print Environment Info
-        id: printenv
-        run: |
-          printenv | sort
-
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-
+      - uses: actions/checkout@v6
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Print Environment Info
+        run: printenv | sort
 
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
+      - name: Cache uv
+        uses: actions/cache@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-docs.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: |
-          pip install -r requirements-ci.txt
+        run: uv sync --group ci --no-dev
+
+      - name: Add .venv to PATH
+        run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Build Docs
-        run: |
-          tox -e docs
+        run: tox -e docs
 
       - name: Trigger ReadTheDocs build
         if: ${{ github.ref_name == 'trunk' }}
@@ -428,5 +432,5 @@ jobs:
           RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
           BRANCH_NAME: "trunk"
         run: |
-          pip install requests
+          uv pip install requests
           python ./contrib/trigger_rtd_build.py

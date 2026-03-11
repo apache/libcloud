@@ -26,6 +26,17 @@
                     "disabled": false
                 }
             ]
+        },
+        {
+            "name": "aaaaexisting.example.at.",
+            "type": "AAAA",
+            "ttl": 3600,
+            "records": [
+                {
+                    "content": "2001:db8::42",
+                    "disabled": false
+                }
+            ]
         }
     ],
     "from": 1,

@@ -12,15 +12,12 @@ include CHANGES.rst
 include README.rst
 include tox.ini
 include pyproject.toml
-include requirements-tests.txt
-include requirements-lint.txt
 include libcloud/data/pricing.json
 include libcloud/test/secrets.py-dist
 include demos/*
 include scripts/check_file_names.sh
 recursive-exclude libcloud/test secrets.py
 prune libcloud/test/secrets.py
-prune requirements-rtd.txt
 prune dist
 prune build
 prune contrib/
