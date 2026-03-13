@@ -15,6 +15,7 @@
 """
 Ovh driver
 """
+from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerprint
 from libcloud.utils.py3 import httplib
 from libcloud.common.ovh import API_ROOT, OvhConnection
 from libcloud.compute.base import (
@@ -119,21 +120,11 @@ class OvhNodeDriver(NodeDriver):
 
         return self._to_node(response.object)
 
-    def create_node(self, name, image, size, location, ex_keyname=None):
+    def create_node(self, name, image, size, location, auth=None, ex_keyname=None):
         """
         Create a new node
 
-        :keyword name: Name of created node
-        :type    name: ``str``
-
-        :keyword image: Image used for node
-        :type    image: :class:`NodeImage`
-
-        :keyword size: Size (flavor) used for node
-        :type    size: :class:`NodeSize`
-
-        :keyword location: Location (region) where to create node
-        :type    location: :class:`NodeLocation`
+        @inherits: :class:`NodeDriver.create_node`
 
         :keyword ex_keyname: Name of SSH key used
         :type    ex_keyname: ``str``
@@ -148,6 +139,14 @@ class OvhNodeDriver(NodeDriver):
             "flavorId": size.id,
             "region": location.id,
         }
+        if auth and ex_keyname:
+            raise AttributeError("Cannot specify auth and ex_keyname together")
+
+        if auth:
+            auth = self._get_and_check_auth(auth)
+            # pylint: disable=no-member
+            key = self.ex_find_or_import_keypair_by_key_material(location,auth.pubkey)
+            ex_keyname = key["keyName"]
 
         if ex_keyname:
             key_id = self.get_key_pair(ex_keyname, location).extra["id"]
@@ -155,7 +154,18 @@ class OvhNodeDriver(NodeDriver):
         response = self.connection.request(action, data=data, method="POST")
 
         return self._to_node(response.object)
-
+    
+    def ex_find_or_import_keypair_by_key_material(self, location, pubkey):
+        key_pairs = self.list_key_pairs(ex_location=location)
+        for key_pair in key_pairs:
+            if key_pair.public_key == pubkey:
+                return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default="unnamed")
+        key_name = "{}-{}".format(key_comment, key_fingerprint.replace(":","-"))
+        key_pair=self.import_key_pair_from_string(key_name, pubkey, ex_location=location)
+        return {"keyName": key_pair.name, "keyFingerprint": key_pair.fingerprint}
+    
     def destroy_node(self, node):
         action = self._get_project_action("instance/%s" % node.id)
         self.connection.request(action, method="DELETE")
