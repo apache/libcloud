@@ -15,6 +15,7 @@
 """
 Upcloud node driver
 """
+
 import json
 import base64
 

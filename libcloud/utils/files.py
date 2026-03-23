@@ -129,5 +129,5 @@ def exhaust_iterator(iterator):
 
 def guess_file_mime_type(file_path):
     filename = os.path.basename(file_path)
-    (mimetype, encoding) = mimetypes.guess_type(filename)
+    mimetype, encoding = mimetypes.guess_type(filename)
     return mimetype, encoding

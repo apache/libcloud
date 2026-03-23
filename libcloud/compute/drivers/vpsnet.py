@@ -15,6 +15,7 @@
 """
 VPS.net driver
 """
+
 import base64
 
 from libcloud.utils.py3 import b

@@ -65,7 +65,6 @@ Setting up Installed Application authentication:
 Please remember to secure your keys and access tokens.
 """
 
-
 import os
 import sys
 import time
@@ -262,7 +261,7 @@ class GoogleResponse(JsonResponse):
             if json_error:
                 raise JsonParseError(body, self.status, None)
             elif "error" in body:
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
                 if code == "QUOTA_EXCEEDED":
                     raise QuotaExceededError(message, self.status, code)
                 elif code == "RESOURCE_ALREADY_EXISTS":
@@ -278,7 +277,7 @@ class GoogleResponse(JsonResponse):
 
         elif self.status == httplib.NOT_FOUND:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -286,7 +285,7 @@ class GoogleResponse(JsonResponse):
 
         elif self.status == httplib.BAD_REQUEST:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -294,7 +293,7 @@ class GoogleResponse(JsonResponse):
 
         else:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None

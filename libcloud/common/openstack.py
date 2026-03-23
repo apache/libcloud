@@ -358,7 +358,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def _set_up_connection_info(self, url):
         prev_conn = (self.host, self.port, self.secure)
         result = self._tuple_from_url(url)
-        (self.host, self.port, self.secure, self.request_path) = result
+        self.host, self.port, self.secure, self.request_path = result
         new_conn = (self.host, self.port, self.secure)
         if new_conn != prev_conn:
             # We only call connect in case connection details have changed - this way we correctly
