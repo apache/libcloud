@@ -92,7 +92,7 @@ class VSphereNodeDriver(NodeDriver):
         "suspended": NodeState.SUSPENDED,
     }
 
-    def __init__(self, host, username, password, port=443, ca_cert=None):
+    def __init__(self, host, username, password, port=443, ca_cert=None, verify_ssl=True):
         """Initialize a connection by providing a hostname,
         username and password
         """
@@ -137,7 +137,7 @@ class VSphereNodeDriver(NodeDriver):
             if "name or service not known" in error_message:
                 raise LibcloudError("Check that the vSphere host is accessible", driver=self)
 
-            if "certificate verify failed" in error_message:
+            if "certificate verify failed" in error_message and not verify_ssl:
                 # bypass self signed certificates
                 try:
                     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)

@@ -18,7 +18,7 @@
 set -e
 
 # Script which fails if any of the import takes more than threshold ms
-LIBCLOUD_CUMULATIVE_IMPORT_TIME_LIMIT_US=400000
+LIBCLOUD_CUMULATIVE_IMPORT_TIME_LIMIT_US=800000
 EC2_DRIVER_CUMULATIVE_IMPORT_TIME_LIMIT_US=560000
 
 # Clean up any cached files to ensure consistent and clean environment

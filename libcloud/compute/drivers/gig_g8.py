@@ -16,6 +16,7 @@
 GiG G8 Driver
 
 """
+
 import json
 
 from libcloud.compute.base import (
