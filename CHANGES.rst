@@ -7,6 +7,12 @@ Changes in Apache Libcloud 3.9.1
 Compute
 ~~~~~~~
 
+- [VSphere] Add verify_ssl option
+
+  Add verify_ssl option, to enable the user to avoid SSL verification explicitly.
+  (#2128)
+  [Miguel Caballer - @micafer]
+
 - [OpenStack] Initial Blazar support
 
   This is an initial implementation of Blazar support in Libcloud. It currently
