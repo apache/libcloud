@@ -112,6 +112,7 @@ docs = [
     "fasteners",
     "sphinx_rtd_theme==2.0.0",
     "sphinx==6.2.1",
+    "pygments>=2.20.0,<3.0.0",
 ]
 mypy = [
     "mypy==1.15.0; python_version >= '3.10' and implementation_name == \"cpython\"",
