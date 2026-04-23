@@ -2663,11 +2663,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_ALLFILTERS(
         self, method, url, body, headers
     ):
-        (_, params) = url.split("?")
+        _, params = url.split("?")
         parameters = params.split("&")
 
         for parameter in parameters:
-            (key, value) = parameter.split("=")
+            key, value = parameter.split("=")
 
             if key == "datacenterId":
                 assert value == "fake_loc"
@@ -2707,11 +2707,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_antiAffinityRule_ALLFILTERS(
         self, method, url, body, headers
     ):
-        (_, params) = url.split("?")
+        _, params = url.split("?")
         parameters = params.split("&")
 
         for parameter in parameters:
-            (key, value) = parameter.split("=")
+            key, value = parameter.split("=")
 
             if key == "id":
                 assert value == "FAKE_ID"
@@ -2868,11 +2868,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_networkDomain_ALLFILTERS(
         self, method, url, body, headers
     ):
-        (_, params) = url.split("?")
+        _, params = url.split("?")
         parameters = params.split("&")
 
         for parameter in parameters:
-            (key, value) = parameter.split("=")
+            key, value = parameter.split("=")
 
             if key == "datacenterId":
                 assert value == "fake_location"
@@ -2898,11 +2898,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_network_vlan_ALLFILTERS(
         self, method, url, body, headers
     ):
-        (_, params) = url.split("?")
+        _, params = url.split("?")
         parameters = params.split("&")
 
         for parameter in parameters:
-            (key, value) = parameter.split("=")
+            key, value = parameter.split("=")
 
             if key == "datacenterId":
                 assert value == "fake_location"
@@ -3435,11 +3435,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tagKey_ALLFILTERS(
         self, method, url, body, headers
     ):
-        (_, params) = url.split("?")
+        _, params = url.split("?")
         parameters = params.split("&")
 
         for parameter in parameters:
-            (key, value) = parameter.split("=")
+            key, value = parameter.split("=")
 
             if key == "id":
                 assert value == "fake_id"
@@ -3641,11 +3641,11 @@ class DimensionDataMockHttp(MockHttp):
     def _caas_2_4_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_tag_tag_ALLPARAMS(
         self, method, url, body, headers
     ):
-        (_, params) = url.split("?")
+        _, params = url.split("?")
         parameters = params.split("&")
 
         for parameter in parameters:
-            (key, value) = parameter.split("=")
+            key, value = parameter.split("=")
 
             if key == "assetId":
                 assert value == "fake_asset_id"

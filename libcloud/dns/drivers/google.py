@@ -134,7 +134,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        (record_type, record_name) = record_id.split(":", 1)
+        record_type, record_name = record_id.split(":", 1)
 
         params = {
             "name": record_name,

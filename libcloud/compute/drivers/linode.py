@@ -680,8 +680,7 @@ class LinodeNodeDriverV3(LinodeNodeDriver):
             raise LinodeException(
                 0xFD,
                 "Volume size too big. Available space\
-                    %d"
-                % available_space,
+                    %d" % available_space,
             )
 
         # check filesystem type

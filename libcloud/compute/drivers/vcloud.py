@@ -15,6 +15,7 @@
 """
 VMware vCloud driver.
 """
+
 import os
 import re
 import copy

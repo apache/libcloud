@@ -758,7 +758,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         return response
 
     def morph_action_hook(self, action):
-        (_, _, _, request_path) = self._tuple_from_url(self.auth_url)
+        _, _, _, request_path = self._tuple_from_url(self.auth_url)
 
         if request_path == "":
             # No path is provided in the auth_url, use action passed to this
