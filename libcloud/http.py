@@ -18,7 +18,6 @@ Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
 
-import os
 import warnings
 
 import requests
@@ -41,9 +40,6 @@ ALLOW_REDIRECTS = 1
 
 # Default timeout for HTTP requests in seconds
 DEFAULT_REQUEST_TIMEOUT = 60
-
-HTTP_PROXY_ENV_VARIABLE_NAME = "http_proxy"
-HTTPS_PROXY_ENV_VARIABLE_NAME = "https_proxy"
 
 
 class SignedHTTPSAdapter(HTTPAdapter):
@@ -88,6 +84,7 @@ class LibcloudBaseConnection:
     def set_http_proxy(self, proxy_url):
         """
         Set a HTTP proxy which will be used with this connection.
+        This will override any proxy environment variables.
 
         :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
                           authentication and
@@ -197,13 +194,8 @@ class LibcloudConnection(LibcloudBaseConnection):
             ":{}".format(port) if port not in (80, 443) else "",
         )
 
-        # Support for HTTP(s) proxy
-        # NOTE: We always only use a single proxy (either HTTP or HTTPS)
-        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME, None)
-        http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env)
-
-        # Connection argument has precedence over environment variables
-        proxy_url = kwargs.pop("proxy_url", http_proxy_url_env)
+        # Connection argument has precedence over environment variables, which are handled downstream
+        proxy_url = kwargs.pop("proxy_url", None)
 
         self._setup_verify()
         self._setup_ca_cert()

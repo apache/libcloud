@@ -1,11 +1,30 @@
 Changelog
 =========
 
+Changes in Apache Libcloud 3.9.2
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [SSH] Support paramiko 4
+
+  RSA key support has been removed as of paramiko 4, so only import it
+  and check if the version number is less than 4.
+  (#2135)
+  [Steve Kowalik - @s-t-e-v-e-n-k]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
 Compute
 ~~~~~~~
+
+- [VSphere] Add verify_ssl option
+
+  Add verify_ssl option, to enable the user to avoid SSL verification explicitly.
+  (#2128)
+  [Miguel Caballer - @micafer]
 
 - [OpenStack] Initial Blazar support
 

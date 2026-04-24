@@ -220,8 +220,7 @@ def _list_async(driver):
         result = yield from future
         retval.extend(result)
 
-    return retval"""
-            % resource_type,
+    return retval""" % resource_type,
             glob,
             loc,
         )

@@ -17,7 +17,6 @@
 Module for Google Compute Engine Driver.
 """
 
-
 import sys
 import time
 import datetime

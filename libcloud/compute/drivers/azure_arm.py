@@ -439,10 +439,10 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if image_id.startswith("http"):
-            (storageAccount, blobContainer, blob) = _split_blob_uri(image_id)
+            storageAccount, blobContainer, blob = _split_blob_uri(image_id)
             return AzureVhdImage(storageAccount, blobContainer, blob, self)
         else:
-            (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
+            ex_publisher, ex_offer, ex_sku, ex_version = image_id.split(":")
             i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
@@ -2315,7 +2315,7 @@ class AzureNodeDriver(NodeDriver):
 
     def _ex_delete_old_vhd(self, resource_group, uri):
         try:
-            (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
+            storageAccount, blobContainer, blob = _split_blob_uri(uri)
             keys = self.ex_get_storage_account_keys(resource_group, storageAccount)
             blobdriver = AzureBlobsStorageDriver(
                 storageAccount,

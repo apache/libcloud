@@ -15,6 +15,7 @@
 """
 Rackspace driver
 """
+
 from libcloud.compute.base import NodeLocation, VolumeSnapshot
 from libcloud.compute.types import Provider, LibcloudError, VolumeSnapshotState
 from libcloud.utils.iso8601 import parse_date
