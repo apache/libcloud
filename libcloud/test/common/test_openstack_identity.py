@@ -235,7 +235,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         osa.auth_token = None
         osa.auth_token_expires = YESTERDAY
 
-        mocked_auth_method.call_count = 0
+        mocked_auth_method.reset_mock()
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):
@@ -246,7 +246,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         # No force reauth, valid / non-expired token
         osa.auth_token = None
 
-        mocked_auth_method.call_count = 0
+        mocked_auth_method.reset_mock()
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):
@@ -264,7 +264,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         )
         osa.auth_token = None
 
-        mocked_auth_method.call_count = 0
+        mocked_auth_method.reset_mock()
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):

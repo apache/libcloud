@@ -17,7 +17,6 @@
 Provides storage driver for working with local filesystem
 """
 
-
 import os
 import time
 import errno

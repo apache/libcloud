@@ -660,13 +660,15 @@ class ParamikoSSHClient(BaseSSHClient):
         """
         key_types = [
             (paramiko.RSAKey, "RSA"),
-            (paramiko.DSSKey, "DSA"),
             (paramiko.ECDSAKey, "EC"),
         ]
 
         paramiko_version = getattr(paramiko, "__version__", "0.0.0")
         paramiko_version = tuple(int(c) for c in paramiko_version.split("."))
 
+        if paramiko_version < (4, 0, 0):
+            # DSSKey removed in paramiko 4.0.0
+            key_types.insert(1, (paramiko.DSSKey, "DSA"))
         if paramiko_version >= (2, 2, 0):
             # Ed25519 is only supported in paramiko >= 2.2.0
             key_types.append((paramiko.ed25519key.Ed25519Key, "Ed25519"))

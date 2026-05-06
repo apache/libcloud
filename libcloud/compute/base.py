@@ -17,7 +17,6 @@
 Provides base classes for working with drivers
 """
 
-
 import os
 import re
 import time

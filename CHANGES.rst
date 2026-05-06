@@ -1,11 +1,30 @@
 Changelog
 =========
 
+Changes in Apache Libcloud 3.9.2
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [SSH] Support paramiko 4
+
+  RSA key support has been removed as of paramiko 4, so only import it
+  and check if the version number is less than 4.
+  (#2135)
+  [Steve Kowalik - @s-t-e-v-e-n-k]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
 Compute
 ~~~~~~~
+
+- [VSphere] Add verify_ssl option
+
+  Add verify_ssl option, to enable the user to avoid SSL verification explicitly.
+  (#2128)
+  [Miguel Caballer - @micafer]
 
 - [OpenStack] Initial Blazar support
 
@@ -27,6 +46,14 @@ Compute
 - [GCP]  Use the fully-qualified name for the GCP IMDS endpoint.
   (#2060)
   [Frederic Hemery - @Arkelenia]
+
+- [Azure ARM, Amazon S3] Add signed upload to azure and s3.
+  (#2058)
+  [Pablo Nicolás Estevez - @Polandia94]
+
+- [RcodeZero]: Fix issue when adding a record where a record with a different type already exists
+  (#2038)
+  [Michael Braunöder - @MikeAT]
 
 DNS
 ~~~~

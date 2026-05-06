@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Literal
 
 from libcloud.storage.drivers.s3 import (
     S3_CDN_URL_EXPIRY_HOURS,
@@ -83,7 +84,33 @@ class OvhStorageDriver(BaseS3StorageDriver):
     def list_regions(self):
         return REGION_TO_HOST_MAP.keys()
 
-    def get_object_cdn_url(self, obj, ex_expiry=S3_CDN_URL_EXPIRY_HOURS):
+    def get_object_cdn_url(
+        self,
+        obj,
+        ex_expiry=S3_CDN_URL_EXPIRY_HOURS,
+        ex_method: Literal["GET", "PUT", "DELETE"] = "GET",
+    ):
+        """
+        Return a "presigned URL" for read-only access to object
+
+        :param obj: Object instance.
+        :type  obj: :class:`Object`
+
+        :param ex_expiry: The number of hours after which the URL expires.
+                          Defaults to 24 hours or the value of the environment
+                          variable "LIBCLOUD_S3_STORAGE_CDN_URL_EXPIRY_HOURS",
+                          if set.
+        :type  ex_expiry: ``float``
+
+        :param ex_method: The HTTP method for which the URL is valid.
+                          Defaults to "GET".
+        :type  ex_method: ``str``
+
+        :return: Presigned URL for the object.
+        :rtype: ``str``
+        """
         # In order to download (private) objects we need to be able to generate a valid CDN URL,
         # hence shamefully just use the working code from the S3StorageDriver.
-        return S3StorageDriver.get_object_cdn_url(self, obj, ex_expiry=ex_expiry)
+        return S3StorageDriver.get_object_cdn_url(
+            self, obj, ex_expiry=ex_expiry, ex_method=ex_method
+        )

@@ -1259,11 +1259,8 @@ class OpenStackSecurityGroup:
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            "<OpenStackSecurityGroup id=%s tenant_id=%s name=%s \
-        description=%s>"
-            % (self.id, self.tenant_id, self.name, self.description)
-        )
+        return "<OpenStackSecurityGroup id={} tenant_id={} name={} \
+        description={}>".format(self.id, self.tenant_id, self.name, self.description)
 
 
 class OpenStackSecurityGroupRule:
