@@ -48,7 +48,7 @@ jobs:
           ls -la dist | grep .whl
 
       - name: Store dev artifacts - .tar.gz
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: libcloud-dev-tarball
           retention-days: 60
@@ -57,7 +57,7 @@ jobs:
             dist/*.tar.gz
 
       - name: Store dev artifacts - .whl
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: libcloud-dev-wheel
           retention-days: 60
