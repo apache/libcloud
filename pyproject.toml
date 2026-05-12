@@ -89,7 +89,7 @@ test = [
     "cryptography==46.0.7",
     "pyopenssl==26.0.0",
     "fasteners",
-    "paramiko==3.5.1; platform_python_implementation != 'PyPy'",
+    "paramiko==5.0.0; platform_python_implementation != 'PyPy'",
     "libvirt-python==12.0.0",
 ]
 lint = [
@@ -105,7 +105,7 @@ lint = [
     "codespell==2.4.1",
     "prek>=0.2.17",
     "requests>=2.27.1",
-    "paramiko==3.5.1; platform_python_implementation != 'PyPy'",
+    "paramiko==5.0.0; platform_python_implementation != 'PyPy'",
 ]
 docs = [
     "rstcheck==6.2.5; python_version >= '3.10'",
