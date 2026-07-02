@@ -119,7 +119,7 @@ class StorageTest(Integration.TestBase):
             client_secret=config["AZURE_CLIENT_SECRET"],
         )
 
-        resource_client = resource.ResourceManagementClient(
+        resource_client = resource.resources.ResourceManagementClient(
             credentials,
             config["AZURE_SUBSCRIPTION_ID"],
         )
