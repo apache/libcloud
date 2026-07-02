@@ -205,7 +205,7 @@ class StorageTest(Integration.TestBase):
         )
 
         cls.account = account.name
-        cls.secret = keys.keys[0].value
+        cls.secret = keys["keys"][0]["value"]
 
 
 class StorageV2Test(StorageTest):
