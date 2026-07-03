@@ -352,8 +352,7 @@ class UpcloudDriver(NodeDriver):
         """
         if ex_node is None or ex_address is None:
             raise ValueError(
-                "UpCloud API 1.2 requires `ex_node` and `ex_address` "
-                "when detaching a volume."
+                "UpCloud API 1.2 requires `ex_node` and `ex_address` " "when detaching a volume."
             )
 
         self.connection.request(
@@ -560,9 +559,7 @@ class UpcloudDriver(NodeDriver):
             name=volume["title"],
             size=int(volume["size"]),
             driver=self,
-            state=self.STORAGE_VOLUME_STATE_MAP.get(
-                volume["state"], StorageVolumeState.UNKNOWN
-            ),
+            state=self.STORAGE_VOLUME_STATE_MAP.get(volume["state"], StorageVolumeState.UNKNOWN),
             extra=extra,
         )
 
