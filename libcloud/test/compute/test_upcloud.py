@@ -28,8 +28,8 @@ from libcloud.compute.base import (
     NodeSize,
     NodeImage,
     NodeLocation,
-    NodeAuthSSHKey,
     StorageVolume,
+    NodeAuthSSHKey,
 )
 from libcloud.test.secrets import UPCLOUD_PARAMS
 from libcloud.compute.types import Provider, NodeState
