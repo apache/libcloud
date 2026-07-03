@@ -1,0 +1,40 @@
+{
+  "storages": {
+    "storage": [
+      {
+        "access": "private",
+        "encrypted": "no",
+        "labels": [],
+        "license": 0,
+        "size": 10,
+        "state": "online",
+        "tier": "hdd",
+        "title": "Operating system disk",
+        "type": "normal",
+        "uuid": "01eff7ad-168e-413e-83b0-054f6a28fa23",
+        "zone": "uk-lon1"
+      },
+      {
+        "access": "private",
+        "encrypted": "yes",
+        "labels": [
+          {
+            "key": "env",
+            "value": "test"
+          }
+        ],
+        "license": 0,
+        "servers": {
+          "server": []
+        },
+        "size": 50,
+        "state": "online",
+        "tier": "standard",
+        "title": "data",
+        "type": "normal",
+        "uuid": "01d4fcd4-e446-433b-8a9c-551a1284952e",
+        "zone": "fi-hel1"
+      }
+    ]
+  }
+}

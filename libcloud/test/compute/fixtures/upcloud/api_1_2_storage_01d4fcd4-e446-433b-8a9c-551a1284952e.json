@@ -1,0 +1,29 @@
+{
+  "storage": {
+    "access": "private",
+    "encrypted": "yes",
+    "backup_rule": "",
+    "backups": {
+      "backup": []
+    },
+    "labels": [
+      {
+        "key": "env",
+        "value": "test"
+      }
+    ],
+    "license": 0,
+    "servers": {
+      "server": [
+        "00f8c525-7e62-4108-8115-3958df5b43dc"
+      ]
+    },
+    "size": 50,
+    "state": "online",
+    "tier": "standard",
+    "title": "data",
+    "type": "normal",
+    "uuid": "01d4fcd4-e446-433b-8a9c-551a1284952e",
+    "zone": "fi-hel1"
+  }
+}

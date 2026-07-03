@@ -52,6 +52,10 @@ class UpcloudCreateNodeRequestBody:
     :param ex_username: User's username, which is created.
                         Default is 'root'. (optional)
     :type ex_username: ``str``
+
+    :param ex_storage_devices: Additional UpCloud storage_device dictionaries.
+                               (optional)
+    :type ex_storage_devices: ``list`` of ``dict``
     """
 
     def __init__(
@@ -63,7 +67,12 @@ class UpcloudCreateNodeRequestBody:
         auth=None,
         ex_hostname="localhost",
         ex_username="root",
+        ex_storage_devices=None,
     ):
+        storage_devices = _StorageDevice(image, size).to_dict()
+        if ex_storage_devices:
+            storage_devices["storage_device"].extend(ex_storage_devices)
+
         self.body = {
             "server": {
                 "title": name,
@@ -71,7 +80,7 @@ class UpcloudCreateNodeRequestBody:
                 "plan": size.id,
                 "zone": location.id,
                 "login_user": _LoginUser(ex_username, auth).to_dict(),
-                "storage_devices": _StorageDevice(image, size).to_dict(),
+                "storage_devices": storage_devices,
             }
         }
 
@@ -170,6 +179,19 @@ class UpcloudNodeOperations:
         body = {"stop_server": {"stop_type": "hard"}}
         self.connection.request(
             "1.2/server/{}/stop".format(node_id), method="POST", data=json.dumps(body)
+        )
+
+    def start_node(self, node_id):
+        """
+        Starts the node
+
+        :param  node_id: Id of the Node
+        :type   node_id: ``int``
+        """
+        self.connection.request(
+            "1.2/server/{}/start".format(node_id),
+            method="POST",
+            data=json.dumps({"server": {}}),
         )
 
     def get_node_state(self, node_id):

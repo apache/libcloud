@@ -23,7 +23,14 @@ from libcloud.test import MockHttp, LibcloudTestCase, unittest
 from libcloud.compute import providers
 from libcloud.utils.py3 import httplib, ensure_string
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation, NodeAuthSSHKey
+from libcloud.compute.base import (
+    Node,
+    NodeSize,
+    NodeImage,
+    NodeLocation,
+    NodeAuthSSHKey,
+    StorageVolume,
+)
 from libcloud.test.secrets import UPCLOUD_PARAMS
 from libcloud.compute.types import Provider, NodeState
 from libcloud.test.file_fixtures import ComputeFileFixtures
@@ -192,6 +199,102 @@ class UpcloudDriverTests(LibcloudTestCase):
         self.assertTrue(len(node.private_ips) > 0)
         self.assertEqual(node.driver, self.driver)
 
+    def test_create_node_with_extra_storage_devices(self):
+        image = NodeImage(
+            id="01000000-0000-4000-8000-000030060200",
+            name="Ubuntu Server 16.04 LTS (Xenial Xerus)",
+            extra={"type": "template"},
+            driver=self.driver,
+        )
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver)
+        size = NodeSize(
+            id="1xCPU-1GB",
+            name="1xCPU-1GB",
+            ram=1024,
+            disk=30,
+            bandwidth=2048,
+            extra={"storage_tier": "maxiops"},
+            price=None,
+            driver=self.driver,
+        )
+        extra_storage = {
+            "action": "create",
+            "title": "data",
+            "size": 25,
+            "tier": "standard",
+        }
+
+        self.driver.create_node(
+            name="test_server",
+            size=size,
+            image=image,
+            location=location,
+            ex_storage_devices=[extra_storage],
+        )
+
+        storage_devices = UpcloudMockHttp.last_request_body["server"]["storage_devices"][
+            "storage_device"
+        ]
+        self.assertEqual(len(storage_devices), 2)
+        self.assertEqual(storage_devices[1], extra_storage)
+
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 2)
+
+        volume = volumes[0]
+        self.assertIsInstance(volume, StorageVolume)
+        self.assertEqual(volume.id, "01eff7ad-168e-413e-83b0-054f6a28fa23")
+        self.assertEqual(volume.name, "Operating system disk")
+        self.assertEqual(volume.size, 10)
+        self.assertEqual(volume.extra["tier"], "hdd")
+        self.assertEqual(volume.extra["zone"], "uk-lon1")
+
+    def test_create_volume(self):
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver)
+        volume = self.driver.create_volume(
+            size=50,
+            name="data",
+            location=location,
+            ex_tier="standard",
+            ex_encrypted=True,
+            ex_labels=[{"key": "env", "value": "test"}],
+        )
+
+        self.assertEqual(volume.id, "01d4fcd4-e446-433b-8a9c-551a1284952e")
+        self.assertEqual(volume.name, "data")
+        self.assertEqual(volume.size, 50)
+        self.assertEqual(volume.extra["encrypted"], "yes")
+        request_storage = UpcloudMockHttp.last_request_body["storage"]
+        self.assertEqual(request_storage["tier"], "standard")
+        self.assertEqual(request_storage["encrypted"], "yes")
+        self.assertEqual(request_storage["labels"], [{"key": "env", "value": "test"}])
+
+    def test_create_volume_requires_location(self):
+        with self.assertRaises(ValueError):
+            self.driver.create_volume(size=50, name="data")
+
+    def test_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.list_volumes()[1]
+
+        attached_volume = self.driver.attach_volume(node, volume, device="scsi")
+
+        self.assertIsInstance(attached_volume, StorageVolume)
+        self.assertEqual(attached_volume.id, volume.id)
+        request_device = UpcloudMockHttp.last_request_body["storage_device"]
+        self.assertEqual(request_device["server"], node.id)
+        self.assertEqual(request_device["address"], "scsi")
+        self.assertEqual(request_device["boot_disk"], "0")
+
+    def test_detach_volume(self):
+        volume = self.driver.list_volumes()[1]
+        self.assertTrue(self.driver.detach_volume(volume))
+
+    def test_destroy_volume(self):
+        volume = self.driver.list_volumes()[1]
+        self.assertTrue(self.driver.destroy_volume(volume))
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
 
@@ -207,6 +310,37 @@ class UpcloudDriverTests(LibcloudTestCase):
         nodes = self.driver.list_nodes()
         success = self.driver.reboot_node(nodes[0])
         self.assertTrue(success)
+
+    def test_start_node(self):
+        nodes = self.driver.list_nodes()
+        success = self.driver.start_node(
+            nodes[0],
+            ex_host=8055964291,
+            ex_avoid_host=7653311107,
+            ex_start_type="async",
+        )
+
+        self.assertTrue(success)
+        self.assertEqual(
+            UpcloudMockHttp.last_request_body,
+            {
+                "server": {
+                    "host": 8055964291,
+                    "avoid_host": 7653311107,
+                    "start_type": "async",
+                }
+            },
+        )
+
+    def test_stop_node(self):
+        nodes = self.driver.list_nodes()
+        success = self.driver.stop_node(nodes[0], ex_stop_type="soft", ex_timeout=60)
+
+        self.assertTrue(success)
+        self.assertEqual(
+            UpcloudMockHttp.last_request_body,
+            {"stop_server": {"stop_type": "soft", "timeout": 60}},
+        )
 
     def test_destroy_node(self):
         if UpcloudDriver.connectionCls.conn_class == UpcloudMockHttp:
@@ -258,6 +392,7 @@ class UpcloudDriverTests(LibcloudTestCase):
 
 class UpcloudMockHttp(MockHttp):
     fixtures = ComputeFileFixtures("upcloud")
+    last_request_body = None
 
     def _1_2_zone(self, method, url, body, headers):
         auth = headers["Authorization"].split(" ")[1]
@@ -289,6 +424,7 @@ class UpcloudMockHttp(MockHttp):
     def _1_2_server(self, method, url, body, headers):
         if method == "POST":
             dbody = json.loads(body)
+            self.__class__.last_request_body = dbody
             storages = dbody["server"]["storage_devices"]["storage_device"]
             if any(["type" in storage and storage["type"] == "cdrom" for storage in storages]):
                 body = self.fixtures.load("api_1_2_server_from_cdrom.json")
@@ -298,6 +434,31 @@ class UpcloudMockHttp(MockHttp):
             body = self.fixtures.load("api_1_2_server.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _1_2_storage_normal(self, method, url, body, headers):
+        body = self.fixtures.load("api_1_2_storage_normal.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _1_2_storage(self, method, url, body, headers):
+        self.__class__.last_request_body = json.loads(body)
+        body = self.fixtures.load("api_1_2_storage_create.json")
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _1_2_storage_01d4fcd4_e446_433b_8a9c_551a1284952e_attach(
+        self, method, url, body, headers
+    ):
+        self.__class__.last_request_body = json.loads(body)
+        body = self.fixtures.load("api_1_2_storage_01d4fcd4-e446-433b-8a9c-551a1284952e.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _1_2_storage_01d4fcd4_e446_433b_8a9c_551a1284952e_detach(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("api_1_2_storage_01d4fcd4-e446-433b-8a9c-551a1284952e.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _1_2_storage_01d4fcd4_e446_433b_8a9c_551a1284952e(self, method, url, body, headers):
+        return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+
     def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -306,6 +467,16 @@ class UpcloudMockHttp(MockHttp):
         body = self.fixtures.load(
             "api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc_restart.json"
         )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_start(self, method, url, body, headers):
+        self.__class__.last_request_body = json.loads(body)
+        body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_stop(self, method, url, body, headers):
+        self.__class__.last_request_body = json.loads(body)
+        body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _1_2_server_00893c98_5d5a_4363_b177_88df518a2b60(self, method, url, body, headers):
