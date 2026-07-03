@@ -1,24 +1,17 @@
 {
   "storage": {
     "access": "private",
-    "encrypted": "yes",
     "backup_rule": "",
     "backups": {
       "backup": []
     },
-    "labels": [
-      {
-        "key": "env",
-        "value": "test"
-      }
-    ],
     "license": 0,
     "servers": {
       "server": []
     },
     "size": 50,
     "state": "online",
-    "tier": "standard",
+    "tier": "maxiops",
     "title": "data",
     "type": "normal",
     "uuid": "01d4fcd4-e446-433b-8a9c-551a1284952e",

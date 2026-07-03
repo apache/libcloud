@@ -188,11 +188,7 @@ class UpcloudNodeOperations:
         :param  node_id: Id of the Node
         :type   node_id: ``int``
         """
-        self.connection.request(
-            "1.2/server/{}/start".format(node_id),
-            method="POST",
-            data=json.dumps({"server": {}}),
-        )
+        self.connection.request("1.2/server/{}/start".format(node_id), method="POST")
 
     def get_node_state(self, node_id):
         """

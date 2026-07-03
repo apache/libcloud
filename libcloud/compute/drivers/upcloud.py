@@ -240,8 +240,6 @@ class UpcloudDriver(NodeDriver):
         location=None,
         snapshot=None,
         ex_tier="maxiops",
-        ex_encrypted=False,
-        ex_labels=None,
         ex_backup_rule=None,
     ):
         """
@@ -256,16 +254,9 @@ class UpcloudDriver(NodeDriver):
         :param location: Which data center to create a volume in. (required)
         :type location: :class:`.NodeLocation`
 
-        :param ex_tier: UpCloud storage tier: ``maxiops``, ``standard``, or
-                        ``hdd``. Default is ``maxiops``. (optional)
+        :param ex_tier: UpCloud storage tier: ``maxiops`` or ``hdd``.
+                        Default is ``maxiops``. (optional)
         :type ex_tier: ``str``
-
-        :param ex_encrypted: Create the volume encrypted at rest. Default is
-                             False. (optional)
-        :type ex_encrypted: ``bool``
-
-        :param ex_labels: Labels for the volume. (optional)
-        :type ex_labels: ``list`` of ``dict``
 
         :param ex_backup_rule: Backup rule block for automatic backups.
                                (optional)
@@ -284,10 +275,7 @@ class UpcloudDriver(NodeDriver):
             "title": name,
             "zone": location.id,
             "tier": ex_tier,
-            "encrypted": "yes" if ex_encrypted else "no",
         }
-        if ex_labels is not None:
-            storage["labels"] = ex_labels
         if ex_backup_rule is not None:
             storage["backup_rule"] = ex_backup_rule
 
@@ -327,35 +315,51 @@ class UpcloudDriver(NodeDriver):
                              Default is False. (optional)
         :type ex_boot_disk: ``bool``
 
-        :rtype: :class:`StorageVolume`
+        :rtype: ``bool``
         """
         storage_device = {
             "type": ex_type,
-            "server": node.id,
+            "storage": volume.id,
             "boot_disk": "1" if ex_boot_disk else "0",
         }
         if device is not None:
             storage_device["address"] = device
 
-        response = self.connection.request(
-            "1.2/storage/{}/attach".format(volume.id),
+        self.connection.request(
+            "1.2/server/{}/storage/attach".format(node.id),
             method="POST",
             data=json.dumps({"storage_device": storage_device}),
         )
-        return self._to_volume(response.object["storage"])
+        return True
 
-    def detach_volume(self, volume):
+    def detach_volume(self, volume, ex_node=None, ex_address=None):
         """
         Detach a storage volume from its server.
 
         :param volume: Volume to detach.
         :type volume: :class:`StorageVolume`
 
+        :param ex_node: Node where the volume is attached. Required by the
+                        UpCloud 1.2 detach endpoint.
+        :type ex_node: :class:`Node`
+
+        :param ex_address: Device address to detach, for example
+                           ``scsi:0:0``. Required by the UpCloud 1.2 detach
+                           endpoint.
+        :type ex_address: ``str``
+
         :rtype: ``bool``
         """
+        if ex_node is None or ex_address is None:
+            raise ValueError(
+                "UpCloud API 1.2 requires `ex_node` and `ex_address` "
+                "when detaching a volume."
+            )
+
         self.connection.request(
-            "1.2/storage/{}/detach".format(volume.id),
+            "1.2/server/{}/storage/detach".format(ex_node.id),
             method="POST",
+            data=json.dumps({"storage_device": {"address": ex_address}}),
         )
         return True
 
@@ -401,45 +405,16 @@ class UpcloudDriver(NodeDriver):
         )
         return True
 
-    def start_node(
-        self,
-        node,
-        ex_host=None,
-        ex_avoid_host=None,
-        ex_start_type=None,
-    ):
+    def start_node(self, node):
         """
         Start the given node.
 
         :param node: the node to start
         :type node: :class:`Node`
 
-        :param ex_host: Host id to start the node on. Only available for
-                        private cloud hosts. (optional)
-        :type ex_host: ``int``
-
-        :param ex_avoid_host: Host id to avoid when starting the node.
-                              (optional)
-        :type ex_avoid_host: ``int``
-
-        :param ex_start_type: Start type, ``sync`` or ``async``. (optional)
-        :type ex_start_type: ``str``
-
         :rtype: ``bool``
         """
-        server = {}
-        if ex_host is not None:
-            server["host"] = ex_host
-        if ex_avoid_host is not None:
-            server["avoid_host"] = ex_avoid_host
-        if ex_start_type is not None:
-            server["start_type"] = ex_start_type
-
-        self.connection.request(
-            "1.2/server/{}/start".format(node.id),
-            method="POST",
-            data=json.dumps({"server": server}),
-        )
+        self.connection.request("1.2/server/{}/start".format(node.id), method="POST")
         return True
 
     def stop_node(self, node, ex_stop_type="hard", ex_timeout=None):
