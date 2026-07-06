@@ -65,9 +65,16 @@ class UpcloudConnection(ConnectionUserAndKey):
     host = "api.upcloud.com"
     responseCls = UpcloudResponse
 
+    def __init__(self, user_id, key, *args, **kwargs):
+        self.token = kwargs.pop("token", None)
+        super().__init__(user_id, key, *args, **kwargs)
+
     def add_default_headers(self, headers):
         """Adds headers that are needed for all requests"""
-        headers["Authorization"] = self._basic_auth()
+        if self.token:
+            headers["Authorization"] = "Bearer {}".format(self.token)
+        else:
+            headers["Authorization"] = self._basic_auth()
         headers["Accept"] = "application/json"
         headers["Content-Type"] = "application/json"
         return headers
@@ -83,11 +90,14 @@ class UpcloudDriver(NodeDriver):
     """
     Upcloud node driver
 
-    :keyword    username: Username required for authentication
+    :keyword    username: Username required for basic authentication
     :type       username: ``str``
 
-    :keyword    password: Password required for authentication
+    :keyword    password: Password required for basic authentication
     :type       password: ``str``
+
+    :keyword    token: Bearer API token used instead of username/password
+    :type       token: ``str``
     """
 
     type = Provider.UPCLOUD
@@ -112,8 +122,18 @@ class UpcloudDriver(NodeDriver):
         "error": StorageVolumeState.ERROR,
     }
 
-    def __init__(self, username, password, **kwargs):
-        super().__init__(key=username, secret=password, **kwargs)
+    def __init__(self, username=None, password=None, token=None, **kwargs):
+        if token is None and (username is None or password is None):
+            raise ValueError("Must provide either username/password or token.")
+
+        self.token = token
+        super().__init__(key=username or "", secret=password or "", **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = super()._ex_connection_class_kwargs()
+        if self.token:
+            kwargs["token"] = self.token
+        return kwargs
 
     def list_locations(self):
         """

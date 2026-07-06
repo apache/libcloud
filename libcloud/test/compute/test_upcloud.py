@@ -67,6 +67,16 @@ class UpcloudAuthenticationTests(LibcloudTestCase):
         with self.assertRaises(InvalidCredsError):
             self.driver.list_locations()
 
+    def test_authentication_with_api_token(self):
+        driver = UpcloudDriver(token="test-token")
+        driver.list_locations()
+
+        self.assertEqual(UpcloudMockHttp.last_authorization, "Bearer test-token")
+
+    def test_authentication_requires_basic_credentials_or_token(self):
+        with self.assertRaises(ValueError):
+            UpcloudDriver()
+
 
 class UpcloudDriverTests(LibcloudTestCase):
     def setUp(self):
@@ -384,16 +394,24 @@ class UpcloudDriverTests(LibcloudTestCase):
 class UpcloudMockHttp(MockHttp):
     fixtures = ComputeFileFixtures("upcloud")
     last_request_body = None
+    last_authorization = None
 
     def _1_2_zone(self, method, url, body, headers):
-        auth = headers["Authorization"].split(" ")[1]
-        username, password = ensure_string(base64.b64decode(auth)).split(":")
-        if username == "nosuchuser" and password == "nopwd":
-            body = self.fixtures.load("api_1_2_zone_failed_auth.json")
-            status_code = httplib.UNAUTHORIZED
-        else:
+        self.__class__.last_authorization = headers["Authorization"]
+        auth_type, auth_value = headers["Authorization"].split(" ", 1)
+
+        if auth_type == "Bearer":
             body = self.fixtures.load("api_1_2_zone.json")
             status_code = httplib.OK
+        else:
+            username, password = ensure_string(base64.b64decode(auth_value)).split(":")
+            if username == "nosuchuser" and password == "nopwd":
+                body = self.fixtures.load("api_1_2_zone_failed_auth.json")
+                status_code = httplib.UNAUTHORIZED
+            else:
+                body = self.fixtures.load("api_1_2_zone.json")
+                status_code = httplib.OK
+
         return (status_code, body, {}, httplib.responses[httplib.OK])
 
     def _1_2_plan(self, method, url, body, headers):
