@@ -411,6 +411,94 @@ class UpcloudDriver(NodeDriver):
         self.connection.request("1.3/storage/{}".format(volume.id), method="DELETE")
         return True
 
+    def ex_list_firewall_rules(self, node):
+        """
+        List firewall rules for a node.
+
+        :param node: Node whose firewall rules are listed.
+        :type node: :class:`Node`
+
+        :rtype: ``list`` of ``dict``
+        """
+        response = self.connection.request("1.3/server/{}/firewall_rule".format(node.id))
+        rules = response.object["firewall_rules"].get("firewall_rule", [])
+        if isinstance(rules, dict):
+            return [rules]
+        return rules
+
+    def ex_get_firewall_rule(self, node, position):
+        """
+        Get firewall rule details by rule position.
+
+        :param node: Node whose firewall rule is fetched.
+        :type node: :class:`Node`
+
+        :param position: Firewall rule position.
+        :type position: ``str`` or ``int``
+
+        :rtype: ``dict``
+        """
+        response = self.connection.request(
+            "1.3/server/{}/firewall_rule/{}".format(node.id, position)
+        )
+        return response.object["firewall_rule"]
+
+    def ex_create_firewall_rule(self, node, rule):
+        """
+        Create a firewall rule for a node.
+
+        :param node: Node where the firewall rule is created.
+        :type node: :class:`Node`
+
+        :param rule: UpCloud firewall rule dictionary.
+        :type rule: ``dict``
+
+        :rtype: ``dict``
+        """
+        response = self.connection.request(
+            "1.3/server/{}/firewall_rule".format(node.id),
+            method="POST",
+            data=json.dumps({"firewall_rule": rule}),
+        )
+        return response.object["firewall_rule"]
+
+    def ex_create_firewall_rules(self, node, rules):
+        """
+        Replace firewall rules for a node.
+
+        :param node: Node whose firewall rules are replaced.
+        :type node: :class:`Node`
+
+        :param rules: UpCloud firewall rule dictionaries.
+        :type rules: ``list`` of ``dict``
+
+        :rtype: ``bool``
+        """
+        self.connection.request(
+            "1.3/server/{}/firewall_rule".format(node.id),
+            method="PUT",
+            data=json.dumps({"firewall_rules": {"firewall_rule": rules}}),
+        )
+        return True
+
+    def ex_delete_firewall_rule(self, node, position):
+        """
+        Delete a firewall rule by rule position.
+
+        :param node: Node whose firewall rule is deleted.
+        :type node: :class:`Node`
+
+        :param position: Firewall rule position.
+        :type position: ``str`` or ``int``
+
+        :rtype: ``bool``
+        """
+        self.connection.request(
+            "1.3/server/{}/firewall_rule/{}".format(node.id, position),
+            method="DELETE",
+        )
+        return True
+
     def list_nodes(self):
         """
         List nodes

@@ -339,6 +339,71 @@ class UpcloudDriverTests(LibcloudTestCase):
         volume = self.driver.list_volumes()[1]
         self.assertTrue(self.driver.destroy_volume(volume))
 
+    def test_ex_list_firewall_rules(self):
+        node = self.driver.list_nodes()[0]
+
+        rules = self.driver.ex_list_firewall_rules(node)
+
+        self.assertEqual(len(rules), 2)
+        self.assertEqual(rules[0]["direction"], "in")
+        self.assertEqual(rules[0]["destination_port_start"], "22")
+
+    def test_ex_get_firewall_rule(self):
+        node = self.driver.list_nodes()[0]
+
+        rule = self.driver.ex_get_firewall_rule(node, 1)
+
+        self.assertEqual(rule["position"], "1")
+        self.assertEqual(rule["action"], "accept")
+
+    def test_ex_create_firewall_rule(self):
+        node = self.driver.list_nodes()[0]
+        rule = {
+            "direction": "in",
+            "family": "IPv4",
+            "protocol": "tcp",
+            "destination_port_start": "22",
+            "destination_port_end": "22",
+            "action": "accept",
+            "comment": "Allow SSH",
+        }
+
+        created_rule = self.driver.ex_create_firewall_rule(node, rule)
+
+        self.assertEqual(created_rule["position"], "1")
+        self.assertEqual(
+            UpcloudMockHttp.last_request_body,
+            {"firewall_rule": rule},
+        )
+
+    def test_ex_create_firewall_rules(self):
+        node = self.driver.list_nodes()[0]
+        rules = [
+            {
+                "direction": "in",
+                "family": "IPv4",
+                "protocol": "tcp",
+                "destination_port_start": "22",
+                "destination_port_end": "22",
+                "action": "accept",
+                "comment": "Allow SSH",
+            },
+            {"direction": "in", "action": "drop"},
+        ]
+
+        success = self.driver.ex_create_firewall_rules(node, rules)
+
+        self.assertTrue(success)
+        self.assertEqual(
+            UpcloudMockHttp.last_request_body,
+            {"firewall_rules": {"firewall_rule": rules}},
+        )
+
+    def test_ex_delete_firewall_rule(self):
+        node = self.driver.list_nodes()[0]
+
+        self.assertTrue(self.driver.ex_delete_firewall_rule(node, 1))
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
 
@@ -514,6 +579,68 @@ class UpcloudMockHttp(MockHttp):
 
     def _1_3_storage_01d4fcd4_e446_433b_8a9c_551a1284952e(self, method, url, body, headers):
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_firewall_rule(
+        self, method, url, body, headers
+    ):
+        firewall_rule = {
+            "action": "accept",
+            "comment": "Allow SSH",
+            "destination_address_end": "",
+            "destination_address_start": "",
+            "destination_port_end": "22",
+            "destination_port_start": "22",
+            "direction": "in",
+            "family": "IPv4",
+            "icmp_type": "",
+            "position": "1",
+            "protocol": "tcp",
+            "source_address_end": "",
+            "source_address_start": "",
+            "source_port_end": "",
+            "source_port_start": "",
+        }
+        if method == "GET":
+            body = json.dumps(
+                {
+                    "firewall_rules": {
+                        "firewall_rule": [
+                            firewall_rule,
+                            {"action": "drop", "direction": "in", "position": "2"},
+                        ]
+                    }
+                }
+            )
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == "POST":
+            self.__class__.last_request_body = json.loads(body)
+            body = json.dumps({"firewall_rule": firewall_rule})
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+        self.__class__.last_request_body = json.loads(body)
+        return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_firewall_rule_1(
+        self, method, url, body, headers
+    ):
+        if method == "DELETE":
+            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+
+        body = json.dumps(
+            {
+                "firewall_rule": {
+                    "action": "accept",
+                    "comment": "Allow SSH",
+                    "destination_port_end": "22",
+                    "destination_port_start": "22",
+                    "direction": "in",
+                    "family": "IPv4",
+                    "position": "1",
+                    "protocol": "tcp",
+                }
+            }
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")

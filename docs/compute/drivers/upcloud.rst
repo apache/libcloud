@@ -21,6 +21,19 @@ UpCloud currently operates globally from eight (8) data centers:
 
 This driver uses the UpCloud API 1.3 endpoints.
 
+Firewall rules
+--------------
+
+UpCloud manages network access through per-server firewall rules instead of
+reusable security groups. The driver exposes those rules through extension
+methods:
+
+* ``ex_list_firewall_rules(node)``
+* ``ex_get_firewall_rule(node, position)``
+* ``ex_create_firewall_rule(node, rule)``
+* ``ex_create_firewall_rules(node, rules)``
+* ``ex_delete_firewall_rule(node, position)``
+
 Instantiating a driver
 ----------------------
 
