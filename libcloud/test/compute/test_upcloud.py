@@ -248,6 +248,35 @@ class UpcloudDriverTests(LibcloudTestCase):
         self.assertEqual(len(storage_devices), 2)
         self.assertEqual(storage_devices[1], extra_storage)
 
+    def test_create_node_with_metadata_enabled(self):
+        image = NodeImage(
+            id="01000000-0000-4000-8000-000030060200",
+            name="Ubuntu Server 16.04 LTS (Xenial Xerus)",
+            extra={"type": "template"},
+            driver=self.driver,
+        )
+        location = NodeLocation(id="fi-hel1", name="Helsinki #1", country="FI", driver=self.driver)
+        size = NodeSize(
+            id="1xCPU-1GB",
+            name="1xCPU-1GB",
+            ram=1024,
+            disk=30,
+            bandwidth=2048,
+            extra={"storage_tier": "maxiops"},
+            price=None,
+            driver=self.driver,
+        )
+
+        self.driver.create_node(
+            name="test_server",
+            size=size,
+            image=image,
+            location=location,
+            ex_metadata="yes",
+        )
+
+        self.assertEqual(UpcloudMockHttp.last_request_body["server"]["metadata"], "yes")
+
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
         self.assertEqual(len(volumes), 2)
@@ -320,6 +349,23 @@ class UpcloudDriverTests(LibcloudTestCase):
         self.assertTrue(len(node.public_ips) > 0)
         self.assertTrue(len(node.private_ips) > 0)
         self.assertEqual(node.driver, self.driver)
+
+    def test_to_node_without_vnc_password(self):
+        server = {
+            "uuid": "00f8c525-7e62-4108-8115-3958df5b43dc",
+            "title": "test_server",
+            "state": "started",
+            "ip_addresses": {
+                "ip_address": [
+                    {"access": "public", "address": "203.0.113.10"},
+                    {"access": "private", "address": "10.0.0.10"},
+                ]
+            },
+        }
+
+        node = self.driver._to_node(server)
+
+        self.assertEqual(node.extra, {})
 
     def test_reboot_node(self):
         nodes = self.driver.list_nodes()
@@ -396,7 +442,7 @@ class UpcloudMockHttp(MockHttp):
     last_request_body = None
     last_authorization = None
 
-    def _1_2_zone(self, method, url, body, headers):
+    def _1_3_zone(self, method, url, body, headers):
         self.__class__.last_authorization = headers["Authorization"]
         auth_type, auth_value = headers["Authorization"].split(" ", 1)
 
@@ -414,23 +460,23 @@ class UpcloudMockHttp(MockHttp):
 
         return (status_code, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_plan(self, method, url, body, headers):
+    def _1_3_plan(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_plan.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_storage_cdrom(self, method, url, body, headers):
+    def _1_3_storage_cdrom(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_storage_cdrom.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_storage_template(self, method, url, body, headers):
+    def _1_3_storage_template(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_storage_template.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_price(self, method, url, body, headers):
+    def _1_3_price(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_price.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server(self, method, url, body, headers):
+    def _1_3_server(self, method, url, body, headers):
         if method == "POST":
             dbody = json.loads(body)
             self.__class__.last_request_body = dbody
@@ -443,53 +489,53 @@ class UpcloudMockHttp(MockHttp):
             body = self.fixtures.load("api_1_2_server.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_storage_normal(self, method, url, body, headers):
+    def _1_3_storage_normal(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_storage_normal.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_storage(self, method, url, body, headers):
+    def _1_3_storage(self, method, url, body, headers):
         self.__class__.last_request_body = json.loads(body)
         body = self.fixtures.load("api_1_2_storage_create.json")
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_storage_attach(
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_storage_attach(
         self, method, url, body, headers
     ):
         self.__class__.last_request_body = json.loads(body)
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_storage_detach(
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_storage_detach(
         self, method, url, body, headers
     ):
         self.__class__.last_request_body = json.loads(body)
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_storage_01d4fcd4_e446_433b_8a9c_551a1284952e(self, method, url, body, headers):
+    def _1_3_storage_01d4fcd4_e446_433b_8a9c_551a1284952e(self, method, url, body, headers):
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc(self, method, url, body, headers):
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_restart(self, method, url, body, headers):
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_restart(self, method, url, body, headers):
         body = self.fixtures.load(
             "api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc_restart.json"
         )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_start(self, method, url, body, headers):
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_start(self, method, url, body, headers):
         self.__class__.last_request_body = body
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00f8c525_7e62_4108_8115_3958df5b43dc_stop(self, method, url, body, headers):
+    def _1_3_server_00f8c525_7e62_4108_8115_3958df5b43dc_stop(self, method, url, body, headers):
         self.__class__.last_request_body = json.loads(body)
         body = self.fixtures.load("api_1_2_server_00f8c525-7e62-4108-8115-3958df5b43dc.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _1_2_server_00893c98_5d5a_4363_b177_88df518a2b60(self, method, url, body, headers):
+    def _1_3_server_00893c98_5d5a_4363_b177_88df518a2b60(self, method, url, body, headers):
         body = self.fixtures.load("api_1_2_server_00893c98-5d5a-4363-b177-88df518a2b60.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

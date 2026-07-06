@@ -52,9 +52,19 @@ class UpcloudResponse(JsonResponse):
 
     def parse_error(self):
         data = self.parse_body()
+        error = data.get("error", data)
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError(value=data["error"]["error_message"])
-        return data
+            raise InvalidCredsError(value=error["error_message"])
+
+        if isinstance(error, dict):
+            message = error.get("error_message")
+            code = error.get("error_code")
+            if message and code:
+                return "{}: {}".format(code, message)
+            if message:
+                return message
+
+        return json.dumps(data)
 
 
 class UpcloudConnection(ConnectionUserAndKey):
@@ -141,7 +151,7 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        response = self.connection.request("1.2/zone")
+        response = self.connection.request("1.3/zone")
         return self._to_node_locations(response.object["zones"]["zone"])
 
     def list_sizes(self, location=None):
@@ -155,8 +165,8 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeSize`
         """
-        prices_response = self.connection.request("1.2/price")
-        response = self.connection.request("1.2/plan")
+        prices_response = self.connection.request("1.3/price")
+        response = self.connection.request("1.3/plan")
         return self._to_node_sizes(
             response.object["plans"]["plan"],
             prices_response.object["prices"]["zone"],
@@ -169,9 +179,9 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeImage`
         """
-        response = self.connection.request("1.2/storage/template")
+        response = self.connection.request("1.3/storage/template")
         obj = response.object
-        response = self.connection.request("1.2/storage/cdrom")
+        response = self.connection.request("1.3/storage/cdrom")
         storage = response.object["storages"]["storage"]
         obj["storages"]["storage"].extend(storage)
         return self._to_node_images(obj["storages"]["storage"])
@@ -186,6 +196,7 @@ class UpcloudDriver(NodeDriver):
         ex_hostname="localhost",
         ex_username="root",
         ex_storage_devices=None,
+        ex_metadata=None,
     ):
         """
         Creates instance to upcloud.
@@ -225,6 +236,11 @@ class UpcloudDriver(NodeDriver):
                                    an extra data disk. (optional)
         :type ex_storage_devices: ``list`` of ``dict``
 
+        :param ex_metadata: Enable or disable the UpCloud metadata service,
+                            ``"yes"`` or ``"no"``. Cloud-init templates
+                            require this to be enabled. (optional)
+        :type ex_metadata: ``str``
+
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
@@ -237,8 +253,9 @@ class UpcloudDriver(NodeDriver):
             ex_hostname=ex_hostname,
             ex_username=ex_username,
             ex_storage_devices=ex_storage_devices,
+            ex_metadata=ex_metadata,
         )
-        response = self.connection.request("1.2/server", method="POST", data=body.to_json())
+        response = self.connection.request("1.3/server", method="POST", data=body.to_json())
         server = response.object["server"]
         # Upcloud server's are in maintenance state when going
         # from state to other, it is safe to assume STARTING state
@@ -250,7 +267,7 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`StorageVolume`
         """
-        response = self.connection.request("1.2/storage/normal")
+        response = self.connection.request("1.3/storage/normal")
         return self._to_volumes(response.object["storages"]["storage"])
 
     def create_volume(
@@ -300,7 +317,7 @@ class UpcloudDriver(NodeDriver):
             storage["backup_rule"] = ex_backup_rule
 
         response = self.connection.request(
-            "1.2/storage",
+            "1.3/storage",
             method="POST",
             data=json.dumps({"storage": storage}),
         )
@@ -346,7 +363,7 @@ class UpcloudDriver(NodeDriver):
             storage_device["address"] = device
 
         self.connection.request(
-            "1.2/server/{}/storage/attach".format(node.id),
+            "1.3/server/{}/storage/attach".format(node.id),
             method="POST",
             data=json.dumps({"storage_device": storage_device}),
         )
@@ -360,11 +377,11 @@ class UpcloudDriver(NodeDriver):
         :type volume: :class:`StorageVolume`
 
         :param ex_node: Node where the volume is attached. Required by the
-                        UpCloud 1.2 detach endpoint.
+                        UpCloud 1.3 detach endpoint.
         :type ex_node: :class:`Node`
 
         :param ex_address: Device address to detach, for example
-                           ``scsi:0:0``. Required by the UpCloud 1.2 detach
+                           ``scsi:0:0``. Required by the UpCloud 1.3 detach
                            endpoint.
         :type ex_address: ``str``
 
@@ -372,11 +389,11 @@ class UpcloudDriver(NodeDriver):
         """
         if ex_node is None or ex_address is None:
             raise ValueError(
-                "UpCloud API 1.2 requires `ex_node` and `ex_address` " "when detaching a volume."
+                "UpCloud API 1.3 requires `ex_node` and `ex_address` " "when detaching a volume."
             )
 
         self.connection.request(
-            "1.2/server/{}/storage/detach".format(ex_node.id),
+            "1.3/server/{}/storage/detach".format(ex_node.id),
             method="POST",
             data=json.dumps({"storage_device": {"address": ex_address}}),
         )
@@ -391,7 +408,7 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        self.connection.request("1.2/storage/{}".format(volume.id), method="DELETE")
+        self.connection.request("1.3/storage/{}".format(volume.id), method="DELETE")
         return True
 
     def list_nodes(self):
@@ -403,7 +420,7 @@ class UpcloudDriver(NodeDriver):
         """
         servers = []
         for nid in self._node_ids():
-            response = self.connection.request("1.2/server/{}".format(nid))
+            response = self.connection.request("1.3/server/{}".format(nid))
             servers.append(response.object["server"])
         return self._to_nodes(servers)
 
@@ -418,7 +435,7 @@ class UpcloudDriver(NodeDriver):
         """
         body = {"restart_server": {"stop_type": "hard"}}
         self.connection.request(
-            "1.2/server/{}/restart".format(node.id),
+            "1.3/server/{}/restart".format(node.id),
             method="POST",
             data=json.dumps(body),
         )
@@ -433,7 +450,7 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        self.connection.request("1.2/server/{}/start".format(node.id), method="POST")
+        self.connection.request("1.3/server/{}/start".format(node.id), method="POST")
         return True
 
     def stop_node(self, node, ex_stop_type="hard", ex_timeout=None):
@@ -459,7 +476,7 @@ class UpcloudDriver(NodeDriver):
             stop_server["timeout"] = ex_timeout
 
         self.connection.request(
-            "1.2/server/{}/stop".format(node.id),
+            "1.3/server/{}/stop".format(node.id),
             method="POST",
             data=json.dumps({"stop_server": stop_server}),
         )
@@ -485,7 +502,7 @@ class UpcloudDriver(NodeDriver):
         """
         Returns list of server uids currently on upcloud
         """
-        response = self.connection.request("1.2/server")
+        response = self.connection.request("1.3/server")
         servers = response.object["servers"]["server"]
         return [server["uuid"] for server in servers]
 
@@ -497,9 +514,7 @@ class UpcloudDriver(NodeDriver):
         public_ips = [ip["address"] for ip in ip_addresses if ip["access"] == "public"]
         private_ips = [ip["address"] for ip in ip_addresses if ip["access"] == "private"]
 
-        extra = {"vnc_password": server["vnc_password"]}
-        if "password" in server:
-            extra["password"] = server["password"]
+        extra = self._copy_dict_if_present(("password", "vnc_password"), server)
         return Node(
             id=server["uuid"],
             name=server["title"],
@@ -587,4 +602,11 @@ class UpcloudDriver(NodeDriver):
         extra = {}
         for key in keys:
             extra[key] = d[key]
+        return extra
+
+    def _copy_dict_if_present(self, keys, d):
+        extra = {}
+        for key in keys:
+            if key in d:
+                extra[key] = d[key]
         return extra

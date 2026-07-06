@@ -19,6 +19,8 @@ UpCloud currently operates globally from eight (8) data centers:
 * San Jose, USA
 * Singapore, Singapore
 
+This driver uses the UpCloud API 1.3 endpoints.
+
 Instantiating a driver
 ----------------------
 
