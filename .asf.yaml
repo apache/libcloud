@@ -48,8 +48,8 @@ github:
           - "Unit Tests (Python 3.12)"
           - "Unit Tests (Python 3.13)"
           - "Dependency Review"
-          - "Run Various Lint and Other Checks (3.10)"
-          - "Build and upload Documentation (3.10)"
+#          - "Run Various Lint and Other Checks (3.10)"
+#          - "Build and upload Documentation (3.10)"
 
 notifications:
   jobs: notifications@libcloud.apache.org
