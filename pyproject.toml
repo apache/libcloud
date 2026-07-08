@@ -86,8 +86,10 @@ test = [
     "pytest-xdist==3.6.1",
     "pytest-timeout==2.4.0",
     "pytest-benchmark[histogram]==5.1.0; python_version >= '3.10'",
-    "cryptography==46.0.7",
-    "pyopenssl==26.0.0",
+    "cryptography==49.0.0; python_version >= '3.11'",
+    "pyopenssl==26.3.0; python_version >= '3.11'",
+    "cryptography==46.0.7; python_version < '3.11'",
+    "pyopenssl==26.0.0; python_version < '3.11'",
     "fasteners",
     "paramiko==5.0.0; platform_python_implementation != 'PyPy'",
     "libvirt-python==12.0.0",
@@ -238,7 +240,7 @@ indent-string = "    "
 
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 platform = "linux"
 show_error_context = true
 show_column_numbers = true

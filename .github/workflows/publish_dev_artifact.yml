@@ -27,7 +27,7 @@ jobs:
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: "3.12"
       - name: Install uv
         uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
