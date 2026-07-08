@@ -83,7 +83,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -131,7 +131,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -173,7 +173,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -231,7 +231,7 @@ jobs:
           tar -xzvf "${TARBALL_FILENAME}"
 
           cd "apache_libcloud-${VERSION}/"
-          tox -c tox.ini -epy3.10
+          tox -c tox.ini -epy3.12
 
       - name: Verify Wheel Release Artifact
         run: |
@@ -251,7 +251,7 @@ jobs:
           cp ../../tox.ini .
           cp ../../pyproject.toml .
           cp ../../libcloud/test/secrets.py-dist libcloud/test/secrets.py-dist
-          tox -c tox.ini -epy3.10
+          tox -c tox.ini -epy3.12
 
   build_test_docker_image:
     name: Build and Verify Docker Image
@@ -259,7 +259,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -278,7 +278,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -351,7 +351,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6
@@ -390,7 +390,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
       - uses: actions/checkout@v6

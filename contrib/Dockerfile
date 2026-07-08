@@ -56,7 +56,7 @@ RUN if [ ! -f "/libcloud/README.rst" ]; then echo "libcloud/README.rst file not 
 WORKDIR /libcloud
 
 RUN set -e && \
-    python3.10 -m pip install uv && \
-    python3.10 -m uv pip install --no-cache-dir --group ci "."
+    python3.12 -m pip install uv && \
+    python3.12 -m uv pip install --no-cache-dir --group ci "."
 
-CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.10,py3.11,py3.12,py3.13,pypypy3.10"]
+CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.12,py3.10,py3.11,py3.13,pypypy3.10"]
