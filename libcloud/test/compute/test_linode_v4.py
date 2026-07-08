@@ -47,6 +47,9 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
     def test_unknown_api_version(self):
         self.assertRaises(NotImplementedError, LinodeNodeDriver, "foo", api_version="2.0")
 
+    def test_removed_api_version(self):
+        self.assertRaises(NotImplementedError, LinodeNodeDriver, "foo", api_version="3.0")
+
     def test_correct_class_is_used(self):
         self.assertIsInstance(self.driver, LinodeNodeDriverV4)
 
