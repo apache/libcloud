@@ -84,7 +84,7 @@ test = [
     "requests_mock==1.12.1",
     "pytest==9.0.3",
     "pytest-xdist==3.6.1",
-    "pytest-timeout==2.3.1",
+    "pytest-timeout==2.4.0",
     "pytest-benchmark[histogram]==5.1.0; python_version >= '3.10'",
     "cryptography==49.0.0; python_version >= '3.11'",
     "pyopenssl==26.3.0; python_version >= '3.11'",
