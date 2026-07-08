@@ -29,7 +29,7 @@ jobs:
           - "pypy-3.10"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Verify Checksums
         run: |
           LAST_STABLE_VERSION=$(curl -s --fail https://pypi.org/pypi/apache-libcloud/json | jq ".releases | to_entries | last | .key" -r)

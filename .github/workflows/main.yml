@@ -43,7 +43,7 @@ jobs:
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
@@ -86,7 +86,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
@@ -134,7 +134,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
@@ -176,7 +176,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install system dependencies
         run: |
@@ -262,7 +262,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build Testing Docker Image
         run: docker build -f contrib/Dockerfile -t libcloud_runtest_img .
       - name: Verify Image Works
@@ -281,7 +281,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
@@ -354,7 +354,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
@@ -393,7 +393,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
