@@ -44,6 +44,7 @@ RUN set -e && \
       python3-pip \
       python3-distutils \
       python3.10-distutils \
+      python3.12-distutils \
       libvirt-dev \
       # Needed by libvirt driver
       pkg-config
