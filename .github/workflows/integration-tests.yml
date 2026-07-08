@@ -33,13 +33,13 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Install OS / deb dependencies
         run: |

@@ -43,13 +43,13 @@ jobs:
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Install OS / deb dependencies
         run: |
@@ -86,13 +86,13 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Install OS / deb dependencies
         run: |
@@ -134,13 +134,13 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Install OS / deb dependencies
         run: |
@@ -176,7 +176,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install system dependencies
         run: |
@@ -188,7 +188,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
@@ -262,7 +262,7 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build Testing Docker Image
         run: docker build -f contrib/Dockerfile -t libcloud_runtest_img .
       - name: Verify Image Works
@@ -281,13 +281,13 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Install OS / deb dependencies
         run: |
@@ -354,13 +354,13 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Install OS / deb dependencies
         run: |
@@ -393,13 +393,13 @@ jobs:
         python_version: [ "3.10" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
 
       - name: Print Environment Info
         run: printenv | sort
