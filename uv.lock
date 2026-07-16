@@ -49,7 +49,6 @@ dev = [
     { name = "cryptography", version = "49.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "fasteners" },
     { name = "flake8" },
-    { name = "idna" },
     { name = "isort" },
     { name = "libvirt-python" },
     { name = "mypy", marker = "implementation_name == 'cpython'" },
@@ -72,7 +71,6 @@ dev = [
     { name = "types-requests" },
     { name = "types-simplejson" },
     { name = "types-urllib3" },
-    { name = "urllib3" },
 ]
 docs = [
     { name = "fasteners" },
@@ -122,7 +120,6 @@ test = [
     { name = "cryptography", version = "46.0.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "cryptography", version = "49.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "fasteners" },
-    { name = "idna" },
     { name = "libvirt-python" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pyopenssl", version = "26.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -133,7 +130,6 @@ test = [
     { name = "pytest-xdist" },
     { name = "requests" },
     { name = "requests-mock" },
-    { name = "urllib3" },
 ]
 
 [package.metadata]
@@ -152,7 +148,6 @@ dev = [
     { name = "cryptography", marker = "python_full_version >= '3.11'", specifier = "==49.0.0" },
     { name = "fasteners" },
     { name = "flake8", specifier = "==5.0.4" },
-    { name = "idna", specifier = ">=3.15" },
     { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
     { name = "libvirt-python", specifier = "==12.0.0" },
     { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
@@ -164,7 +159,7 @@ dev = [
     { name = "pyopenssl", marker = "python_full_version >= '3.11'", specifier = "==26.3.0" },
     { name = "pytest", specifier = "==9.0.3" },
     { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
-    { name = "pytest-timeout", specifier = "==2.3.1" },
+    { name = "pytest-timeout", specifier = "==2.4.0" },
     { name = "pytest-xdist", specifier = "==3.6.1" },
     { name = "pyupgrade", specifier = "==3.3.1" },
     { name = "requests", specifier = ">=2.27.1" },
@@ -176,7 +171,6 @@ dev = [
     { name = "types-requests" },
     { name = "types-simplejson" },
     { name = "types-urllib3" },
-    { name = "urllib3", specifier = ">=2.7.0" },
 ]
 docs = [
     { name = "fasteners" },
@@ -222,18 +216,16 @@ test = [
     { name = "cryptography", marker = "python_full_version < '3.11'", specifier = "==46.0.7" },
     { name = "cryptography", marker = "python_full_version >= '3.11'", specifier = "==49.0.0" },
     { name = "fasteners" },
-    { name = "idna", specifier = ">=3.15" },
     { name = "libvirt-python", specifier = "==12.0.0" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==5.0.0" },
     { name = "pyopenssl", marker = "python_full_version < '3.11'", specifier = "==26.0.0" },
     { name = "pyopenssl", marker = "python_full_version >= '3.11'", specifier = "==26.3.0" },
     { name = "pytest", specifier = "==9.0.3" },
     { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
-    { name = "pytest-timeout", specifier = "==2.3.1" },
+    { name = "pytest-timeout", specifier = "==2.4.0" },
     { name = "pytest-xdist", specifier = "==3.6.1" },
     { name = "requests", specifier = ">=2.33.0" },
     { name = "requests-mock", specifier = "==1.12.1" },
-    { name = "urllib3", specifier = ">=2.7.0" },
 ]
 
 [[package]]
@@ -733,14 +725,14 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.3.1"
+version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/fa/656b739db8587d7b5dfa22e22ed02566950fbfbcdc20311993483657a5c0/click-8.3.1.tar.gz", hash = "sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a", size = 295065, upload-time = "2025-11-15T20:45:42.706Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz", hash = "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6", size = 338000, upload-time = "2026-06-24T17:45:15.148Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl", hash = "sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6", size = 108274, upload-time = "2025-11-15T20:45:41.139Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/e2/79c688af8b210d232694e31e59da9f6ec747bae31c3f5946e4e9b98860d5/click-8.4.2-py3-none-any.whl", hash = "sha256:e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76", size = 119243, upload-time = "2026-06-24T17:45:13.73Z" },
 ]
 
 [[package]]
@@ -1889,14 +1881,14 @@ histogram = [
 
 [[package]]
 name = "pytest-timeout"
-version = "2.3.1"
+version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/93/0d/04719abc7a4bdb3a7a1f968f24b0f5253d698c9cc94975330e9d3145befb/pytest-timeout-2.3.1.tar.gz", hash = "sha256:12397729125c6ecbdaca01035b9e5239d4db97352320af155b3f5de1ba5165d9", size = 17697, upload-time = "2024-03-07T21:04:01.069Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/82/4c9ecabab13363e72d880f2fb504c5f750433b2b6f16e99f4ec21ada284c/pytest_timeout-2.4.0.tar.gz", hash = "sha256:7e68e90b01f9eff71332b25001f85c75495fc4e3a836701876183c4bcfd0540a", size = 17973, upload-time = "2025-05-05T19:44:34.99Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/03/27/14af9ef8321f5edc7527e47def2a21d8118c6f329a9342cc61387a0c0599/pytest_timeout-2.3.1-py3-none-any.whl", hash = "sha256:68188cb703edfc6a18fad98dc25a3c61e9f24d644b0b70f33af545219fc7813e", size = 14148, upload-time = "2024-03-07T21:03:58.764Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/b6/3127540ecdf1464a00e5a01ee60a1b09175f6913f0644ac748494d9c4b21/pytest_timeout-2.4.0-py3-none-any.whl", hash = "sha256:c42667e5cdadb151aeb5b26d114aff6bdf5a907f176a007a30b940d3d865b5c2", size = 14382, upload-time = "2025-05-05T19:44:33.502Z" },
 ]
 
 [[package]]
@@ -2212,11 +2204,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "80.9.0"
+version = "83.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/18/5d/3bf57dcd21979b887f014ea83c24ae194cfcd12b9e0fda66b957c69d1fca/setuptools-80.9.0.tar.gz", hash = "sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c", size = 1319958, upload-time = "2025-05-27T00:56:51.443Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/26/f5d29e25ffdb535afef2d35cdb55b325298f96debd670da4c325e08d70f4/setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef", size = 1154254, upload-time = "2026-07-04T15:31:22.699Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922", size = 1201486, upload-time = "2025-05-27T00:56:49.664Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/40/e1e72872c6354b306daef1703549e8e83b4d43cfea356311bf722a043752/setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3", size = 1008090, upload-time = "2026-07-04T15:31:20.885Z" },
 ]
 
 [[package]]

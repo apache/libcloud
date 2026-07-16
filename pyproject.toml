@@ -92,9 +92,7 @@ test = [
     "pyopenssl==26.0.0; python_version < '3.11'",
     "fasteners",
     "paramiko==5.0.0; platform_python_implementation != 'PyPy'",
-    "libvirt-python==12.0.0",
-    "urllib3>=2.7.0",  # to avoid security issues with older versions of urllib3
-    "idna>=3.15",  # to avoid security issues with older versions of idna
+    "libvirt-python==12.0.0"
 ]
 lint = [
     "pep8==1.7.1",
