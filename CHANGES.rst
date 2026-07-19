@@ -21,6 +21,12 @@ Compute
   (#2135)
   [Steve Kowalik - @s-t-e-v-e-n-k]
 
+- [Azure ARM] Fix ``create_node`` failing with a JSON serialization error when
+  ``ex_customdata`` is provided. The base64 encoded custom data is now decoded
+  to a ``str`` and both ``str`` and ``bytes`` inputs are accepted.
+  (GITHUB-1893)
+  [Sanjay Santhanam - @Sanjays2402]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
