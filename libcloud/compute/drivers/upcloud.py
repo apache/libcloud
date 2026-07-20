@@ -126,7 +126,7 @@ class UpcloudDriver(NodeDriver):
     STORAGE_VOLUME_STATE_MAP = {
         "online": StorageVolumeState.AVAILABLE,
         "maintenance": StorageVolumeState.UPDATING,
-        "cloning": StorageVolumeState.CREATING,
+        "cloning": StorageVolumeState.UPDATING,
         "backuping": StorageVolumeState.BACKUP,
         "syncing": StorageVolumeState.MIGRATING,
         "error": StorageVolumeState.ERROR,
