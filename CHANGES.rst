@@ -14,6 +14,13 @@ Compute
   (#2135)
   [Steve Kowalik - @s-t-e-v-e-n-k]
 
+- [UpCloud] 
+
+  Add new functions to complete the Upcloud driver and move it to the
+  last API version 1.3
+  (#2152)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
