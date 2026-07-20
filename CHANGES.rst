@@ -4,6 +4,13 @@ Changelog
 Changes in Apache Libcloud 3.9.2
 --------------------------------
 
+Common
+~~~~~~
+
+- Move tests to python 3.12.
+  (#2152)
+  [Miguel Caballer - @micafer]
+
 Compute
 ~~~~~~~
 
