@@ -27,6 +27,13 @@ Compute
   (GITHUB-1893)
   [Sanjay Santhanam - @Sanjays2402]
 
+- [UpCloud] 
+
+  Add new functions to complete the Upcloud driver and move it to the
+  last API version 1.3
+  (#2147)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 

@@ -52,6 +52,15 @@ class UpcloudCreateNodeRequestBody:
     :param ex_username: User's username, which is created.
                         Default is 'root'. (optional)
     :type ex_username: ``str``
+
+    :param ex_storage_devices: Additional UpCloud storage_device dictionaries.
+                               (optional)
+    :type ex_storage_devices: ``list`` of ``dict``
+
+    :param ex_metadata: Whether to enable the UpCloud metadata service,
+                        ``"yes"`` or ``"no"``. Cloud-init templates require
+                        this to be enabled. (optional)
+    :type ex_metadata: ``str``
     """
 
     def __init__(
@@ -63,7 +72,13 @@ class UpcloudCreateNodeRequestBody:
         auth=None,
         ex_hostname="localhost",
         ex_username="root",
+        ex_storage_devices=None,
+        ex_metadata=None,
     ):
+        storage_devices = _StorageDevice(image, size).to_dict()
+        if ex_storage_devices:
+            storage_devices["storage_device"].extend(ex_storage_devices)
+
         self.body = {
             "server": {
                 "title": name,
@@ -71,9 +86,11 @@ class UpcloudCreateNodeRequestBody:
                 "plan": size.id,
                 "zone": location.id,
                 "login_user": _LoginUser(ex_username, auth).to_dict(),
-                "storage_devices": _StorageDevice(image, size).to_dict(),
+                "storage_devices": storage_devices,
             }
         }
+        if ex_metadata is not None:
+            self.body["server"]["metadata"] = ex_metadata
 
     def to_json(self):
         """
@@ -169,8 +186,17 @@ class UpcloudNodeOperations:
         """
         body = {"stop_server": {"stop_type": "hard"}}
         self.connection.request(
-            "1.2/server/{}/stop".format(node_id), method="POST", data=json.dumps(body)
+            "1.3/server/{}/stop".format(node_id), method="POST", data=json.dumps(body)
         )
+
+    def start_node(self, node_id):
+        """
+        Starts the node
+
+        :param  node_id: Id of the Node
+        :type   node_id: ``int``
+        """
+        self.connection.request("1.3/server/{}/start".format(node_id), method="POST")
 
     def get_node_state(self, node_id):
         """
@@ -182,7 +208,7 @@ class UpcloudNodeOperations:
         :rtype: ``str``
         """
 
-        action = "1.2/server/{}".format(node_id)
+        action = "1.3/server/{}".format(node_id)
         try:
             response = self.connection.request(action)
             return response.object["server"]["state"]
@@ -198,7 +224,7 @@ class UpcloudNodeOperations:
         :param  node_id: Id of the Node
         :type   node_id: ``int``
         """
-        self.connection.request("1.2/server/{}".format(node_id), method="DELETE")
+        self.connection.request("1.3/server/{}".format(node_id), method="DELETE")
 
 
 class PlanPrice:

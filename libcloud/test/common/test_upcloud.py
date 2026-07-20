@@ -197,6 +197,19 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
         login_user = dict_body["server"]["login_user"]
         self.assertDictEqual({"username": "someone", "create_password": "yes"}, login_user)
 
+    def test_creating_node_with_metadata_enabled(self):
+        body = UpcloudCreateNodeRequestBody(
+            name="ts",
+            image=self.image,
+            location=self.location,
+            size=self.size,
+            ex_metadata="yes",
+        )
+        json_body = body.to_json()
+        dict_body = json.loads(json_body)
+
+        self.assertEqual(dict_body["server"]["metadata"], "yes")
+
 
 class TestStorageDevice(unittest.TestCase):
     def setUp(self):
