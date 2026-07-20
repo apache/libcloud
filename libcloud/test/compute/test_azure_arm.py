@@ -15,6 +15,7 @@
 
 import sys
 import json
+import base64
 import functools
 from datetime import datetime
 from unittest import mock
@@ -231,6 +232,56 @@ class AzureNodeDriverTests(LibcloudTestCase):
                 "version": image.version,
             },
         )
+
+    def test_create_node_ex_customdata(self):
+        location = NodeLocation("any_location", "", "", self.driver)
+        size = NodeSize("any_size", "", 0, 0, 0, 0, driver=self.driver)
+        image = AzureImage("1", "1", "ubuntu", "pub", location.id, self.driver)
+        auth = NodeAuthPassword("any_password")
+
+        customdata = "#!/bin/bash\necho hello"
+        expected = base64.b64encode(customdata.encode("utf-8")).decode("utf-8")
+
+        # ex_customdata provided as a str
+        node = self.driver.create_node(
+            "test-node-1",
+            size,
+            image,
+            auth,
+            location=location,
+            ex_resource_group="000000",
+            ex_storage_account="000000",
+            ex_user_name="any_user",
+            ex_network="000000",
+            ex_subnet="000000",
+            ex_use_managed_disks=True,
+            ex_customdata=customdata,
+        )
+        os_profile = node.extra["properties"]["osProfile"]
+        self.assertEqual(os_profile["customData"], expected)
+        # customData must be a JSON-serializable str, not bytes
+        self.assertIsInstance(os_profile["customData"], str)
+        json.dumps(node.extra["properties"])
+
+        # ex_customdata provided as bytes (regression for GH #1893)
+        node = self.driver.create_node(
+            "test-node-1",
+            size,
+            image,
+            auth,
+            location=location,
+            ex_resource_group="000000",
+            ex_storage_account="000000",
+            ex_user_name="any_user",
+            ex_network="000000",
+            ex_subnet="000000",
+            ex_use_managed_disks=True,
+            ex_customdata=customdata.encode("utf-8"),
+        )
+        os_profile = node.extra["properties"]["osProfile"]
+        self.assertEqual(os_profile["customData"], expected)
+        self.assertIsInstance(os_profile["customData"], str)
+        json.dumps(node.extra["properties"])
 
     def test_create_node_ex_os_disk_delete(self):
         location = NodeLocation("any_location", "", "", self.driver)
