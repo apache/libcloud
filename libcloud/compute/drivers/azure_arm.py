@@ -609,7 +609,7 @@ class AzureNodeDriver(NodeDriver):
             be placed in the file /var/lib/waagent/CustomData
             https://azure.microsoft.com/en-us/documentation/ \
             articles/virtual-machines-how-to-inject-custom-data/
-        :type ex_customdata: ``str``
+        :type ex_customdata: ``str`` or ``bytes``
 
         :param ex_use_managed_disks: Enable this feature to have Azure
             automatically manage the availability of disks to provide data
