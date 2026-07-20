@@ -609,7 +609,7 @@ class AzureNodeDriver(NodeDriver):
             be placed in the file /var/lib/waagent/CustomData
             https://azure.microsoft.com/en-us/documentation/ \
             articles/virtual-machines-how-to-inject-custom-data/
-        :type ex_customdata: ``str``
+        :type ex_customdata: ``str`` or ``bytes``
 
         :param ex_use_managed_disks: Enable this feature to have Azure
             automatically manage the availability of disks to provide data
@@ -741,7 +741,11 @@ class AzureNodeDriver(NodeDriver):
             data["properties"]["storageProfile"]["osDisk"].update({"diskSizeGB": ex_disk_size})
 
         if ex_customdata:
-            data["properties"]["osProfile"]["customData"] = base64.b64encode(ex_customdata)
+            if isinstance(ex_customdata, str):
+                ex_customdata = ex_customdata.encode("utf-8")
+            data["properties"]["osProfile"]["customData"] = base64.b64encode(ex_customdata).decode(
+                "utf-8"
+            )
 
         data["properties"]["osProfile"]["adminUsername"] = ex_user_name
 

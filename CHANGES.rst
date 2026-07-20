@@ -4,6 +4,13 @@ Changelog
 Changes in Apache Libcloud 3.9.2
 --------------------------------
 
+Common
+~~~~~~
+
+- Move tests to python 3.12.
+  (#2152)
+  [Miguel Caballer - @micafer]
+
 Compute
 ~~~~~~~
 
@@ -13,6 +20,19 @@ Compute
   and check if the version number is less than 4.
   (#2135)
   [Steve Kowalik - @s-t-e-v-e-n-k]
+
+- [Azure ARM] Fix ``create_node`` failing with a JSON serialization error when
+  ``ex_customdata`` is provided. The base64 encoded custom data is now decoded
+  to a ``str`` and both ``str`` and ``bytes`` inputs are accepted.
+  (GITHUB-1893)
+  [Sanjay Santhanam - @Sanjays2402]
+
+- [UpCloud] 
+
+  Add new functions to complete the Upcloud driver and move it to the
+  last API version 1.3
+  (#2147)
+  [Miguel Caballer - @micafer]
 
 Changes in Apache Libcloud 3.9.1
 --------------------------------

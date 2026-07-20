@@ -43,13 +43,13 @@ jobs:
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
 
       - name: Install OS / deb dependencies
         run: |
@@ -57,7 +57,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
@@ -83,16 +83,16 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
 
       - name: Install OS / deb dependencies
         run: |
@@ -100,7 +100,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
@@ -131,16 +131,16 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
 
       - name: Install OS / deb dependencies
         run: |
@@ -148,7 +148,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
@@ -173,10 +173,10 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install system dependencies
         run: |
@@ -188,14 +188,14 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
@@ -231,7 +231,7 @@ jobs:
           tar -xzvf "${TARBALL_FILENAME}"
 
           cd "apache_libcloud-${VERSION}/"
-          tox -c tox.ini -epy3.10
+          tox -c tox.ini -epy3.12
 
       - name: Verify Wheel Release Artifact
         run: |
@@ -251,7 +251,7 @@ jobs:
           cp ../../tox.ini .
           cp ../../pyproject.toml .
           cp ../../libcloud/test/secrets.py-dist libcloud/test/secrets.py-dist
-          tox -c tox.ini -epy3.10
+          tox -c tox.ini -epy3.12
 
   build_test_docker_image:
     name: Build and Verify Docker Image
@@ -259,10 +259,10 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build Testing Docker Image
         run: docker build -f contrib/Dockerfile -t libcloud_runtest_img .
       - name: Verify Image Works
@@ -278,16 +278,16 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
 
       - name: Install OS / deb dependencies
         run: |
@@ -295,7 +295,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
@@ -351,16 +351,16 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
 
       - name: Install OS / deb dependencies
         run: |
@@ -368,7 +368,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
@@ -390,16 +390,16 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [ "3.10" ]
+        python_version: [ "3.12" ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
 
       - name: Print Environment Info
         run: printenv | sort
@@ -410,7 +410,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev pkg-config
 
       - name: Cache uv
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
