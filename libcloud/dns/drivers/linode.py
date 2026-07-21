@@ -35,6 +35,7 @@ except ImportError:
 
 
 VALID_ZONE_EXTRA_PARAMS_V4 = [
+    "axfr_ips",
     "description",
     "expire_sec",
     "master_ips",
@@ -100,6 +101,7 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
         RecordType.A: "A",
         RecordType.AAAA: "AAAA",
         RecordType.CNAME: "CNAME",
+        RecordType.PTR: "PTR",
         RecordType.TXT: "TXT",
         RecordType.SRV: "SRV",
         RecordType.CAA: "CAA",
@@ -174,7 +176,7 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
         :keyword ttl: TTL for new records. (optional)
         :type  ttl: ``int``
 
-        :keyword extra: Extra attributes.('description', 'expire_sec', \
+        :keyword extra: Extra attributes.('axfr_ips', 'description', 'expire_sec', \
         'master_ips','refresh_sec', 'retry_sec', 'soa_email',\
         'status', 'tags'). 'soa_email' required for master zones
         :type extra: ``dict``
@@ -250,7 +252,7 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
         :param ttl: TTL for new records. (optional)
         :type  ttl: ``int``
 
-        :param extra: Extra attributes ('description', 'expire_sec', \
+        :param extra: Extra attributes ('axfr_ips', 'description', 'expire_sec', \
         'master_ips','refresh_sec', 'retry_sec', 'soa_email','status', 'tags')
 
         :type  extra: ``dict``
@@ -367,6 +369,7 @@ class LinodeDNSDriverV4(LinodeDNSDriver):
             "priority": item["priority"],
             "service": item["service"],
             "protocol": item["protocol"],
+            "tag": item["tag"],
             "created": self._to_datetime(item["created"]),
             "updated": self._to_datetime(item["updated"]),
         }
