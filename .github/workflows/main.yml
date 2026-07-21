@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
@@ -88,7 +88,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
@@ -136,7 +136,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
@@ -184,7 +184,7 @@ jobs:
           sudo apt-get install -y libvirt-dev pkg-config gcc
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
@@ -283,7 +283,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
@@ -356,7 +356,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
@@ -395,7 +395,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
