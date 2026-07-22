@@ -2678,7 +2678,12 @@ class GCENodeDriver(NodeDriver):
 
         return list_forwarding_rules
 
-    def list_images(self, ex_project=None, ex_include_deprecated=False):
+    def list_images(
+        self,
+        location=None,
+        ex_project=None,
+        ex_include_deprecated=False,
+    ):
         """
         Return a list of image objects. If no project is specified, a list of
         all non-deprecated global and vendor images images is returned. By
@@ -6135,7 +6140,11 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_volume(name, location)
 
-    def create_volume_snapshot(self, volume, name):
+    def create_volume_snapshot(
+        self,
+        volume,
+        name=None,
+    ):
         """
         Create a snapshot of the provided Volume.
 

@@ -1180,7 +1180,10 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return nodes
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         List available sizes.
         """
@@ -1202,7 +1205,10 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return sizes
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         Return a list of available pre-installed library drives.
 
@@ -1626,7 +1632,15 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return drive
 
-    def create_volume(self, name, size, media="disk", ex_avoid=None):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        media="disk",
+        ex_avoid=None,
+    ):
         return self.ex_create_drive(name=name, size=size, media=media, ex_avoid=ex_avoid)
 
     def ex_clone_drive(self, drive, name=None, ex_avoid=None):
@@ -1733,7 +1747,12 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return response.status == 200
 
-    def attach_volume(self, node, volume):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         return self.ex_attach_drive(node=node, drive=volume)
 
     def ex_detach_drive(self, node, drive):
@@ -1744,7 +1763,11 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return response.status == 200
 
-    def detach_volume(self, node, volume):
+    def detach_volume(
+        self,
+        volume,
+        node=None,
+    ):
         return self.ex_detach_drive(node=node, drive=volume)
 
     def ex_get_drive(self, drive_id):
@@ -1769,7 +1792,11 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return response.status == httplib.NO_CONTENT
 
-    def destroy_volume(self, drive):
+    def destroy_volume(
+        self,
+        volume,
+    ):
+        drive = volume
         return self.ex_destroy_drive(drive=drive)
 
     # Firewall policies extension methods
@@ -2158,7 +2185,10 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         return keys
 
-    def get_key_pair(self, key_uuid):
+    def get_key_pair(
+        self,
+        name,
+    ):
         """
         Retrieve a single key pair.
 
@@ -2167,6 +2197,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         :rtype: :class:`.KeyPair`
         """
+        key_uuid = name
         action = "/keypairs/%s/" % (key_uuid)
         response = self.connection.request(action=action, method="GET").object
 

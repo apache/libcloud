@@ -1128,7 +1128,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images", method="POST", data=ET.tostring(image_elm)).object
         )
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """Delete an image for node.
 
         @inherits: :class:`NodeDriver.delete_image`
@@ -1138,6 +1141,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
+        image = node_image
         uri = "/images/%s" % image.id
         resp = self.connection.request(uri, method="DELETE")
         return resp.status == httplib.NO_CONTENT
@@ -1782,7 +1786,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, "revertResize")
         return resp.status == httplib.ACCEPTED
 
-    def create_image(self, node, name, metadata=None):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+        metadata=None,
+    ):
         """
         Creates a new image.
 
@@ -2364,7 +2374,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images/{}".format(image_id)).object["image"]
         )
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """
         Delete a NodeImage
 
@@ -2375,6 +2388,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
+        image = node_image
         resp = self.connection.request("/images/{}".format(image.id), method="DELETE")
         return resp.status == httplib.NO_CONTENT
 

@@ -1082,10 +1082,10 @@ class AzureNodeDriver(NodeDriver):
         self,
         node,
         volume,
+        device=None,
         ex_lun=None,
         ex_vhd_uri=None,
         ex_vhd_create=False,
-        **ex_kwargs,
     ):
         """
         Attach a volume to node.

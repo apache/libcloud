@@ -1226,6 +1226,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
 
         node = self.driver.create_node(
+            image=None,
             name="racktest",
             size=size,
             ex_blockdevicemappings=[

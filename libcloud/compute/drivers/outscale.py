@@ -836,10 +836,10 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_image(
         self,
+        node,
+        name,
+        description=None,
         ex_architecture: str = None,
-        node: Node = None,
-        name: str = None,
-        description: str = None,
         ex_block_device_mapping: dict = None,
         ex_no_reboot: bool = False,
         ex_root_device_name: str = None,
@@ -994,6 +994,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def list_images(
         self,
+        location=None,
         account_aliases: List[str] = None,
         account_ids: List[str] = None,
         architectures: List[str] = None,
@@ -1386,13 +1387,14 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_volume_snapshot(
         self,
+        volume,
+        name=None,
         ex_description: str = None,
         ex_dry_run: bool = False,
         ex_file_location: str = None,
         ex_snapshot_size: int = None,
         ex_source_region_name: str = None,
         ex_source_snapshot: VolumeSnapshot = None,
-        volume: StorageVolume = None,
     ):
         """
         Create a new volume snapshot.
@@ -1678,11 +1680,13 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_volume(
         self,
-        ex_subregion_name: str,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        ex_subregion_name: str = None,
         ex_dry_run: bool = False,
         ex_iops: int = None,
-        size: int = None,
-        snapshot: VolumeSnapshot = None,
         ex_volume_type: str = None,
     ):
         """

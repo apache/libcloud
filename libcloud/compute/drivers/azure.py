@@ -334,7 +334,10 @@ class AzureNodeDriver(NodeDriver):
         self.follow_redirects = kwargs.get("follow_redirects", True)
         super().__init__(self.subscription_id, self.key_file, secure=True, **kwargs)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Lists all sizes
 
@@ -1005,19 +1008,40 @@ class AzureNodeDriver(NodeDriver):
     Functions not implemented
     """
 
-    def create_volume_snapshot(self):
+    def create_volume_snapshot(
+        self,
+        volume,
+        name=None,
+    ):
         raise NotImplementedError("You cannot create snapshots of " "Azure VMs at this time.")
 
-    def attach_volume(self):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         raise NotImplementedError("attach_volume is not supported " "at this time.")
 
-    def create_volume(self):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+    ):
         raise NotImplementedError("create_volume is not supported " "at this time.")
 
-    def detach_volume(self):
+    def detach_volume(
+        self,
+        volume,
+    ):
         raise NotImplementedError("detach_volume is not supported " "at this time.")
 
-    def destroy_volume(self):
+    def destroy_volume(
+        self,
+        volume,
+    ):
         raise NotImplementedError("destroy_volume is not supported " "at this time.")
 
     """

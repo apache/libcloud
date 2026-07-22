@@ -245,12 +245,19 @@ def _list_async(driver):
 
         return list(map(self._to_location, data))
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         data = self.connection.request("/metal/v1/operating-systems").object["operating_systems"]
 
         return list(map(self._to_image, data))
 
-    def list_sizes(self, ex_project_id=None):
+    def list_sizes(
+        self,
+        location=None,
+        ex_project_id=None,
+    ):
         project_id = (
             ex_project_id or self.project_id or (len(self.projects) and self.projects[0].id)
         )
@@ -417,7 +424,11 @@ def _list_async(driver):
 
         return list(map(self._to_key_pairs, data))
 
-    def create_key_pair(self, name, public_key):
+    def create_key_pair(
+        self,
+        name,
+        public_key=None,
+    ):
         """
         Create a new SSH key.
 
@@ -432,13 +443,17 @@ def _list_async(driver):
 
         return self._to_key_pairs(data)
 
-    def delete_key_pair(self, key):
+    def delete_key_pair(
+        self,
+        key_pair,
+    ):
         """
         Delete an existing SSH key.
 
         :param      key: SSH key (required)
         :type       key: :class:`KeyPair`
         """
+        key = key_pair
         key_id = key.name
         res = self.connection.request("/metal/v1/ssh-keys/%s" % (key_id), method="DELETE")
 

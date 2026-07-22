@@ -35,9 +35,7 @@ class MaxihostNodeDriver(NodeDriver):
     name = "Maxihost"
     website = "https://www.maxihost.com/"
 
-    def create_node(
-        self, name, size, image, location=None, auth=None, ex_ssh_key_ids=None
-    ):
+    def create_node(self, name, size, image, location=None, auth=None, ex_ssh_key_ids=None):
         """
         Create a node.
 
@@ -158,7 +156,10 @@ class MaxihostNodeDriver(NodeDriver):
         country = data.get("location").get("country", "")
         return NodeLocation(id=data["slug"], name=name, country=country, driver=self)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         List sizes
         """
@@ -187,7 +188,10 @@ class MaxihostNodeDriver(NodeDriver):
             extra=extra,
         )
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List images
         """
@@ -216,7 +220,11 @@ class MaxihostNodeDriver(NodeDriver):
         data = self.connection.request("/account/keys")
         return list(map(self._to_key_pair, data.object["ssh_keys"]))
 
-    def create_key_pair(self, name, public_key):
+    def create_key_pair(
+        self,
+        name,
+        public_key=None,
+    ):
         """
         Create a new SSH key.
 

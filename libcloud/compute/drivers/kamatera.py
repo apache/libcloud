@@ -88,7 +88,10 @@ class KamateraNodeDriver(NodeDriver):
             for datacenter in response.object
         ]
 
-    def list_sizes(self, location):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         List predefined sizes for the given location.
 
@@ -111,7 +114,10 @@ class KamateraNodeDriver(NodeDriver):
             for size in response.object
         ]
 
-    def list_images(self, location):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List available disk images.
 

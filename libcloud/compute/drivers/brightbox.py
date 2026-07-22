@@ -218,7 +218,10 @@ class BrightboxNodeDriver(NodeDriver):
         data = self.connection.request("/%s/images" % self.api_version).object
         return list(map(self._to_image, data))
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         data = self.connection.request("/%s/server_types" % self.api_version).object
         return list(map(self._to_size, data))
 

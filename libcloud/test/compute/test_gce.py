@@ -410,7 +410,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         local_images = self.driver.list_images()
         all_deprecated_images = self.driver.list_images(ex_include_deprecated=True)
         debian_images = self.driver.list_images(ex_project="debian-cloud")
-        local_plus_deb = self.driver.list_images(["debian-cloud", "project_name"])
+        local_plus_deb = self.driver.list_images(ex_project=["debian-cloud", "project_name"])
         self.assertEqual(len(local_images), 52)
         self.assertEqual(len(all_deprecated_images), 180)
         self.assertEqual(len(debian_images), 2)

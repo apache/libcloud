@@ -187,7 +187,11 @@ class ScalewayNodeDriver(NodeDriver):
             for location in SCALEWAY_LOCATION_DATA
         ]
 
-    def list_sizes(self, region=None):
+    def list_sizes(
+        self,
+        location=None,
+        region=None,
+    ):
         """
         List available VM sizes.
 
@@ -246,7 +250,11 @@ class ScalewayNodeDriver(NodeDriver):
             extra=extra,
         )
 
-    def list_images(self, region=None):
+    def list_images(
+        self,
+        location=None,
+        region=None,
+    ):
         """
         List available VM images.
 
@@ -261,7 +269,13 @@ class ScalewayNodeDriver(NodeDriver):
         images = response["images"]
         return [self._to_image(image) for image in images]
 
-    def create_image(self, node, name, region=None):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+        region=None,
+    ):
         """
         Create a VM image from an existing node's root volume.
 
@@ -554,7 +568,14 @@ class ScalewayNodeDriver(NodeDriver):
             extra=extra,
         )
 
-    def create_volume(self, size, name, region=None):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        region=None,
+    ):
         """
         Create a new volume.
 
@@ -583,7 +604,12 @@ class ScalewayNodeDriver(NodeDriver):
         volume = response.object["volume"]
         return self._to_volume(volume)
 
-    def create_volume_snapshot(self, volume, name, region=None):
+    def create_volume_snapshot(
+        self,
+        volume,
+        name=None,
+        region=None,
+    ):
         """
         Create snapshot from volume.
 

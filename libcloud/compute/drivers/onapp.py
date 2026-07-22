@@ -227,7 +227,10 @@ class OnAppNodeDriver(NodeDriver):
             nodes.append(self._to_node(vm["virtual_machine"]))
         return nodes
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List all images
 
@@ -287,7 +290,10 @@ class OnAppNodeDriver(NodeDriver):
         )
         return self._to_key_pair(response.object["ssh_key"])
 
-    def delete_key_pair(self, key):
+    def delete_key_pair(
+        self,
+        key_pair,
+    ):
         """
         Delete an existing key pair.
 
@@ -297,6 +303,7 @@ class OnAppNodeDriver(NodeDriver):
         :return: True on success
         :rtype: ``bool``
         """
+        key = key_pair
         key_id = key.name
         response = self.connection.request("/settings/ssh_keys/%s.json" % key_id, method="DELETE")
         return response.status == httplib.NO_CONTENT

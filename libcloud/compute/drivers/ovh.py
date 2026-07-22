@@ -265,7 +265,12 @@ class OvhNodeDriver(NodeDriver):
 
         return keys[0]
 
-    def import_key_pair_from_string(self, name, key_material, ex_location):
+    def import_key_pair_from_string(
+        self,
+        name,
+        key_material,
+        ex_location=None,
+    ):
         """
         Import a new public key from string.
 
@@ -298,7 +303,7 @@ class OvhNodeDriver(NodeDriver):
         self,
         size,
         name,
-        location,
+        location=None,
         snapshot=None,
         ex_volume_type="classic",
         ex_description=None,

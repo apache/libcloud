@@ -126,7 +126,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         data = self._paginated_request("/v4/linode/instances", "data")
         return [self._to_node(obj) for obj in data]
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Returns a list of Linode Types
 
@@ -135,7 +138,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         data = self._paginated_request("/v4/linode/types", "data")
         return [self._to_size(obj) for obj in data]
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         Returns a list of images
 
@@ -523,7 +529,15 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         return [self._to_volume(obj) for obj in data]
 
-    def create_volume(self, name, size, location=None, node=None, tags=None):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        node=None,
+        tags=None,
+    ):
         """Creates a volume and optionally attaches it to a node.
 
         :param name: The name to be given to volume (required).\
@@ -579,7 +593,13 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ).object
         return self._to_volume(response)
 
-    def attach_volume(self, node, volume, persist_across_boots=True):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+        persist_across_boots=True,
+    ):
         """Attaches a volume to a node.
         Volume and node must be located in the same region
 
@@ -706,7 +726,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         response = self.connection.request("/v4/volumes/%s" % volume_id).object
         return self._to_volume(response)
 
-    def get_image(self, image):
+    def get_image(
+        self,
+        image_id,
+    ):
         """
         Lookup a Linode image
 
@@ -715,10 +738,16 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         :rtype: :class: `NodeImage`
         """
+        image = image_id
         response = self.connection.request("/v4/images/%s" % image, method="GET")
         return self._to_image(response.object)
 
-    def create_image(self, disk, name=None, description=None):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+    ):
         """Creates a private image from a LinodeDisk.
          Images are limited to three per account.
 
@@ -737,6 +766,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :rtype: :class:`NodeImage`
         """
 
+        disk = node
         if not isinstance(disk, LinodeDisk):
             raise LinodeExceptionV4("Invalid disk instance")
 
@@ -747,7 +777,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ).object
         return self._to_image(response)
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """Deletes a private image
 
         :param image: NodeImage to delete (required)
@@ -755,6 +788,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         :rtype: ``bool``
         """
+        image = node_image
         if not isinstance(image, NodeImage):
             raise LinodeExceptionV4("Invalid image instance")
 

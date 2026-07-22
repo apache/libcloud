@@ -1606,9 +1606,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         return results
 
-    def create_node(
-        self, name, size, image, location=None, auth=None, **kwargs
-    ):
+    def create_node(self, name, size, image, location=None, auth=None, **kwargs):
         """
         Creates and returns node. If the source image is:
           - vApp template - a new vApp is instantiated from template

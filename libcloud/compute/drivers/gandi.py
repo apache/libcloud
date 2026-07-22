@@ -230,7 +230,23 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return True
         return False
 
-    def deploy_node(self, **kwargs):
+    def deploy_node(
+        self,
+        deploy,
+        ssh_username="root",
+        ssh_alternate_usernames=None,
+        ssh_port=22,
+        ssh_timeout=10,
+        ssh_key=None,
+        ssh_key_password=None,
+        auth=None,
+        timeout=300,
+        max_tries=3,
+        ssh_interface="public_ips",
+        at_exit_func=None,
+        wait_period=5,
+        **create_node_kwargs,
+    ):
         """
         deploy_node is not implemented for gandi driver
 
@@ -521,7 +537,11 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return True
         return False
 
-    def detach_volume(self, node, volume):
+    def detach_volume(
+        self,
+        volume,
+        node=None,
+    ):
         """
         Detaches a volume from a node.
 

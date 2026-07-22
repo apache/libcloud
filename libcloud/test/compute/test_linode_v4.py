@@ -323,7 +323,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
     def test_create_volume(self):
         node = Node("22344420", None, NodeState.RUNNING, None, None, driver=self.driver)
-        volume = self.driver.create_volume("Volume1", 50, node=node, tags=["test123", "testing"])
+        volume = self.driver.create_volume(50, "Volume1", node=node, tags=["test123", "testing"])
 
         self.assertEqual(volume.extra["linode_id"], 22344420)
         self.assertEqual(volume.size, 50)
@@ -334,7 +334,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
         LinodeMockHttpV4.type = "UNATTACHED"
         volume = self.driver.create_volume(
-            "Volume1", 50, location=location, tags=["test123", "testing"]
+            50, "Volume1", location=location, tags=["test123", "testing"]
         )
 
         self.assertEqual(volume.size, 50)
@@ -344,11 +344,11 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
     def test_create_volume_invalid_name(self):
         location = self.driver.list_locations()[0]
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_volume("Volume__1", 50, location=location)
+            self.driver.create_volume(50, "Volume__1", location=location)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_volume("Volume 1", 50, location=location)
+            self.driver.create_volume(50, "Volume 1", location=location)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_volume("Volume--1", 50, location=location)
+            self.driver.create_volume(50, "Volume--1", location=location)
 
     def test_attach_volume_already_attached(self):
         volume = self.driver.list_volumes()[0]

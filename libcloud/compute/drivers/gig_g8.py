@@ -416,7 +416,10 @@ class G8NodeDriver(NodeDriver):
                 networks.append(self._to_network(network))
         return networks
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         # type () -> List[Size]
         """
         Returns a list of node sizes as a cloud provider might have
@@ -477,7 +480,10 @@ class G8NodeDriver(NodeDriver):
         self._api_request("/machines/delete", {"machineId": int(node.id)})
         return True
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         # type () -> List[Image]
         """
         Returns a list of images as a cloud provider might have
@@ -498,7 +504,15 @@ class G8NodeDriver(NodeDriver):
             volumes.append(self._to_volume(disk))
         return volumes
 
-    def create_volume(self, size, name, ex_description, ex_disk_type="D"):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        ex_description=None,
+        ex_disk_type="D",
+    ):
         # type (int, str, str, Optional[str]) -> StorageVolume
         """
         Create volume
@@ -535,13 +549,22 @@ class G8NodeDriver(NodeDriver):
         self._api_request("/disks/delete", {"diskId": int(volume.id)})
         return True
 
-    def attach_volume(self, node, volume):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         # type (Node, StorageVolume) -> bool
         params = {"machineId": int(node.id), "diskId": int(volume.id)}
         self._api_request("/machines/attachDisk", params)
         return True
 
-    def detach_volume(self, node, volume):
+    def detach_volume(
+        self,
+        volume,
+        node=None,
+    ):
         # type (Node, StorageVolume) -> bool
         params = {"machineId": int(node.id), "diskId": int(volume.id)}
         self._api_request("/machines/detachDisk", params)

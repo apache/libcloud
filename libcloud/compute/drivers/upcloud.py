@@ -173,7 +173,10 @@ class UpcloudDriver(NodeDriver):
             location,
         )
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List available distributions.
 

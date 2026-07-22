@@ -1876,7 +1876,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return volume
 
-    def attach_volume(self, node, volume, device):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         params = {
             "Action": "AttachVolume",
             "VolumeId": volume.id,
@@ -2018,7 +2023,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
-    def copy_image(self, image, source_region, name=None, description=None):
+    def copy_image(
+        self,
+        source_region,
+        node_image,
+        name,
+        description=None,
+    ):
         """
         Copy an Amazon Machine Image from the specified source region
         to the current region.
@@ -2040,6 +2051,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :return:    Instance of class ``NodeImage``
         :rtype:     :class:`NodeImage`
         """
+        image = node_image
         params = {
             "Action": "CopyImage",
             "SourceRegion": source_region,
@@ -2110,7 +2122,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return image
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """
         Deletes an image at Amazon given a NodeImage object
 
@@ -2121,6 +2136,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype:     ``bool``
         """
+        image = node_image
         params = {"Action": "DeregisterImage", "ImageId": image.id}
 
         response = self.connection.request(self.path, params=params).object
@@ -5502,7 +5518,10 @@ class EucNodeDriver(BaseEC2NodeDriver):
             extra={"cpu": int(cpu)},
         )
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Lists available nodes sizes.
 

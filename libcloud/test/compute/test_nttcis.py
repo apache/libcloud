@@ -315,6 +315,7 @@ def test_create_mcp1_node_optional_param(driver):
     )
     disks = [NttCisServerDisk(scsi_id="0", speed="HIGHPERFORMANCE")]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=root_pw,
@@ -335,6 +336,7 @@ def test_create_mcp1_node_response_no_pass_random_gen(driver):
     image = driver.list_images()[0]
     network = driver.ex_list_networks()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=None,
@@ -351,6 +353,7 @@ def test_create_mcp1_node_response_no_pass_customer_windows(driver):
     image = driver.ex_list_customer_images()[1]
     network = driver.ex_list_networks()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=None,
@@ -367,6 +370,7 @@ def test_create_mcp1_node_response_no_pass_customer_windows_STR(driver):
     image = driver.ex_list_customer_images()[1].id
     network = driver.ex_list_networks()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=None,
@@ -383,6 +387,7 @@ def test_create_mcp1_node_response_no_pass_customer_linux(driver):
     image = driver.ex_list_customer_images()[0]
     network = driver.ex_list_networks()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=None,
@@ -399,6 +404,7 @@ def test_create_mcp1_node_response_no_pass_customer_linux_STR(driver):
     image = driver.ex_list_customer_images()[0].id
     network = driver.ex_list_networks()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=None,
@@ -416,6 +422,7 @@ def test_create_mcp1_node_response_STR(driver):
     image = driver.list_images()[0].id
     network = driver.ex_list_networks()[0].id
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -432,6 +439,7 @@ def test_create_mcp1_node_no_network(driver):
     image = driver.list_images()[0]
     with pytest.raises(InvalidRequestError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -445,6 +453,7 @@ def test_create_node_mcp1_ipv4(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -461,6 +470,7 @@ def test_create_node_mcp1_network(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -482,6 +492,7 @@ def test_create_node_response_network_domain(driver):
         cpu_count=4, cores_per_socket=1, performance="HIGHPERFORMANCE"
     )
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -506,6 +517,7 @@ def test_create_node_response_network_domain_STR(driver):
         cpu_count=4, cores_per_socket=1, performance="HIGHPERFORMANCE"
     )
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -524,6 +536,7 @@ def test_create_node_mcp2_vlan(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -540,6 +553,7 @@ def test_create_node_mcp2_ipv4(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -557,6 +571,7 @@ def test_create_node_network_domain_no_vlan_or_ipv4(driver):
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -570,6 +585,7 @@ def test_create_node_response(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test3",
         image=image,
         auth=rootPw,
@@ -584,6 +600,7 @@ def test_create_node_ms_time_zone(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test3",
         image=image,
         auth=rootPw,
@@ -600,6 +617,7 @@ def test_create_node_ambigious_mcps_fail(driver):
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -613,7 +631,9 @@ def test_create_node_no_network_domain_fail(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
-        driver.create_node(name="test3", image=image, auth=rootPw, ex_primary_nic_vlan="fakevlan")
+        driver.create_node(
+            size=None, name="test3", image=image, auth=rootPw, ex_primary_nic_vlan="fakevlan"
+        )
 
 
 def test_create_node_no_primary_nic_fail(driver):
@@ -621,6 +641,7 @@ def test_create_node_no_primary_nic_fail(driver):
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -632,6 +653,7 @@ def test_create_node_primary_vlan_nic(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test3",
         image=image,
         auth=rootPw,
@@ -647,6 +669,7 @@ def test_create_node_primary_ipv4(driver):
     rootPw = "pass123"
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test3",
         image=image,
         auth=rootPw,
@@ -662,6 +685,7 @@ def test_create_node_both_primary_nic_and_vlan_fail(driver):
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -678,6 +702,7 @@ def test_create_node_cpu_specification(driver):
         cpu_count="4", cores_per_socket="2", performance="STANDARD"
     )
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -696,6 +721,7 @@ def test_create_node_memory(driver):
     image = driver.list_images()[0]
 
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -714,6 +740,7 @@ def test_create_node_disks(driver):
     image = driver.list_images()[0]
     disks = [NttCisServerDisk(scsi_id="0", speed="HIGHPERFORMANCE")]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -733,6 +760,7 @@ def test_create_node_disks_fail(driver):
     disks = "blah"
     with pytest.raises(TypeError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=root_pw,
@@ -748,6 +776,7 @@ def test_create_node_ipv4_gateway(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -766,6 +795,7 @@ def test_create_node_network_domain_no_vlan_no_ipv4_fail(driver):
     image = driver.list_images()[0]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -781,6 +811,7 @@ def test_create_node_mcp2_additional_nics_legacy(driver):
     additional_vlans = ["fakevlan1", "fakevlan2"]
     additional_ipv4 = ["10.0.0.2", "10.0.0.3"]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,
@@ -800,6 +831,7 @@ def test_create_node_bad_additional_nics_ipv4(driver):
     image = driver.list_images()[0]
     with pytest.raises(TypeError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -819,6 +851,7 @@ def test_create_node_additional_nics(driver):
     additional_nics = [nic1, nic2]
 
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=root_pw,
@@ -841,6 +874,7 @@ def test_create_node_additional_nics_vlan_ipv4_coexist_fail(driver):
     additional_nics = [nic1, nic2]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=root_pw,
@@ -858,6 +892,7 @@ def test_create_node_additional_nics_invalid_input_fail(driver):
     additional_nics = "blah"
     with pytest.raises(TypeError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=root_pw,
@@ -877,6 +912,7 @@ def test_create_node_additional_nics_vlan_ipv4_not_exist_fail(driver):
     additional_nics = [nic1, nic2]
     with pytest.raises(ValueError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=root_pw,
@@ -893,6 +929,7 @@ def test_create_node_bad_additional_nics_vlan(driver):
     image = driver.list_images()[0]
     with pytest.raises(TypeError):
         driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -908,6 +945,7 @@ def test_create_node_mcp2_indicate_dns(driver):
     rootPw = NodeAuthPassword("pass123")
     image = driver.list_images()[0]
     node = driver.create_node(
+        size=None,
         name="test2",
         image=image,
         auth=rootPw,

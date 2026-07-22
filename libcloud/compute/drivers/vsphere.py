@@ -256,7 +256,10 @@ class VSphereNodeDriver(NodeDriver):
 
         return VSphereNetwork(id=data.name, name=data.name, extra=extra)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Returns sizes
         """
@@ -1352,7 +1355,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         self.session_token = result.object["value"]
         self.connection.session_token = self.session_token
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         return []
 
     def list_nodes(
@@ -1915,7 +1921,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         return result
 
-    def list_images(self, **kwargs):
+    def list_images(
+        self,
+        location=None,
+    ):
         libraries = self.ex_list_content_libraries()
         item_ids = []
 

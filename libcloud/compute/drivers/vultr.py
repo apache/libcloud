@@ -844,10 +844,16 @@ class VultrNodeDriverV1(VultrNodeDriver):
     def list_locations(self):
         return self._list_resources("/v1/regions/list", self._to_location)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         return self._list_resources("/v1/plans/list", self._to_size)
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         return self._list_resources("/v1/os/list", self._to_image)
 
     # pylint: disable=too-many-locals
@@ -1370,7 +1376,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def list_sizes(self, ex_list_bare_metals: bool = True) -> List[NodeSize]:
+    def list_sizes(
+        self,
+        location=None,
+        ex_list_bare_metals: bool = True,
+    ):
         """List available node sizes.
 
         :keyword ex_list_bare_metals: Whether to fetch bare metal sizes.
@@ -1385,7 +1395,10 @@ class VultrNodeDriverV2(VultrNodeDriver):
             sizes += self.ex_list_bare_metal_sizes()
         return sizes
 
-    def list_images(self) -> List[NodeImage]:
+    def list_images(
+        self,
+        location=None,
+    ):
         """List available node images.
 
         :rtype: ``list`` of :class: `NodeImage`
@@ -1411,10 +1424,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
     def create_volume(
         self,
-        size: int,
-        name: str,
-        location: Union[NodeLocation, str],
-    ) -> StorageVolume:
+        size,
+        name,
+        location=None,
+        snapshot=None,
+    ):
         """Create a new volume.
 
         :param size: Size of the volume in gigabytes.\
@@ -1445,10 +1459,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
     def attach_volume(
         self,
-        node: Node,
-        volume: StorageVolume,
+        node,
+        volume,
+        device=None,
         ex_live: bool = True,
-    ) -> bool:
+    ):
         """Attaches volume to node.
 
         :param node: Node to attach volume to.
@@ -1517,7 +1532,10 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request("/v2/ssh-keys", "ssh_keys")
         return [self._to_key_pair(item) for item in data]
 
-    def get_key_pair(self, key_id: str) -> KeyPair:
+    def get_key_pair(
+        self,
+        name,
+    ):
         """Retrieve a single key pair.
 
         :param key_id: ID of the key pair to retrieve.
@@ -1525,6 +1543,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: :class: `KeyPair`
         """
+        key_id = name
         resp = self.connection.request("/v2/ssh-keys/%s" % key_id)
         return self._to_key_pair(resp.object["ssh_key"])
 

@@ -1204,6 +1204,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         size,
         name,
         location=None,
+        snapshot=None,
         ex_storage_class_name="",
         ex_volume_mode="Filesystem",
         ex_access_mode="ReadWriteOnce",
@@ -1518,7 +1519,11 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         except Exception:
             raise
 
-    def detach_volume(self, volume, ex_node):
+    def detach_volume(
+        self,
+        volume,
+        ex_node=None,
+    ):
         """
         Detaches a volume from a node but the node must be given since a PVC
         can have more than one VMI's pointing to it
