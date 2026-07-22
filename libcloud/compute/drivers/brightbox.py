@@ -168,7 +168,9 @@ class BrightboxNodeDriver(NodeDriver):
         headers = {"Content-Type": "application/json"}
         return self.connection.request(path, data=data, headers=headers, method="PUT")
 
-    def create_node(self, name, size, image, location=None, ex_userdata=None, ex_servergroup=None):
+    def create_node(
+        self, name, size, image, location=None, auth=None, ex_userdata=None, ex_servergroup=None
+    ):
         """Create a new Brightbox node
 
         Reference: https://api.gb1.brightbox.com/1.0/#server_create_server

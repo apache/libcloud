@@ -120,7 +120,7 @@ class OvhNodeDriver(NodeDriver):
 
         return self._to_node(response.object)
 
-    def create_node(self, name, image, size, location, ex_keyname=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_keyname=None):
         """
         Create a new node
 

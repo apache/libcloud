@@ -35,7 +35,9 @@ class MaxihostNodeDriver(NodeDriver):
     name = "Maxihost"
     website = "https://www.maxihost.com/"
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(
+        self, name, size, image, location=None, auth=None, ex_ssh_key_ids=None
+    ):
         """
         Create a node.
 

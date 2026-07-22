@@ -168,11 +168,12 @@ class G8NodeDriver(NodeDriver):
     def create_node(
         self,
         name,
+        size,
         image,
-        ex_network,
-        ex_description,
-        size=None,
+        location=None,
         auth=None,
+        ex_network=None,
+        ex_description=None,
         ex_create_attr=None,
         ex_expose_ssh=False,
     ):

@@ -4441,6 +4441,7 @@ class GCENodeDriver(NodeDriver):
         size,
         image,
         location=None,
+        auth=None,
         ex_network="default",
         ex_subnetwork=None,
         ex_tags=None,

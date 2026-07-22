@@ -110,7 +110,7 @@ class CloudscaleNodeDriver(NodeDriver):
         """
         return self._list_resources("/v1/images", self._to_image)
 
-    def create_node(self, name, size, image, location=None, ex_create_attr=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_create_attr=None):
         """
         Create a node.
 

@@ -208,7 +208,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             templates.append(template)
         return sorted(templates, key=lambda sort: sort.name)
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None, **kwargs):
+    def create_node(
+        self, name, size, image, location=None, auth=None, ex_ssh_key_ids=None, **kwargs
+    ):
         """
         Create a simple node  with a name, cores, memory at the designated
         location.

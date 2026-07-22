@@ -103,10 +103,10 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
         node = self.driver.create_node(
-            location,
             "node-name",
             size=size,
             image=image,
+            location=location,
             root_pass="test123456",
         )
         self.assertTrue(isinstance(node, Node))
@@ -119,10 +119,10 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         LinodeMockHttpV4.type = "EX_USERDATA"
 
         node = self.driver.create_node(
-            location,
             "node-name",
             size=size,
             image=image,
+            location=location,
             root_pass="test123456",
             ex_userdata=EX_USERDATA,
         )
@@ -155,10 +155,10 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         node = self.driver.create_node(
-            location,
             "TestNode",
             size,
             image=image,
+            location=location,
             root_pass="test123456",
             ex_backups_enabled=True,
             ex_tags=["testing123"],
@@ -176,13 +176,15 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, "TestNode", size, image=image)
+            self.driver.create_node("TestNode", size, image=image, location=location)
 
     def test_create_node_no_image(self):
         size = self.driver.list_sizes()[0]
         location = self.driver.list_locations()[0]
         LinodeMockHttpV4.type = "NO_IMAGE"
-        node = self.driver.create_node(location, "TestNode", size, None, ex_tags=["testing123"])
+        node = self.driver.create_node(
+            "TestNode", size, None, location=location, ex_tags=["testing123"]
+        )
 
         self.assertIsNone(node.image)
         self.assertEqual(node.name, "TestNode")

@@ -191,7 +191,7 @@ class UpcloudDriver(NodeDriver):
         name,
         size,
         image,
-        location,
+        location=None,
         auth=None,
         ex_hostname="localhost",
         ex_username="root",

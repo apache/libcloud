@@ -244,6 +244,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         size,
         image,
         location=None,
+        auth=None,
         login=None,
         password=None,
         inet_family=4,

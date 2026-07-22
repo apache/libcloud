@@ -481,7 +481,9 @@ class AzureNodeDriver(NodeDriver):
         name,
         size,
         image,
-        ex_cloud_service_name,
+        location=None,
+        auth=None,
+        ex_cloud_service_name=None,
         ex_storage_service_name=None,
         ex_new_deployment=False,
         ex_deployment_slot="Production",
@@ -490,7 +492,6 @@ class AzureNodeDriver(NodeDriver):
         ex_custom_data=None,
         ex_virtual_network_name=None,
         ex_network_config=None,
-        auth=None,
         **kwargs,
     ):
         """

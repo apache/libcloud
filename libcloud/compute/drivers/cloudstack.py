@@ -1601,6 +1601,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         size,
         image,
         location=None,
+        auth=None,
         networks=None,
         project=None,
         diskoffering=None,

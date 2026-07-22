@@ -851,7 +851,16 @@ class VultrNodeDriverV1(VultrNodeDriver):
         return self._list_resources("/v1/os/list", self._to_image)
 
     # pylint: disable=too-many-locals
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None, ex_create_attr=None):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location=None,
+        auth=None,
+        ex_ssh_key_ids=None,
+        ex_create_attr=None,
+    ):
         """
         Create a node
 
@@ -1133,8 +1142,9 @@ class VultrNodeDriverV2(VultrNodeDriver):
         self,
         name: str,
         size: NodeSize,
-        location: NodeLocation,
-        image: Optional[NodeImage] = None,
+        image: NodeImage,
+        location: Optional[NodeLocation] = None,
+        auth=None,
         ex_ssh_key_ids: Optional[List[str]] = None,
         ex_private_network_ids: Optional[List[str]] = None,
         ex_snapshot: Union[VultrNodeSnapshot, str, None] = None,

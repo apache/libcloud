@@ -5641,7 +5641,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None, auth=None, **kwargs):
         """
         Creates a new Outscale node. The ex_iamprofile keyword
         is not supported.
@@ -5680,7 +5680,14 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         """
         if "ex_iamprofile" in kwargs:
             raise NotImplementedError("ex_iamprofile not implemented")
-        return super().create_node(**kwargs)
+        return super().create_node(
+            name=name,
+            size=size,
+            image=image,
+            location=location,
+            auth=auth,
+            **kwargs,
+        )
 
     def ex_create_network(self, cidr_block, name=None):
         """

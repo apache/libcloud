@@ -133,7 +133,7 @@ class KamateraNodeDriver(NodeDriver):
         name,
         size,
         image,
-        location,
+        location=None,
         auth=None,
         ex_networks=None,
         ex_dailybackup=False,

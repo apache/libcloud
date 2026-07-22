@@ -815,8 +815,8 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     def create_node(
         self,
         name,  # type: str
-        size=None,  # type: Optional[NodeSize]
-        image=None,  # type: Optional[Union[NodeImage, str]]
+        size,  # type: NodeSize
+        image,  # type: Union[NodeImage, str]
         location=None,  # type: Optional[NodeLocation]
         auth=None,  # type: Optional[Union[NodeAuthSSHKey, NodeAuthPassword]]
         ex_cpu=None,  # type: Optional[Union[int, str]]

@@ -314,8 +314,11 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_node(
         self,
+        name: str,
+        size,
         image: NodeImage,
-        name: str = None,
+        location=None,
+        auth=None,
         ex_dry_run: bool = False,
         ex_block_device_mapping: dict = None,
         ex_boot_on_creation: bool = True,

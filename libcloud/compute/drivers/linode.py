@@ -254,7 +254,6 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
     def create_node(
         self,
-        location,
         # Previously, the following 3 parameters did not match the rest of the libcloud
         # codebase drivers. They should be in the same order as other compute drivers.
         # Previously, it looked like this:
@@ -270,6 +269,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         name,  # Can be None
         size,  # Can be None
         image,  # Can be None
+        location=None,
+        auth=None,
         root_pass=None,
         ex_authorized_keys=None,
         ex_authorized_users=None,

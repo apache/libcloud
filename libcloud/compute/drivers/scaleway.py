@@ -372,7 +372,17 @@ class ScalewayNodeDriver(NodeDriver):
             created_at=parse_date(server["creation_date"]),
         )
 
-    def create_node(self, name, size, image, ex_volumes=None, ex_tags=None, region=None):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location=None,
+        auth=None,
+        ex_volumes=None,
+        ex_tags=None,
+        region=None,
+    ):
         """
         Create a new node.
 
