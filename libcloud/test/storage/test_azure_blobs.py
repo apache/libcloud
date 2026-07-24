@@ -697,6 +697,40 @@ class AzureBlobsTests(unittest.TestCase):
         consumed_stream = "".join(chunk.decode("utf-8") for chunk in stream)
         self.assertEqual(len(consumed_stream), obj.size)
 
+    def test_download_object_as_stream_uses_chunk_size(self):
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+
+        obj = Object(
+            name="foo_bar_object",
+            size=1000,
+            hash=None,
+            extra={},
+            container=container,
+            meta_data=None,
+            driver=self.driver_type,
+        )
+
+        used_chunk_sizes = []
+
+        def mock_get_object(
+            self, obj, callback, callback_kwargs, response, success_status_code=None
+        ):
+            iterator = callback_kwargs["iterator"]
+            used_chunk_sizes.append(iterator.gi_frame.f_locals.get("chunk_size"))
+            return iterator
+
+        old_func = self.driver_type._get_object
+        self.driver_type._get_object = mock_get_object
+        try:
+            self.driver.download_object_as_stream(obj=obj, chunk_size=1234)
+            self.driver.download_object_range_as_stream(
+                obj=obj, start_bytes=0, end_bytes=10, chunk_size=4321
+            )
+        finally:
+            self.driver_type._get_object = old_func
+
+        self.assertEqual(used_chunk_sizes, [1234, 4321])
+
     def test_download_object_range_success(self):
         container = Container(name="foo_bar_container", extra={}, driver=self.driver)
         obj = Object(
