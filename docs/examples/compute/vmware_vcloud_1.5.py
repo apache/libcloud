@@ -51,9 +51,7 @@ node = driver.create_node(
 )
 
 # Create node in a custom virtual data center
-node = driver.create_node(
-    name="test node 4", size=None, image=image, ex_vdc="your vdc name"
-)
+node = driver.create_node(name="test node 4", size=None, image=image, ex_vdc="your vdc name")
 
 # Create node with guest OS customisation script to be run at first boot
 node = driver.create_node(
