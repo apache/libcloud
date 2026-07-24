@@ -42,6 +42,15 @@ Storage
   requested chunk size is now passed through to the underlying iterator
   instead of the hardcoded default.
   (GITHUB-1798)
+
+  [Sanjay Santhanam - @Sanjays2402]
+
+- [Azure Blobs] Fix ``chunk_size`` argument being ignored by
+  ``download_object_as_stream`` and ``download_object_range_as_stream``. The
+  requested chunk size is now forwarded to the underlying iterator instead of
+  always using ``AZURE_DOWNLOAD_CHUNK_SIZE``.
+  (GITHUB-1698)
+
   [Sanjay Santhanam - @Sanjays2402]
 
 Changes in Apache Libcloud 3.9.1
