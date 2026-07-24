@@ -24,6 +24,9 @@ Compute
   This can be a backward-incompatible change for code which passes arguments
   positionally to affected methods.
 
+  (#2170)
+  [Miguel Caballer - @micafer]
+
 - [SSH] Support paramiko 4
 
   RSA key support has been removed as of paramiko 4, so only import it

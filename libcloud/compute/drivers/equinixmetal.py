@@ -438,6 +438,9 @@ def _list_async(driver):
         :param      public_key: Valid public key string (required)
         :type       public_key: ``str``
         """
+        if not public_key:
+            raise ValueError("public_key is required.")
+
         params = {"label": name, "key": public_key}
         data = self.connection.request("/metal/v1/ssh-keys", method="POST", params=params).object
 

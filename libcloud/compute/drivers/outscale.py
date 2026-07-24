@@ -1704,8 +1704,13 @@ class OutscaleNodeDriver(NodeDriver):
                     the maximum allowed size for a volume is 14,901 GiB
         :type       size: ``int``
 
+        :param      location: The location whose ID identifies the Subregion
+                    in which to create the volume. Required when
+                    ``ex_subregion_name`` is not provided.
+        :type       location: :class:`NodeLocation`
+
         :param      ex_subregion_name: The Subregion in which you want to
-        create the volume.
+                    create the volume. Takes precedence over ``location``.
         :type       ex_subregion_name: ``str``
 
         :param      ex_volume_type: the type of volume you want to create (io1
@@ -1721,6 +1726,12 @@ class OutscaleNodeDriver(NodeDriver):
         :return: the created volume
         :rtype: ``dict``
         """
+        if ex_subregion_name is None:
+            if location is None:
+                raise ValueError("location or ex_subregion_name is required.")
+
+            ex_subregion_name = location.id
+
         data = {"DryRun": ex_dry_run, "SubregionName": ex_subregion_name}
         if ex_iops is not None:
             data.update({"Iops": ex_iops})

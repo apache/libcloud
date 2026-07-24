@@ -39,9 +39,15 @@ class MaxihostNodeDriver(NodeDriver):
         """
         Create a node.
 
+        :param location: Location where the node will be created. (required)
+        :type location: :class:`NodeLocation`
+
         :return: The newly created node.
         :rtype: :class:`Node`
         """
+        if location is None:
+            raise ValueError("location is required.")
+
         attr = {
             "hostname": name,
             "plan": size.id,
@@ -234,6 +240,9 @@ class MaxihostNodeDriver(NodeDriver):
         :param      public_key: base64 encoded public key string (required)
         :type       public_key: ``str``
         """
+        if not public_key:
+            raise ValueError("public_key is required.")
+
         attr = {"name": name, "public_key": public_key}
         res = self.connection.request("/account/keys", method="POST", data=json.dumps(attr))
 
