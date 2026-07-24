@@ -555,8 +555,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         Required if node is not given.
         :type location: :class:`NodeLocation`
 
-        :keyword volume: Node to attach the volume to
-        :type volume: :class:`Node`
+        :keyword node: Node to attach the volume to
+        :type node: :class:`Node`
 
         :keyword tags: tags to apply to volume
         :type tags: `list` of `str`
@@ -733,8 +733,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         """
         Lookup a Linode image
 
-        :param image: The name to image to be looked up (required).\
-        :type name: `str`
+        :param image_id: The ID of the image to look up (required).
+        :type image_id: ``str``
 
         :rtype: :class: `NodeImage`
         """
@@ -751,8 +751,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         """Creates a private image from a LinodeDisk.
          Images are limited to three per account.
 
-        :param disk: LinodeDisk to create the image from (required)
-        :type disk: :class:`LinodeDisk`
+        :param node: LinodeDisk to create the image from (required)
+        :type node: :class:`LinodeDisk`
 
         :keyword name: A name for the image.\
         Defaults to the name of the disk \
@@ -783,8 +783,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
     ):
         """Deletes a private image
 
-        :param image: NodeImage to delete (required)
-        :type image: :class:`NodeImage`
+        :param node_image: NodeImage to delete (required)
+        :type node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """

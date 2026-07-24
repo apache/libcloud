@@ -1538,8 +1538,8 @@ class VultrNodeDriverV2(VultrNodeDriver):
     ):
         """Retrieve a single key pair.
 
-        :param key_id: ID of the key pair to retrieve.
-        :type  key_id: ``str``
+        :param name: ID of the key pair to retrieve.
+        :type  name: ``str``
 
         :rtype: :class: `KeyPair`
         """

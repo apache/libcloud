@@ -1136,8 +1136,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: the image to be deleted
-        :type       image: :class:`NodeImage`
+        :param      node_image: the image to be deleted
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
@@ -2383,8 +2383,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: image witch should be used
-        :type       image: :class:`NodeImage`
+        :param      node_image: image which should be used
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """

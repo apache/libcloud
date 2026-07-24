@@ -2039,8 +2039,8 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      source_region: The region where the image resides
         :type       source_region: ``str``
 
-        :param      image: Instance of class NodeImage
-        :type       image: :class:`NodeImage`
+        :param      node_image: Instance of class NodeImage
+        :type       node_image: :class:`NodeImage`
 
         :param      name: The name of the new image
         :type       name: ``str``
@@ -2131,8 +2131,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param image: Instance of ``NodeImage``
-        :type image: :class: `NodeImage`
+        :param node_image: Instance of ``NodeImage``
+        :type node_image: :class: `NodeImage`
 
         :rtype:     ``bool``
         """

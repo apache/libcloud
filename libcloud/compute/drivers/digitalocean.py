@@ -248,8 +248,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         :param node: Node to use as base for image
         :type node: :class:`Node`
 
-        :param node: Name for image
-        :type node: ``str``
+        :param name: Name for image
+        :type name: ``str``
+
+        :param description: Optional image description.
+        :type description: ``str``
 
         :rtype: ``bool``
         """
@@ -267,8 +270,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: the image to be deleted
-        :type       image: :class:`NodeImage`
+        :param      node_image: the image to be deleted
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
@@ -393,8 +396,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         """
         Delete an existing SSH key.
 
-        :param      key: SSH key (required)
-        :type       key: :class:`KeyPair`
+        :param      key_pair: SSH key (required)
+        :type       key_pair: :class:`KeyPair`
         """
         key = key_pair
         key_id = key.extra["id"]

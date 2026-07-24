@@ -1217,9 +1217,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         :param size: The size in Gigabytes
         :type size: `int`
 
-        :param volume_type: This is the type of volume to be created that is
-                            dependent on the underlying cloud where Kubernetes
-                            is deployed. K8s is supporting the following types:
+        :param ex_volume_type: This is the type of volume to be created that is
+                               dependent on the underlying cloud where Kubernetes
+                               is deployed. K8s is supporting the following types:
                             -gcePersistentDisk
                             -awsElasticBlockStore
                             -azureFile
@@ -1244,19 +1244,20 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                             where type is one of the above and key1, key2... are type specific keys and
                             their corresponding values. eg: {nsf: {server: "172.0.0.0", path: "/tmp"}}
                                             {awsElasticBlockStore: {fsType: 'ext4', volumeID: "1234"}}
-        :type volume_type: `str`
+        :type ex_volume_type: `str`
 
-        :param volume_params: A dict with the key:value that the
-                              volume_type needs.
-                              This parameter is a dict in the form
-                              {key1:value1, key2:value2,...},
-                              where type is one of the above and key1, key2...
-                              are type specific keys and
-                              their corresponding values.
-                              eg: for nsf volume_type
-                              {server: "172.0.0.0", path: "/tmp"}
-                              for awsElasticBlockStore volume_type
-                              {fsType: 'ext4', volumeID: "1234"}
+        :param ex_volume_params: A dict with the key:value that the
+                                 ``ex_volume_type`` needs.
+                                 This parameter is a dict in the form
+                                 {key1:value1, key2:value2,...},
+                                 where type is one of the above and key1, key2...
+                                 are type specific keys and
+                                 their corresponding values.
+                                 eg: for nfs ``ex_volume_type``
+                                 {server: "172.0.0.0", path: "/tmp"}
+                                 for awsElasticBlockStore ``ex_volume_type``
+                                 {fsType: 'ext4', volumeID: "1234"}
+        :type ex_volume_params: ``dict``
         """
 
         if ex_dynamic:

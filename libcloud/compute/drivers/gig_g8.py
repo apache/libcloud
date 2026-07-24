@@ -523,12 +523,12 @@ class G8NodeDriver(NodeDriver):
         :param name: Name of the volume
         :type  name: ``str``
 
-        :param description: Description of the volume
-        :type  description: ``str``
+        :param ex_description: Description of the volume
+        :type  ex_description: ``str``
 
-        :param disk_type: Type of the disk depending on the G8
-                            D for datadisk is always available
-        :type  disk_type: ``str``
+        :param ex_disk_type: Type of the disk depending on the G8.
+                             ``D`` for a data disk is always available.
+        :type  ex_disk_type: ``str``
 
         :rtype: class:`StorageVolume`
         """

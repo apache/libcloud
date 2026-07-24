@@ -177,10 +177,10 @@ For example:
         def list_nodes(self):
             pass
 
-        def list_images(self):
+        def list_images(self, location=None):
             pass
 
-        def create_node(self):
+        def create_node(self, name, size, image, location=None, auth=None):
             pass
 
         def reboot_node(self):

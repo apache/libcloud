@@ -450,8 +450,8 @@ def _list_async(driver):
         """
         Delete an existing SSH key.
 
-        :param      key: SSH key (required)
-        :type       key: :class:`KeyPair`
+        :param      key_pair: SSH key (required)
+        :type       key_pair: :class:`KeyPair`
         """
         key = key_pair
         key_id = key.name
