@@ -58,4 +58,4 @@ RUN set -e && \
     python3.12 -m pip install --break-system-packages uv && \
     python3.12 -m uv sync --group ci --no-dev
 
-CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.12,py3.10,py3.11,py3.13,pypypy3.10"]
+CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.12,py3.10,py3.11,py3.13,pypypy3"]
