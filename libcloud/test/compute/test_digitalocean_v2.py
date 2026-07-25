@@ -129,10 +129,38 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].name, "ubuntu-s-1vcpu-1gb-sfo3-01")
-        self.assertEqual(nodes[0].public_ips, ["128.199.13.158"])
+        self.assertEqual(
+            nodes[0].public_ips,
+            ["128.199.13.158", "2604:a880:4:1d0::142:9000"],
+        )
         self.assertEqual(nodes[0].extra["image"]["id"], 69463186)
         self.assertEqual(nodes[0].extra["size_slug"], "s-1vcpu-1gb")
         self.assertEqual(len(nodes[0].extra["tags"]), 0)
+
+    def test_to_node_includes_ipv6_addresses(self):
+        # Both IPv4 and IPv6 addresses must be reported, and multiple
+        # addresses of the same type must all be kept. See GITHUB-1738.
+        data = {
+            "id": 1,
+            "name": "ipv6-droplet",
+            "status": "active",
+            "created_at": "2020-10-15T13:58:22Z",
+            "networks": {
+                "v4": [
+                    {"ip_address": "10.0.0.1", "type": "private"},
+                    {"ip_address": "159.223.187.157", "type": "public"},
+                ],
+                "v6": [
+                    {"ip_address": "2604:a880:400:d0::1c58:e001", "type": "public"},
+                ],
+            },
+        }
+        node = self.driver._to_node(data)
+        self.assertEqual(
+            node.public_ips,
+            ["159.223.187.157", "2604:a880:400:d0::1c58:e001"],
+        )
+        self.assertEqual(node.private_ips, ["10.0.0.1"])
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
