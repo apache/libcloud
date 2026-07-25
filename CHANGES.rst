@@ -7,6 +7,11 @@ Changes in Apache Libcloud 3.9.2
 Common
 ~~~~~~
 
+- Respect the ``no_proxy`` / ``NO_PROXY`` environment variable so an explicitly
+  configured proxy is bypassed for matching hosts.
+  (GITHUB-2077)
+  [Sanjay Santhanam - @Sanjays2402]
+
 - Move tests to python 3.12.
   (#2152)
   [Miguel Caballer - @micafer]
