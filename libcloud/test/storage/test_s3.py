@@ -885,6 +885,35 @@ class S3Tests(unittest.TestCase):
 
         mock_response.iter_content.assert_called_once_with(requested_chunk_size)
 
+    def test_download_object_range_as_stream_uses_chunk_size(self):
+        # Same regression as above, but for the ranged variant which goes
+        # through the same _get_object() code path.
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+        obj = Object(
+            name="foo_bar_object",
+            size=1000,
+            hash=None,
+            extra={},
+            container=container,
+            meta_data=None,
+            driver=self.driver_type,
+        )
+
+        requested_chunk_size = CHUNK_SIZE * 2
+        mock_response = Mock(name="mock response")
+        mock_response.iter_content.return_value = iter([b"a"])
+
+        with mock.patch.object(self.driver.connection, "request", return_value=mock_response):
+            with mock.patch.object(self.driver, "_get_object", side_effect=lambda **kw: kw):
+                self.driver.download_object_range_as_stream(
+                    obj=obj,
+                    start_bytes=0,
+                    end_bytes=100,
+                    chunk_size=requested_chunk_size,
+                )
+
+        mock_response.iter_content.assert_called_once_with(requested_chunk_size)
+
     def test_upload_object_invalid_ex_storage_class(self):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
         # returned
