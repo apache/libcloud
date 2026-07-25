@@ -37,6 +37,12 @@ Compute
 Storage
 ~~~~~~~
 
+- [Local] Remove the IPC lock file once ``LockLocalStorage`` releases the lock.
+  Previously ``fasteners`` left the file behind, so one file accumulated in the
+  temporary directory for every distinct path which was locked.
+  (GITHUB-1975)
+  [Sanjay Santhanam - @Sanjays2402]
+
 - [Azure Blobs] Fix ``chunk_size`` argument being ignored by
   ``download_object_as_stream`` and ``download_object_range_as_stream``. The
   requested chunk size is now forwarded to the underlying iterator instead of
