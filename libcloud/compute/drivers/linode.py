@@ -424,9 +424,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         if not isinstance(node, Node):
             raise LinodeExceptionV4("Invalid node instance")
 
-        configs = self._paginated_request(
-            "/v4/linode/instances/%s/configs" % node.id, "data"
-        )
+        configs = self._paginated_request("/v4/linode/instances/%s/configs" % node.id, "data")
         if not configs:
             raise LinodeExceptionV4("Node has no configuration profiles")
 
