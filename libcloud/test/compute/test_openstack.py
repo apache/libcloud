@@ -1376,6 +1376,33 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.name, "new_image")
         self.assertEqual(image.id, "4949f9ee-2421-4c81-8b49-13119446008b")
 
+    def test_create_image_with_description_and_metadata(self):
+        metadata = {"version": "1.0"}
+        response = Mock(
+            headers={
+                "location": (
+                    "http://127.0.0.1/v1.1/68/images/"
+                    "4949f9ee-2421-4c81-8b49-13119446008b"
+                )
+            }
+        )
+
+        with mock.patch.object(self.driver, "_node_action", return_value=response) as action:
+            self.driver.create_image(
+                self.node,
+                "new_image",
+                description="Image description",
+                metadata=metadata,
+            )
+
+        action.assert_called_once_with(
+            self.node,
+            "createImage",
+            name="new_image",
+            metadata={"version": "1.0", "description": "Image description"},
+        )
+        self.assertEqual(metadata, {"version": "1.0"})
+
     def test_ex_set_server_name(self):
         old_node = Node(
             id="12064",

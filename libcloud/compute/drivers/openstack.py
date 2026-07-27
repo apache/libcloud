@@ -1106,7 +1106,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return {"rate": rate, "absolute": absolute}
 
-    def create_image(self, node, name, description=None, reboot=True):
+    def create_image(self, node, name, description=None):
         """Create an image for node.
 
         @inherits: :class:`NodeDriver.create_image`
@@ -1802,14 +1802,22 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :param      name: The name for the new image.
         :type       name: ``str``
 
+        :param      description: A description for the new image. Stored in the
+                                image metadata because the Compute API does not
+                                provide a dedicated description field.
+        :type       description: ``str``
+
         :param      metadata: Key and value pairs for metadata.
         :type       metadata: ``dict``
 
         :rtype: :class:`NodeImage`
         """
         optional_params = {}
-        if metadata:
-            optional_params["metadata"] = metadata
+        image_metadata = dict(metadata) if metadata else {}
+        if description is not None:
+            image_metadata["description"] = description
+        if image_metadata:
+            optional_params["metadata"] = image_metadata
         resp = self._node_action(node, "createImage", name=name, **optional_params)
         image_id = self._extract_image_id_from_url(resp.headers["location"])
         return self.get_image(image_id=image_id)
