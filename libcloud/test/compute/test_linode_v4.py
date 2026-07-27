@@ -412,16 +412,20 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
     def test_create_image(self):
         node = Node("22344420", None, None, None, None, driver=self.driver)
-        disk = self.driver.ex_list_disks(node)[0]
-        image = self.driver.create_image(disk, name="Test", description="Test Image")
+        image = self.driver.create_image(node, name="Test", description="Test Image")
         self.assertIsInstance(image, NodeImage)
         self.assertEqual(image.name, "Test")
         self.assertEqual(image.extra["description"], "Test Image")
 
+    def test_ex_get_primary_disk(self):
+        node = Node("22344420", None, None, None, None, driver=self.driver)
+        disk = self.driver.ex_get_primary_disk(node)
+        self.assertIsInstance(disk, LinodeDisk)
+        self.assertEqual(disk.id, "23517413")
+
     def test_delete_image(self):
         node = Node("22344420", None, None, None, None, driver=self.driver)
-        disk = self.driver.ex_list_disks(node)[0]
-        image = self.driver.create_image(disk, name="Test", description="Test Image")
+        image = self.driver.create_image(node, name="Test", description="Test Image")
         result = self.driver.delete_image(image)
         self.assertTrue(result)
 
@@ -560,6 +564,10 @@ class LinodeMockHttpV4(MockHttp, unittest.TestCase):
         if method == "POST":
             body = self.fixtures.load("create_disk.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v4_linode_instances_22344420_configs(self, method, url, body, headers):
+        body = self.fixtures.load("list_configs.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_linode_instances_22344420_disks_23517413(self, method, url, body, headers):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

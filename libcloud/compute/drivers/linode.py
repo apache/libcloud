@@ -409,6 +409,43 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         return [self._to_disk(obj) for obj in data]
 
+    def ex_get_primary_disk(self, node):
+        """
+        Return the disk configured as the node's root device.
+
+        The first configuration profile is used, matching the configuration
+        selected by default by Linode when none is explicitly specified.
+
+        :param node: Node whose primary disk should be returned. (required)
+        :type node: :class:`Node`
+
+        :rtype: :class:`LinodeDisk`
+        """
+        if not isinstance(node, Node):
+            raise LinodeExceptionV4("Invalid node instance")
+
+        configs = self._paginated_request(
+            "/v4/linode/instances/%s/configs" % node.id, "data"
+        )
+        if not configs:
+            raise LinodeExceptionV4("Node has no configuration profiles")
+
+        config = configs[0]
+        root_device = config.get("root_device") or "/dev/sda"
+        device_name = root_device.rsplit("/", 1)[-1]
+        device = config.get("devices", {}).get(device_name) or {}
+        disk_id = device.get("disk")
+
+        if disk_id is None:
+            raise LinodeExceptionV4("Node root device is not backed by a disk")
+
+        disks = self.ex_list_disks(node)
+        for disk in disks:
+            if str(disk.id) == str(disk_id):
+                return disk
+
+        raise LinodeExceptionV4("Node root disk was not found")
+
     def ex_create_disk(
         self,
         size,
@@ -748,11 +785,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         name,
         description=None,
     ):
-        """Creates a private image from a LinodeDisk.
-         Images are limited to three per account.
+        """Creates a private image from a Node's primary disk.
 
-        :param node: LinodeDisk to create the image from (required)
-        :type node: :class:`LinodeDisk`
+        :param node: Node to create the image from (required)
+        :type node: :class:`Node`
 
         :keyword name: A name for the image.\
         Defaults to the name of the disk \
@@ -766,10 +802,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :rtype: :class:`NodeImage`
         """
 
-        disk = node
-        if not isinstance(disk, LinodeDisk):
-            raise LinodeExceptionV4("Invalid disk instance")
+        if not isinstance(node, Node):
+            raise LinodeExceptionV4("Invalid node instance")
 
+        disk = self.ex_get_primary_disk(node)
         attr = {"disk_id": int(disk.id), "label": name, "description": description}
 
         response = self.connection.request(
