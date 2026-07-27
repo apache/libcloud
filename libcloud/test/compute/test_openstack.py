@@ -1381,8 +1381,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         response = Mock(
             headers={
                 "location": (
-                    "http://127.0.0.1/v1.1/68/images/"
-                    "4949f9ee-2421-4c81-8b49-13119446008b"
+                    "http://127.0.0.1/v1.1/68/images/" "4949f9ee-2421-4c81-8b49-13119446008b"
                 )
             }
         )
