@@ -44,6 +44,17 @@ Storage
   (GITHUB-1698)
   [Sanjay Santhanam - @Sanjays2402]
 
+DNS
+~~~~
+
+- [Cloudflare] Fix ``list_record_types`` advertising the unsupported ``URL``
+  record type instead of ``LOC``. The ``RECORD_TYPE_MAP`` entry was keyed on
+  ``RecordType.URL`` while its value was ``"LOC"``; the key is now
+  ``RecordType.LOC`` so Cloudflare's supported ``LOC`` record type is reported
+  and the unsupported ``URL`` type is not.
+  (#2175)
+  [Uttam Limbani - @uttam12331]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
