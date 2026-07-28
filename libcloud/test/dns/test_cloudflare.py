@@ -53,6 +53,10 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         record_types = self.driver.list_record_types()
         self.assertEqual(len(record_types), 9)
         self.assertTrue(RecordType.A in record_types)
+        # LOC is a Cloudflare-supported record type and must be advertised;
+        # URL is not a DNS record type and must not be.
+        self.assertTrue(RecordType.LOC in record_types)
+        self.assertTrue(RecordType.URL not in record_types)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
