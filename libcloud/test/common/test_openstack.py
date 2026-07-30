@@ -57,6 +57,39 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
         headers = self.connection.add_default_headers({})
         self.assertEqual(headers["OpenStack-API-Version"], "volume 2.67")
 
+    def test_get_endpoint_does_not_filter_by_default_service_name(self):
+        self.connection.service_catalog = Mock()
+        self.connection.service_catalog.get_endpoint.return_value.url = (
+            "https://compute.example.com"
+        )
+        self.connection.service_type = "compute"
+        self.connection.service_name = "nova"
+        self.connection.service_region = "RegionOne"
+
+        endpoint = self.connection.get_endpoint()
+
+        self.assertEqual(endpoint, "https://compute.example.com")
+        self.connection.service_catalog.get_endpoint.assert_called_once_with(
+            service_type="compute", name=None, region="RegionOne"
+        )
+
+    def test_get_endpoint_filters_by_explicit_service_name(self):
+        self.connection.service_catalog = Mock()
+        self.connection.service_catalog.get_endpoint.return_value.url = (
+            "https://compute.example.com"
+        )
+        self.connection.service_type = "compute"
+        self.connection.service_name = "nova"
+        self.connection.service_region = "RegionOne"
+        self.connection._ex_force_service_name = "custom-nova"
+
+        endpoint = self.connection.get_endpoint()
+
+        self.assertEqual(endpoint, "https://compute.example.com")
+        self.connection.service_catalog.get_endpoint.assert_called_once_with(
+            service_type="compute", name="custom-nova", region="RegionOne"
+        )
+
     @patch("libcloud.common.base.ConnectionUserAndKey.request")
     def test_request(self, mock_request):
         OpenStackBaseConnection.conn_class._raw_data = ""

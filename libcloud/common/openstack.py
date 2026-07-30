@@ -308,7 +308,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         :returns: url of the relevant endpoint for the driver
         """
         service_type = self.service_type
-        service_name = self.service_name
+        service_name = None
         service_region = self.service_region
 
         if self._ex_force_service_type:
