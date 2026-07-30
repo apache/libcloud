@@ -148,7 +148,9 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
             "networks": {
                 "v4": [
                     {"ip_address": "10.0.0.1", "type": "private"},
+                    {"ip_address": "10.0.0.2", "type": "private"},
                     {"ip_address": "159.223.187.157", "type": "public"},
+                    {"ip_address": "159.223.187.158", "type": "public"},
                 ],
                 "v6": [
                     {"ip_address": "2604:a880:400:d0::1c58:e001", "type": "public"},
@@ -158,9 +160,9 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         node = self.driver._to_node(data)
         self.assertEqual(
             node.public_ips,
-            ["159.223.187.157", "2604:a880:400:d0::1c58:e001"],
+            ["159.223.187.157", "159.223.187.158", "2604:a880:400:d0::1c58:e001"],
         )
-        self.assertEqual(node.private_ips, ["10.0.0.1"])
+        self.assertEqual(node.private_ips, ["10.0.0.1", "10.0.0.2"])
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
