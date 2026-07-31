@@ -194,7 +194,10 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             ips.append(ip)
         return ips
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List images.
 
@@ -208,7 +211,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             templates.append(template)
         return sorted(templates, key=lambda sort: sort.name)
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None, **kwargs):
+    def create_node(
+        self, name, size, image, location=None, auth=None, ex_ssh_key_ids=None, **kwargs
+    ):
         """
         Create a simple node  with a name, cores, memory at the designated
         location.
@@ -377,7 +382,11 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             )
         )
 
-    def create_volume_snapshot(self, volume, name):
+    def create_volume_snapshot(
+        self,
+        volume,
+        name=None,
+    ):
         """
         Creates a snapshot of the current state of your volume,
         you can rollback to.
@@ -404,7 +413,12 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             )
         )
 
-    def create_image(self, node, name):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+    ):
         """
         Creates an image from a node object.
 
@@ -723,7 +737,12 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         )
         return result
 
-    def attach_volume(self, node, volume):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         """
          Attaches volume to node.
 
