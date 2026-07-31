@@ -107,12 +107,8 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
         self.assertEqual(
             self.connection.service_catalog.get_endpoint.call_args_list,
             [
-                unittest.mock.call(
-                    service_type="compute", name=None, region="RegionOne"
-                ),
-                unittest.mock.call(
-                    service_type="compute", name="nova", region="RegionOne"
-                ),
+                unittest.mock.call(service_type="compute", name=None, region="RegionOne"),
+                unittest.mock.call(service_type="compute", name="nova", region="RegionOne"),
             ],
         )
 
