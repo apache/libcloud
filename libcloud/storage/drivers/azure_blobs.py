@@ -793,7 +793,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, method="GET", stream=True, raw=True)
-        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        iterator = response.iter_content(chunk_size or AZURE_DOWNLOAD_CHUNK_SIZE)
 
         return self._get_object(
             obj=obj,
@@ -848,7 +848,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         response = self.connection.request(
             obj_path, method="GET", headers=headers, stream=True, raw=True
         )
-        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        iterator = response.iter_content(chunk_size or AZURE_DOWNLOAD_CHUNK_SIZE)
         success_status_codes = [httplib.OK, httplib.PARTIAL_CONTENT]
 
         return self._get_object(

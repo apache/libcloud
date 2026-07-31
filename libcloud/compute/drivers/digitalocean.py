@@ -698,11 +698,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         private_ips = []
         public_ips = []
         if networks:
-            for net in networks["v4"]:
+            for net in networks.get("v4", []) + networks.get("v6", []):
                 if net["type"] == "private":
-                    private_ips = [net["ip_address"]]
+                    private_ips.append(net["ip_address"])
                 if net["type"] == "public":
-                    public_ips = [net["ip_address"]]
+                    public_ips.append(net["ip_address"])
 
         extra = {}
         for key in extra_keys:
