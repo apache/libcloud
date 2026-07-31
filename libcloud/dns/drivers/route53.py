@@ -199,7 +199,39 @@ class Route53DNSDriver(DNSDriver):
             extra=extra,
         )
 
+    def _with_record_set_metadata(self, record):
+        # ``_multi_value`` / ``_other_records`` are attached by ``_to_records``,
+        # so records which did not come from ``list_records`` / ``get_record``
+        # (e.g. the ones returned by ``create_record`` or
+        # ``ex_create_multi_value_record``, or user constructed ones) carry no
+        # information about the rest of their record set. Re-fetch the record
+        # set in that case so multi value updates and deletes work regardless
+        # of how the record was obtained.
+
+        if "_multi_value" in record.extra:
+            return record
+
+        try:
+            fetched = self.list_records(zone=record.zone)
+        except Exception:
+            return record
+
+        for candidate in fetched:
+            if (
+                candidate.name == record.name
+                and candidate.type == record.type
+                and candidate.data == record.data
+            ):
+                extra = copy.deepcopy(candidate.extra)
+                extra.update({k: v for k, v in record.extra.items() if not k.startswith("_")})
+                record.extra = extra
+
+                break
+
+        return record
+
     def update_record(self, record, name=None, type=None, data=None, extra=None):
+        record = self._with_record_set_metadata(record)
         name = name or record.name
         type = type or record.type
         extra = extra or record.extra
@@ -236,7 +268,7 @@ class Route53DNSDriver(DNSDriver):
 
     def delete_record(self, record):
         try:
-            r = record
+            r = self._with_record_set_metadata(record)
 
             # Multiple value records need to be handled specially - Route53
             # only accepts a DELETE for a record set which lists every value
