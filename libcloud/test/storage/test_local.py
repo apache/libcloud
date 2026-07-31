@@ -139,6 +139,18 @@ class LocalTests(unittest.TestCase):
         self.assertEqual(bool(success_1.value), True, "Check didn't pass")
         self.assertEqual(bool(success_2.value), True, "Second check didn't pass")
 
+    @unittest.skipIf(platform.system().lower() == "windows", "Unsupported on Windows")
+    def test_lock_local_storage_removes_lock_file(self):
+        # The IPC lock file must not be left behind once the lock is released,
+        # otherwise it accumulates in the temporary directory for every path
+        # which is ever locked.
+        lock = LockLocalStorage("/tmp/lock-file-cleanup")
+
+        with lock:
+            self.assertTrue(os.path.exists(lock.ipc_lock_path))
+
+        self.assertFalse(os.path.exists(lock.ipc_lock_path))
+
     def test_list_containers_empty(self):
         containers = self.driver.list_containers()
         self.assertEqual(len(containers), 0)

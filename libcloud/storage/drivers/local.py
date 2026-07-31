@@ -117,6 +117,14 @@ class LockLocalStorage:
         if self.ipc_lock.exists():
             self.ipc_lock.release()
 
+            # NOTE: fasteners doesn't remove the lock file it creates, so
+            # without this the file accumulates in the temporary directory
+            # for every distinct path which is ever locked.
+            try:
+                os.remove(self.ipc_lock_path)
+            except OSError:
+                pass
+
         if value is not None:
             raise value
 
