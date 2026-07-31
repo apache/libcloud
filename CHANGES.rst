@@ -14,6 +14,13 @@ Common
 Compute
 ~~~~~~~
 
+- [DigitalOcean] Include IPv6 addresses in ``Node.public_ips`` and
+  ``Node.private_ips``. Only the ``v4`` networks were inspected, and each
+  address overwrote the previous one, so a droplet's public IPv6 address was
+  silently dropped.
+  (GITHUB-1738)
+  [Sanjay Santhanam - @Sanjays2402]
+
 - [SSH] Support paramiko 4
 
   RSA key support has been removed as of paramiko 4, so only import it
