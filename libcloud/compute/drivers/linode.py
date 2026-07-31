@@ -126,7 +126,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         data = self._paginated_request("/v4/linode/instances", "data")
         return [self._to_node(obj) for obj in data]
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Returns a list of Linode Types
 
@@ -135,7 +138,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         data = self._paginated_request("/v4/linode/types", "data")
         return [self._to_size(obj) for obj in data]
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         Returns a list of images
 
@@ -254,7 +260,6 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
     def create_node(
         self,
-        location,
         # Previously, the following 3 parameters did not match the rest of the libcloud
         # codebase drivers. They should be in the same order as other compute drivers.
         # Previously, it looked like this:
@@ -270,6 +275,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         name,  # Can be None
         size,  # Can be None
         image,  # Can be None
+        location=None,
+        auth=None,
         root_pass=None,
         ex_authorized_keys=None,
         ex_authorized_users=None,
@@ -402,6 +409,41 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         return [self._to_disk(obj) for obj in data]
 
+    def ex_get_primary_disk(self, node):
+        """
+        Return the disk configured as the node's root device.
+
+        The first configuration profile is used, matching the configuration
+        selected by default by Linode when none is explicitly specified.
+
+        :param node: Node whose primary disk should be returned. (required)
+        :type node: :class:`Node`
+
+        :rtype: :class:`LinodeDisk`
+        """
+        if not isinstance(node, Node):
+            raise LinodeExceptionV4("Invalid node instance")
+
+        configs = self._paginated_request("/v4/linode/instances/%s/configs" % node.id, "data")
+        if not configs:
+            raise LinodeExceptionV4("Node has no configuration profiles")
+
+        config = configs[0]
+        root_device = config.get("root_device") or "/dev/sda"
+        device_name = root_device.rsplit("/", 1)[-1]
+        device = config.get("devices", {}).get(device_name) or {}
+        disk_id = device.get("disk")
+
+        if disk_id is None:
+            raise LinodeExceptionV4("Node root device is not backed by a disk")
+
+        disks = self.ex_list_disks(node)
+        for disk in disks:
+            if str(disk.id) == str(disk_id):
+                return disk
+
+        raise LinodeExceptionV4("Node root disk was not found")
+
     def ex_create_disk(
         self,
         size,
@@ -522,7 +564,15 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
 
         return [self._to_volume(obj) for obj in data]
 
-    def create_volume(self, name, size, location=None, node=None, tags=None):
+    def create_volume(
+        self,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        node=None,
+        tags=None,
+    ):
         """Creates a volume and optionally attaches it to a node.
 
         :param name: The name to be given to volume (required).\
@@ -540,8 +590,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         Required if node is not given.
         :type location: :class:`NodeLocation`
 
-        :keyword volume: Node to attach the volume to
-        :type volume: :class:`Node`
+        :keyword node: Node to attach the volume to
+        :type node: :class:`Node`
 
         :keyword tags: tags to apply to volume
         :type tags: `list` of `str`
@@ -578,7 +628,13 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ).object
         return self._to_volume(response)
 
-    def attach_volume(self, node, volume, persist_across_boots=True):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+        persist_across_boots=True,
+    ):
         """Attaches a volume to a node.
         Volume and node must be located in the same region
 
@@ -705,24 +761,32 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         response = self.connection.request("/v4/volumes/%s" % volume_id).object
         return self._to_volume(response)
 
-    def get_image(self, image):
+    def get_image(
+        self,
+        image_id,
+    ):
         """
         Lookup a Linode image
 
-        :param image: The name to image to be looked up (required).\
-        :type name: `str`
+        :param image_id: The ID of the image to look up (required).
+        :type image_id: ``str``
 
         :rtype: :class: `NodeImage`
         """
+        image = image_id
         response = self.connection.request("/v4/images/%s" % image, method="GET")
         return self._to_image(response.object)
 
-    def create_image(self, disk, name=None, description=None):
-        """Creates a private image from a LinodeDisk.
-         Images are limited to three per account.
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+    ):
+        """Creates a private image from a Node's primary disk.
 
-        :param disk: LinodeDisk to create the image from (required)
-        :type disk: :class:`LinodeDisk`
+        :param node: Node to create the image from (required)
+        :type node: :class:`Node`
 
         :keyword name: A name for the image.\
         Defaults to the name of the disk \
@@ -736,9 +800,10 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         :rtype: :class:`NodeImage`
         """
 
-        if not isinstance(disk, LinodeDisk):
-            raise LinodeExceptionV4("Invalid disk instance")
+        if not isinstance(node, Node):
+            raise LinodeExceptionV4("Invalid node instance")
 
+        disk = self.ex_get_primary_disk(node)
         attr = {"disk_id": int(disk.id), "label": name, "description": description}
 
         response = self.connection.request(
@@ -746,14 +811,18 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         ).object
         return self._to_image(response)
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """Deletes a private image
 
-        :param image: NodeImage to delete (required)
-        :type image: :class:`NodeImage`
+        :param node_image: NodeImage to delete (required)
+        :type node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
+        image = node_image
         if not isinstance(image, NodeImage):
             raise LinodeExceptionV4("Invalid image instance")
 

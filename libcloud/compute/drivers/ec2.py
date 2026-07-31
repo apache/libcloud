@@ -1876,7 +1876,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return volume
 
-    def attach_volume(self, node, volume, device):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         params = {
             "Action": "AttachVolume",
             "VolumeId": volume.id,
@@ -2018,7 +2023,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return self._get_boolean(res)
 
-    def copy_image(self, image, source_region, name=None, description=None):
+    def copy_image(
+        self,
+        source_region,
+        node_image,
+        name,
+        description=None,
+    ):
         """
         Copy an Amazon Machine Image from the specified source region
         to the current region.
@@ -2028,8 +2039,8 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      source_region: The region where the image resides
         :type       source_region: ``str``
 
-        :param      image: Instance of class NodeImage
-        :type       image: :class:`NodeImage`
+        :param      node_image: Instance of class NodeImage
+        :type       node_image: :class:`NodeImage`
 
         :param      name: The name of the new image
         :type       name: ``str``
@@ -2040,6 +2051,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :return:    Instance of class ``NodeImage``
         :rtype:     :class:`NodeImage`
         """
+        image = node_image
         params = {
             "Action": "CopyImage",
             "SourceRegion": source_region,
@@ -2110,17 +2122,21 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return image
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """
         Deletes an image at Amazon given a NodeImage object
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param image: Instance of ``NodeImage``
-        :type image: :class: `NodeImage`
+        :param node_image: Instance of ``NodeImage``
+        :type node_image: :class: `NodeImage`
 
         :rtype:     ``bool``
         """
+        image = node_image
         params = {"Action": "DeregisterImage", "ImageId": image.id}
 
         response = self.connection.request(self.path, params=params).object
@@ -5502,7 +5518,10 @@ class EucNodeDriver(BaseEC2NodeDriver):
             extra={"cpu": int(cpu)},
         )
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Lists available nodes sizes.
 
@@ -5641,7 +5660,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
 
         super().__init__(key=key, secret=secret, secure=secure, host=host, port=port, **kwargs)
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None, auth=None, **kwargs):
         """
         Creates a new Outscale node. The ex_iamprofile keyword
         is not supported.
@@ -5680,7 +5699,14 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         """
         if "ex_iamprofile" in kwargs:
             raise NotImplementedError("ex_iamprofile not implemented")
-        return super().create_node(**kwargs)
+        return super().create_node(
+            name=name,
+            size=size,
+            image=image,
+            location=location,
+            auth=auth,
+            **kwargs,
+        )
 
     def ex_create_network(self, cidr_block, name=None):
         """

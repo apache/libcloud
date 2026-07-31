@@ -76,7 +76,7 @@ class AbiquoNodeDriver(NodeDriver):
         super().__init__(key=user_id, secret=secret, secure=False, host=None, port=None, **kwargs)
         self.ex_populate_cache()
 
-    def create_node(self, image, name=None, size=None, location=None, ex_group_name=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_group_name=None):
         """
         Create a new node instance in Abiquo
 

@@ -107,7 +107,7 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         """
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
-        self.driver.create_node(image=image, location=location)
+        self.driver.create_node(name=None, size=None, image=image, location=location)
 
     def test_create_node_specify_wrong_location(self):
         """
@@ -115,7 +115,14 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         """
         image = self.driver.list_images()[0]
         location = NodeLocation(435, "fake-location", "Spain", self.driver)
-        self.assertRaises(LibcloudError, self.driver.create_node, image=image, location=location)
+        self.assertRaises(
+            LibcloudError,
+            self.driver.create_node,
+            name=None,
+            size=None,
+            image=image,
+            location=location,
+        )
 
     def test_create_node_specify_wrong_image(self):
         """
@@ -128,14 +135,21 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         image = NodeImage(3234, "dummy-image", self.driver)
         location = self.driver.list_locations()[0]
         # With this image, it should raise an Exception
-        self.assertRaises(LibcloudError, self.driver.create_node, image=image, location=location)
+        self.assertRaises(
+            LibcloudError,
+            self.driver.create_node,
+            name=None,
+            size=None,
+            image=image,
+            location=location,
+        )
 
     def test_create_node_specify_group_name(self):
         """
         Test 'create_node' into a concrete group.
         """
         image = self.driver.list_images()[0]
-        self.driver.create_node(image=image, ex_group_name="new_group_name")
+        self.driver.create_node(name=None, size=None, image=image, ex_group_name="new_group_name")
 
     def test_create_group_location_does_not_exist(self):
         """

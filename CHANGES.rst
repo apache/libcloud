@@ -14,6 +14,19 @@ Common
 Compute
 ~~~~~~~
 
+- [Compute] Unify ``NodeDriver`` method signatures across drivers.
+
+  Driver implementations now preserve the standard argument order and
+  optionality declared by ``NodeDriver``. Provider-specific arguments follow
+  the standard arguments and are optional. ``list_nodes`` is excluded because
+  its ``*args, **kwargs`` contract is intentionally unrestricted.
+
+  This can be a backward-incompatible change for code which passes arguments
+  positionally to affected methods.
+
+  (#2170)
+  [Miguel Caballer - @micafer]
+
 - [DigitalOcean] Include IPv6 addresses in ``Node.public_ips`` and
   ``Node.private_ips``. Only the ``v4`` networks were inspected, and each
   address overwrote the previous one, so a droplet's public IPv6 address was

@@ -100,7 +100,10 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
     EX_CREATE_ATTRIBUTES = ["backups", "ipv6", "private_networking", "tags", "ssh_keys"]
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         data = self._paginated_request("/v2/images", "images")
         return list(map(self._to_image, data))
 
@@ -151,7 +154,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         name,
         size,
         image,
-        location,
+        location=None,
+        auth=None,
         ex_create_attr=None,
         ex_ssh_key_ids=None,
         ex_user_data=None,
@@ -230,7 +234,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         )
         return res.status == httplib.CREATED
 
-    def create_image(self, node, name):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+    ):
         """
         Create an image from a Node.
 
@@ -239,8 +248,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         :param node: Node to use as base for image
         :type node: :class:`Node`
 
-        :param node: Name for image
-        :type node: ``str``
+        :param name: Name for image
+        :type name: ``str``
+
+        :param description: Optional image description.
+        :type description: ``str``
 
         :rtype: ``bool``
         """
@@ -250,16 +262,20 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
         )
         return res.status == httplib.CREATED
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """Delete an image for node.
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: the image to be deleted
-        :type       image: :class:`NodeImage`
+        :param      node_image: the image to be deleted
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
+        image = node_image
         res = self.connection.request("/v2/images/%s" % (image.id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
@@ -373,13 +389,17 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
         return self._to_key_pair(data=data)
 
-    def delete_key_pair(self, key):
+    def delete_key_pair(
+        self,
+        key_pair,
+    ):
         """
         Delete an existing SSH key.
 
-        :param      key: SSH key (required)
-        :type       key: :class:`KeyPair`
+        :param      key_pair: SSH key (required)
+        :type       key_pair: :class:`KeyPair`
         """
+        key = key_pair
         key_id = key.extra["id"]
         res = self.connection.request("/v2/account/keys/%s" % (key_id), method="DELETE")
         return res.status == httplib.NO_CONTENT
@@ -494,7 +514,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
 
         return all([r.status == httplib.ACCEPTED for r in responses])
 
-    def create_volume_snapshot(self, volume, name):
+    def create_volume_snapshot(
+        self,
+        volume,
+        name=None,
+    ):
         """
         Create a new volume snapshot.
 
