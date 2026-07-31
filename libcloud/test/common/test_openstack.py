@@ -90,6 +90,49 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
             service_type="compute", name="custom-nova", region="RegionOne"
         )
 
+    def test_get_endpoint_uses_default_service_name_to_resolve_ambiguity(self):
+        self.connection.service_catalog = Mock()
+        endpoint = Mock(url="https://compute.example.com")
+        self.connection.service_catalog.get_endpoint.side_effect = [
+            ValueError("Found more than 1 matching endpoint"),
+            endpoint,
+        ]
+        self.connection.service_type = "compute"
+        self.connection.service_name = "nova"
+        self.connection.service_region = "RegionOne"
+
+        result = self.connection.get_endpoint()
+
+        self.assertEqual(result, "https://compute.example.com")
+        self.assertEqual(
+            self.connection.service_catalog.get_endpoint.call_args_list,
+            [
+                unittest.mock.call(
+                    service_type="compute", name=None, region="RegionOne"
+                ),
+                unittest.mock.call(
+                    service_type="compute", name="nova", region="RegionOne"
+                ),
+            ],
+        )
+
+    def test_get_endpoint_does_not_fallback_from_explicit_service_name(self):
+        self.connection.service_catalog = Mock()
+        self.connection.service_catalog.get_endpoint.side_effect = ValueError(
+            "Found more than 1 matching endpoint"
+        )
+        self.connection.service_type = "compute"
+        self.connection.service_name = "nova"
+        self.connection.service_region = "RegionOne"
+        self.connection._ex_force_service_name = "custom-nova"
+
+        with self.assertRaisesRegex(ValueError, "more than 1"):
+            self.connection.get_endpoint()
+
+        self.connection.service_catalog.get_endpoint.assert_called_once_with(
+            service_type="compute", name="custom-nova", region="RegionOne"
+        )
+
     @patch("libcloud.common.base.ConnectionUserAndKey.request")
     def test_request(self, mock_request):
         OpenStackBaseConnection.conn_class._raw_data = ""

@@ -318,9 +318,23 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         if self._ex_force_service_region:
             service_region = self._ex_force_service_region
 
-        endpoint = self.service_catalog.get_endpoint(
-            service_type=service_type, name=service_name, region=service_region
-        )
+        try:
+            endpoint = self.service_catalog.get_endpoint(
+                service_type=service_type, name=service_name, region=service_region
+            )
+        except ValueError:
+            # An explicitly provided service name is a strict filter. When no
+            # name was provided, first allow the service type and region to
+            # identify the endpoint on their own, and only use the driver's
+            # default service name to resolve an ambiguous result.
+            if service_name or not self.service_name:
+                raise
+
+            endpoint = self.service_catalog.get_endpoint(
+                service_type=service_type,
+                name=self.service_name,
+                region=service_region,
+            )
 
         url = endpoint.url
 
