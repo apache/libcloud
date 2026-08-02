@@ -287,7 +287,7 @@ class DummyNodeDriver(NodeDriver):
             NodeLocation(id=3, name="Island Datacenter", country="FJ", driver=self),
         ]
 
-    def create_node(self, name, size, image):
+    def create_node(self, name, size, image, location=None, auth=None):
         """
         Creates a dummy node; the node id is equal to the number of
         nodes in the node list

@@ -131,7 +131,16 @@ class VPSNetNodeDriver(NodeDriver):
         single_node_price = self._get_size_price(size_id="1")
         return num * single_node_price
 
-    def create_node(self, name, image, size, ex_backups_enabled=False, ex_fqdn=None):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location=None,
+        auth=None,
+        ex_backups_enabled=False,
+        ex_fqdn=None,
+    ):
         """Create a new VPS.net node
 
         @inherits: :class:`NodeDriver.create_node`

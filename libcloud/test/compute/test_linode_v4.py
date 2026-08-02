@@ -103,10 +103,10 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
         node = self.driver.create_node(
-            location,
             "node-name",
             size=size,
             image=image,
+            location=location,
             root_pass="test123456",
         )
         self.assertTrue(isinstance(node, Node))
@@ -119,10 +119,10 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         LinodeMockHttpV4.type = "EX_USERDATA"
 
         node = self.driver.create_node(
-            location,
             "node-name",
             size=size,
             image=image,
+            location=location,
             root_pass="test123456",
             ex_userdata=EX_USERDATA,
         )
@@ -155,10 +155,10 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         node = self.driver.create_node(
-            location,
             "TestNode",
             size,
             image=image,
+            location=location,
             root_pass="test123456",
             ex_backups_enabled=True,
             ex_tags=["testing123"],
@@ -176,13 +176,15 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_node(location, "TestNode", size, image=image)
+            self.driver.create_node("TestNode", size, image=image, location=location)
 
     def test_create_node_no_image(self):
         size = self.driver.list_sizes()[0]
         location = self.driver.list_locations()[0]
         LinodeMockHttpV4.type = "NO_IMAGE"
-        node = self.driver.create_node(location, "TestNode", size, None, ex_tags=["testing123"])
+        node = self.driver.create_node(
+            "TestNode", size, None, location=location, ex_tags=["testing123"]
+        )
 
         self.assertIsNone(node.image)
         self.assertEqual(node.name, "TestNode")
@@ -321,7 +323,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
     def test_create_volume(self):
         node = Node("22344420", None, NodeState.RUNNING, None, None, driver=self.driver)
-        volume = self.driver.create_volume("Volume1", 50, node=node, tags=["test123", "testing"])
+        volume = self.driver.create_volume(50, "Volume1", node=node, tags=["test123", "testing"])
 
         self.assertEqual(volume.extra["linode_id"], 22344420)
         self.assertEqual(volume.size, 50)
@@ -332,7 +334,7 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
         LinodeMockHttpV4.type = "UNATTACHED"
         volume = self.driver.create_volume(
-            "Volume1", 50, location=location, tags=["test123", "testing"]
+            50, "Volume1", location=location, tags=["test123", "testing"]
         )
 
         self.assertEqual(volume.size, 50)
@@ -342,11 +344,11 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
     def test_create_volume_invalid_name(self):
         location = self.driver.list_locations()[0]
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_volume("Volume__1", 50, location=location)
+            self.driver.create_volume(50, "Volume__1", location=location)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_volume("Volume 1", 50, location=location)
+            self.driver.create_volume(50, "Volume 1", location=location)
         with self.assertRaises(LinodeExceptionV4):
-            self.driver.create_volume("Volume--1", 50, location=location)
+            self.driver.create_volume(50, "Volume--1", location=location)
 
     def test_attach_volume_already_attached(self):
         volume = self.driver.list_volumes()[0]
@@ -410,16 +412,20 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
 
     def test_create_image(self):
         node = Node("22344420", None, None, None, None, driver=self.driver)
-        disk = self.driver.ex_list_disks(node)[0]
-        image = self.driver.create_image(disk, name="Test", description="Test Image")
+        image = self.driver.create_image(node, name="Test", description="Test Image")
         self.assertIsInstance(image, NodeImage)
         self.assertEqual(image.name, "Test")
         self.assertEqual(image.extra["description"], "Test Image")
 
+    def test_ex_get_primary_disk(self):
+        node = Node("22344420", None, None, None, None, driver=self.driver)
+        disk = self.driver.ex_get_primary_disk(node)
+        self.assertIsInstance(disk, LinodeDisk)
+        self.assertEqual(disk.id, "23517413")
+
     def test_delete_image(self):
         node = Node("22344420", None, None, None, None, driver=self.driver)
-        disk = self.driver.ex_list_disks(node)[0]
-        image = self.driver.create_image(disk, name="Test", description="Test Image")
+        image = self.driver.create_image(node, name="Test", description="Test Image")
         result = self.driver.delete_image(image)
         self.assertTrue(result)
 
@@ -558,6 +564,10 @@ class LinodeMockHttpV4(MockHttp, unittest.TestCase):
         if method == "POST":
             body = self.fixtures.load("create_disk.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v4_linode_instances_22344420_configs(self, method, url, body, headers):
+        body = self.fixtures.load("list_configs.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_linode_instances_22344420_disks_23517413(self, method, url, body, headers):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
