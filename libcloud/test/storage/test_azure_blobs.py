@@ -19,6 +19,7 @@ import sys
 import json
 import tempfile
 from io import BytesIO
+from unittest.mock import patch
 
 from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test import unittest
@@ -519,6 +520,19 @@ class AzureBlobsTests(unittest.TestCase):
 
         self.assertEqual(len(query["sig"]), 1)
         self.assertGreater(len(query["sig"][0]), 0)
+
+    @patch("libcloud.storage.drivers.azure_blobs.hmac.new")
+    def test_get_object_cdn_url_with_spaces(self, mock_hmac_new):
+        mock_hmac_new.return_value.digest.return_value = b"signature"
+        container = Container(name="test_container200", extra={}, driver=self.driver)
+        obj = Object("file name.txt", 0, None, {}, {}, container, self.driver)
+
+        url = self.driver.get_object_cdn_url(obj)
+        string_to_sign = mock_hmac_new.call_args.args[1].decode("utf-8")
+        canonical_resource = "/blob/{}/test_container200/file name.txt".format(self.driver.key)
+
+        self.assertIn(canonical_resource, string_to_sign)
+        self.assertIn("file%20name.txt", url)
 
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
