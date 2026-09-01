@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Changes in Apache Libcloud 3.9.2
+Changes in Apache Libcloud 4.0.0
 --------------------------------
 
 Common
