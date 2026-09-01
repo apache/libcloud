@@ -871,6 +871,7 @@ class VCloudNodeDriver(NodeDriver):
         name,
         size,
         image,
+        location=None,
         auth=None,
         ex_network=None,
         ex_vdc=None,
@@ -1605,7 +1606,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         return results
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None, auth=None, **kwargs):
         """
         Creates and returns node. If the source image is:
           - vApp template - a new vApp is instantiated from template
@@ -1691,8 +1692,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         :keyword    ex_description: Set a description for the vApp.
         :type       ex_description: ``str``
         """
-        name = kwargs["name"]
-        image = kwargs["image"]
         ex_vm_names = kwargs.get("ex_vm_names")
         ex_vm_cpu = kwargs.get("ex_vm_cpu")
         ex_vm_memory = kwargs.get("ex_vm_memory")

@@ -14,6 +14,26 @@ Common
 Compute
 ~~~~~~~
 
+- [Compute] Unify ``NodeDriver`` method signatures across drivers.
+
+  Driver implementations now preserve the standard argument order and
+  optionality declared by ``NodeDriver``. Provider-specific arguments follow
+  the standard arguments and are optional. ``list_nodes`` is excluded because
+  its ``*args, **kwargs`` contract is intentionally unrestricted.
+
+  This can be a backward-incompatible change for code which passes arguments
+  positionally to affected methods.
+
+  (#2170)
+  [Miguel Caballer - @micafer]
+
+- [DigitalOcean] Include IPv6 addresses in ``Node.public_ips`` and
+  ``Node.private_ips``. Only the ``v4`` networks were inspected, and each
+  address overwrote the previous one, so a droplet's public IPv6 address was
+  silently dropped.
+  (GITHUB-1738)
+  [Sanjay Santhanam - @Sanjays2402]
+
 - [SSH] Support paramiko 4
 
   RSA key support has been removed as of paramiko 4, so only import it
@@ -37,15 +57,23 @@ Compute
 Storage
 ~~~~~~~
 
+- [S3] Fix ``chunk_size`` argument being ignored by
+  ``download_object_as_stream`` and ``download_object_range_as_stream``. The
+  requested chunk size is now passed through to the underlying iterator
+  instead of the hardcoded default.
+  (GITHUB-1798)
+
+  [Sanjay Santhanam - @Sanjays2402]
+
 - [Azure Blobs] Fix ``chunk_size`` argument being ignored by
   ``download_object_as_stream`` and ``download_object_range_as_stream``. The
   requested chunk size is now forwarded to the underlying iterator instead of
   always using ``AZURE_DOWNLOAD_CHUNK_SIZE``.
   (GITHUB-1698)
+
   [Sanjay Santhanam - @Sanjays2402]
 
 DNS
-~~~
 
 - [Route53] Fix ``delete_record`` failing with ``RecordDoesNotExistError`` for
   records which are part of a multi value record set (e.g. MX). Route53 only
@@ -54,6 +82,14 @@ DNS
   ``update_record`` already handles multi value records.
   (GITHUB-1831)
   [Sanjay Santhanam - @Sanjays2402]
+
+- [Cloudflare] Fix ``list_record_types`` advertising the unsupported ``URL``
+  record type instead of ``LOC``. The ``RECORD_TYPE_MAP`` entry was keyed on
+  ``RecordType.URL`` while its value was ``"LOC"``; the key is now
+  ``RecordType.LOC`` so Cloudflare's supported ``LOC`` record type is reported
+  and the unsupported ``URL`` type is not.
+  (#2175)
+  [Uttam Limbani - @uttam12331]
 
 Changes in Apache Libcloud 3.9.1
 --------------------------------

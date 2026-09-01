@@ -192,7 +192,7 @@ class CloudFlareDNSDriver(DNSDriver):
         RecordType.SPF: "SPF",
         RecordType.NS: "NS",
         RecordType.SRV: "SRV",
-        RecordType.URL: "LOC",
+        RecordType.LOC: "LOC",
     }
 
     ZONES_PAGE_SIZE = 50

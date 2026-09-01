@@ -60,7 +60,7 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
             sizes.append(NodeSize(diskofferingid, sz["diskofferingdesc"], 0, 0, 0, 0, self))
         return sizes
 
-    def create_node(self, name, size, image, location=None, ex_usageplantype="hourly"):
+    def create_node(self, name, size, image, location=None, auth=None, ex_usageplantype="hourly"):
         params = {
             "displayname": name,
             "serviceofferingid": image.id,
