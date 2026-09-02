@@ -199,7 +199,39 @@ class Route53DNSDriver(DNSDriver):
             extra=extra,
         )
 
+    def _with_record_set_metadata(self, record):
+        # ``_multi_value`` / ``_other_records`` are attached by ``_to_records``,
+        # so records which did not come from ``list_records`` / ``get_record``
+        # (e.g. the ones returned by ``create_record`` or
+        # ``ex_create_multi_value_record``, or user constructed ones) carry no
+        # information about the rest of their record set. Re-fetch the record
+        # set in that case so multi value updates and deletes work regardless
+        # of how the record was obtained.
+
+        if "_multi_value" in record.extra:
+            return record
+
+        try:
+            fetched = self.list_records(zone=record.zone)
+        except Exception:
+            return record
+
+        for candidate in fetched:
+            if (
+                candidate.name == record.name
+                and candidate.type == record.type
+                and candidate.data == record.data
+            ):
+                extra = copy.deepcopy(candidate.extra)
+                extra.update({k: v for k, v in record.extra.items() if not k.startswith("_")})
+                record.extra = extra
+
+                break
+
+        return record
+
     def update_record(self, record, name=None, type=None, data=None, extra=None):
+        record = self._with_record_set_metadata(record)
         name = name or record.name
         type = type or record.type
         extra = extra or record.extra
@@ -236,13 +268,71 @@ class Route53DNSDriver(DNSDriver):
 
     def delete_record(self, record):
         try:
-            r = record
-            batch = [("DELETE", r.name, r.type, r.data, r.extra)]
-            self._post_changeset(record.zone, batch)
+            r = self._with_record_set_metadata(record)
+
+            # Multiple value records need to be handled specially - Route53
+            # only accepts a DELETE for a record set which lists every value
+            # in that set, so values for the other records need to be sent
+            # as well.
+
+            if r.extra.get("_multi_value", False) and r.extra.get("_other_records", []):
+                self._delete_multi_value_record(record=r)
+            else:
+                batch = [("DELETE", r.name, r.type, r.data, r.extra)]
+                self._post_changeset(record.zone, batch)
         except InvalidChangeBatch:
             raise RecordDoesNotExistError(value="", driver=self, record_id=r.id)
 
         return True
+
+    def _delete_multi_value_record(self, record):
+        other_records = record.extra.get("_other_records", [])
+
+        attrs = {"xmlns": NAMESPACE}
+        changeset = ET.Element("ChangeResourceRecordSetsRequest", attrs)
+        batch = ET.SubElement(changeset, "ChangeBatch")
+        changes = ET.SubElement(batch, "Changes")
+
+        change = ET.SubElement(changes, "Change")
+        ET.SubElement(change, "Action").text = "DELETE"
+
+        rrs = ET.SubElement(change, "ResourceRecordSet")
+
+        if record.name:
+            record_name = record.name + "." + record.zone.domain
+        else:
+            record_name = record.zone.domain
+
+        ET.SubElement(rrs, "Name").text = record_name
+        ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[record.type]
+        ET.SubElement(rrs, "TTL").text = str(record.extra.get("ttl", "0"))
+
+        rrecs = ET.SubElement(rrs, "ResourceRecords")
+
+        rrec = ET.SubElement(rrecs, "ResourceRecord")
+        ET.SubElement(rrec, "Value").text = self._to_record_value(record.data, record.extra)
+
+        for other_record in other_records:
+            rrec = ET.SubElement(rrecs, "ResourceRecord")
+            ET.SubElement(rrec, "Value").text = self._to_record_value(
+                other_record["data"], other_record.get("extra", {})
+            )
+
+        uri = API_ROOT + "hostedzone/" + record.zone.id + "/rrset"
+        data = ET.tostring(changeset)
+        self.connection.set_context({"zone_id": record.zone.id})
+        response = self.connection.request(uri, method="POST", data=data)
+
+        return response.status == httplib.OK
+
+    def _to_record_value(self, data, extra):
+        # "priority" is parsed out of the value by _to_record, so it needs to
+        # be put back to reconstruct the value Route53 stores.
+
+        if extra and "priority" in extra:
+            return "{} {}".format(extra["priority"], data)
+
+        return data
 
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
         """

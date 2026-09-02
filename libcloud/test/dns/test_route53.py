@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import sys
 import unittest
 
 from libcloud.test import MockHttp
+from libcloud.dns.base import Record
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_ROUTE53
@@ -283,6 +285,93 @@ class Route53Tests(unittest.TestCase):
         record = self.driver.list_records(zone=zone)[0]
         status = self.driver.delete_record(record=record)
         self.assertTrue(status)
+
+    def test_delete_multi_value_record(self):
+        zone = self.driver.list_zones()[0]
+        records = [r for r in self.driver.list_records(zone=zone) if r.type == RecordType.MX]
+        record = records[0]
+
+        sent = {}
+        original_request = self.driver.connection.request
+
+        def record_request(uri, *args, **kwargs):
+            if kwargs.get("method") == "POST":
+                sent["data"] = kwargs.get("data")
+
+            return original_request(uri, *args, **kwargs)
+
+        self.driver.connection.request = record_request
+        status = self.driver.delete_record(record=record)
+        self.assertTrue(status)
+
+        data = sent["data"]
+
+        if not isinstance(data, str):
+            data = data.decode("utf-8")
+
+        # Route53 only accepts a DELETE which lists every value in the record
+        # set, so all the values need to be included in the changeset.
+        values = re.findall(r"<Value>(.*?)</Value>", data)
+        self.assertEqual(
+            values,
+            [
+                "1 ASPMX.L.GOOGLE.COM.",
+                "5 ALT1.ASPMX.L.GOOGLE.COM.",
+                "5 ALT2.ASPMX.L.GOOGLE.COM.",
+                "10 ASPMX2.GOOGLEMAIL.COM.",
+                "10 ASPMX3.GOOGLEMAIL.COM.",
+            ],
+        )
+
+    def test_delete_multi_value_record_without_record_set_metadata(self):
+        # Records which did not come from list_records()/get_record() (e.g. the
+        # ones returned by create_record()) carry no _multi_value metadata, so
+        # the record set has to be re-fetched for the DELETE to be valid.
+        zone = self.driver.list_zones()[0]
+        listed = [r for r in self.driver.list_records(zone=zone) if r.type == RecordType.MX][0]
+
+        record = Record(
+            id=listed.id,
+            name=listed.name,
+            type=listed.type,
+            data=listed.data,
+            zone=zone,
+            driver=self.driver,
+            ttl=listed.extra.get("ttl"),
+            extra={"ttl": listed.extra.get("ttl"), "priority": listed.extra.get("priority")},
+        )
+
+        sent = {}
+        original_request = self.driver.connection.request
+
+        def record_request(uri, *args, **kwargs):
+            if kwargs.get("method") == "POST":
+                sent["data"] = kwargs.get("data")
+
+            return original_request(uri, *args, **kwargs)
+
+        self.driver.connection.request = record_request
+        status = self.driver.delete_record(record=record)
+        self.assertTrue(status)
+
+        data = sent["data"]
+
+        if not isinstance(data, str):
+            data = data.decode("utf-8")
+
+        values = re.findall(r"<Value>(.*?)</Value>", data)
+        self.assertEqual(
+            sorted(values),
+            sorted(
+                [
+                    "1 ASPMX.L.GOOGLE.COM.",
+                    "5 ALT1.ASPMX.L.GOOGLE.COM.",
+                    "5 ALT2.ASPMX.L.GOOGLE.COM.",
+                    "10 ASPMX2.GOOGLEMAIL.COM.",
+                    "10 ASPMX3.GOOGLEMAIL.COM.",
+                ]
+            ),
+        )
 
     def test_delete_record_does_not_exist(self):
         zone = self.driver.list_zones()[0]

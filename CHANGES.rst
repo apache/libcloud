@@ -88,7 +88,14 @@ Storage
   [Sanjay Santhanam - @Sanjays2402]
 
 DNS
-~~~~
+
+- [Route53] Fix ``delete_record`` failing with ``RecordDoesNotExistError`` for
+  records which are part of a multi value record set (e.g. MX). Route53 only
+  accepts a DELETE changeset which lists every value in the record set, so the
+  values of the other records in the set are now included, mirroring how
+  ``update_record`` already handles multi value records.
+  (GITHUB-1831)
+  [Sanjay Santhanam - @Sanjays2402]
 
 - [Cloudflare] Fix ``list_record_types`` advertising the unsupported ``URL``
   record type instead of ``LOC``. The ``RECORD_TYPE_MAP`` entry was keyed on
