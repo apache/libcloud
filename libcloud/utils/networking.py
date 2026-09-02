@@ -80,6 +80,11 @@ def is_valid_ip_address(address, family=socket.AF_INET):
         socket.inet_pton(family, address)
     except OSError:
         return False
+    except ValueError:
+        # inet_pton raises ValueError (not OSError) when the address contains
+        # an embedded null byte, e.g. "1.2.3.4\x00". Such a string is not a
+        # valid address, so return False instead of propagating the error.
+        return False
 
     return True
 
