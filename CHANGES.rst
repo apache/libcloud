@@ -11,6 +11,13 @@ Common
   (#2152)
   [Miguel Caballer - @micafer]
 
+- [Utils] Fix ``is_valid_ip_address`` raising ``ValueError`` instead of
+  returning ``False`` for an address containing an embedded null byte
+  (e.g. ``"1.2.3.4\x00"``). ``socket.inet_pton`` raises ``ValueError`` rather
+  than ``OSError`` in that case, which was not caught.
+  (#2185)
+  [Ashish - @Ashishjob]
+
 Compute
 ~~~~~~~
 
