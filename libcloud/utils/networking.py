@@ -76,14 +76,16 @@ def is_valid_ip_address(address, family=socket.AF_INET):
 
     :return: ``bool`` True if the provided address is valid.
     """
+    # inet_pton handles an embedded null byte (e.g. "1.2.3.4\x00")
+    # inconsistently across interpreters -- CPython raises ValueError while
+    # PyPy silently accepts it -- and such a string is never a valid address,
+    # so reject it explicitly for consistent behaviour.
+    if "\x00" in address:
+        return False
+
     try:
         socket.inet_pton(family, address)
     except OSError:
-        return False
-    except ValueError:
-        # inet_pton raises ValueError (not OSError) when the address contains
-        # an embedded null byte, e.g. "1.2.3.4\x00". Such a string is not a
-        # valid address, so return False instead of propagating the error.
         return False
 
     return True
