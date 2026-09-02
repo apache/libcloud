@@ -528,7 +528,9 @@ class AzureBlobsTests(unittest.TestCase):
         obj = Object("file name.txt", 0, None, {}, {}, container, self.driver)
 
         url = self.driver.get_object_cdn_url(obj)
-        string_to_sign = mock_hmac_new.call_args.args[1].decode("utf-8")
+        hmac_call = mock_hmac_new.call_args
+        message = hmac_call.kwargs["msg"] if "msg" in hmac_call.kwargs else hmac_call.args[1]
+        string_to_sign = message.decode("utf-8")
         canonical_resource = "/blob/{}/test_container200/file name.txt".format(self.driver.key)
 
         self.assertIn(canonical_resource, string_to_sign)
