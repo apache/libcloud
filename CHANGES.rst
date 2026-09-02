@@ -14,6 +14,13 @@ Common
 Compute
 ~~~~~~~
 
+- [OpenStack] Select service catalog endpoints by service type without filtering
+  by the default service name. The service name is only used as a filter when
+  explicitly provided via ``ex_force_service_name``.
+
+  (#2074)
+  [Miguel Caballer - @micafer]
+
 - [Compute] Unify ``NodeDriver`` method signatures across drivers.
 
   Driver implementations now preserve the standard argument order and
