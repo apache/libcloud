@@ -1527,10 +1527,10 @@ class NodeDriver(BaseDriver):
         """
         Returns a single node image from a provider.
 
-        :param image_id: Node to run the task on.
+        :param image_id: Image identifier.
         :type image_id: ``str``
 
-        :rtype :class:`.NodeImage`:
+        :rtype: :class:`.NodeImage`
         :return: NodeImage instance on success.
         """
         raise NotImplementedError("get_image not implemented for this driver")

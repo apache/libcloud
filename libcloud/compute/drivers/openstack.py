@@ -663,6 +663,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         name,
         size,
         image,
+        location=None,
+        auth=None,
         ex_metadata=None,
         ex_files=None,
         ex_shared_ip_group=None,
@@ -1104,7 +1106,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return {"rate": rate, "absolute": absolute}
 
-    def create_image(self, node, name, description=None, reboot=True):
+    def create_image(self, node, name, description=None):
         """Create an image for node.
 
         @inherits: :class:`NodeDriver.create_image`
@@ -1126,16 +1128,20 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images", method="POST", data=ET.tostring(image_elm)).object
         )
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """Delete an image for node.
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: the image to be deleted
-        :type       image: :class:`NodeImage`
+        :param      node_image: the image to be deleted
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
+        image = node_image
         uri = "/images/%s" % image.id
         resp = self.connection.request(uri, method="DELETE")
         return resp.status == httplib.NO_CONTENT
@@ -1425,7 +1431,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         self,
         name,
         size,
-        image=None,
+        image,
+        location=None,
+        auth=None,
         ex_keyname=None,
         ex_userdata=None,
         ex_config_drive=None,
@@ -1778,7 +1786,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, "revertResize")
         return resp.status == httplib.ACCEPTED
 
-    def create_image(self, node, name, metadata=None):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+        metadata=None,
+    ):
         """
         Creates a new image.
 
@@ -1788,14 +1802,22 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :param      name: The name for the new image.
         :type       name: ``str``
 
+        :param      description: A description for the new image. Stored in the
+                                image metadata because the Compute API does not
+                                provide a dedicated description field.
+        :type       description: ``str``
+
         :param      metadata: Key and value pairs for metadata.
         :type       metadata: ``dict``
 
         :rtype: :class:`NodeImage`
         """
         optional_params = {}
-        if metadata:
-            optional_params["metadata"] = metadata
+        image_metadata = dict(metadata) if metadata else {}
+        if description is not None:
+            image_metadata["description"] = description
+        if image_metadata:
+            optional_params["metadata"] = image_metadata
         resp = self._node_action(node, "createImage", name=name, **optional_params)
         image_id = self._extract_image_id_from_url(resp.headers["location"])
         return self.get_image(image_id=image_id)
@@ -2360,17 +2382,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images/{}".format(image_id)).object["image"]
         )
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """
         Delete a NodeImage
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: image witch should be used
-        :type       image: :class:`NodeImage`
+        :param      node_image: image which should be used
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
+        image = node_image
         resp = self.connection.request("/images/{}".format(image.id), method="DELETE")
         return resp.status == httplib.NO_CONTENT
 

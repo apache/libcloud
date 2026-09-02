@@ -5,6 +5,32 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 4.0.0
+--------------
+
+Compute driver implementations now use the same argument order and optionality
+as the corresponding methods on ``NodeDriver``. Provider-specific arguments
+are optional and appear after the standard arguments. ``list_nodes`` is not
+affected because its ``*args, **kwargs`` contract is intentionally
+unrestricted.
+
+This affects methods including ``create_node``, ``list_sizes``,
+``list_images``, image management, key pair management, and block storage
+operations. Code which passes arguments positionally may need to be updated.
+Using keyword arguments for provider-specific options is recommended.
+
+For example, the standard node creation signature is:
+
+.. sourcecode:: python
+
+  def create_node(self, name, size, image, location=None, auth=None, ...)
+
+The standard volume creation signature is:
+
+.. sourcecode:: python
+
+  def create_volume(self, size, name, location=None, snapshot=None, ...)
+
 Libcloud 3.9.0
 --------------
 

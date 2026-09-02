@@ -85,7 +85,9 @@ class G8Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         size = self.driver.list_sizes()[0]
         network = self.driver.ex_list_networks()[0]
-        node = self.driver.create_node("my test", image, network, "my description", size)
+        node = self.driver.create_node(
+            "my test", size, image, ex_network=network, ex_description="my description"
+        )
         self.assertIsInstance(node, Node)
 
     def test_stop_node(self):

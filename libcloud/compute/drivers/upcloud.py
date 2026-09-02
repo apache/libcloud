@@ -173,7 +173,10 @@ class UpcloudDriver(NodeDriver):
             location,
         )
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List available distributions.
 
@@ -191,7 +194,7 @@ class UpcloudDriver(NodeDriver):
         name,
         size,
         image,
-        location,
+        location=None,
         auth=None,
         ex_hostname="localhost",
         ex_username="root",
