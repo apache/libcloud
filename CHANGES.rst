@@ -11,8 +11,22 @@ Common
   (#2152)
   [Miguel Caballer - @micafer]
 
+- [Utils] Fix ``is_valid_ip_address`` raising ``ValueError`` instead of
+  returning ``False`` for an address containing an embedded null byte
+  (e.g. ``"1.2.3.4\x00"``). ``socket.inet_pton`` raises ``ValueError`` rather
+  than ``OSError`` in that case, which was not caught.
+  (#2185)
+  [Ashish - @Ashishjob]
+
 Compute
 ~~~~~~~
+
+- [OpenStack] Select service catalog endpoints by service type without filtering
+  by the default service name. The service name is only used as a filter when
+  explicitly provided via ``ex_force_service_name``.
+
+  (#2074)
+  [Miguel Caballer - @micafer]
 
 - [Compute] Unify ``NodeDriver`` method signatures across drivers.
 

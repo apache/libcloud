@@ -424,6 +424,9 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             "256.256.256.256",
             "0.567.567.567",
             "192.168.0.257",
+            # Embedded null byte makes inet_pton raise ValueError, not OSError
+            "192.168.1.100\x00",
+            "10.0.0.1\x00extra",
         ]
 
         valid_ipv6_addresses = [
@@ -436,6 +439,8 @@ class NetworkingUtilsTestCase(unittest.TestCase):
         invalid_ipv6_addresses = [
             "2607:f0d",
             "2607:f0d0:0004",
+            # Embedded null byte makes inet_pton raise ValueError, not OSError
+            "::1\x00",
         ]
 
         for address in valid_ipv4_addresses:
