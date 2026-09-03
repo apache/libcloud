@@ -161,6 +161,18 @@ class BaseConnectionClassTestCase(unittest.TestCase):
             {"http": "https://127.0.0.6:3129", "https": "https://127.0.0.6:3129"},
         )
 
+    def test_proxy_is_bypassed_for_no_proxy_hosts(self):
+        # Regression test for GITHUB-2077: an explicitly configured proxy must
+        # not be used for hosts listed in the no_proxy environment variable.
+        os.environ["no_proxy"] = "internal.example.com"
+        self.addCleanup(os.environ.pop, "no_proxy", None)
+
+        conn = LibcloudConnection(host="internal.example.com", port=443)
+        conn.set_http_proxy("http://proxy.example.com:3128")
+
+        self.assertEqual(conn._proxies_for_url("https://internal.example.com/path"), {})
+        self.assertIsNone(conn._proxies_for_url("https://other.example.com/path"))
+
     def test_proxy_environment_variables_respected(self):
         """
         Test that proxy environment variables are respected by the underlying Requests library

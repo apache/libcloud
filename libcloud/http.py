@@ -22,6 +22,7 @@ import warnings
 
 import requests
 from requests.adapters import HTTPAdapter
+from requests.utils import should_bypass_proxies
 
 import libcloud.security
 from libcloud.utils.py3 import urlparse
@@ -111,6 +112,28 @@ class LibcloudBaseConnection:
             "http": proxy_url,
             "https": proxy_url,
         }
+
+
+    def _proxies_for_url(self, url):
+        """
+        Return the proxy mapping to use for ``url``.
+
+        An explicitly configured proxy is skipped when the target host matches
+        the ``no_proxy`` / ``NO_PROXY`` environment variable, so libcloud
+        behaves consistently with other HTTP clients.
+
+        :param url: Absolute request URL.
+        :type url: ``str``
+
+        :rtype: ``dict`` or ``None``
+        """
+        if not self.session.proxies:
+            return None
+
+        if should_bypass_proxies(url, no_proxy=None):
+            return {}
+
+        return None
 
     def _parse_proxy_url(self, proxy_url):
         """
@@ -231,6 +254,7 @@ class LibcloudConnection(LibcloudBaseConnection):
             verify=self.verification,
             timeout=self.session.timeout,
             hooks=hooks,
+            proxies=self._proxies_for_url(url),
         )
 
     def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):
