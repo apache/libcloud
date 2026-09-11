@@ -1,0 +1,1 @@
+{"name": "testvps", "displayName": "my-vps", "state": "running", "model": {"name": "VPS Value 1-2-40", "offer": "value", "version": "2019v1", "vcore": 1, "memory": 2048, "disk": 40, "maximumAdditionalIp": 16}, "netbootMode": "local", "offerType": "ssd", "vcore": 1, "memory": 2048, "disk": 40, "zone": "eu-west-rbx", "ips": ["198.51.100.42", "2001:db8::1"]}
