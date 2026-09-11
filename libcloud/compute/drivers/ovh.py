@@ -30,7 +30,6 @@ from libcloud.compute.base import (
 from libcloud.compute.types import Provider, StorageVolumeState, VolumeSnapshotState
 from libcloud.compute.drivers.openstack import OpenStackKeyPair, OpenStackNodeDriver
 
-
 class OvhNodeDriver(NodeDriver):
     """
     Libcloud driver for the Ovh API
@@ -543,7 +542,9 @@ class OvhNodeDriver(NodeDriver):
         return [self._to_volume(obj) for obj in objs]
 
     def _to_location(self, obj):
-        location = self.connectionCls.LOCATIONS[obj]
+        location = self.connectionCls.LOCATIONS.get(obj)
+        if not location:
+            location = {"id": obj, "name": obj, "country": ""}
 
         return NodeLocation(driver=self, **location)
 
