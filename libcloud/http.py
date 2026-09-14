@@ -21,10 +21,8 @@ verification, depending on libcloud.security settings.
 import warnings
 
 import requests
+from requests.utils import should_bypass_proxies
 from requests.adapters import HTTPAdapter
-
-import libcloud.security
-from libcloud.utils.py3 import urlparse
 
 try:
     # requests no longer vendors urllib3 in newer versions
@@ -33,6 +31,8 @@ try:
 except ImportError:
     from requests.packages.urllib3.poolmanager import PoolManager  # type: ignore
 
+import libcloud.security
+from libcloud.utils.py3 import urlparse
 
 __all__ = ["LibcloudBaseConnection", "LibcloudConnection"]
 
@@ -111,6 +111,32 @@ class LibcloudBaseConnection:
             "http": proxy_url,
             "https": proxy_url,
         }
+
+    def _proxies_for_url(self, url):
+        """
+        Return the proxy mapping to use for ``url``.
+
+        An explicitly configured proxy is skipped when the target host matches
+        the ``no_proxy`` / ``NO_PROXY`` environment variable, so libcloud
+        behaves consistently with other HTTP clients.
+
+        :param url: Absolute request URL.
+        :type url: ``str``
+
+        :rtype: ``dict`` or ``None``
+        """
+        if not self.session.proxies:
+            return None
+
+        if should_bypass_proxies(url, no_proxy=None):
+            # Explicitly disable the configured schemes. Returning {} is not
+            # enough: requests merges per-request proxies with the session
+            # proxies, so the session-level proxy would be merged back in.
+            # ``None`` values are stripped by requests' merge, leaving an
+            # empty effective mapping.
+            return {"http": None, "https": None}
+
+        return None
 
     def _parse_proxy_url(self, proxy_url):
         """
@@ -231,6 +257,7 @@ class LibcloudConnection(LibcloudBaseConnection):
             verify=self.verification,
             timeout=self.session.timeout,
             hooks=hooks,
+            proxies=self._proxies_for_url(url),
         )
 
     def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):
