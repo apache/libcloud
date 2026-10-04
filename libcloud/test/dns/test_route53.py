@@ -410,8 +410,9 @@ class Route53Tests(unittest.TestCase):
 
         self.assertIn("<Name>%s</Name>" % zone.domain, data)
 
-    def test_with_record_set_metadata_list_records_failure(self):
-        # If the record set cannot be re-fetched, the record is used as-is.
+    def test_record_changes_propagate_list_records_failure(self):
+        # A failed lookup must propagate instead of submitting an incomplete
+        # update or delete changeset.
         zone = self.driver.list_zones()[0]
         record = Record(
             id="A:foo",
@@ -426,16 +427,17 @@ class Route53Tests(unittest.TestCase):
         original_list_records = self.driver.list_records
 
         def boom(*args, **kwargs):
-            raise Exception("boom")
+            raise RuntimeError("boom")
 
         self.driver.list_records = boom
 
         try:
-            result = self.driver._with_record_set_metadata(record)
+            for operation in (self.driver.delete_record, self.driver.update_record):
+                with self.subTest(operation=operation.__name__):
+                    with self.assertRaisesRegex(RuntimeError, "boom"):
+                        operation(record)
         finally:
             self.driver.list_records = original_list_records
-
-        self.assertIs(result, record)
 
     def test_with_record_set_metadata_no_matching_record(self):
         # If no record in the re-fetched set matches, the record is used

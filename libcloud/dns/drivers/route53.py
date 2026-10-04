@@ -211,10 +211,7 @@ class Route53DNSDriver(DNSDriver):
         if "_multi_value" in record.extra:
             return record
 
-        try:
-            fetched = self.list_records(zone=record.zone)
-        except Exception:
-            return record
+        fetched = self.list_records(zone=record.zone)
 
         for candidate in fetched:
             if (
@@ -267,9 +264,8 @@ class Route53DNSDriver(DNSDriver):
         )
 
     def delete_record(self, record):
+        r = self._with_record_set_metadata(record)
         try:
-            r = self._with_record_set_metadata(record)
-
             # Multiple value records need to be handled specially - Route53
             # only accepts a DELETE for a record set which lists every value
             # in that set, so values for the other records need to be sent
