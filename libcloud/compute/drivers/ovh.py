@@ -24,6 +24,7 @@ from libcloud.compute.base import (
     NodeImage,
     NodeDriver,
     NodeLocation,
+    NodeState,
     StorageVolume,
     VolumeSnapshot,
 )
@@ -211,7 +212,21 @@ class OvhNodeDriver(NodeDriver):
             params["flavorId"] = ex_size.id
         response = self.connection.request(action, params=params)
 
-        return self._to_images(response.object)
+        public_images = self._to_images(response.object)
+
+        action_snapshot = self._get_project_action("snapshot")
+        params_snapshot = {}
+
+        if location:
+            params_snapshot["region"] = location.id
+
+        # if ex_size:
+        #     params["flavorType"] = ex_size.
+        response_snapshot = self.connection.request(action_snapshot, params=params_snapshot)
+        private_images = self._to_images(response_snapshot.object)
+
+        return public_images + private_images
+
 
     def get_image(self, image_id):
         action = self._get_project_action("image/%s" % image_id)
@@ -563,7 +578,7 @@ class OvhNodeDriver(NodeDriver):
         return Node(
             id=obj["id"],
             name=obj["name"],
-            state=self.NODE_STATE_MAP[obj["status"]],
+            state=self.NODE_STATE_MAP.get(obj["status"], NodeState.UNKNOWN),
             public_ips=public_ips,
             private_ips=[],
             driver=self,
@@ -591,7 +606,7 @@ class OvhNodeDriver(NodeDriver):
         return [self._to_size(obj) for obj in objs]
 
     def _to_image(self, obj):
-        extra = {"region": obj["region"], "visibility": obj["visibility"]}
+        extra = {"region": obj["region"], "visibility": obj["visibility"], "status": obj["status"]}
 
         return NodeImage(id=obj["id"], name=obj["name"], driver=self, extra=extra)
 
@@ -637,3 +652,16 @@ class OvhNodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         return {"ex_consumer_key": self.consumer_key, "region": self.region}
+
+    def create_image(self, node, name, description=None):
+        action = self._get_project_action("instance/%s/snapshot" % node.id) 
+        response = self.connection.request(action, method="POST", data={"snapshotName": name})
+
+        return self._to_image({
+            "id": response.object["snapshotId"],
+            "name": name,
+            "region": node.extra.get("region"),
+            "visibility": "private",
+            "status": "creating",
+        })        
+        
