@@ -76,6 +76,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [S3] Add ``ex_allow_path_double_slashes`` to preserve object key slashes
+  per driver without changing the global URL normalization setting.
+  (GITHUB-1654)
+  [Shubham Padkonde - @Shubham-Padkonde]
+
 - [Azure Blobs] Fix SAS signatures for percent-encoded object paths by using
   the decoded path in the canonicalized resource while preserving the encoded
   path in the returned URL.
