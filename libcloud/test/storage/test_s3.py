@@ -1306,33 +1306,6 @@ class S3Tests(unittest.TestCase):
         result = self.driver.delete_object(obj=obj)
         self.assertTrue(result)
 
-    def test_delete_object_double_slashes(self) -> None:
-        for name in ("/object", "path//object", "//path///object"):
-            with self.subTest(name=name):
-                driver = S3StorageDriver(*self.driver_args, ex_allow_path_double_slashes=True)
-                container = Container(name="test-bucket", extra={}, driver=driver)
-                obj = Object(name, 0, None, {}, {}, container, driver)
-                with mock.patch.object(
-                    self.mock_response_klass,
-                    "_get_request",
-                    return_value=(httplib.NO_CONTENT, "", {}, "No Content"),
-                ) as request:
-                    self.assertTrue(driver.delete_object(obj))
-                self.assertEqual(request.call_args[0][0], "DELETE")
-                self.assertEqual(
-                    urlparse.urlparse(request.call_args[0][1]).path, "/test-bucket/" + name
-                )
-
-    def test_double_slashes_option_is_per_driver(self) -> None:
-        with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", False):
-            driver = S3StorageDriver(*self.driver_args, ex_allow_path_double_slashes=True)
-            other = S3StorageDriver(*self.driver_args)
-            path = "/test-bucket//object"
-            self.assertEqual(driver.connection.morph_action_hook(path), path)
-            self.assertEqual(other.connection.morph_action_hook(path), "/test-bucket/object")
-        with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", True):
-            self.assertEqual(other.connection.morph_action_hook(path), path)
-
     def test_region_keyword_argument(self):
         # Default region
         driver = S3StorageDriver(*self.driver_args)
@@ -1378,6 +1351,40 @@ class S3Tests(unittest.TestCase):
     def test_deprecated_driver_class_per_region(self):
         driver = S3USWestStorageDriver(*self.driver_args)
         self.assertEqual(driver.region, "us-west-1")
+
+
+class S3PathHandlingTests(unittest.TestCase):
+    def setUp(self) -> None:
+        transport = mock.patch.object(S3StorageDriver.connectionCls, "conn_class", S3MockHttp)
+        transport.start()
+        self.addCleanup(transport.stop)
+
+    def test_delete_object_double_slashes(self) -> None:
+        for name in ("/object", "path//object", "//path///object"):
+            with self.subTest(name=name):
+                driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
+                container = Container(name="test-bucket", extra={}, driver=driver)
+                obj = Object(name, 0, None, {}, {}, container, driver)
+                with mock.patch.object(
+                    S3MockHttp,
+                    "_get_request",
+                    return_value=(httplib.NO_CONTENT, "", {}, "No Content"),
+                ) as request:
+                    self.assertTrue(driver.delete_object(obj))
+                self.assertEqual(request.call_args[0][0], "DELETE")
+                self.assertEqual(
+                    urlparse.urlparse(request.call_args[0][1]).path, "/test-bucket/" + name
+                )
+
+    def test_double_slashes_option_is_per_driver(self) -> None:
+        with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", False):
+            driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
+            other = S3StorageDriver(*STORAGE_S3_PARAMS)
+            path = "/test-bucket//object"
+            self.assertEqual(driver.connection.morph_action_hook(path), path)
+            self.assertEqual(other.connection.morph_action_hook(path), "/test-bucket/object")
+        with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", True):
+            self.assertEqual(other.connection.morph_action_hook(path), path)
 
 
 if __name__ == "__main__":
