@@ -26,6 +26,12 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Preserve completed results and pending node names on the exception
+  raised when bulk node creation times out, allowing callers to recover or
+  clean up resources without losing track of them.
+  (GITHUB-1589)
+  [Ishu Patel - @ishu7w]
+
 - [OpenStack] Select service catalog endpoints by service type without filtering
   by the default service name. The service name is only used as a filter when
   explicitly provided via ``ex_force_service_name``.
