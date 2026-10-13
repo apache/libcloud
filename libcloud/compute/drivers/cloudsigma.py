@@ -1931,7 +1931,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         :rtype: ``list`` of :class:`.CloudSigmaTag` objects
         """
-        action = "/tags/detail/"
+        action = "/tags/"
         response = self.connection.request(action=action, method="GET").object
         tags = [self._to_tag(data=item) for item in response["objects"]]
 

@@ -682,10 +682,13 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
             return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _api_2_0_tags_detail(self, method, url, body, headers):
-        body = self.fixtures.load("tags_detail.json")
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        raise AssertionError("Tag collection must use /tags/ rather than /tags/detail/")
 
     def _api_2_0_tags(self, method, url, body, headers):
+        if method == "GET":
+            assert url.split("?")[0].rstrip("/") == "/api/2.0/tags"
+            body = self.fixtures.load("tags_detail.json")
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         if method == "POST":
             body = self.fixtures.load("tags_create.json")
             return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
