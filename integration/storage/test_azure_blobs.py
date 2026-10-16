@@ -85,7 +85,7 @@ class IotedgeStorageTest(Integration.ContainerTestBase):
 class StorageTest(Integration.TestBase):
     provider = "azure_blobs"
 
-    kind = storage_models.Kind.STORAGE
+    kind = storage_models.Kind.STORAGE_V2
     access_tier = None  # type: storage_models.AccessTier
 
     @classmethod
@@ -206,10 +206,6 @@ class StorageTest(Integration.TestBase):
 
         cls.account = account.name
         cls.secret = keys["keys"][0]["value"]
-
-
-class StorageV2Test(StorageTest):
-    kind = storage_models.Kind.STORAGE_V2
 
 
 if __name__ == "__main__":
