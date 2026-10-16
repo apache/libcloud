@@ -26,7 +26,7 @@ class MinioTest(Integration.ContainerTestBase):
     account = "minioaccount"
     secret = "miniopassword"
 
-    image = "minio/minio"
+    image = "pgsty/silo"
     port = 9000
     environment = {"MINIO_ROOT_USER": account, "MINIO_ROOT_PASSWORD": secret}
     command = ["server", "/data"]
