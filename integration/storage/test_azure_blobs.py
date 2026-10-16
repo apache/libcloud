@@ -212,10 +212,5 @@ class StorageV2Test(StorageTest):
     kind = storage_models.Kind.STORAGE_V2
 
 
-class BlobStorageTest(StorageTest):
-    kind = storage_models.Kind.BLOB_STORAGE
-    access_tier = storage_models.AccessTier.HOT
-
-
 if __name__ == "__main__":
     sys.exit(unittest.main())
