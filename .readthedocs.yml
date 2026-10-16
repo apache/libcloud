@@ -24,6 +24,3 @@ sphinx:
 formats:
    - pdf
    - epub
-
-# NOTE: We need to use older version of sphinx otherwise bullet points won't be rendered correctly
-# on RTD using rtd theme.
