@@ -125,7 +125,7 @@ mypy = [
     "types-urllib3",
 ]
 ci = [
-    "tox==4.24.1",
+    "tox==4.64.10",
 ]
 integration-compute = [
     "bottle",
