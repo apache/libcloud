@@ -11,7 +11,7 @@ RcodeZero DNS Driver Documentation
 Supported Features:
 
 - more than 35 nodes
-- two seperate clouds with different ASes
+- two separate clouds with different ASes
 - full IPv4/IPv6 support
 - primary as well as secondary Nameservers
 - DNSSEC signing
