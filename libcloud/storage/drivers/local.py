@@ -451,6 +451,8 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             shutil.copy(obj_path, file_path)
+        except shutil.SameFileError:
+            return False
         except OSError:
             if delete_on_failure:
                 try:
