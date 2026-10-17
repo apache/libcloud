@@ -250,6 +250,12 @@ class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
     service_name = "s3"
     version = API_VERSION
 
+    def morph_action_hook(self, action: str) -> str:
+        """Preserve object key slashes when enabled for this S3 driver."""
+        if getattr(self.driver, "ex_allow_path_double_slashes", False):
+            return self.request_path + action
+        return super().morph_action_hook(action)
+
     def __init__(
         self,
         user_id,
@@ -1243,8 +1249,17 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         port=None,
         region=None,
         token=None,
+        ex_allow_path_double_slashes: bool = False,
         **kwargs,
     ):
+        """
+        :param ex_allow_path_double_slashes: Preserve repeated slashes in object
+            request paths for this driver. When False, use the existing global
+            ``ALLOW_PATH_DOUBLE_SLASHES`` setting.
+        :type ex_allow_path_double_slashes: ``bool``
+        """
+        self.ex_allow_path_double_slashes = ex_allow_path_double_slashes
+
         # Here for backward compatibility for old and deprecated driver class
         # per region approach
         if hasattr(self, "region_name") and not region:

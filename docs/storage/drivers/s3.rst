@@ -8,11 +8,28 @@ from Amazon Web Services.
 
     If you are upgrading from Libcloud v2.3.0 or older versions and are
     utilizing paths with duplicated slashes (e.g. ``/my-bucket//path/1.txt``)
-    or a root bucked named as ``/``, you will need to utilize
-    ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` variable which was
-    added in Libcloud v3.3.0 so you can access objects in those paths.
+    or a root bucket named as ``/``, enable the per-driver option described
+    below or use the global ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES``
+    variable added in Libcloud v3.3.0.
 
     For more information, please refer to the "Upgrade Notes".
+
+Object names containing repeated slashes
+----------------------------------------
+
+S3 treats slashes as part of an object's name. To preserve leading or repeated
+slashes when accessing these objects, enable the per-driver option::
+
+    driver = S3StorageDriver(key, secret, ex_allow_path_double_slashes=True)
+
+This applies to object requests, including uploads, downloads, and deletions.
+Without this option or the global ``ALLOW_PATH_DOUBLE_SLASHES`` setting, a name
+such as ``/path/to/object`` can be normalized to ``path/to/object``. S3 may then
+report a successful deletion even though the intended object still exists.
+
+The option defaults to ``False`` for compatibility. It does not alter other
+driver instances or the global setting. The global setting continues to apply
+when the per-driver option is not enabled.
 
 Multipart uploads
 -----------------
