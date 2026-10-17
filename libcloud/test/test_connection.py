@@ -29,7 +29,12 @@ from libcloud.http import LibcloudConnection, SignedHTTPSAdapter, LibcloudBaseCo
 from libcloud.test import unittest, no_internet
 from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.common.base import Response, Connection, CertificateConnection
-from libcloud.utils.retry import RETRY_EXCEPTIONS, Retry, RetryForeverOnRateLimitError
+from libcloud.utils.retry import (
+    RETRY_EXCEPTIONS,
+    Retry,
+    MinimalRetry,
+    RetryForeverOnRateLimitError,
+)
 from libcloud.common.exceptions import RateLimitReachedError
 
 
@@ -557,6 +562,32 @@ class ConnectionClassTestCase(unittest.TestCase):
 
     def _raise_socket_error(self):
         raise socket.gaierror("")
+
+    def test_retry_with_nonpositive_timeout_returns_first_result(self):
+        for retry_class in (MinimalRetry, Retry):
+            for timeout in (0, -1):
+                with self.subTest(retry_class=retry_class, timeout=timeout):
+                    request = Mock(return_value="success")
+                    result = retry_class(timeout=timeout)(request)("/", method="GET")
+                    self.assertEqual(result, "success")
+                    request.assert_called_once_with("/", method="GET")
+
+    @patch("libcloud.utils.retry.time.sleep")
+    def test_retry_with_nonpositive_timeout_preserves_first_error(self, sleep):
+        for retry_class in (MinimalRetry, Retry):
+            for timeout in (0, -1):
+                for error in (
+                    socket.gaierror("unavailable"),
+                    RateLimitReachedError(),
+                    ValueError(),
+                ):
+                    with self.subTest(retry_class=retry_class, timeout=timeout, error=error):
+                        request = Mock(side_effect=error)
+                        with self.assertRaises(type(error)) as exc:
+                            retry_class(timeout=timeout)(request)()
+                        self.assertIs(exc.exception, error)
+                        request.assert_called_once_with()
+        sleep.assert_not_called()
 
     @patch("libcloud.common.base.Connection.request")
     def test_retry_with_sleep(self, mock_connect):
