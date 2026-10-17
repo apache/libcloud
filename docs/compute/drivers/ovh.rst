@@ -70,6 +70,51 @@ Create and attach a volume to a node
 
 .. literalinclude:: /examples/compute/ovh/attach_volume.py
 
+VPS (Virtual Private Server) support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The OVH driver also supports managing OVH VPS instances, which are a separate
+product line from the Public Cloud. VPS methods use the ``/vps/`` API and are
+available as ``ex_``-prefixed extension methods.
+
+Note: VPS operations do not require ``ex_project_id``, but the driver
+constructor still requires it for Public Cloud operations. You can pass any
+value if you only need VPS functionality.
+
+.. code-block:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    Ovh = get_driver(Provider.OVH)
+    driver = Ovh(
+        "your_app_key",
+        "your_app_secret",
+        "project_id",
+        "your_consumer_key",
+    )
+
+    # List all VPS
+    vps_names = driver.ex_list_vps()
+    for name in vps_names:
+        node = driver.ex_get_vps(name)
+        print(f"{node.name}: {node.state} - IPs: {node.public_ips}")
+
+    # Reboot a VPS
+    driver.ex_reboot_vps("vps-12345678.vps.ovh.net")
+
+    # List available OS images for a VPS
+    images = driver.ex_list_vps_images("vps-12345678.vps.ovh.net")
+    for image in images:
+        print(f"{image.id}: {image.name}")
+
+    # Rebuild a VPS with a new OS
+    driver.ex_rebuild_vps(
+        "vps-12345678.vps.ovh.net",
+        "img-debian-12",
+        ssh_key=["ssh-rsa AAAA..."],
+    )
+
 API Docs
 --------
 
