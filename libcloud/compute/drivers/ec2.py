@@ -3290,7 +3290,7 @@ class BaseEC2NodeDriver(NodeDriver):
         # shape how the return data is sent back
         return self._to_addresses(response, only_associated)
 
-    def ex_associate_address_with_node(self, node, elastic_ip, domain=None):
+    def ex_associate_address_with_node(self, node, elastic_ip, domain=None, network_interface=None):
         """
         Associate an Elastic IP address with a particular node.
 
@@ -3303,12 +3303,26 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      domain: The domain where the IP resides (vpc only)
         :type       domain: ``str``
 
+        :param      network_interface: Optional interface to associate the IP
+                    with instead of the node. Required for nodes with multiple
+                    network interfaces.
+        :type       network_interface: :class:`EC2NetworkInterface`
+
+        For a VPC address on an instance with multiple interfaces, pass
+        ``domain="vpc"`` and the desired interface from
+        :meth:`ex_list_network_interfaces`. The request uses its interface ID
+        instead of the instance ID, as required by EC2.
+
         :return:    A string representation of the association ID which is
                     required for VPC disassociation. EC2/standard
                     addresses return None
         :rtype:     ``None`` or ``str``
         """
-        params = {"Action": "AssociateAddress", "InstanceId": node.id}
+        params = {"Action": "AssociateAddress"}
+        if network_interface is not None:
+            params["NetworkInterfaceId"] = network_interface.id
+        else:
+            params["InstanceId"] = node.id
 
         if domain is not None and domain != "vpc":
             raise AttributeError("Domain can only be set to vpc")
@@ -3322,13 +3336,15 @@ class BaseEC2NodeDriver(NodeDriver):
         association_id = findtext(element=response, xpath="associationId", namespace=NAMESPACE)
         return association_id
 
-    def ex_associate_addresses(self, node, elastic_ip, domain=None):
+    def ex_associate_addresses(self, node, elastic_ip, domain=None, network_interface=None):
         """
         Note: This method has been deprecated in favor of
         the ex_associate_address_with_node method.
         """
 
-        return self.ex_associate_address_with_node(node=node, elastic_ip=elastic_ip, domain=domain)
+        return self.ex_associate_address_with_node(
+            node=node, elastic_ip=elastic_ip, domain=domain, network_interface=network_interface
+        )
 
     def ex_disassociate_address(self, elastic_ip, domain=None):
         """
