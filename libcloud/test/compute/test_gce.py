@@ -46,12 +46,14 @@ from libcloud.compute.drivers.gce import (
     GCEProject,
     GCEFirewall,
     GCENodeImage,
+    GCEFailedNode,
     GCENodeDriver,
     GCESubnetwork,
     GCEHealthCheck,
     GCEBackendService,
     GCEForwardingRule,
     GCETargetHttpProxy,
+    GCEMultipleNodesTimeoutError,
     timestamp_to_datetime,
 )
 from libcloud.test.common.test_google import GoogleTestCase, GoogleAuthMockHttp
@@ -1647,6 +1649,47 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
             number,
             ex_image_family="coreos-stable",
         )
+
+    def test_ex_create_multiple_nodes_timeout_preserves_progress(self):
+        image = self.driver.ex_get_image("debian-7")
+        size = self.driver.ex_get_size("n1-standard-1")
+        created = Node("node-id", "lcnode-000", NodeState.RUNNING, [], [], self.driver)
+        failed = GCEFailedNode("lcnode-001", "quota exceeded", "QUOTA_EXCEEDED")
+
+        def create_node(status, node_attrs):
+            if status["name"] == created.name:
+                status["node"] = created
+            elif status["name"] == failed.name:
+                status["node"] = failed
+            else:
+                status["node_response"] = {"selfLink": "pending-operation"}
+
+        with (
+            mock.patch.object(self.driver, "_multi_create_node", side_effect=create_node),
+            mock.patch("libcloud.compute.drivers.gce.time") as clock,
+            mock.patch.object(self.driver, "destroy_node") as destroy,
+        ):
+            clock.time.side_effect = [0, 0, 5]
+            with self.assertRaises(GCEMultipleNodesTimeoutError) as raised:
+                self.driver.ex_create_multiple_nodes(
+                    "lcnode", size, image, 3, timeout=5, poll_interval=0
+                )
+        error = raised.exception
+        self.assertEqual(error.nodes, [created, failed])
+        self.assertEqual(error.pending_node_names, ["lcnode-002"])
+        self.assertIn("5 sec", str(error))
+        self.assertIs(error.driver, self.driver)
+        destroy.assert_not_called()
+
+    def test_ex_create_multiple_nodes_timeout_before_start(self):
+        image = self.driver.ex_get_image("debian-7")
+        size = self.driver.ex_get_size("n1-standard-1")
+        with mock.patch.object(self.driver, "_multi_create_node") as create:
+            with self.assertRaises(GCEMultipleNodesTimeoutError) as raised:
+                self.driver.ex_create_multiple_nodes("lcnode", size, image, 2, timeout=0)
+        self.assertEqual(raised.exception.nodes, [])
+        self.assertEqual(raised.exception.pending_node_names, ["lcnode-000", "lcnode-001"])
+        create.assert_not_called()
 
     def test_ex_create_targethttpproxy(self):
         proxy_name = "web-proxy"
