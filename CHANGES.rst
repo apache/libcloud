@@ -66,7 +66,7 @@ Compute
   (GITHUB-1893)
   [Sanjay Santhanam - @Sanjays2402]
 
-- [UpCloud] 
+- [UpCloud]
 
   Add new functions to complete the Upcloud driver and move it to the
   last API version 1.3
@@ -75,6 +75,11 @@ Compute
 
 Storage
 ~~~~~~~
+
+- [Local] Stream range downloads in bounded chunks without reading the entire
+  source file or buffering the complete range before writing it to disk.
+  (GITHUB-2191)
+  [Neha Mahesh - @mneha05]
 
 - [Azure Blobs] Fix SAS signatures for percent-encoded object paths by using
   the decoded path in the canonicalized resource while preserving the encoded

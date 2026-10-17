@@ -22,10 +22,11 @@ import platform
 import tempfile
 import unittest
 import multiprocessing
+from unittest import mock
 
 from libcloud.utils.files import exhaust_iterator
 from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Object, Container
+from libcloud.storage.base import CHUNK_SIZE, Object, Container
 from libcloud.storage.types import (
     ContainerIsNotEmptyError,
     InvalidContainerNameError,
@@ -602,6 +603,115 @@ class LocalTests(unittest.TestCase):
             start_bytes=5,
             end_bytes=5,
         )
+
+    def test_download_object_range_as_stream_respects_chunk_size(self):
+        content = bytes(range(256)) * 100
+        container = self.driver.create_container("range-chunks")
+        path = os.path.join(self.key, container.name, "object")
+        with open(path, "wb") as fp:
+            fp.write(content)
+        obj = container.get_object("object")
+
+        for chunk_size in (3, None, 0):
+            for end_bytes in (20005, None):
+                with self.subTest(chunk_size=chunk_size, end_bytes=end_bytes):
+                    chunks = list(
+                        self.driver.download_object_range_as_stream(
+                            obj, start_bytes=5, end_bytes=end_bytes, chunk_size=chunk_size
+                        )
+                    )
+                    self.assertEqual(b"".join(chunks), content[5:end_bytes])
+                    self.assertTrue(
+                        all(0 < len(chunk) <= (chunk_size or CHUNK_SIZE) for chunk in chunks)
+                    )
+
+    def test_download_object_range_as_stream_reads_only_requested_bytes(self):
+        content = b"0123456789" * 100
+        container = self.driver.create_container("range-reads")
+        path = os.path.join(self.key, container.name, "object")
+        with open(path, "wb") as fp:
+            fp.write(content)
+        obj = container.get_object("object")
+
+        with open(path, "rb") as fp:
+            with mock.patch.object(fp, "read", wraps=fp.read) as read:
+                with mock.patch(
+                    "libcloud.storage.drivers.local.open", return_value=fp, create=True
+                ):
+                    chunks = list(
+                        self.driver.download_object_range_as_stream(
+                            obj, start_bytes=5, end_bytes=12, chunk_size=3
+                        )
+                    )
+
+        self.assertEqual(b"".join(chunks), content[5:12])
+        self.assertEqual(read.call_args_list, [mock.call(3), mock.call(3), mock.call(1)])
+
+    def test_download_object_range_writes_chunks_before_reading_next(self):
+        container = self.driver.create_container("range-writes")
+        path = os.path.join(self.key, container.name, "object")
+        with open(path, "wb") as fp:
+            fp.write(b"0123456789")
+        obj = container.get_object("object")
+        destination = os.path.join(self.key, "download")
+
+        with open(destination, "wb") as fp:
+            with mock.patch.object(fp, "write", wraps=fp.write) as write:
+
+                def chunks():
+                    yield b"123"
+                    write.assert_called_once_with(b"123")
+                    yield b"45"
+
+                with mock.patch.object(
+                    self.driver, "download_object_range_as_stream", return_value=chunks()
+                ):
+                    with mock.patch(
+                        "libcloud.storage.drivers.local.open", return_value=fp, create=True
+                    ):
+                        self.assertTrue(
+                            self.driver.download_object_range(
+                                obj,
+                                destination,
+                                start_bytes=1,
+                                end_bytes=6,
+                                overwrite_existing=True,
+                            )
+                        )
+
+        with open(destination, "rb") as fp:
+            self.assertEqual(fp.read(), b"12345")
+
+    def test_download_object_range_as_stream_rejects_negative_chunk_size(self):
+        container = self.driver.create_container("range-negative-chunk")
+        path = os.path.join(self.key, container.name, "object")
+        with open(path, "wb") as fp:
+            fp.write(b"0123456789")
+        obj = container.get_object("object")
+
+        stream = self.driver.download_object_range_as_stream(obj, start_bytes=1, chunk_size=-1)
+        self.assertRaisesRegex(ValueError, "chunk_size must be greater than 0", next, stream)
+
+    def test_download_object_range_as_stream_stops_at_early_eof(self):
+        container = self.driver.create_container("range-early-eof")
+        path = os.path.join(self.key, container.name, "object")
+        with open(path, "wb") as fp:
+            fp.write(b"0123456789")
+        obj = container.get_object("object")
+
+        with open(path, "rb") as fp:
+            with mock.patch.object(fp, "read", side_effect=[b"56", b""]) as read:
+                with mock.patch(
+                    "libcloud.storage.drivers.local.open", return_value=fp, create=True
+                ):
+                    chunks = list(
+                        self.driver.download_object_range_as_stream(
+                            obj, start_bytes=5, end_bytes=9, chunk_size=3
+                        )
+                    )
+
+        self.assertEqual(chunks, [b"56"])
+        self.assertEqual(read.call_args_list, [mock.call(3), mock.call(2)])
 
     def test_download_object_range_as_stream_invalid_values(self):
         content = b"0123456789123456789"
