@@ -16,6 +16,8 @@
 import sys
 import errno
 import hashlib
+import os
+import tempfile
 from io import BytesIO
 from unittest import mock
 from unittest.mock import Mock
@@ -52,6 +54,22 @@ class BaseStorageTests(unittest.TestCase):
 
         self.driver1.strict_mode = False
         self.driver1.strict_mode = False
+
+    def test_save_object_confines_provider_name_to_destination_directory(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            destination_path = os.path.join(temp_dir, "downloads") + os.sep
+            os.mkdir(destination_path)
+            outside_path = os.path.join(temp_dir, "evil")
+            response = Mock()
+            response._response.iter_content.return_value = [b"PWNED"]
+            obj = Mock(size=5)
+            obj.name = "../../evil"
+
+            self.driver1._save_object(response, obj, destination_path)
+
+            self.assertFalse(os.path.exists(outside_path))
+            with open(os.path.join(destination_path, "evil"), "rb") as file_handle:
+                self.assertEqual(file_handle.read(), b"PWNED")
 
     def test__upload_object_iterator_must_have_next_method(self):
         valid_iterators = [BytesIO(b("134")), StringIO("bar")]
