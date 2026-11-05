@@ -76,6 +76,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [Storage] Prevent path traversal when downloading objects to a directory by
+  using only the object name's basename as the local filename.
+  (#2206)
+  [Miguel Caballer - @micafer]
+
 - [Azure Blobs] Fix SAS signatures for percent-encoded object paths by using
   the decoded path in the canonicalized resource while preserving the encoded
   path in the returned URL.
