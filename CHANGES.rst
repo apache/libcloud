@@ -26,6 +26,12 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] Allow Elastic IP association with a specific network interface, so
+  instances with multiple interfaces can select the required target. Existing
+  calls continue to associate by instance ID.
+  (GITHUB-1799)
+  [Ishu Patel - @ishu7w]
+
 - [OpenStack] Select service catalog endpoints by service type without filtering
   by the default service name. The service name is only used as a filter when
   explicitly provided via ``ex_force_service_name``.
