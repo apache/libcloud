@@ -19,6 +19,7 @@ import sys
 import json
 import tempfile
 from io import BytesIO
+from unittest.mock import patch
 
 from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test import unittest
@@ -520,6 +521,21 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(len(query["sig"]), 1)
         self.assertGreater(len(query["sig"][0]), 0)
 
+    @patch("libcloud.storage.drivers.azure_blobs.hmac.new")
+    def test_get_object_cdn_url_with_spaces(self, mock_hmac_new):
+        mock_hmac_new.return_value.digest.return_value = b"signature"
+        container = Container(name="test_container200", extra={}, driver=self.driver)
+        obj = Object("file name.txt", 0, None, {}, {}, container, self.driver)
+
+        url = self.driver.get_object_cdn_url(obj)
+        hmac_call = mock_hmac_new.call_args
+        message = hmac_call.kwargs["msg"] if "msg" in hmac_call.kwargs else hmac_call.args[1]
+        string_to_sign = message.decode("utf-8")
+        canonical_resource = "/blob/{}/test_container200/file name.txt".format(self.driver.key)
+
+        self.assertIn(canonical_resource, string_to_sign)
+        self.assertIn("file%20name.txt", url)
+
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
         # trickier
@@ -696,6 +712,40 @@ class AzureBlobsTests(unittest.TestCase):
 
         consumed_stream = "".join(chunk.decode("utf-8") for chunk in stream)
         self.assertEqual(len(consumed_stream), obj.size)
+
+    def test_download_object_as_stream_uses_chunk_size(self):
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+
+        obj = Object(
+            name="foo_bar_object",
+            size=1000,
+            hash=None,
+            extra={},
+            container=container,
+            meta_data=None,
+            driver=self.driver_type,
+        )
+
+        used_chunk_sizes = []
+
+        def mock_get_object(
+            self, obj, callback, callback_kwargs, response, success_status_code=None
+        ):
+            iterator = callback_kwargs["iterator"]
+            used_chunk_sizes.append(iterator.gi_frame.f_locals.get("chunk_size"))
+            return iterator
+
+        old_func = self.driver_type._get_object
+        self.driver_type._get_object = mock_get_object
+        try:
+            self.driver.download_object_as_stream(obj=obj, chunk_size=1234)
+            self.driver.download_object_range_as_stream(
+                obj=obj, start_bytes=0, end_bytes=10, chunk_size=4321
+            )
+        finally:
+            self.driver_type._get_object = old_func
+
+        self.assertEqual(used_chunk_sizes, [1234, 4321])
 
     def test_download_object_range_success(self):
         container = Container(name="foo_bar_container", extra={}, driver=self.driver)

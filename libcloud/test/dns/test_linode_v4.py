@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 
 import sys
+import json
 import unittest
 
 from libcloud.test import MockHttp
@@ -81,6 +82,12 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(record.data, "mail.example.com")
         self.assertEqual(record.type, "MX")
 
+    def test_list_records_preserves_CAA_tag(self):
+        zone = self.driver.list_zones()[0]
+        records = self.driver.list_records(zone)
+        caa_record = next(record for record in records if record.type == RecordType.CAA)
+        self.assertEqual(caa_record.extra["tag"], "issue")
+
     def test_create_zone(self):
         domain = "example.com"
         ttl = 300
@@ -89,6 +96,17 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(zone.ttl, 300)
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.extra["soa_email"], "admin@example.com")
+
+    def test_create_zone_accepts_axfr_ips(self):
+        LinodeMockHttpV4.type = "CREATE_ZONE_AXFR_IPS"
+        domain = "example.com"
+        ttl = 300
+        extra = {
+            "soa_email": "admin@example.com",
+            "axfr_ips": ["192.0.2.10", "198.51.100.11"],
+        }
+        zone = self.driver.create_zone(domain=domain, ttl=ttl, extra=extra)
+        self.assertEqual(zone.extra["axfr_ips"], extra["axfr_ips"])
 
     def test_create_record(self):
         zone = self.driver.list_zones()[0]
@@ -100,6 +118,12 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(record.name, name)
         self.assertEqual(record.type, "A")
         self.assertEqual(record.data, data)
+
+    def test_create_record_PTR(self):
+        zone = self.driver.list_zones()[0]
+        LinodeMockHttpV4.type = "PTR_RECORD"
+        record = self.driver.create_record("10", zone, RecordType.PTR, "host.example.com")
+        self.assertEqual(record.type, "PTR")
 
     def test_update_zone(self):
         zone = self.driver.list_zones()[0]
@@ -144,6 +168,12 @@ class LinodeMockHttpV4(MockHttp):
             body = self.fixtures.load("create_zone.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _v4_domains_CREATE_ZONE_AXFR_IPS(self, method, url, body, headers):
+        payload = json.loads(body)
+        self.assertEqual(payload["axfr_ips"], ["192.0.2.10", "198.51.100.11"])
+        body = self.fixtures.load("create_zone_axfr_ips.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _v4_domains_123_records(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("list_records.json")
@@ -151,6 +181,13 @@ class LinodeMockHttpV4(MockHttp):
         if method == "POST":
             body = self.fixtures.load("create_record.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v4_domains_123_records_PTR_RECORD(self, method, url, body, headers):
+        payload = json.loads(body)
+        self.assertEqual(payload["type"], "PTR")
+        self.assertEqual(payload["target"], "host.example.com")
+        body = self.fixtures.load("create_record_ptr.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_domains_123(self, method, url, body, headers):
         if method == "GET":

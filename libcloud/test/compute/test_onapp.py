@@ -35,6 +35,8 @@ class OnAppNodeTestCase(LibcloudTestCase):
     def test_create_node(self):
         node = self.driver.create_node(
             name="onapp-new-fred",
+            size=None,
+            image=None,
             ex_memory=512,
             ex_cpus=4,
             ex_cpu_shares=4,

@@ -256,7 +256,10 @@ class VSphereNodeDriver(NodeDriver):
 
         return VSphereNetwork(id=data.name, name=data.name, extra=extra)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Returns sizes
         """
@@ -978,9 +981,10 @@ class VSphereNodeDriver(NodeDriver):
     def create_node(
         self,
         name,
-        image,
         size,
+        image,
         location=None,
+        auth=None,
         ex_cluster=None,
         ex_network=None,
         ex_datacenter=None,
@@ -1351,7 +1355,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         self.session_token = result.object["value"]
         self.connection.session_token = self.session_token
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         return []
 
     def list_nodes(
@@ -1914,7 +1921,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         return result
 
-    def list_images(self, **kwargs):
+    def list_images(
+        self,
+        location=None,
+    ):
         libraries = self.ex_list_content_libraries()
         item_ids = []
 
@@ -1972,9 +1982,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
     def create_node(
         self,
         name,
+        size,
         image,
-        size=None,
         location=None,
+        auth=None,
         ex_datastore=None,
         ex_disks=None,
         ex_folder=None,

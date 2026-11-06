@@ -294,6 +294,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         )
         disks = [DimensionDataServerDisk(scsi_id="0", speed="HIGHPERFORMANCE")]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=root_pw,
@@ -313,6 +314,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=None,
@@ -328,6 +330,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.ex_list_customer_images()[1]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=None,
@@ -343,6 +346,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.ex_list_customer_images()[1].id
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=None,
@@ -358,6 +362,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.ex_list_customer_images()[0]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=None,
@@ -373,6 +378,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.ex_list_customer_images()[0].id
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=None,
@@ -389,6 +395,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0].id
         network = self.driver.ex_list_networks()[0].id
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -409,6 +416,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             cpu_count=4, cores_per_socket=1, performance="HIGHPERFORMANCE"
         )
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -432,6 +440,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             cpu_count=4, cores_per_socket=1, performance="HIGHPERFORMANCE"
         )
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -450,6 +459,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(InvalidRequestError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=rootPw,
@@ -462,6 +472,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -477,6 +488,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -491,6 +503,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -506,6 +519,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -522,6 +536,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=rootPw,
@@ -534,6 +549,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -547,6 +563,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -562,6 +579,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test3",
                 image=image,
                 auth=rootPw,
@@ -575,7 +593,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(ValueError):
             self.driver.create_node(
-                name="test3", image=image, auth=rootPw, ex_primary_nic_vlan="fakevlan"
+                size=None, name="test3", image=image, auth=rootPw, ex_primary_nic_vlan="fakevlan"
             )
 
     def test_create_node_no_primary_nic_fail(self):
@@ -583,6 +601,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test3",
                 image=image,
                 auth=rootPw,
@@ -593,6 +612,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -607,6 +627,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = "pass123"
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test3",
             image=image,
             auth=rootPw,
@@ -621,6 +642,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test3",
                 image=image,
                 auth=rootPw,
@@ -636,6 +658,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
             cpu_count="4", cores_per_socket="2", performance="STANDARD"
         )
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -653,6 +676,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
 
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -670,6 +694,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         disks = [DimensionDataServerDisk(scsi_id="0", speed="HIGHPERFORMANCE")]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -688,6 +713,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         disks = "blah"
         with self.assertRaises(TypeError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=root_pw,
@@ -702,6 +728,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -719,6 +746,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=rootPw,
@@ -733,6 +761,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         additional_vlans = ["fakevlan1", "fakevlan2"]
         additional_ipv4 = ["10.0.0.2", "10.0.0.3"]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
@@ -751,6 +780,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(TypeError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=rootPw,
@@ -769,6 +799,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         additional_nics = [nic1, nic2]
 
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=root_pw,
@@ -794,6 +825,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         additional_nics = [nic1, nic2]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=root_pw,
@@ -810,6 +842,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         additional_nics = "blah"
         with self.assertRaises(TypeError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=root_pw,
@@ -828,6 +861,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         additional_nics = [nic1, nic2]
         with self.assertRaises(ValueError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=root_pw,
@@ -843,6 +877,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         with self.assertRaises(TypeError):
             self.driver.create_node(
+                size=None,
                 name="test2",
                 image=image,
                 auth=rootPw,
@@ -857,6 +892,7 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
         rootPw = NodeAuthPassword("pass123")
         image = self.driver.list_images()[0]
         node = self.driver.create_node(
+            size=None,
             name="test2",
             image=image,
             auth=rootPw,
