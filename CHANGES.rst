@@ -1,5 +1,6 @@
 Changelog
-=========
+==  [Ishu Patel - @ishu7w]
+
 
 Changes in Apache Libcloud 4.0.0
 --------------------------------
@@ -30,6 +31,12 @@ Compute
   raised when bulk node creation times out, allowing callers to recover or
   clean up resources without losing track of them.
   (GITHUB-1589)
+  [Ishu Patel - @ishu7w]
+
+- [EC2] Allow Elastic IP association with a specific network interface, so
+  instances with multiple interfaces can select the required target. Existing
+  calls continue to associate by instance ID.
+  (GITHUB-1799)
   [Ishu Patel - @ishu7w]
 
 - [OpenStack] Select service catalog endpoints by service type without filtering
