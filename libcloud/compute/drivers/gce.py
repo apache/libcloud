@@ -649,6 +649,27 @@ class GCEFailedNode:
         return '<GCEFailedNode name="{}" error_code="{}">'.format(self.name, self.code)
 
 
+class GCEMultipleNodesTimeoutError(LibcloudError):
+    """
+    Node creation timed out with some results still pending.
+
+    ``nodes`` contains the known results, including :class:`GCEFailedNode`
+    objects when errors were ignored. ``pending_node_names`` identifies nodes
+    whose final state is unknown. These include nodes whose creation has not
+    started and nodes with operations still in progress, which may finish
+    creating after the timeout.
+    No resources are automatically deleted.
+    """
+
+    def __init__(self, timeout, nodes, pending_node_names, driver):
+        self.nodes = nodes
+        self.pending_node_names = pending_node_names
+        super().__init__(
+            "Timeout (%s sec) while waiting for multiple instances" % timeout,
+            driver=driver,
+        )
+
+
 class GCEHealthCheck(UuidMixin):
     """A GCE Http Health Check class."""
 
@@ -5680,7 +5701,11 @@ class GCENodeDriver(NodeDriver):
         :type     ex_service_accounts: ``list``
 
         :keyword  timeout: The number of seconds to wait for all nodes to be
-                           created before timing out.
+                           created before timing out. On timeout,
+                           :class:`GCEMultipleNodesTimeoutError` exposes known
+                           results in ``nodes`` and unresolved names in
+                           ``pending_node_names``. Resources are not deleted;
+                           pending operations may still complete.
         :type     timeout: ``int``
 
         :keyword  description: The description of the node (instance).
@@ -5817,7 +5842,14 @@ class GCENodeDriver(NodeDriver):
 
         while not complete:
             if time.time() - start_time >= timeout:
-                raise Exception("Timeout (%s sec) while waiting for multiple " "instances")
+                raise GCEMultipleNodesTimeoutError(
+                    timeout=timeout,
+                    nodes=[status["node"] for status in status_list if status["node"] is not None],
+                    pending_node_names=[
+                        status["name"] for status in status_list if status["node"] is None
+                    ],
+                    driver=self,
+                )
             complete = True
             time.sleep(poll_interval)
 
