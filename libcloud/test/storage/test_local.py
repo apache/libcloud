@@ -405,6 +405,22 @@ class LocalTests(unittest.TestCase):
         self.remove_tmp_file(tmppath)
         os.unlink(destination_path)
 
+    def test_download_object_to_source_preserves_object(self):
+        content = b"preserve this object"
+        container = self.driver.create_container("same-file")
+        object_path = os.path.join(self.key, container.name, "object")
+
+        for destination_path in (object_path, os.path.dirname(object_path) + os.sep):
+            with self.subTest(destination_path=destination_path):
+                obj = self.driver.upload_object_via_stream(iter([content]), container, "object")
+                result = self.driver.download_object(obj, destination_path, overwrite_existing=True)
+                self.assertFalse(result)
+                with open(object_path, "rb") as source:
+                    self.assertEqual(source.read(), content)
+                self.assertEqual(
+                    self.driver.get_object(container.name, "object").size, len(content)
+                )
+
     def test_download_object_as_stream_success(self):
         tmppath = self.make_tmp_file()
         container = self.driver.create_container("test6")
