@@ -45,11 +45,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
 
       - name: Install OS / deb dependencies
         run: |
@@ -88,11 +88,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
 
       - name: Install OS / deb dependencies
         run: |
@@ -117,7 +117,7 @@ jobs:
         run: tox -e coverage-ci
 
       - name: Upload Coverage to codecov.io
-        uses: codecov/codecov-action@e53489f4d376d79066609109e7a95a29eb3740b1 # v7.0.0
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           # We utilize secret for more realiable builds. Without secret being set, upload step
           # fails fairly often.
@@ -136,11 +136,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
 
       - name: Install OS / deb dependencies
         run: |
@@ -184,11 +184,11 @@ jobs:
           sudo apt-get install -y libvirt-dev pkg-config gcc
 
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
       - name: Install OS / deb dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
@@ -283,11 +283,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
 
       - name: Install OS / deb dependencies
         run: |
@@ -356,11 +356,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
 
       - name: Install OS / deb dependencies
         run: |
@@ -395,11 +395,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
 
       - name: Print Environment Info
         run: printenv | sort

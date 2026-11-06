@@ -272,8 +272,10 @@ class DimensionDataNodeDriver(NodeDriver):
     def create_node(
         self,
         name,
+        size,
         image,
-        auth,
+        location=None,
+        auth=None,
         ex_network_domain=None,
         ex_primary_nic_private_ipv4=None,
         ex_primary_nic_vlan=None,

@@ -47,7 +47,7 @@ class VCLTests(unittest.TestCase):
 
     def test_create_node(self):
         image = self.driver.list_images()[0]
-        node = self.driver.create_node(image=image)
+        node = self.driver.create_node(name=None, size=None, image=image)
         self.assertEqual(node.id, "51")
 
     def test_destroy_node(self):

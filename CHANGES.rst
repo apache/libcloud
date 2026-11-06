@@ -1,18 +1,70 @@
 Changelog
 =========
 
-Changes in Apache Libcloud 3.9.2
+
+Changes in Apache Libcloud 4.0.0
 --------------------------------
 
 Common
 ~~~~~~
 
+- Respect the ``no_proxy`` / ``NO_PROXY`` environment variable so an explicitly
+  configured proxy is bypassed for matching hosts.
+  (GITHUB-2077)
+  [Sanjay Santhanam - @Sanjays2402]
+
 - Move tests to python 3.12.
   (#2152)
   [Miguel Caballer - @micafer]
 
+- [Utils] Fix ``is_valid_ip_address`` raising ``ValueError`` instead of
+  returning ``False`` for an address containing an embedded null byte
+  (e.g. ``"1.2.3.4\x00"``). ``socket.inet_pton`` raises ``ValueError`` rather
+  than ``OSError`` in that case, which was not caught.
+  (#2185)
+  [Ashish - @Ashishjob]
+
 Compute
 ~~~~~~~
+
+- [GCE] Preserve completed results and pending node names on the exception
+  raised when bulk node creation times out, allowing callers to recover or
+  clean up resources without losing track of them.
+  (GITHUB-1589)
+  [Ishu Patel - @ishu7w]
+
+- [EC2] Allow Elastic IP association with a specific network interface, so
+  instances with multiple interfaces can select the required target. Existing
+  calls continue to associate by instance ID.
+  (GITHUB-1799)
+  [Ishu Patel - @ishu7w]
+
+- [OpenStack] Select service catalog endpoints by service type without filtering
+  by the default service name. The service name is only used as a filter when
+  explicitly provided via ``ex_force_service_name``.
+
+  (#2074)
+  [Miguel Caballer - @micafer]
+
+- [Compute] Unify ``NodeDriver`` method signatures across drivers.
+
+  Driver implementations now preserve the standard argument order and
+  optionality declared by ``NodeDriver``. Provider-specific arguments follow
+  the standard arguments and are optional. ``list_nodes`` is excluded because
+  its ``*args, **kwargs`` contract is intentionally unrestricted.
+
+  This can be a backward-incompatible change for code which passes arguments
+  positionally to affected methods.
+
+  (#2170)
+  [Miguel Caballer - @micafer]
+
+- [DigitalOcean] Include IPv6 addresses in ``Node.public_ips`` and
+  ``Node.private_ips``. Only the ``v4`` networks were inspected, and each
+  address overwrote the previous one, so a droplet's public IPv6 address was
+  silently dropped.
+  (GITHUB-1738)
+  [Sanjay Santhanam - @Sanjays2402]
 
 - [SSH] Support paramiko 4
 
@@ -33,6 +85,54 @@ Compute
   last API version 1.3
   (#2147)
   [Miguel Caballer - @micafer]
+
+Storage
+~~~~~~~
+
+- [Storage] Prevent path traversal when downloading objects to a directory by
+  using only the object name's basename as the local filename.
+  (#2206)
+  [Miguel Caballer - @micafer]
+
+- [Azure Blobs] Fix SAS signatures for percent-encoded object paths by using
+  the decoded path in the canonicalized resource while preserving the encoded
+  path in the returned URL.
+  (GITHUB-1805)
+  [Jack Chen - @nightcityblade]
+
+- [S3] Fix ``chunk_size`` argument being ignored by
+  ``download_object_as_stream`` and ``download_object_range_as_stream``. The
+  requested chunk size is now passed through to the underlying iterator
+  instead of the hardcoded default.
+  (GITHUB-1798)
+
+  [Sanjay Santhanam - @Sanjays2402]
+
+- [Azure Blobs] Fix ``chunk_size`` argument being ignored by
+  ``download_object_as_stream`` and ``download_object_range_as_stream``. The
+  requested chunk size is now forwarded to the underlying iterator instead of
+  always using ``AZURE_DOWNLOAD_CHUNK_SIZE``.
+  (GITHUB-1698)
+
+  [Sanjay Santhanam - @Sanjays2402]
+
+DNS
+
+- [Route53] Fix ``delete_record`` failing with ``RecordDoesNotExistError`` for
+  records which are part of a multi value record set (e.g. MX). Route53 only
+  accepts a DELETE changeset which lists every value in the record set, so the
+  values of the other records in the set are now included, mirroring how
+  ``update_record`` already handles multi value records.
+  (GITHUB-1831)
+  [Sanjay Santhanam - @Sanjays2402]
+
+- [Cloudflare] Fix ``list_record_types`` advertising the unsupported ``URL``
+  record type instead of ``LOC``. The ``RECORD_TYPE_MAP`` entry was keyed on
+  ``RecordType.URL`` while its value was ``"LOC"``; the key is now
+  ``RecordType.LOC`` so Cloudflare's supported ``LOC`` record type is reported
+  and the unsupported ``URL`` type is not.
+  (#2175)
+  [Uttam Limbani - @uttam12331]
 
 Changes in Apache Libcloud 3.9.1
 --------------------------------

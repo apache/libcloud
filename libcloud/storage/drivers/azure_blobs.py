@@ -22,7 +22,15 @@ import binascii
 from typing import Literal
 from datetime import datetime, timedelta
 
-from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.py3 import (
+    ET,
+    b,
+    httplib,
+    tostring,
+    urlquote,
+    urlencode,
+    urlunquote,
+)
 from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.azure import AzureConnection, AzureActiveDirectoryConnection
@@ -654,7 +662,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                 params["sp"],
                 params["st"],
                 params["se"],
-                "/blob/{}{}".format(self.key, object_path),
+                "/blob/{}{}".format(self.key, urlunquote(object_path)),
                 "",  # signedIdentifier
                 "",  # signedIP
                 params["spr"],
@@ -793,7 +801,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, method="GET", stream=True, raw=True)
-        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        iterator = response.iter_content(chunk_size or AZURE_DOWNLOAD_CHUNK_SIZE)
 
         return self._get_object(
             obj=obj,
@@ -848,7 +856,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         response = self.connection.request(
             obj_path, method="GET", headers=headers, stream=True, raw=True
         )
-        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        iterator = response.iter_content(chunk_size or AZURE_DOWNLOAD_CHUNK_SIZE)
         success_status_codes = [httplib.OK, httplib.PARTIAL_CONTENT]
 
         return self._get_object(

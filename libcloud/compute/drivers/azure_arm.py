@@ -505,11 +505,11 @@ class AzureNodeDriver(NodeDriver):
         name,
         size,
         image,
-        auth,
-        ex_resource_group,
+        location=None,
+        auth=None,
+        ex_resource_group=None,
         ex_storage_account=None,
         ex_blob_container="vhds",
-        location=None,
         ex_user_name="azureuser",
         ex_network=None,
         ex_subnet=None,
@@ -1082,10 +1082,10 @@ class AzureNodeDriver(NodeDriver):
         self,
         node,
         volume,
+        device=None,
         ex_lun=None,
         ex_vhd_uri=None,
         ex_vhd_create=False,
-        **ex_kwargs,
     ):
         """
         Attach a volume to node.

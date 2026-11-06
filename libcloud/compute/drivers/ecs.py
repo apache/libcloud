@@ -402,6 +402,7 @@ class ECSDriver(NodeDriver):
         name,
         size,
         image,
+        location=None,
         auth=None,
         ex_security_group_id=None,
         ex_description=None,

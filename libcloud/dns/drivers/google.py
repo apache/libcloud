@@ -273,17 +273,20 @@ class GoogleDNSDriver(DNSDriver):
         :type  zone: :class:`Zone`
 
         :param records: Dictionary of additions list or deletions list, or both
-        of resourceRecordSets. For example:
-            {'additions': [{'rrdatas': ['127.0.0.1'],
-                            'kind': 'dns#resourceRecordSet',
-                            'type': 'A',
-                            'name': 'www.example.com.',
-                            'ttl': '300'}],
-             'deletions': [{'rrdatas': ['127.0.0.1'],
-                            'kind': 'dns#resourceRecordSet',
-                            'type': 'A',
-                            'name': 'www2.example.com.',
-                            'ttl': '300'}]}
+                        of resourceRecordSets. For example:
+
+                        .. code-block:: python
+
+                            {'additions': [{'rrdatas': ['127.0.0.1'],
+                                            'kind': 'dns#resourceRecordSet',
+                                            'type': 'A',
+                                            'name': 'www.example.com.',
+                                            'ttl': '300'}],
+                             'deletions': [{'rrdatas': ['127.0.0.1'],
+                                            'kind': 'dns#resourceRecordSet',
+                                            'type': 'A',
+                                            'name': 'www2.example.com.',
+                                            'ttl': '300'}]}
         :type  records: ``dict``
 
         :return: A dictionary of Record additions and deletions.
