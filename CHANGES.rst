@@ -89,6 +89,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [Local Storage] Release the thread lock if IPC lock acquisition fails,
+  allowing the same lock object to be reused after a timeout or error.
+  (#2203)
+  [Zhe Chen - @zhechen-cs]
+
 - [Storage] Prevent path traversal when downloading objects to a directory by
   using only the object name's basename as the local filename.
   (#2206)
