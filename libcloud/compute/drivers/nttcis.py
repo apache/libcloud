@@ -17,7 +17,6 @@ NTT CIS Driver
 """
 
 import re
-import sys
 
 from libcloud.utils.py3 import ET, urlencode, basestring, ensure_string
 from libcloud.utils.xml import findall, findtext, fixxpath
@@ -4730,12 +4729,7 @@ class NttCisNodeDriver(NodeDriver):
             if not isinstance(ex_tagid_value_pairs, dict):
                 raise ValueError("ex_tagid_value_pairs must be a dictionary.")
 
-            if sys.version_info[0] < 3:
-                tagid_items = ex_tagid_value_pairs.iteritems()
-            else:
-                tagid_items = ex_tagid_value_pairs.items()
-
-            for k, v in tagid_items:
+            for k, v in ex_tagid_value_pairs.items():
                 tag_elem = ET.SubElement(server_uncustomized_elm, "tagById")
                 ET.SubElement(tag_elem, "tagKeyId").text = k
 
@@ -4746,12 +4740,7 @@ class NttCisNodeDriver(NodeDriver):
             if not isinstance(ex_tagname_value_pairs, dict):
                 raise ValueError("ex_tagname_value_pairs must be a dictionary")
 
-            if sys.version_info[0] < 3:
-                tags_items = ex_tagname_value_pairs.iteritems()
-            else:
-                tags_items = ex_tagname_value_pairs.items()
-
-            for k, v in tags_items:
+            for k, v in ex_tagname_value_pairs.items():
                 tag_name_elem = ET.SubElement(server_uncustomized_elm, "tag")
                 ET.SubElement(tag_name_elem, "tagKeyName").text = k
 
