@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import errno
 import hashlib
-import os
 import tempfile
 from io import BytesIO
 from unittest import mock
