@@ -102,13 +102,17 @@ class LockLocalStorage:
                 "in %s seconds" % (self.path, lock_acquire_timeout)
             )
 
-        success = self.ipc_lock.acquire(blocking=True, timeout=lock_acquire_timeout)
+        try:
+            success = self.ipc_lock.acquire(blocking=True, timeout=lock_acquire_timeout)
 
-        if not success:
-            raise LibcloudError(
-                "Failed to acquire IPC lock (%s) for path %s "
-                "in %s seconds" % (self.ipc_lock_path, self.path, lock_acquire_timeout)
-            )
+            if not success:
+                raise LibcloudError(
+                    "Failed to acquire IPC lock (%s) for path %s "
+                    "in %s seconds" % (self.ipc_lock_path, self.path, lock_acquire_timeout)
+                )
+        except BaseException:
+            self.thread_lock.release()
+            raise
 
     def __exit__(self, type, value, traceback):
         if self.thread_lock.locked():
