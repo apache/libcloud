@@ -89,6 +89,12 @@ Compute
 Storage
 ~~~~~~~
 
+- [Local Storage] Fix upload errors being suppressed when locking is disabled
+  with ``ex_use_locking=False``. The original exception now propagates instead
+  of the upload appearing to succeed.
+  (#2204)
+  [@JunaidAhamed-7777]
+
 - [Storage] Prevent path traversal when downloading objects to a directory by
   using only the object name's basename as the local filename.
   (#2206)

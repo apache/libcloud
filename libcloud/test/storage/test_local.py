@@ -237,6 +237,37 @@ class LocalTests(unittest.TestCase):
         container.delete()
         self.remove_tmp_file(tmppath)
 
+    def test_upload_object_via_stream_without_locking_propagates_error(self):
+        driver = LocalStorageDriver(self.key, ex_use_locking=False)
+        container = driver.create_container("failed-stream")
+        error = OSError("source stream failed")
+
+        def failing_stream():
+            yield b"partial data"
+            raise error
+
+        with self.assertRaises(OSError) as raised:
+            driver.upload_object_via_stream(failing_stream(), container, "object")
+
+        self.assertIs(raised.exception, error)
+
+    def test_upload_object_without_locking_propagates_copy_error(self):
+        driver = LocalStorageDriver(self.key, ex_use_locking=False)
+        container = driver.create_container("failed-copy")
+        driver.upload_object_via_stream(iter([b"original"]), container, "object")
+        missing_source = os.path.join(self.key, "missing-source")
+
+        with self.assertRaises(FileNotFoundError):
+            driver.upload_object(missing_source, container, "object")
+
+    def test_upload_object_via_stream_without_locking_success(self):
+        driver = LocalStorageDriver(self.key, ex_use_locking=False)
+        container = driver.create_container("successful-stream")
+        obj = driver.upload_object_via_stream(iter([b"first", b"second"]), container, "object")
+
+        self.assertEqual(obj.size, 11)
+        self.assertEqual(b"".join(driver.download_object_as_stream(obj)), b"firstsecond")
+
     def test_get_container_doesnt_exist(self):
         try:
             self.driver.get_container(container_name="container1")
