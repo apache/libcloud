@@ -1,5 +1,5 @@
 Changelog
-==  [Ishu Patel - @ishu7w]
+=========
 
 
 Changes in Apache Libcloud 4.0.0
