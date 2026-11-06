@@ -655,7 +655,9 @@ class GCEMultipleNodesTimeoutError(LibcloudError):
 
     ``nodes`` contains the known results, including :class:`GCEFailedNode`
     objects when errors were ignored. ``pending_node_names`` identifies nodes
-    whose final state is unknown; they may finish creating after the timeout.
+    whose final state is unknown. These include nodes whose creation has not
+    started and nodes with operations still in progress, which may finish
+    creating after the timeout.
     No resources are automatically deleted.
     """
 
