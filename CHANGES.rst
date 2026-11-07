@@ -95,6 +95,12 @@ Storage
   (#2204)
   [@JunaidAhamed-7777]
 
+- [Local Storage] Prevent source objects from being deleted when
+  ``download_object`` is called with a destination that resolves
+  to the source file.
+  (#2201)
+  [Zhe Chen - @zhechen-cs]
+
 - [Storage] Prevent path traversal when downloading objects to a directory by
   using only the object name's basename as the local filename.
   (#2206)
