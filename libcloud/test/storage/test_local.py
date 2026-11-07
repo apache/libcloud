@@ -22,6 +22,7 @@ import platform
 import tempfile
 import unittest
 import multiprocessing
+from unittest.mock import patch
 
 from libcloud.utils.files import exhaust_iterator
 from libcloud.common.types import LibcloudError
@@ -138,6 +139,22 @@ class LocalTests(unittest.TestCase):
 
         self.assertEqual(bool(success_1.value), True, "Check didn't pass")
         self.assertEqual(bool(success_2.value), True, "Second check didn't pass")
+
+    def test_lock_local_storage_releases_thread_lock_on_ipc_failure(self):
+        for error in (None, OSError("lock unavailable"), KeyboardInterrupt()):
+            with self.subTest(error=error):
+                lock = LockLocalStorage(os.path.join(self.key, "lock-retry"))
+                first_result = False if error is None else error
+                with patch.object(lock.ipc_lock, "acquire", side_effect=[first_result, True]):
+                    expected_error = LibcloudError if error is None else type(error)
+                    with self.assertRaises(expected_error) as exc:
+                        lock.__enter__()
+                    if error is not None:
+                        self.assertIs(exc.exception, error)
+                    self.assertFalse(lock.thread_lock.locked())
+                    with lock:
+                        self.assertTrue(lock.thread_lock.locked())
+                    self.assertFalse(lock.thread_lock.locked())
 
     def test_list_containers_empty(self):
         containers = self.driver.list_containers()
