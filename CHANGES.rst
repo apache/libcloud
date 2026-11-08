@@ -95,6 +95,10 @@ Storage
   (#2204)
   [@JunaidAhamed-7777]
 
+- [Local Storage] Release the thread lock if IPC lock acquisition fails,
+  allowing the same lock object to be reused after a timeout or error.
+  (#2203)
+
 - [Local Storage] Prevent source objects from being deleted when
   ``download_object`` is called with a destination that resolves
   to the source file.
