@@ -418,7 +418,7 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: uv sync --group ci --no-dev
+        run: uv sync --locked --group ci --no-dev
 
       - name: Add .venv to PATH
         run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"

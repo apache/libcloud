@@ -50,7 +50,6 @@ dev = [
     { name = "fasteners" },
     { name = "flake8" },
     { name = "isort" },
-    { name = "libvirt-python" },
     { name = "mypy", marker = "implementation_name == 'cpython'" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pep8" },
@@ -120,7 +119,6 @@ test = [
     { name = "cryptography", version = "46.0.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "cryptography", version = "50.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "fasteners" },
-    { name = "libvirt-python" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pyopenssl", version = "26.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pyopenssl", version = "26.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -149,7 +147,6 @@ dev = [
     { name = "fasteners" },
     { name = "flake8", specifier = "==5.0.4" },
     { name = "isort", marker = "python_full_version >= '3.10'", specifier = "==6.0.1" },
-    { name = "libvirt-python", specifier = "==12.0.0" },
     { name = "mypy", marker = "python_full_version >= '3.10' and implementation_name == 'cpython'", specifier = "==1.15.0" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==5.0.0" },
     { name = "pep8", specifier = "==1.7.1" },
@@ -161,7 +158,7 @@ dev = [
     { name = "pytest-benchmark", extras = ["histogram"], marker = "python_full_version >= '3.10'", specifier = "==5.1.0" },
     { name = "pytest-timeout", specifier = "==2.4.0" },
     { name = "pytest-xdist", specifier = "==3.6.1" },
-    { name = "pyupgrade", specifier = "==3.3.1" },
+    { name = "pyupgrade", specifier = "==3.21.2" },
     { name = "requests", specifier = ">=2.27.1" },
     { name = "requests", specifier = ">=2.33.0" },
     { name = "requests-mock", specifier = "==1.12.1" },
@@ -199,7 +196,7 @@ lint = [
     { name = "pep8", specifier = "==1.7.1" },
     { name = "prek", specifier = ">=0.2.17" },
     { name = "pylint", marker = "python_full_version >= '3.10'", specifier = "==4.0.9" },
-    { name = "pyupgrade", specifier = "==3.3.1" },
+    { name = "pyupgrade", specifier = "==3.21.2" },
     { name = "requests", specifier = ">=2.27.1" },
     { name = "rstcheck", marker = "python_full_version >= '3.10'", specifier = "==6.2.5" },
 ]
@@ -216,7 +213,6 @@ test = [
     { name = "cryptography", marker = "python_full_version < '3.11'", specifier = "==46.0.7" },
     { name = "cryptography", marker = "python_full_version >= '3.11'", specifier = "==50.0.0" },
     { name = "fasteners" },
-    { name = "libvirt-python", specifier = "==12.0.0" },
     { name = "paramiko", marker = "platform_python_implementation != 'PyPy'", specifier = "==5.0.0" },
     { name = "pyopenssl", marker = "python_full_version < '3.11'", specifier = "==26.0.0" },
     { name = "pyopenssl", marker = "python_full_version >= '3.11'", specifier = "==26.4.0" },
@@ -1187,12 +1183,6 @@ wheels = [
 ]
 
 [[package]]
-name = "libvirt-python"
-version = "12.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5e/cd/a8fdd1c691f2a6a6dc8b0711b42473a7342e4d1a7a1e9ef90677a236eb73/libvirt_python-12.0.0.tar.gz", hash = "sha256:7b4de7d2dde2bc380cf4e108d1eeb8aad50beb3ae351ab9265a7fedc587742bc", size = 243300, upload-time = "2026-01-15T09:14:43.074Z" }
-
-[[package]]
 name = "markdown-it-py"
 version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2014,14 +2004,14 @@ wheels = [
 
 [[package]]
 name = "pyupgrade"
-version = "3.3.1"
+version = "3.21.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tokenize-rt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b4/e8/4c3f29d281a6dcf7ffe19a19a446fd385b34802b3b33d25ebcc5ec03d285/pyupgrade-3.3.1.tar.gz", hash = "sha256:f88bce38b0ba92c2a9a5063c8629e456e8d919b67d2d42c7ecab82ff196f9813", size = 43200, upload-time = "2022-12-06T22:20:02.168Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/a1/dc63caaeed232b1c58eae1b7a75f262d64ab8435882f696ffa9b58c0c415/pyupgrade-3.21.2.tar.gz", hash = "sha256:1a361bea39deda78d1460f65d9dd548d3a36ff8171d2482298539b9dc11c9c06", size = 45455, upload-time = "2025-11-19T00:39:48.012Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/ee/dda0d7b86c4c0cd02494566243ad14f152e10994f1c345d57e9b9edd0c8a/pyupgrade-3.3.1-py2.py3-none-any.whl", hash = "sha256:3b93641963df022d605c78aeae4b5956a5296ea24701eafaef9c487527b77e60", size = 58472, upload-time = "2022-12-06T22:20:00.369Z" },
+    { url = "https://files.pythonhosted.org/packages/16/8c/433dac11910989a90c40b10149d07ef7224232236971a562d3976790ec53/pyupgrade-3.21.2-py2.py3-none-any.whl", hash = "sha256:2ac7b95cbd176475041e4dfe8ef81298bd4654a244f957167bd68af37d52be9f", size = 62814, upload-time = "2025-11-19T00:39:46.958Z" },
 ]
 
 [[package]]
