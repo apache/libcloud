@@ -59,7 +59,7 @@ class NoOpLockLocalStorage:
         return True
 
     def __exit__(self, type, value, traceback):
-        return value
+        return False
 
 
 class LockLocalStorage:

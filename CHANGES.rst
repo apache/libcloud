@@ -89,6 +89,12 @@ Compute
 Storage
 ~~~~~~~
 
+- [Local Storage] Fix upload errors being suppressed when locking is disabled
+  with ``ex_use_locking=False``. The original exception now propagates instead
+  of the upload appearing to succeed.
+  (#2204)
+  [@JunaidAhamed-7777]
+
 - [Local Storage] Release the thread lock if IPC lock acquisition fails,
   allowing the same lock object to be reused after a timeout or error.
   (#2203)
