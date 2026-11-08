@@ -426,6 +426,15 @@ jobs:
       - name: Build Docs
         run: tox -e docs
 
+      - name: Install PDF build dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+            latexmk texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended tex-gyre xindy
+
+      - name: Build PDF and EPUB
+        run: tox -e docs-formats
+
       - name: Trigger ReadTheDocs build
         if: ${{ github.ref_name == 'trunk' }}
         env:
