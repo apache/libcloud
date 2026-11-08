@@ -46,6 +46,7 @@ from libcloud.compute.drivers.ec2 import (
     EC2NetworkSubnet,
     NimbusNodeDriver,
     EC2PlacementGroup,
+    EC2NetworkInterface,
     IdempotentParamError,
     ExEC2AvailabilityZone,
     OutscaleSASNodeDriver,
@@ -886,6 +887,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             domain="bogus",
         )
 
+    def test_ex_associate_address_with_network_interface(self):
+        node = Node("i-4382922a", None, None, None, None, self.driver)
+        interface = EC2NetworkInterface("eni-12345678", "secondary", "attached")
+        EC2MockHttp.type = "all_addresses"
+        elastic_ip = self.driver.ex_describe_all_addresses()[3]
+        EC2MockHttp.type = "interface"
+        association_id = self.driver.ex_associate_address_with_node(
+            node, elastic_ip, domain="vpc", network_interface=interface
+        )
+        self.assertEqual("eipassoc-167a8073", association_id)
+        association_id = self.driver.ex_associate_addresses(
+            node, elastic_ip, domain="vpc", network_interface=interface
+        )
+        self.assertEqual("eipassoc-167a8073", association_id)
+
     def test_ex_disassociate_address(self):
         EC2MockHttp.type = "all_addresses"
         elastic_ips = self.driver.ex_describe_all_addresses()
@@ -1681,6 +1697,18 @@ class EC2MockHttp(MockHttp, unittest.TestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _vpc_AssociateAddress(self, method, url, body, headers):
+        params = parse_qs(url.split("?", 1)[1])
+        self.assertEqual(["i-4382922a"], params["InstanceId"])
+        self.assertNotIn("NetworkInterfaceId", params)
+        body = self.fixtures.load("associate_vpc_address.xml")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _interface_AssociateAddress(self, method, url, body, headers):
+        params = parse_qs(url.split("?", 1)[1])
+        self.assertEqual(["eni-12345678"], params["NetworkInterfaceId"])
+        self.assertNotIn("InstanceId", params)
+        self.assertIn("AllocationId", params)
+        self.assertNotIn("PublicIp", params)
         body = self.fixtures.load("associate_vpc_address.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
