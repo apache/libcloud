@@ -1,6 +1,7 @@
 Changelog
 =========
 
+
 Changes in Apache Libcloud 4.0.0
 --------------------------------
 
@@ -25,6 +26,18 @@ Common
 
 Compute
 ~~~~~~~
+
+- [GCE] Preserve completed results and pending node names on the exception
+  raised when bulk node creation times out, allowing callers to recover or
+  clean up resources without losing track of them.
+  (GITHUB-1589)
+  [Ishu Patel - @ishu7w]
+
+- [EC2] Allow Elastic IP association with a specific network interface, so
+  instances with multiple interfaces can select the required target. Existing
+  calls continue to associate by instance ID.
+  (GITHUB-1799)
+  [Ishu Patel - @ishu7w]
 
 - [OpenStack] Select service catalog endpoints by service type without filtering
   by the default service name. The service name is only used as a filter when
@@ -81,6 +94,27 @@ Storage
   (GITHUB-2191)
   [Neha Mahesh - @mneha05]
 
+- [Local Storage] Fix upload errors being suppressed when locking is disabled
+  with ``ex_use_locking=False``. The original exception now propagates instead
+  of the upload appearing to succeed.
+  (#2204)
+  [@JunaidAhamed-7777]
+
+- [Local Storage] Release the thread lock if IPC lock acquisition fails,
+  allowing the same lock object to be reused after a timeout or error.
+  (#2203)
+
+- [Local Storage] Prevent source objects from being deleted when
+  ``download_object`` is called with a destination that resolves
+  to the source file.
+  (#2201)
+  [Zhe Chen - @zhechen-cs]
+
+- [Storage] Prevent path traversal when downloading objects to a directory by
+  using only the object name's basename as the local filename.
+  (#2206)
+  [Miguel Caballer - @micafer]
+
 - [Azure Blobs] Fix SAS signatures for percent-encoded object paths by using
   the decoded path in the canonicalized resource while preserving the encoded
   path in the returned URL.
@@ -104,7 +138,14 @@ Storage
   [Sanjay Santhanam - @Sanjays2402]
 
 DNS
-~~~~
+
+- [Route53] Fix ``delete_record`` failing with ``RecordDoesNotExistError`` for
+  records which are part of a multi value record set (e.g. MX). Route53 only
+  accepts a DELETE changeset which lists every value in the record set, so the
+  values of the other records in the set are now included, mirroring how
+  ``update_record`` already handles multi value records.
+  (GITHUB-1831)
+  [Sanjay Santhanam - @Sanjays2402]
 
 - [Cloudflare] Fix ``list_record_types`` advertising the unsupported ``URL``
   record type instead of ``LOC``. The ``RECORD_TYPE_MAP`` entry was keyed on
@@ -2625,7 +2666,7 @@ Compute
 ~~~~~~~
 
 - [ARM] Support OS disk size definition on node creation (#1196)
-  [Vojta Bartoš]
+  [Vojta Bartoš]
 
 - [Digital Ocean] Support floating IPs (#1177)
   [Rick van de Loo]
