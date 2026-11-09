@@ -17,7 +17,6 @@
 Provides generic deployment steps for machines post boot.
 """
 
-
 import os
 import re
 import binascii

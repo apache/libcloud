@@ -17,7 +17,6 @@
 Provides storage driver for working with local filesystem
 """
 
-
 import os
 import time
 import errno
@@ -60,7 +59,7 @@ class NoOpLockLocalStorage:
         return True
 
     def __exit__(self, type, value, traceback):
-        return value
+        return False
 
 
 class LockLocalStorage:
@@ -103,13 +102,17 @@ class LockLocalStorage:
                 "in %s seconds" % (self.path, lock_acquire_timeout)
             )
 
-        success = self.ipc_lock.acquire(blocking=True, timeout=lock_acquire_timeout)
+        try:
+            success = self.ipc_lock.acquire(blocking=True, timeout=lock_acquire_timeout)
 
-        if not success:
-            raise LibcloudError(
-                "Failed to acquire IPC lock (%s) for path %s "
-                "in %s seconds" % (self.ipc_lock_path, self.path, lock_acquire_timeout)
-            )
+            if not success:
+                raise LibcloudError(
+                    "Failed to acquire IPC lock (%s) for path %s "
+                    "in %s seconds" % (self.ipc_lock_path, self.path, lock_acquire_timeout)
+                )
+        except BaseException:
+            self.thread_lock.release()
+            raise
 
     def __exit__(self, type, value, traceback):
         if self.thread_lock.locked():
@@ -452,6 +455,8 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             shutil.copy(obj_path, file_path)
+        except shutil.SameFileError:
+            return False
         except OSError:
             if delete_on_failure:
                 try:

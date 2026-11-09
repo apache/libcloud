@@ -200,16 +200,10 @@ class ElasticLBDriver(Driver):
 
         if policy_attributes is not None:
             for index, (name, value) in enumerate(policy_attributes.iteritems(), 1):
-                params[
-                    "PolicyAttributes.member.%d. \
-                        AttributeName"
-                    % (index)
-                ] = name
-                params[
-                    "PolicyAttributes.member.%d. \
-                        AttributeValue"
-                    % (index)
-                ] = value
+                params["PolicyAttributes.member.%d. \
+                        AttributeName" % (index)] = name
+                params["PolicyAttributes.member.%d. \
+                        AttributeValue" % (index)] = value
 
         response = self.connection.request(ROOT, params=params)
         return response.status == httplib.OK
@@ -305,11 +299,8 @@ class ElasticLBDriver(Driver):
             params["Listeners.member.%d.InstancePort" % i] = listener[1]
             params["Listeners.member.%d.Protocol" % i] = listener[2]
             if protocol == "HTTPS" or protocol == "SSL":
-                params[
-                    "Listeners.member.%d.   \
-                        SSLCertificateId"
-                    % i
-                ] = listener[3]
+                params["Listeners.member.%d.   \
+                        SSLCertificateId" % i] = listener[3]
         else:
             return False
 

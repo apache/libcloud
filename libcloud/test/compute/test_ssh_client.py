@@ -317,19 +317,21 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         self.assertTrue(isinstance(pkey, paramiko.RSAKey))
 
         # 2. DSA key type with header which is not supported by paramiko
-        path = os.path.join(
-            os.path.dirname(__file__),
-            "fixtures",
-            "misc",
-            "test_dsa_non_paramiko_recognized_header.key",
-        )
+        # ... and only for paramiko < 4
+        if paramiko_version < (4, 0, 0):
+            path = os.path.join(
+                os.path.dirname(__file__),
+                "fixtures",
+                "misc",
+                "test_dsa_non_paramiko_recognized_header.key",
+            )
 
-        with open(path) as fp:
-            private_key = fp.read()
+            with open(path) as fp:
+                private_key = fp.read()
 
-        pkey = client._get_pkey_object(key=private_key)
-        self.assertTrue(pkey)
-        self.assertTrue(isinstance(pkey, paramiko.DSSKey))
+            pkey = client._get_pkey_object(key=private_key)
+            self.assertTrue(pkey)
+            self.assertTrue(isinstance(pkey, paramiko.DSSKey))
 
         # 3. ECDSA key type with header which is not supported by paramiko
         path = os.path.join(
@@ -361,14 +363,16 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         self.assertTrue(isinstance(pkey, paramiko.RSAKey))
 
         # 2. DSA key type with header which is not supported by paramiko
-        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_dsa.key")
+        # ... and only for paramiko < 4
+        if paramiko_version < (4, 0, 0):
+            path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_dsa.key")
 
-        with open(path) as fp:
-            private_key = fp.read()
+            with open(path) as fp:
+                private_key = fp.read()
 
-        pkey = client._get_pkey_object(key=private_key)
-        self.assertTrue(pkey)
-        self.assertTrue(isinstance(pkey, paramiko.DSSKey))
+            pkey = client._get_pkey_object(key=private_key)
+            self.assertTrue(pkey)
+            self.assertTrue(isinstance(pkey, paramiko.DSSKey))
 
         # 3. ECDSA key type with header which is not supported by paramiko
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "test_ecdsa.key")

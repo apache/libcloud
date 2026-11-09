@@ -521,7 +521,7 @@ class BaseS3StorageDriver(StorageDriver):
             callback=read_in_chunks,
             response=response,
             callback_kwargs={
-                "iterator": response.iter_content(CHUNK_SIZE),
+                "iterator": response.iter_content(chunk_size or CHUNK_SIZE),
                 "chunk_size": chunk_size,
             },
             success_status_code=httplib.OK,
@@ -573,7 +573,7 @@ class BaseS3StorageDriver(StorageDriver):
             callback=read_in_chunks,
             response=response,
             callback_kwargs={
-                "iterator": response.iter_content(CHUNK_SIZE),
+                "iterator": response.iter_content(chunk_size or CHUNK_SIZE),
                 "chunk_size": chunk_size,
             },
             success_status_code=httplib.PARTIAL_CONTENT,

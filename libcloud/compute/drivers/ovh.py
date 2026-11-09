@@ -120,7 +120,7 @@ class OvhNodeDriver(NodeDriver):
 
         return self._to_node(response.object)
 
-    def create_node(self, name, image, size, location, auth=None, ex_keyname=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_keyname=None):
         """
         Create a new node
 
@@ -274,7 +274,12 @@ class OvhNodeDriver(NodeDriver):
 
         return keys[0]
 
-    def import_key_pair_from_string(self, name, key_material, ex_location):
+    def import_key_pair_from_string(
+        self,
+        name,
+        key_material,
+        ex_location=None,
+    ):
         """
         Import a new public key from string.
 
@@ -307,7 +312,7 @@ class OvhNodeDriver(NodeDriver):
         self,
         size,
         name,
-        location,
+        location=None,
         snapshot=None,
         ex_volume_type="classic",
         ex_description=None,

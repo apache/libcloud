@@ -21,6 +21,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import requests_mock
+from requests.adapters import HTTPAdapter, select_proxy
 from requests.exceptions import ConnectTimeout
 
 import libcloud.common.base
@@ -36,6 +37,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
     def setUp(self):
         self.orig_http_proxy = os.environ.pop("http_proxy", None)
         self.orig_https_proxy = os.environ.pop("https_proxy", None)
+        self.orig_no_proxy = os.environ.pop("no_proxy", None)
 
     def tearDown(self):
         if self.orig_http_proxy:
@@ -47,6 +49,11 @@ class BaseConnectionClassTestCase(unittest.TestCase):
             os.environ["https_proxy"] = self.orig_https_proxy
         elif "https_proxy" in os.environ:
             del os.environ["https_proxy"]
+
+        if self.orig_no_proxy:
+            os.environ["no_proxy"] = self.orig_no_proxy
+        elif "no_proxy" in os.environ:
+            del os.environ["no_proxy"]
 
         libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES = False
 
@@ -104,22 +111,12 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         )
 
     def test_constructor(self):
-        proxy_url = "http://127.0.0.2:3128"
-        os.environ["http_proxy"] = proxy_url
-        conn = LibcloudConnection(host="localhost", port=80)
-        self.assertEqual(conn.proxy_scheme, "http")
-        self.assertEqual(conn.proxy_host, "127.0.0.2")
-        self.assertEqual(conn.proxy_port, 3128)
-        self.assertEqual(
-            conn.session.proxies,
-            {"http": "http://127.0.0.2:3128", "https": "http://127.0.0.2:3128"},
-        )
-
         _ = os.environ.pop("http_proxy", None)
         conn = LibcloudConnection(host="localhost", port=80)
         self.assertIsNone(conn.proxy_scheme)
         self.assertIsNone(conn.proxy_host)
         self.assertIsNone(conn.proxy_port)
+        self.assertTrue(conn.session.proxies is None or not conn.session.proxies)
 
         proxy_url = "http://127.0.0.3:3128"
         conn.set_http_proxy(proxy_url=proxy_url)
@@ -143,7 +140,8 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         os.environ["http_proxy"] = proxy_url
         proxy_url = "http://127.0.0.5:3128"
-        conn = LibcloudConnection(host="localhost", port=80, proxy_url=proxy_url)
+        conn = LibcloudConnection(host="localhost", port=80)
+        conn.set_http_proxy(proxy_url=proxy_url)
         self.assertEqual(conn.proxy_scheme, "http")
         self.assertEqual(conn.proxy_host, "127.0.0.5")
         self.assertEqual(conn.proxy_port, 3128)
@@ -162,6 +160,149 @@ class BaseConnectionClassTestCase(unittest.TestCase):
             conn.session.proxies,
             {"http": "https://127.0.0.6:3129", "https": "https://127.0.0.6:3129"},
         )
+
+    def test_proxy_is_bypassed_for_no_proxy_hosts(self):
+        # Regression test for GITHUB-2077: an explicitly configured proxy must
+        # not be used for hosts listed in the no_proxy environment variable.
+        old_no_proxy = os.environ.get("no_proxy")
+        old_NO_PROXY = os.environ.get("NO_PROXY")
+        os.environ["no_proxy"] = "internal.example.com"
+        # Pin NO_PROXY too: an externally-set uppercase variable must not leak
+        # into this test, and our addCleanup must restore (not drop) whatever
+        # was there before, since it runs after tearDown().
+        os.environ.pop("NO_PROXY", None)
+
+        def restore_proxy_env():
+            for name, value in (
+                ("no_proxy", old_no_proxy),
+                ("NO_PROXY", old_NO_PROXY),
+            ):
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+
+        self.addCleanup(restore_proxy_env)
+
+        conn = LibcloudConnection(host="internal.example.com", port=443)
+        conn.set_http_proxy("http://proxy.example.com:3128")
+
+        self.assertEqual(
+            conn._proxies_for_url("https://internal.example.com/path"),
+            {"http": None, "https": None},
+        )
+        self.assertIsNone(conn._proxies_for_url("https://other.example.com/path"))
+
+    def test_request_effective_proxies_bypass_session_proxy_for_no_proxy_host(self):
+        # End-to-end-ish check for GITHUB-2077: verify the proxy mapping that
+        # actually reaches the HTTP adapter after requests merges the
+        # per-request proxies with the session proxies. Returning {} from
+        # _proxies_for_url() is not sufficient because requests merges the
+        # session-level proxies back in, so the schemes must be explicitly
+        # disabled with None.
+        old_no_proxy = os.environ.get("no_proxy")
+        old_NO_PROXY = os.environ.get("NO_PROXY")
+        os.environ["no_proxy"] = "internal.example.com"
+        os.environ.pop("NO_PROXY", None)
+        # Pin the proxy environment too: ambient http_proxy/https_proxy would
+        # otherwise be merged in by requests (trust_env) and break the
+        # control-case assertions below.
+        old_proxy_env = {}
+        for name in (
+            "http_proxy",
+            "https_proxy",
+            "all_proxy",
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "ALL_PROXY",
+        ):
+            old_proxy_env[name] = os.environ.pop(name, None)
+
+        def restore_proxy_env():
+            for name, value in (
+                ("no_proxy", old_no_proxy),
+                ("NO_PROXY", old_NO_PROXY),
+            ):
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+            for name, value in old_proxy_env.items():
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+
+        self.addCleanup(restore_proxy_env)
+
+        captured = {}
+
+        def mock_send(self, request, **kwargs):
+            captured["proxies"] = kwargs.get("proxies", {})
+            captured["url"] = request.url
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.headers = {"content-type": "application/json", "location": ""}
+            mock_response.text = "OK"
+            mock_response.history = []  # No redirects
+            return mock_response
+
+        with patch.object(HTTPAdapter, "send", mock_send):
+            conn = LibcloudConnection(host="internal.example.com", port=443)
+            conn.set_http_proxy("http://proxy.example.com:3128")
+            conn.request("GET", "/path")
+
+            # The session proxy must not leak back in via requests' merge.
+            self.assertNotIn("http://proxy.example.com:3128", captured["proxies"].values())
+            self.assertIsNone(select_proxy(captured["url"], captured["proxies"]))
+
+            # Control: a host that is not bypassed still uses the proxy.
+            conn = LibcloudConnection(host="other.example.com", port=443)
+            conn.set_http_proxy("http://proxy.example.com:3128")
+            conn.request("GET", "/path")
+
+            self.assertEqual(captured["proxies"].get("http"), "http://proxy.example.com:3128")
+            self.assertEqual(
+                select_proxy(captured["url"], captured["proxies"]),
+                "http://proxy.example.com:3128",
+            )
+
+    def test_proxy_environment_variables_respected(self):
+        """
+        Test that proxy environment variables are respected by the underlying Requests library
+        """
+
+        def mock_send(self, request, **kwargs):
+            captured_proxies.update(kwargs.get("proxies", {}))
+            nonlocal captured_url
+            captured_url = request.url
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.headers = {"content-type": "application/json", "location": ""}
+            mock_response.text = "OK"
+            mock_response.history = []  # No redirects
+            return mock_response
+
+        with patch.object(HTTPAdapter, "send", mock_send):
+            os.environ["http_proxy"] = "http://proxy.example.com:8080"
+            os.environ["https_proxy"] = "https://secure-proxy.example.com:8443"
+            os.environ["no_proxy"] = "localhost,127.0.0.1"
+            captured_proxies = {}
+            captured_url = None
+
+            conn = LibcloudConnection(host="localhost", port=80)
+            conn.request("GET", "/get")
+
+            self.assertEqual(captured_proxies, {})
+            self.assertIn("localhost", captured_url)
+
+            conn = LibcloudConnection(host="test.com", port=80)
+            conn.request("GET", "/get")
+
+            self.assertEqual(captured_proxies.get("http", None), "http://proxy.example.com:8080")
+            self.assertEqual(
+                captured_proxies.get("https", None), "https://secure-proxy.example.com:8443"
+            )
 
     def test_connection_to_unusual_port(self):
         conn = LibcloudConnection(host="localhost", port=8080)

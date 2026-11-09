@@ -128,9 +128,7 @@ def assert_response(response_dict, status_code):
     if response_dict["status_code"] != status_code:
         # we have an unknown error
         msg = "Status code should be {}\
-         but is {}".format(
-            status_code, response_dict["status_code"]
-        )
+         but is {}".format(status_code, response_dict["status_code"])
         raise LXDAPIException(message=msg, response_dict=response_dict)
 
 
