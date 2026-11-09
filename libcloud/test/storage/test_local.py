@@ -22,7 +22,7 @@ import platform
 import tempfile
 import unittest
 import multiprocessing
-import mock
+from unittest import mock
 
 from libcloud.utils.files import exhaust_iterator
 from libcloud.common.types import LibcloudError
