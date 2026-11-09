@@ -2661,7 +2661,7 @@ Compute
 ~~~~~~~
 
 - [ARM] Support OS disk size definition on node creation (#1196)
-  [Vojta Bartoš]
+  [Vojta Bartoš]
 
 - [Digital Ocean] Support floating IPs (#1177)
   [Rick van de Loo]

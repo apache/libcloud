@@ -15,7 +15,7 @@ build:
     create_environment:
       - python -m uv venv "${READTHEDOCS_VIRTUALENV_PATH}"
     install:
-      - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" python -m uv sync --frozen --group docs --no-dev
+      - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" python -m uv sync --locked --group docs --no-dev
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
@@ -24,6 +24,3 @@ sphinx:
 formats:
    - pdf
    - epub
-
-# NOTE: We need to use older version of sphinx otherwise bullet points won't be rendered correctly
-# on RTD using rtd theme.
