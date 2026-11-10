@@ -79,7 +79,7 @@ Compute
   (GITHUB-1893)
   [Sanjay Santhanam - @Sanjays2402]
 
-- [UpCloud] 
+- [UpCloud]
 
   Add new functions to complete the Upcloud driver and move it to the
   last API version 1.3
@@ -93,6 +93,17 @@ Storage
   per driver without changing the global URL normalization setting.
   (GITHUB-1654)
   [Shubham Padkonde - @Shubham-Padkonde]
+
+- [Local] Stream range downloads in bounded chunks without reading the entire
+  source file or buffering the complete range before writing it to disk.
+  (GITHUB-2191)
+  [Neha Mahesh - @mneha05]
+
+- [Local Storage] Fix upload errors being suppressed when locking is disabled
+  with ``ex_use_locking=False``. The original exception now propagates instead
+  of the upload appearing to succeed.
+  (#2204)
+  [@JunaidAhamed-7777]
 
 - [Local Storage] Release the thread lock if IPC lock acquisition fails,
   allowing the same lock object to be reused after a timeout or error.
@@ -2660,7 +2671,7 @@ Compute
 ~~~~~~~
 
 - [ARM] Support OS disk size definition on node creation (#1196)
-  [Vojta Bartoš]
+  [Vojta Bartoš]
 
 - [Digital Ocean] Support floating IPs (#1177)
   [Rick van de Loo]

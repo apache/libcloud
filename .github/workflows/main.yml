@@ -418,13 +418,22 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install Python Dependencies
-        run: uv sync --group ci --no-dev
+        run: uv sync --locked --group ci --no-dev
 
       - name: Add .venv to PATH
         run: echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Build Docs
         run: tox -e docs
+
+      - name: Install PDF build dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+            latexmk texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended tex-gyre xindy
+
+      - name: Build PDF and EPUB
+        run: tox -e docs-formats
 
       - name: Trigger ReadTheDocs build
         if: ${{ github.ref_name == 'trunk' }}
