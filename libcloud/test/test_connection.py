@@ -17,6 +17,7 @@ import os
 import ssl
 import sys
 import socket
+from datetime import datetime, timedelta
 from unittest import mock
 from unittest.mock import Mock, patch
 
@@ -588,6 +589,28 @@ class ConnectionClassTestCase(unittest.TestCase):
                         self.assertIs(exc.exception, error)
                         request.assert_called_once_with()
         sleep.assert_not_called()
+
+    @patch("libcloud.utils.retry.time.sleep")
+    @patch("libcloud.utils.retry.datetime")
+    def test_retry_with_positive_timeout_preserves_error_at_deadline(self, clock, sleep):
+        start = datetime(2026, 1, 1)
+        for retry_class in (MinimalRetry, Retry):
+            for elapsed in (1, 2):
+                for error in (socket.gaierror("unavailable"), RateLimitReachedError()):
+                    with self.subTest(retry_class=retry_class, elapsed=elapsed, error=error):
+                        clock.now.return_value = start
+                        sleep.reset_mock()
+
+                        def fail_after_request():
+                            clock.now.return_value = start + timedelta(seconds=elapsed)
+                            raise error
+
+                        request = Mock(side_effect=fail_after_request)
+                        with self.assertRaises(type(error)) as exc:
+                            retry_class(timeout=1)(request)()
+                        self.assertIs(exc.exception, error)
+                        request.assert_called_once_with()
+                        sleep.assert_not_called()
 
     @patch("libcloud.common.base.Connection.request")
     def test_retry_with_sleep(self, mock_connect):

@@ -8,6 +8,13 @@ Changes in Apache Libcloud 4.0.0
 Common
 ~~~~~~
 
+- Fix ``MinimalRetry`` and ``Retry`` skipping the initial request and raising
+  ``TypeError`` when the retry timeout is zero or negative. The initial request
+  now runs once, returning its result or propagating its exception without
+  sleeping.
+  (GITHUB-2199)
+  [Zhe Chen - @zhechen-cs]
+
 - Respect the ``no_proxy`` / ``NO_PROXY`` environment variable so an explicitly
   configured proxy is bypassed for matching hosts.
   (GITHUB-2077)
