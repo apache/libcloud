@@ -1396,7 +1396,7 @@ class S3PathHandlingTests(unittest.TestCase):
                 "_get_request",
                 return_value=(httplib.OK, "", {}, "OK"),
             ) as request,
-       ):
+        ):
             for method in ("GET", "PUT"):
                 with self.subTest(method=method):
                     driver.connection.request(action, method=method, data=b"payload" if method == "PUT" else None)
