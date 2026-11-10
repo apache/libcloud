@@ -1387,13 +1387,16 @@ class S3PathHandlingTests(unittest.TestCase):
             signed_paths.append(kwargs["path"])
             return original_get_request_headers(*args, **kwargs)
 
-        with mock.patch.object(
-            driver.connection.signer, "get_request_headers", side_effect=capture_signed_path
-        ), mock.patch.object(
-            S3MockHttp,
-            "_get_request",
-            return_value=(httplib.OK, "", {}, "OK"),
-        ) as request:
+        with (
+            mock.patch.object(
+                driver.connection.signer, "get_request_headers", side_effect=capture_signed_path
+            ),
+            mock.patch.object(
+                S3MockHttp,
+                "_get_request",
+                return_value=(httplib.OK, "", {}, "OK"),
+            ) as request,
+       ):
             for method in ("GET", "PUT"):
                 with self.subTest(method=method):
                     driver.connection.request(action, method=method, data=b"payload" if method == "PUT" else None)
