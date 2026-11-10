@@ -101,6 +101,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [S3] Add ``ex_allow_path_double_slashes`` to preserve object key slashes
+  per driver without changing the global URL normalization setting.
+  (GITHUB-1654)
+  [Shubham Padkonde - @Shubham-Padkonde]
+
 - [Local] Stream range downloads in bounded chunks without reading the entire
   source file or buffering the complete range before writing it to disk.
   (GITHUB-2191)
