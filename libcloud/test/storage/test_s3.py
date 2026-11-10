@@ -1376,6 +1376,31 @@ class S3PathHandlingTests(unittest.TestCase):
                     urlparse.urlparse(request.call_args[0][1]).path, "/test-bucket/" + name
                 )
 
+    def test_get_and_put_preserve_signed_request_path(self) -> None:
+        driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
+        connection = driver.connection
+        action = "/test-bucket//path///object"
+        signed_paths = []
+        original_get_request_headers = connection.signer.get_request_headers
+
+        def capture_signed_path(*args, **kwargs):
+            signed_paths.append(kwargs["path"])
+            return original_get_request_headers(*args, **kwargs)
+
+        with mock.patch.object(
+            driver.connection.signer, "get_request_headers", side_effect=capture_signed_path
+        ), mock.patch.object(
+            S3MockHttp,
+            "_get_request",
+            return_value=(httplib.OK, "", {}, "OK"),
+        ) as request:
+            for method in ("GET", "PUT"):
+                with self.subTest(method=method):
+                    driver.connection.request(action, method=method, data=b"payload" if method == "PUT" else None)
+                    sent_path = urlparse.urlparse(request.call_args[0][1]).path
+                    self.assertEqual(sent_path, action)
+                    self.assertEqual(signed_paths[-1], sent_path)
+
     def test_double_slashes_option_is_per_driver(self) -> None:
         with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", False):
             driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
