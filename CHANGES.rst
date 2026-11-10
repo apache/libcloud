@@ -27,6 +27,11 @@ Common
 Compute
 ~~~~~~~
 
+- [CloudSigma] Fix ``ex_list_tags()`` in the API v2 driver to use ``/tags/``
+  instead of ``/tags/detail/``, avoiding HTTP 404 errors when listing tags.
+  (GITHUB-2195)
+  [Robert Jenkin - @rjcloudsigma]
+
 - [GCE] Preserve completed results and pending node names on the exception
   raised when bulk node creation times out, allowing callers to recover or
   clean up resources without losing track of them.
