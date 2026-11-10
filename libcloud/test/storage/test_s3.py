@@ -1399,7 +1399,9 @@ class S3PathHandlingTests(unittest.TestCase):
         ):
             for method in ("GET", "PUT"):
                 with self.subTest(method=method):
-                    driver.connection.request(action, method=method, data=b"payload" if method == "PUT" else None)
+                    driver.connection.request(
+                        action, method=method, data=b"payload" if method == "PUT" else None
+                    )
                     sent_path = urlparse.urlparse(request.call_args[0][1]).path
                     self.assertEqual(sent_path, action)
                     self.assertEqual(signed_paths[-1], sent_path)
