@@ -791,7 +791,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         )
 
         time_tuple_expires = expires.utctimetuple()
-        time_tuple_now = datetime.datetime.utcnow().utctimetuple()
+        time_tuple_now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).utctimetuple()
 
         if time_tuple_now < time_tuple_expires:
             return True
