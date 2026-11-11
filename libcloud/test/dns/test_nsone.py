@@ -344,7 +344,7 @@ class NsOneMockHttp(MockHttp):
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
-from libcloud.common.nsone import NsOneException, NsOneResponse
+from libcloud.common.nsone import NsOneResponse, NsOneException
 
 
 class NsOneResponseStateLeakTests(unittest.TestCase):
@@ -379,7 +379,9 @@ class NsOneResponseStateLeakTests(unittest.TestCase):
 
     def test_errors_do_not_leak_across_responses(self):
         with self.assertRaises(NsOneException):
-            NsOneResponse(response=self._raw_response('{"message": "unauthorized"}'), connection=None)
+            NsOneResponse(
+                response=self._raw_response('{"message": "unauthorized"}'), connection=None
+            )
         resp = NsOneResponse(response=self._raw_response('{"records": []}'), connection=None)
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)

@@ -290,7 +290,7 @@ class DNSPodMockHttp(MockHttp):
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
-from libcloud.common.dnspod import DNSPodException, DNSPodResponse
+from libcloud.common.dnspod import DNSPodResponse, DNSPodException
 
 
 class DNSPodResponseStateLeakTests(unittest.TestCase):
@@ -317,15 +317,24 @@ class DNSPodResponseStateLeakTests(unittest.TestCase):
         )
 
     def test_objects_do_not_accumulate_across_responses(self):
-        r1 = DNSPodResponse(response=self._raw_response('{"status": {"code": "1"}}'), connection=None)
+        r1 = DNSPodResponse(
+            response=self._raw_response('{"status": {"code": "1"}}'), connection=None
+        )
         self.assertEqual(len(r1.objects), 1)
-        r2 = DNSPodResponse(response=self._raw_response('{"status": {"code": "1"}}'), connection=None)
+        r2 = DNSPodResponse(
+            response=self._raw_response('{"status": {"code": "1"}}'), connection=None
+        )
         self.assertEqual(len(r2.objects), 1)
         self.assertEqual(len(r1.objects), 1)
 
     def test_errors_do_not_leak_across_responses(self):
         with self.assertRaises(DNSPodException):
-            DNSPodResponse(response=self._raw_response('{"status": {"code": "5", "message": "login error"}}'), connection=None)
-        resp = DNSPodResponse(response=self._raw_response('{"status": {"code": "1"}}'), connection=None)
+            DNSPodResponse(
+                response=self._raw_response('{"status": {"code": "5", "message": "login error"}}'),
+                connection=None,
+            )
+        resp = DNSPodResponse(
+            response=self._raw_response('{"status": {"code": "1"}}'), connection=None
+        )
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)

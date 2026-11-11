@@ -312,7 +312,7 @@ class LuadnsMockHttp(MockHttp):
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
-from libcloud.common.luadns import LuadnsException, LuadnsResponse
+from libcloud.common.luadns import LuadnsResponse, LuadnsException
 
 
 class LuadnsResponseStateLeakTests(unittest.TestCase):
@@ -347,7 +347,9 @@ class LuadnsResponseStateLeakTests(unittest.TestCase):
 
     def test_errors_do_not_leak_across_responses(self):
         with self.assertRaises(LuadnsException):
-            LuadnsResponse(response=self._raw_response('{"message": "unauthorized"}'), connection=None)
+            LuadnsResponse(
+                response=self._raw_response('{"message": "unauthorized"}'), connection=None
+            )
         resp = LuadnsResponse(response=self._raw_response('{"zones": []}'), connection=None)
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)

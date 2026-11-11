@@ -166,7 +166,7 @@ class BuddyNSMockHttp(MockHttp):
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
-from libcloud.common.buddyns import BuddyNSException, BuddyNSResponse
+from libcloud.common.buddyns import BuddyNSResponse, BuddyNSException
 
 
 class BuddyNSResponseStateLeakTests(unittest.TestCase):
@@ -201,7 +201,9 @@ class BuddyNSResponseStateLeakTests(unittest.TestCase):
 
     def test_errors_do_not_leak_across_responses(self):
         with self.assertRaises(BuddyNSException):
-            BuddyNSResponse(response=self._raw_response('{"detail": "zone not found"}'), connection=None)
+            BuddyNSResponse(
+                response=self._raw_response('{"detail": "zone not found"}'), connection=None
+            )
         resp = BuddyNSResponse(response=self._raw_response('{"zones": []}'), connection=None)
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)
