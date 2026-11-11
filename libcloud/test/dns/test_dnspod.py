@@ -288,8 +288,6 @@ class DNSPodMockHttp(MockHttp):
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
 
-if __name__ == "__main__":
-    sys.exit(unittest.main())
 from libcloud.common.dnspod import DNSPodResponse, DNSPodException
 
 
@@ -338,3 +336,7 @@ class DNSPodResponseStateLeakTests(unittest.TestCase):
         )
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)
+
+
+if __name__ == "__main__":
+    sys.exit(unittest.main())

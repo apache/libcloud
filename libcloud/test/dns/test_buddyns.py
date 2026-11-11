@@ -164,8 +164,6 @@ class BuddyNSMockHttp(MockHttp):
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
 
-if __name__ == "__main__":
-    sys.exit(unittest.main())
 from libcloud.common.buddyns import BuddyNSResponse, BuddyNSException
 
 
@@ -207,3 +205,7 @@ class BuddyNSResponseStateLeakTests(unittest.TestCase):
         resp = BuddyNSResponse(response=self._raw_response('{"zones": []}'), connection=None)
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)
+
+
+if __name__ == "__main__":
+    sys.exit(unittest.main())

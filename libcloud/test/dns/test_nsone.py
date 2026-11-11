@@ -342,8 +342,6 @@ class NsOneMockHttp(MockHttp):
         return 404, body, {}, httplib.responses[httplib.OK]
 
 
-if __name__ == "__main__":
-    sys.exit(unittest.main())
 from libcloud.common.nsone import NsOneResponse, NsOneException
 
 
@@ -385,3 +383,7 @@ class NsOneResponseStateLeakTests(unittest.TestCase):
         resp = NsOneResponse(response=self._raw_response('{"records": []}'), connection=None)
         self.assertTrue(resp.success())
         self.assertEqual(len(resp.errors), 0)
+
+
+if __name__ == "__main__":
+    sys.exit(unittest.main())
