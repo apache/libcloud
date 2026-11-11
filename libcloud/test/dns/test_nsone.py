@@ -344,3 +344,42 @@ class NsOneMockHttp(MockHttp):
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
+from libcloud.common.nsone import NsOneException, NsOneResponse
+
+
+class NsOneResponseStateLeakTests(unittest.TestCase):
+    """
+    Regression test: Response instances must not share the class-level
+    errors/objects lists. Previously NsOneResponse appended to class-level lists,
+    so parsed objects from earlier responses accumulated in later ones
+    (e.g. get_zone() reading response.objects[0] got stale data) and
+    errors leaked between requests.
+    """
+
+    @staticmethod
+    def _raw_response(body):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            headers={},
+            body=body,
+            text=body,
+            status_code=200,
+            reason="OK",
+            request=None,
+            iter_content=lambda *args: iter([]),
+        )
+
+    def test_objects_do_not_accumulate_across_responses(self):
+        r1 = NsOneResponse(response=self._raw_response('{"records": []}'), connection=None)
+        self.assertEqual(len(r1.objects), 1)
+        r2 = NsOneResponse(response=self._raw_response('{"records": [1]}'), connection=None)
+        self.assertEqual(len(r2.objects), 1)
+        self.assertEqual(len(r1.objects), 1)
+
+    def test_errors_do_not_leak_across_responses(self):
+        with self.assertRaises(NsOneException):
+            NsOneResponse(response=self._raw_response('{"message": "unauthorized"}'), connection=None)
+        resp = NsOneResponse(response=self._raw_response('{"records": []}'), connection=None)
+        self.assertTrue(resp.success())
+        self.assertEqual(len(resp.errors), 0)
