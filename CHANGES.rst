@@ -8,6 +8,13 @@ Changes in Apache Libcloud 4.0.0
 Common
 ~~~~~~
 
+- Fix ``MinimalRetry`` and ``Retry`` skipping the initial request and raising
+  ``TypeError`` when the retry timeout is zero or negative. The initial request
+  now runs once, returning its result or propagating its exception without
+  sleeping.
+  (GITHUB-2199)
+  [Zhe Chen - @zhechen-cs]
+
 - Respect the ``no_proxy`` / ``NO_PROXY`` environment variable so an explicitly
   configured proxy is bypassed for matching hosts.
   (GITHUB-2077)
@@ -26,6 +33,11 @@ Common
 
 Compute
 ~~~~~~~
+
+- [CloudSigma] Fix ``ex_list_tags()`` in the API v2 driver to use ``/tags/``
+  instead of ``/tags/detail/``, avoiding HTTP 404 errors when listing tags.
+  (GITHUB-2195)
+  [Robert Jenkin - @rjcloudsigma]
 
 - [GCE] Preserve completed results and pending node names on the exception
   raised when bulk node creation times out, allowing callers to recover or
@@ -88,6 +100,11 @@ Compute
 
 Storage
 ~~~~~~~
+
+- [S3] Add ``ex_allow_path_double_slashes`` to preserve object key slashes
+  per driver without changing the global URL normalization setting.
+  (GITHUB-1654)
+  [Shubham Padkonde - @Shubham-Padkonde]
 
 - [Local] Stream range downloads in bounded chunks without reading the entire
   source file or buffering the complete range before writing it to disk.
