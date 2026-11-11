@@ -22,6 +22,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import OVH_PARAMS
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.compute.types import NodeState
 from libcloud.compute.drivers.ovh import OvhNodeDriver
 from libcloud.test.common.test_ovh import BaseOvhMockHttp
 
@@ -154,6 +155,36 @@ class OvhMockHttp(BaseOvhMockHttp):
     ):
         body = '{"message":"Invalid application key"}'
         return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.OK])
+
+    # VPS mock handlers
+
+    def _json_1_0_vps_get(self, method, url, body, headers):
+        body = self.fixtures.load("vps_get.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_vps_testvps_get(self, method, url, body, headers):
+        body = self.fixtures.load("vps_get_detail.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_vps_testvps_reboot_post(self, method, url, body, headers):
+        body = self.fixtures.load("vps_reboot_post.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_vps_testvps_start_post(self, method, url, body, headers):
+        body = self.fixtures.load("vps_start_post.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_vps_testvps_stop_post(self, method, url, body, headers):
+        body = self.fixtures.load("vps_stop_post.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_vps_testvps_rebuild_post(self, method, url, body, headers):
+        body = self.fixtures.load("vps_rebuild_post.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_vps_testvps_images_available_get(self, method, url, body, headers):
+        body = self.fixtures.load("vps_images_available_get.json")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 @patch("libcloud.common.ovh.OvhConnection._timedelta", 42)
@@ -304,6 +335,62 @@ class OvhTests(unittest.TestCase):
 
     def test_get_pricing(self):
         self.driver.ex_get_pricing("foo-id")
+
+    # VPS tests
+
+    def test_ex_list_vps(self):
+        names = self.driver.ex_list_vps()
+        self.assertEqual(len(names), 2)
+        self.assertEqual(names[0], "testvps")
+        self.assertEqual(names[1], "testvps2")
+
+    def test_ex_get_vps(self):
+        node = self.driver.ex_get_vps("testvps")
+        self.assertEqual(node.id, "testvps")
+        self.assertEqual(node.name, "my-vps")
+        self.assertEqual(node.state, NodeState.RUNNING)
+        self.assertEqual(len(node.public_ips), 2)
+        self.assertIn("198.51.100.42", node.public_ips)
+        self.assertEqual(node.extra["vcore"], 1)
+        self.assertEqual(node.extra["memory"], 2048)
+        self.assertEqual(node.extra["disk"], 40)
+        self.assertEqual(node.extra["zone"], "eu-west-rbx")
+
+    def test_ex_reboot_vps(self):
+        result = self.driver.ex_reboot_vps("testvps")
+        self.assertTrue(result)
+
+    def test_ex_start_vps(self):
+        result = self.driver.ex_start_vps("testvps")
+        self.assertTrue(result)
+
+    def test_ex_stop_vps(self):
+        result = self.driver.ex_stop_vps("testvps")
+        self.assertTrue(result)
+
+    def test_ex_rebuild_vps(self):
+        result = self.driver.ex_rebuild_vps("testvps", "img-debian-12")
+        self.assertTrue(result)
+
+    def test_ex_rebuild_vps_with_ssh_key(self):
+        result = self.driver.ex_rebuild_vps(
+            "testvps", "img-debian-12", ssh_key=["ssh-rsa AAAA..."]
+        )
+        self.assertTrue(result)
+
+    def test_ex_list_vps_images(self):
+        images = self.driver.ex_list_vps_images("testvps")
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0].id, "img-debian-12")
+        self.assertEqual(images[0].name, "Debian 12")
+        self.assertEqual(images[1].id, "img-ubuntu-2404")
+        self.assertEqual(images[1].name, "Ubuntu 24.04")
+
+    def test_vps_state_map(self):
+        self.assertEqual(self.driver.VPS_STATE_MAP["running"], NodeState.RUNNING)
+        self.assertEqual(self.driver.VPS_STATE_MAP["stopped"], NodeState.STOPPED)
+        self.assertEqual(self.driver.VPS_STATE_MAP["rebooting"], NodeState.REBOOTING)
+        self.assertEqual(self.driver.VPS_STATE_MAP["installing"], NodeState.PENDING)
 
 
 if __name__ == "__main__":
