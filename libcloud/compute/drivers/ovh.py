@@ -15,9 +15,8 @@
 """
 Ovh driver
 """
-from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerprint
+
 from libcloud.utils.py3 import httplib
-from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.ovh import API_ROOT, OvhConnection
 from libcloud.compute.base import (
     Node,
@@ -29,6 +28,8 @@ from libcloud.compute.base import (
     VolumeSnapshot,
 )
 from libcloud.compute.types import Provider, StorageVolumeState, VolumeSnapshotState
+from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerprint
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.drivers.openstack import OpenStackKeyPair, OpenStackNodeDriver
 
 
@@ -151,9 +152,9 @@ class OvhNodeDriver(NodeDriver):
             auth = self._get_and_check_auth(auth)
             # pylint: disable=no-member
             key = self.ex_find_or_import_keypair_by_key_material(location, auth.pubkey)
-            ex_keyname = key["keyName"]
+            data["sshKeyId"] = key["keyId"]
 
-        if ex_keyname:
+        elif ex_keyname:
             key_id = self.get_key_pair(ex_keyname, location).extra["id"]
             data["sshKeyId"] = key_id
         response = self.connection.request(action, data=data, method="POST")

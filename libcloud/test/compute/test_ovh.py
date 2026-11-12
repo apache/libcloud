@@ -19,10 +19,10 @@ from unittest.mock import patch
 from libcloud.http import LibcloudConnection
 from libcloud.test import no_internet
 from libcloud.utils.py3 import httplib
+from libcloud.compute.base import NodeAuthSSHKey
 from libcloud.test.secrets import OVH_PARAMS
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.compute.base import NodeAuthSSHKey
 from libcloud.compute.drivers.ovh import OvhNodeDriver
 from libcloud.test.common.test_ovh import BaseOvhMockHttp
 
@@ -349,6 +349,31 @@ class OvhTests(unittest.TestCase):
                         location, auth_pubkey
                     )
 
+        self.assertEqual(result, {"keyName": key_pair.name, "keyId": key_pair.extra["id"]})
+
+    def test_ex_find_or_import_keypair_without_public_key_comment(self):
+        location = self.driver.list_locations()[0]
+        key_pair = self.driver.list_key_pairs(location)[0]
+        pubkey = (
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOfbWSXOlqvYjZmRO84/lIoV4gvuX+"
+            "P1lLg50MMg6jZjLZIlYY081XPRmuom0xY0+BO++J2KgLl7gxJ6xMsKK2VQ+TakdfAH20"
+            "XfMcTohd/zVCeWsbqZQvEhVXBo4hPIktcfNz0u9Ez3EtInO+kb7raLcRhOVi9QmOkOrC"
+            "WtQU9mS71AWJuqI9H0YAnTiI8Hs5bn2tpMIqmTXT3g2bwywC25x1Nx9Hy0/FP+KUL6Ag"
+            "vDXv47l+TgSDfTBEkvq+IF1ITrnaOG+nRE02oZC6cwHYTifM/IOollkujxIQmi2Z+j66"
+            "OHSrjnEQugr0FqGJF2ygKfIh/i2u3fVLM60qE2NN"
+        )
+
+        with patch(
+            "libcloud.compute.drivers.ovh.get_pubkey_ssh2_fingerprint",
+            return_value="fingerprint",
+        ):
+            with patch.object(self.driver, "list_key_pairs", return_value=[]):
+                with patch.object(
+                    self.driver, "import_key_pair_from_string", return_value=key_pair
+                ) as import_key_pair:
+                    result = self.driver.ex_find_or_import_keypair_by_key_material(location, pubkey)
+
+        import_key_pair.assert_called_once_with("unnamed-fingerprint", pubkey, ex_location=location)
         self.assertEqual(result, {"keyName": key_pair.name, "keyId": key_pair.extra["id"]})
 
     def test_resizing_node(self):
