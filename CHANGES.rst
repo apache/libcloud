@@ -34,6 +34,11 @@ Common
 Compute
 ~~~~~~~
 
+- [OVH] Change the ``ex_keyname`` argument to ``auth`` in ``create_node()`` to
+  match the implementation in EC2.
+  (#2148)
+  [ali-corpo & Miguel Caballer - @micafer]
+
 - [CloudSigma] Fix ``ex_list_tags()`` in the API v2 driver to use ``/tags/``
   instead of ``/tags/detail/``, avoiding HTTP 404 errors when listing tags.
   (GITHUB-2195)

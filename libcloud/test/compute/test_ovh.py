@@ -19,6 +19,7 @@ from unittest.mock import patch
 from libcloud.http import LibcloudConnection
 from libcloud.test import no_internet
 from libcloud.utils.py3 import httplib
+from libcloud.compute.base import NodeAuthSSHKey
 from libcloud.test.secrets import OVH_PARAMS
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.test.file_fixtures import ComputeFileFixtures
@@ -246,6 +247,134 @@ class OvhTests(unittest.TestCase):
         size = self.driver.list_sizes(location)[0]
         node = self.driver.create_node(name="test_vm", image=image, size=size, location=location)
         self.assertEqual(node.name, "test_vm")
+
+    def test_create_node_with_auth_imports_keypair(self):
+        location = self.driver.list_locations()[0]
+        image = self.driver.list_sizes(location)[0]
+        size = self.driver.list_sizes(location)[0]
+        key_pair = self.driver.list_key_pairs(location)[0]
+        auth = NodeAuthSSHKey("new public key")
+        connection_request = self.driver.connection.request
+
+        with patch(
+            "libcloud.compute.drivers.ovh.get_pubkey_ssh2_fingerprint",
+            return_value="fingerprint",
+        ):
+            with patch("libcloud.compute.drivers.ovh.get_pubkey_comment", return_value="test"):
+                with patch.object(self.driver, "list_key_pairs", return_value=[]):
+                    with patch.object(
+                        self.driver, "import_key_pair_from_string", return_value=key_pair
+                    ) as import_key_pair:
+                        with patch.object(self.driver, "get_key_pair", return_value=key_pair):
+                            with patch.object(
+                                self.driver.connection,
+                                "request",
+                                wraps=connection_request,
+                            ) as request:
+                                self.driver.create_node(
+                                    name="test_vm",
+                                    image=image,
+                                    size=size,
+                                    location=location,
+                                    auth=auth,
+                                )
+
+        import_key_pair.assert_called_once_with(
+            "test-fingerprint", auth.pubkey, ex_location=location
+        )
+        self.assertEqual(request.call_args_list[-1].kwargs["data"]["sshKeyId"], "ham-id")
+
+    def test_create_node_with_auth_existing_keypair(self):
+        location = self.driver.list_locations()[0]
+        image = self.driver.list_sizes(location)[0]
+        size = self.driver.list_sizes(location)[0]
+        key_pair = self.driver.list_key_pairs(location)[0]
+        auth = NodeAuthSSHKey("same key with a different comment")
+        connection_request = self.driver.connection.request
+
+        with patch(
+            "libcloud.compute.drivers.ovh.get_pubkey_ssh2_fingerprint",
+            return_value="same-fingerprint",
+        ):
+            with patch.object(self.driver, "list_key_pairs", return_value=[key_pair]):
+                with patch.object(self.driver, "import_key_pair_from_string") as import_key_pair:
+                    with patch.object(self.driver, "get_key_pair", return_value=key_pair):
+                        with patch.object(
+                            self.driver.connection,
+                            "request",
+                            wraps=connection_request,
+                        ) as request:
+                            self.driver.create_node(
+                                name="test_vm",
+                                image=image,
+                                size=size,
+                                location=location,
+                                auth=auth,
+                            )
+
+        import_key_pair.assert_not_called()
+        self.assertEqual(request.call_args_list[-1].kwargs["data"]["sshKeyId"], "ham-id")
+
+    def test_create_node_rejects_auth_with_keyname(self):
+        location = self.driver.list_locations()[0]
+        image = self.driver.list_sizes(location)[0]
+        size = self.driver.list_sizes(location)[0]
+
+        with self.assertRaisesRegex(AttributeError, "Cannot specify auth and ex_keyname"):
+            self.driver.create_node(
+                name="test_vm",
+                image=image,
+                size=size,
+                location=location,
+                auth=NodeAuthSSHKey("public key"),
+                ex_keyname="mykey",
+            )
+
+    def test_ex_find_or_import_keypair_handles_duplicate_key(self):
+        location = self.driver.list_locations()[0]
+        key_pair = self.driver.list_key_pairs(location)[0]
+        auth_pubkey = "public key"
+
+        with patch(
+            "libcloud.compute.drivers.ovh.get_pubkey_ssh2_fingerprint",
+            return_value="same-fingerprint",
+        ):
+            with patch.object(self.driver, "list_key_pairs", side_effect=[[], [key_pair]]):
+                with patch.object(
+                    self.driver,
+                    "import_key_pair_from_string",
+                    side_effect=BaseHTTPError(409, "Key already exists"),
+                ):
+                    result = self.driver.ex_find_or_import_keypair_by_key_material(
+                        location, auth_pubkey
+                    )
+
+        self.assertEqual(result, {"keyName": key_pair.name, "keyId": key_pair.extra["id"]})
+
+    def test_ex_find_or_import_keypair_without_public_key_comment(self):
+        location = self.driver.list_locations()[0]
+        key_pair = self.driver.list_key_pairs(location)[0]
+        pubkey = (
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOfbWSXOlqvYjZmRO84/lIoV4gvuX+"
+            "P1lLg50MMg6jZjLZIlYY081XPRmuom0xY0+BO++J2KgLl7gxJ6xMsKK2VQ+TakdfAH20"
+            "XfMcTohd/zVCeWsbqZQvEhVXBo4hPIktcfNz0u9Ez3EtInO+kb7raLcRhOVi9QmOkOrC"
+            "WtQU9mS71AWJuqI9H0YAnTiI8Hs5bn2tpMIqmTXT3g2bwywC25x1Nx9Hy0/FP+KUL6Ag"
+            "vDXv47l+TgSDfTBEkvq+IF1ITrnaOG+nRE02oZC6cwHYTifM/IOollkujxIQmi2Z+j66"
+            "OHSrjnEQugr0FqGJF2ygKfIh/i2u3fVLM60qE2NN"
+        )
+
+        with patch(
+            "libcloud.compute.drivers.ovh.get_pubkey_ssh2_fingerprint",
+            return_value="fingerprint",
+        ):
+            with patch.object(self.driver, "list_key_pairs", return_value=[]):
+                with patch.object(
+                    self.driver, "import_key_pair_from_string", return_value=key_pair
+                ) as import_key_pair:
+                    result = self.driver.ex_find_or_import_keypair_by_key_material(location, pubkey)
+
+        import_key_pair.assert_called_once_with("unnamed-fingerprint", pubkey, ex_location=location)
+        self.assertEqual(result, {"keyName": key_pair.name, "keyId": key_pair.extra["id"]})
 
     def test_resizing_node(self):
         self.assertTrue(self.driver.NODE_STATE_MAP["RESIZE"])
