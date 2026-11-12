@@ -179,13 +179,6 @@ DNS
   (GITHUB-2216)
   [Hisernberg - @Hisernberg]
 
-- [BuddyNS, DNSPod, LuaDNS, NsOne] Fix the shared class-level ``errors`` and
-  ``objects`` lists in the four DNS response classes. The lists now live on
-  each response instance, so parsed records no longer accumulate across
-  responses and error state no longer leaks between requests.
-  (GITHUB-2216)
-  [Hisernberg - @Hisernberg]
-
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
