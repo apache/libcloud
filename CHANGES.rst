@@ -34,6 +34,12 @@ Common
 Compute
 ~~~~~~~
 
+- [OVH] Remove the static location mapping and use the location code returned
+  by the API as both the location ID and name, avoiding failures for codes not
+  known to Libcloud.
+  (#2219)
+  [Miguel Caballer - @micafer]
+
 - [CloudSigma] Fix ``ex_list_tags()`` in the API v2 driver to use ``/tags/``
   instead of ``/tags/detail/``, avoiding HTTP 404 errors when listing tags.
   (GITHUB-2195)
