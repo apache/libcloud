@@ -20,17 +20,9 @@ import base64
 import hashlib
 import binascii
 from typing import Literal
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone, timedelta
 
-from libcloud.utils.py3 import (
-    ET,
-    b,
-    httplib,
-    tostring,
-    urlquote,
-    urlencode,
-    urlunquote,
-)
+from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode, urlunquote
 from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.azure import AzureConnection, AzureActiveDirectoryConnection

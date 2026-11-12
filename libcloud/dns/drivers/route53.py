@@ -60,7 +60,11 @@ class BaseRoute53Connection(ConnectionUserAndKey):
     responseCls = Route53DNSResponse
 
     def pre_connect_hook(self, params, headers):
-        time_string = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        time_string = (
+            datetime.datetime.now(datetime.timezone.utc)
+            .replace(tzinfo=None)
+            .strftime("%a, %d %b %Y %H:%M:%S GMT")
+        )
         headers["Date"] = time_string
         tmp = []
 
