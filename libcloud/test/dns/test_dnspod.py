@@ -27,6 +27,7 @@ from libcloud.dns.types import (
 )
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_DNSPOD
+from libcloud.common.dnspod import DNSPodResponse, DNSPodException
 from libcloud.dns.drivers.dnspod import DNSPodDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
 
@@ -286,6 +287,53 @@ class DNSPodMockHttp(MockHttp):
         body = self.fixtures.load("record_already_exists.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+
+class DNSPodResponseStateLeakTests(unittest.TestCase):
+    """
+    Regression test: Response instances must not share the class-level
+    errors/objects lists. Previously DNSPodResponse appended to class-level lists,
+    so parsed objects from earlier responses accumulated in later ones
+    (e.g. get_zone() reading response.objects[0] got stale data) and
+    errors leaked between requests.
+    """
+
+    @staticmethod
+    def _raw_response(body):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            headers={},
+            body=body,
+            text=body,
+            status_code=200,
+            reason="OK",
+            request=None,
+            iter_content=lambda *args: iter([]),
+        )
+
+    def test_objects_do_not_accumulate_across_responses(self):
+        r1 = DNSPodResponse(
+            response=self._raw_response('{"status": {"code": "1"}}'), connection=None
+        )
+        self.assertEqual(len(r1.objects), 1)
+        r2 = DNSPodResponse(
+            response=self._raw_response('{"status": {"code": "1"}}'), connection=None
+        )
+        self.assertEqual(len(r2.objects), 1)
+        self.assertEqual(len(r1.objects), 1)
+
+    def test_errors_do_not_leak_across_responses(self):
+        with self.assertRaises(DNSPodException):
+            DNSPodResponse(
+                response=self._raw_response('{"status": {"code": "5", "message": "login error"}}'),
+                connection=None,
+            )
+        resp = DNSPodResponse(
+            response=self._raw_response('{"status": {"code": "1"}}'), connection=None
+        )
+        self.assertTrue(resp.success())
+        self.assertEqual(len(resp.errors), 0)
 
 
 if __name__ == "__main__":

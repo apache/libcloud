@@ -40,6 +40,11 @@ Compute
   (#2219)
   [Miguel Caballer - @micafer]
 
+- [OVH] Change the ``ex_keyname`` argument to ``auth`` in ``create_node()`` to
+  match the implementation in EC2.
+  (#2148)
+  [ali-corpo & Miguel Caballer - @micafer]
+
 - [CloudSigma] Fix ``ex_list_tags()`` in the API v2 driver to use ``/tags/``
   instead of ``/tags/detail/``, avoiding HTTP 404 errors when listing tags.
   (GITHUB-2195)
@@ -177,6 +182,13 @@ DNS
   and the unsupported ``URL`` type is not.
   (#2175)
   [Uttam Limbani - @uttam12331]
+
+- [BuddyNS, DNSPod, LuaDNS, NsOne] Fix the shared class-level ``errors`` and
+  ``objects`` lists in the four DNS response classes. The lists now live on
+  each response instance, so parsed records no longer accumulate across
+  responses and error state no longer leaks between requests.
+  (GITHUB-2216)
+  [Hisernberg - @Hisernberg]
 
 Changes in Apache Libcloud 3.9.1
 --------------------------------
