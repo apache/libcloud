@@ -19,7 +19,7 @@ import time
 import base64
 from typing import Dict, Literal, Optional
 from hashlib import sha1
-from datetime import datetime
+from datetime import datetime, timezone
 
 import libcloud.utils.py3
 from libcloud.utils.py3 import b, httplib, tostring, urlquote, urlencode
@@ -1321,7 +1321,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         # assemble data for the request we want to pre-sign
         # see: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html # noqa
         object_path = self._get_object_path(obj.container, obj.name)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         duration_seconds = int(ex_expiry * 3600)
         credparts = (
             self.key,

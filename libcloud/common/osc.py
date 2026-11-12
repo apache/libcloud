@@ -15,7 +15,7 @@
 
 import hmac
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 
 from libcloud.utils.py3 import urlquote
 
@@ -75,7 +75,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
         )
 
     def get_request_headers(self, service_name: str, region: str, action: str, data: str):
-        date = datetime.utcnow()
+        date = datetime.now(timezone.utc).replace(tzinfo=None)
         host = "{}.{}.outscale.com".format(service_name, region)
         headers = {
             "Content-Type": "application/json; charset=utf-8",

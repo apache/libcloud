@@ -106,7 +106,7 @@ def _utcnow():
     """
     Mocked in libcloud.test.common.google.GoogleTestCase.
     """
-    return datetime.datetime.utcnow()
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
 
 def _utc_timestamp(datetime_obj):

@@ -257,7 +257,7 @@ class AuroraDNSConnection(ConnectionUserAndKey):
         if method in ("POST", "PUT"):
             headers = {"Content-Type": "application/json; charset=UTF-8"}
 
-        t = datetime.datetime.utcnow()
+        t = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         timestamp = t.strftime("%Y%m%dT%H%M%SZ")
 
         headers["X-AuroraDNS-Date"] = timestamp

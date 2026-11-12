@@ -20,17 +20,9 @@ import base64
 import hashlib
 import binascii
 from typing import Literal
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
-from libcloud.utils.py3 import (
-    ET,
-    b,
-    httplib,
-    tostring,
-    urlquote,
-    urlencode,
-    urlunquote,
-)
+from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode, urlunquote
 from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.azure import AzureConnection, AzureActiveDirectoryConnection
@@ -637,7 +629,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         object_path = self._get_object_path(obj.container, obj.name)
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         start = now - timedelta(minutes=AZURE_STORAGE_CDN_URL_START_MINUTES)
         expiry = now + timedelta(hours=ex_expiry)
 
