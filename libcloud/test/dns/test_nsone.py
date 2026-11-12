@@ -26,7 +26,7 @@ from libcloud.dns.types import (
     RecordAlreadyExistsError,
 )
 from libcloud.utils.py3 import httplib
-from libcloud.common.nsone import NsOneException
+from libcloud.common.nsone import NsOneResponse, NsOneException
 from libcloud.test.secrets import DNS_PARAMS_NSONE
 from libcloud.dns.drivers.nsone import NsOneDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
@@ -340,9 +340,6 @@ class NsOneMockHttp(MockHttp):
         body = self.fixtures.load("create_record_zone_not_found.json")
 
         return 404, body, {}, httplib.responses[httplib.OK]
-
-
-from libcloud.common.nsone import NsOneResponse, NsOneException
 
 
 class NsOneResponseStateLeakTests(unittest.TestCase):
