@@ -34,6 +34,12 @@ Common
 Compute
 ~~~~~~~
 
+- [OVH] Remove the static location mapping and use the location code returned
+  by the API as both the location ID and name, avoiding failures for codes not
+  known to Libcloud.
+  (#2219)
+  [Miguel Caballer - @micafer]
+
 - [OVH] Change the ``ex_keyname`` argument to ``auth`` in ``create_node()`` to
   match the implementation in EC2.
   (#2148)
