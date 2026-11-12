@@ -19,7 +19,7 @@ import time
 import base64
 from typing import Dict, Literal, Optional
 from hashlib import sha1
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 import libcloud.utils.py3
 from libcloud.utils.py3 import b, httplib, tostring, urlquote, urlencode
