@@ -199,8 +199,14 @@ class OvhTests(unittest.TestCase):
         self.assertRaisesRegex(BaseHTTPError, expected_msg, driver.list_nodes)
 
     def test_list_locations(self):
-        images = self.driver.list_locations()
-        self.assertTrue(len(images) > 0)
+        locations = self.driver.list_locations()
+        self.assertTrue(len(locations) > 0)
+
+    def test_to_location_uses_region_code_as_id_and_name(self):
+        location = self.driver._to_location("eu-west-par")
+        self.assertEqual(location.id, "eu-west-par")
+        self.assertEqual(location.name, "eu-west-par")
+        self.assertEqual(location.country, "")
 
     def test_list_images(self):
         images = self.driver.list_images()
