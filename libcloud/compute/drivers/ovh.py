@@ -17,6 +17,7 @@ Ovh driver
 """
 from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerprint
 from libcloud.utils.py3 import httplib
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.ovh import API_ROOT, OvhConnection
 from libcloud.compute.base import (
     Node,
@@ -126,6 +127,10 @@ class OvhNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.create_node`
 
+        :keyword auth: SSH key to use for the new node. If the key is not
+                       already available in the location, it will be imported.
+        :type    auth: :class:`NodeAuthSSHKey`
+
         :keyword ex_keyname: Name of SSH key used
         :type    ex_keyname: ``str``
 
@@ -145,7 +150,7 @@ class OvhNodeDriver(NodeDriver):
         if auth:
             auth = self._get_and_check_auth(auth)
             # pylint: disable=no-member
-            key = self.ex_find_or_import_keypair_by_key_material(location,auth.pubkey)
+            key = self.ex_find_or_import_keypair_by_key_material(location, auth.pubkey)
             ex_keyname = key["keyName"]
 
         if ex_keyname:
@@ -154,18 +159,45 @@ class OvhNodeDriver(NodeDriver):
         response = self.connection.request(action, data=data, method="POST")
 
         return self._to_node(response.object)
-    
+
     def ex_find_or_import_keypair_by_key_material(self, location, pubkey):
+        """
+        Find an SSH key in a location by its public key material, or import it.
+
+        :param location: Location (region) where the key should be searched for
+                         or imported.
+        :type location: :class:`NodeLocation`
+
+        :param pubkey: Public key material, such as an OpenSSH public key.
+        :type pubkey: ``str``
+
+        :return: Key name and ID for the matching or imported key pair.
+        :rtype: ``dict``
+
+        :raises BaseHTTPError: If the OVH API rejects the import request for a
+                               reason other than an existing duplicate key.
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_pairs = self.list_key_pairs(ex_location=location)
         for key_pair in key_pairs:
-            if key_pair.public_key == pubkey:
+            if get_pubkey_ssh2_fingerprint(key_pair.public_key) == key_fingerprint:
                 return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
-        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+
         key_comment = get_pubkey_comment(pubkey, default="unnamed")
-        key_name = "{}-{}".format(key_comment, key_fingerprint.replace(":","-"))
-        key_pair=self.import_key_pair_from_string(key_name, pubkey, ex_location=location)
-        return {"keyName": key_pair.name, "keyFingerprint": key_pair.fingerprint}
-    
+        key_name = "{}-{}".format(key_comment, key_fingerprint.replace(":", "-"))
+        try:
+            key_pair = self.import_key_pair_from_string(key_name, pubkey, ex_location=location)
+        except BaseHTTPError as e:
+            if e.code != httplib.CONFLICT:
+                raise
+
+            for key_pair in self.list_key_pairs(ex_location=location):
+                if get_pubkey_ssh2_fingerprint(key_pair.public_key) == key_fingerprint:
+                    return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
+            raise
+
+        return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
+
     def destroy_node(self, node):
         action = self._get_project_action("instance/%s" % node.id)
         self.connection.request(action, method="DELETE")
