@@ -27,6 +27,7 @@ from libcloud.dns.types import (
 )
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_DNSPOD
+from libcloud.common.dnspod import DNSPodResponse, DNSPodException
 from libcloud.dns.drivers.dnspod import DNSPodDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
 
@@ -286,9 +287,6 @@ class DNSPodMockHttp(MockHttp):
         body = self.fixtures.load("record_already_exists.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
-
-
-from libcloud.common.dnspod import DNSPodResponse, DNSPodException
 
 
 class DNSPodResponseStateLeakTests(unittest.TestCase):

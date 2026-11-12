@@ -26,6 +26,7 @@ from libcloud.dns.types import (
 )
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_LUADNS
+from libcloud.common.luadns import LuadnsResponse, LuadnsException
 from libcloud.dns.drivers.luadns import LuadnsDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
 
@@ -308,9 +309,6 @@ class LuadnsMockHttp(MockHttp):
         body = self.fixtures.load("create_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
-
-
-from libcloud.common.luadns import LuadnsResponse, LuadnsException
 
 
 class LuadnsResponseStateLeakTests(unittest.TestCase):

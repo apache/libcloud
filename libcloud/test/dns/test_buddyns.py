@@ -21,6 +21,7 @@ from libcloud.dns.base import Zone
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import DNS_PARAMS_BUDDYNS
+from libcloud.common.buddyns import BuddyNSResponse, BuddyNSException
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.dns.drivers.buddyns import BuddyNSDNSDriver
 
@@ -162,9 +163,6 @@ class BuddyNSMockHttp(MockHttp):
         body = self.fixtures.load("zone_already_exists.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
-
-
-from libcloud.common.buddyns import BuddyNSResponse, BuddyNSException
 
 
 class BuddyNSResponseStateLeakTests(unittest.TestCase):
