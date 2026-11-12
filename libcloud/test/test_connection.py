@@ -353,6 +353,29 @@ class BaseConnectionClassTestCase(unittest.TestCase):
             response = conn.request("/test")
         self.assertEqual(response.body, "data")
 
+    def test_connection_url_ipv6(self) -> None:
+        for endpoint, port in (
+            ("http://[2001:db8::1]", 80),
+            ("http://[2001:db8::1]:8080", 8080),
+            ("https://[2001:db8::1]", 443),
+            ("https://[2001:db8::1]:8443", 8443),
+        ):
+            with self.subTest(endpoint=endpoint):
+                conn = Connection(url=endpoint + "/v1")
+                self.assertEqual(conn.host, "[2001:db8::1]")
+                self.assertEqual(conn.port, port)
+                self.assertEqual(conn.request_path, "/v1")
+                conn.connect()
+                self.assertEqual(conn.connection.host, endpoint)
+                with requests_mock.mock() as mock_request:
+                    mock_request.get(endpoint + "/v1/test", text="data")
+                    response = conn.request("/test")
+                self.assertEqual(response.body, "data")
+                expected_host = "[2001:db8::1]"
+                if port not in (80, 443):
+                    expected_host += ":{}".format(port)
+                self.assertEqual(mock_request.last_request.headers["Host"], expected_host)
+
     def test_morph_action_hook(self):
         conn = Connection(url="http://test.com")
 

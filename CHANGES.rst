@@ -8,6 +8,11 @@ Changes in Apache Libcloud 4.0.0
 Common
 ~~~~~~
 
+- Accept bracketed IPv6 endpoint URLs, with default or explicit ports, in the
+  shared connection class.
+  (GITHUB-2220)
+  [Jatin Pandey - @satiricalguru]
+
 - Fix ``MinimalRetry`` and ``Retry`` skipping the initial request and raising
   ``TypeError`` when the retry timeout is zero or negative. The initial request
   now runs once, returning its result or propagating its exception without
