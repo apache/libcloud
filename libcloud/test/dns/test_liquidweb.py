@@ -30,9 +30,18 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.dns.drivers.liquidweb import LiquidWebDNSDriver
 
 
+def value_hedge(val):
+    """
+    Return a tuple containing the original value and its string representation,
+    for use with assertIn() when the value format is inconsistent.
+    """
+    return (val, str(val))
+
+
 class LiquidWebTests(unittest.TestCase):
     def setUp(self):
         LiquidWebMockHttp.type = None
+        LiquidWebMockHttp.history.clear()
         LiquidWebDNSDriver.connectionCls.conn_class = LiquidWebMockHttp
         self.driver = LiquidWebDNSDriver(*DNS_PARAMS_LIQUIDWEB)
         self.test_zone = Zone(
@@ -65,6 +74,10 @@ class LiquidWebTests(unittest.TestCase):
 
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
+
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Zone/list")
 
         self.assertEqual(len(zones), 3)
 
@@ -102,6 +115,11 @@ class LiquidWebTests(unittest.TestCase):
         LiquidWebMockHttp.type = "GET_ZONE_SUCCESS"
         zone = self.driver.get_zone(zone_id="13")
 
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Zone/details")
+        self.assertIn(sent.json["params"]["id"], value_hedge(13))
+
         self.assertEqual(zone.id, "13")
         self.assertEqual(zone.domain, "blogtest.com")
         self.assertEqual(zone.type, "NATIVE")
@@ -112,6 +130,11 @@ class LiquidWebTests(unittest.TestCase):
         LiquidWebMockHttp.type = "DELETE_ZONE_SUCCESS"
         zone = self.test_zone
         status = self.driver.delete_zone(zone=zone)
+
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Zone/delete")
+        self.assertIn(sent.json["params"]["id"], value_hedge(zone.id))
 
         self.assertEqual(status, True)
 
@@ -128,6 +151,11 @@ class LiquidWebTests(unittest.TestCase):
     def test_create_zone_success(self):
         LiquidWebMockHttp.type = "CREATE_ZONE_SUCCESS"
         zone = self.driver.create_zone(domain="test.com")
+
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Zone/create")
+        self.assertEqual(sent.json["params"]["name"], "test.com")
 
         self.assertEqual(zone.id, "13")
         self.assertEqual(zone.domain, "test.com")
@@ -155,6 +183,11 @@ class LiquidWebTests(unittest.TestCase):
         LiquidWebMockHttp.type = "LIST_RECORDS_SUCCESS"
         zone = self.test_zone
         records = self.driver.list_records(zone=zone)
+
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Record/list")
+        self.assertIn(sent.json["params"]["zone_id"], value_hedge(zone.id))
 
         self.assertEqual(len(records), 3)
 
@@ -193,6 +226,11 @@ class LiquidWebTests(unittest.TestCase):
         LiquidWebMockHttp.type = "GET_RECORD_SUCCESS"
         record = self.driver.get_record(zone_id="13", record_id="13")
 
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Record/details")
+        self.assertIn(sent.json["params"]["id"], value_hedge(13))
+
         self.assertEqual(record.id, "13")
         self.assertEqual(record.type, "A")
         self.assertEqual(record.name, "nerd.domain.com")
@@ -214,6 +252,15 @@ class LiquidWebTests(unittest.TestCase):
             data=record.data,
             extra={"ttl": 5600},
         )
+
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Record/update")
+        self.assertIn(sent.json["params"]["id"], value_hedge(13))
+        self.assertEqual(sent.json["params"]["name"], "nerd.domain.com")
+        self.assertEqual(sent.json["params"]["rdata"], "127.0.0.1")
+        self.assertIn(sent.json["params"]["ttl"], value_hedge(5600))
+
         self.assertEqual(record1.id, "13")
         self.assertEqual(record1.type, "A")
         self.assertEqual(record1.name, "nerd.domain.com")
@@ -238,7 +285,36 @@ class LiquidWebTests(unittest.TestCase):
             self.fail("Exception was not thrown")
 
     def test_create_record_success(self):
-        pass
+        LiquidWebMockHttp.type = "CREATE_RECORD_SUCCESS"
+        zone = Zone(
+            id="13",
+            type="master",
+            ttl=None,
+            domain="domain.com",
+            extra={},
+            driver=self.driver,
+        )
+        record = self.driver.create_record(
+            name="nerd.domain.com",
+            zone=zone,
+            type=RecordType.A,
+            data="127.0.0.1",
+            extra={"ttl": 300},
+        )
+
+        sent = LiquidWebMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v1/Network/DNS/Record/create")
+        self.assertIn(sent.json["params"]["zone_id"], value_hedge(13))
+        self.assertEqual(sent.json["params"]["name"], "nerd.domain.com")
+        self.assertEqual(sent.json["params"]["rdata"], "127.0.0.1")
+        self.assertIn(sent.json["params"]["ttl"], value_hedge(300))
+
+        self.assertEqual(record.id, "13")
+        self.assertEqual(record.type, "A")
+        self.assertEqual(record.hostname, "nerd.domain.com")
+        self.assertEqual(record.data, "127.0.0.1")
+        self.assertEqual(record.extra.get("ttl"), 300)
 
     def test_record_already_exists_error(self):
         pass
@@ -246,6 +322,7 @@ class LiquidWebTests(unittest.TestCase):
 
 class LiquidWebMockHttp(MockHttp):
     fixtures = DNSFileFixtures("liquidweb")
+    keep_history = True
 
     def _v1_Network_DNS_Zone_list(self, method, url, body, headers):
         body = self.fixtures.load("zones_list.json")
@@ -322,7 +399,7 @@ class LiquidWebMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_Network_DNS_Record_create_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load("")
+        body = self.fixtures.load("get_record.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_Network_DNS_Record_ALREADY_EXISTS_ERROR(self, method, url, body, headers):

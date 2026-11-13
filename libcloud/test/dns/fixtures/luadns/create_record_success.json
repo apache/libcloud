@@ -1,6 +1,6 @@
 {
   "id": 31,
-  "name": "test.com.",
+  "name": "example.com.",
   "type": "A",
   "content": "127.0.0.1",
   "ttl": 13,

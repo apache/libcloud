@@ -157,7 +157,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             extra["priority"] = int(split[0])
             value = split[1]
         return Record(
-            id="{}:{}".format(record["type"], record["name"]),
+            id=self.to_default_id(zone, record["name"], record["type"]),
             name=record["name"],
             type=self._string_to_record_type(record["type"]),
             data=value,
@@ -181,15 +181,16 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
     def get_record(self, zone_id, record_id):
         zid = int(zone_id)
-        record_type, name = record_id.split(":", 1)
-        filter_opts = {"name": name, "type": record_type}
+        zone = self.get_zone(zone_id)
+        rparts = self.from_default_id(zone, record_id)
+        filter_opts = {"name": rparts.name, "type": rparts.type}
         self.connection.set_context({"zone_id": zone_id})
         records = self.connection.request("domain.zone.record.list", zid, 0, filter_opts).object
 
         if len(records) == 0:
             raise RecordDoesNotExistError(value="", driver=self, record_id=record_id)
 
-        return self._to_record(records[0], self.get_zone(zone_id))
+        return self._to_record(records[0], zone)
 
     def _validate_record(self, record_id, name, record_type, data, extra):
         if len(data) > 1024:

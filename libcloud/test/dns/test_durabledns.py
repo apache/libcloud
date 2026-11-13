@@ -39,6 +39,7 @@ class DurableDNSTests(LibcloudTestCase):
     def setUp(self):
         DurableDNSDriver.connectionCls.conn_class = DurableDNSMockHttp
         DurableDNSMockHttp.type = None
+        DurableDNSMockHttp.history.clear()
         self.driver = DurableDNSDriver(*DNS_PARAMS_DURABLEDNS)
 
     def assertHasKeys(self, dictionary, keys):
@@ -81,10 +82,15 @@ class DurableDNSTests(LibcloudTestCase):
         )
         self.driver.get_zone = MagicMock(return_value=zone)
         zones = self.driver.list_zones()
+
+        sent = DurableDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/listZones.php")
+
         self.assertEqual(len(zones), 2)
         zone = zones[0]
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, 1300)
         self.assertEqual(zone.extra["ns"], "ns1.durabledns.com.")
         self.assertEqual(zone.extra["mbox"], "mail.myzone.com")
@@ -128,6 +134,13 @@ class DurableDNSTests(LibcloudTestCase):
         )
         self.driver.get_record = MagicMock(return_value=record)
         records = self.driver.list_records(zone=zone)
+
+        sent = DurableDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/listRecords.php")
+        data = sent.body.decode()
+        self.assertIn(":zonename>myzone.com.</", data)
+
         self.assertEqual(len(records), 2)
         self.assertEqual(record.id, "353286987")
         self.assertEqual(record.name, "record1")
@@ -166,8 +179,15 @@ class DurableDNSTests(LibcloudTestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id="myzone.com.")
+
+        sent = DurableDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/getZone.php")
+        data = sent.body.decode()
+        self.assertIn(":zonename>myzone.com.</", data)
+
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, 1300)
         self.assertEqual(zone.extra["ns"], "ns1.durabledns.com.")
         self.assertEqual(zone.extra["mbox"], "mail.myzone.com")
@@ -191,6 +211,15 @@ class DurableDNSTests(LibcloudTestCase):
 
     def test_get_record(self):
         record = self.driver.get_record(zone_id="myzone.com.", record_id="record1")
+
+        # [0] /services/dns/getRecord.php
+        # [1] /services/dns/getZone.php
+        sent = DurableDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/getRecord.php")
+        data = sent.body.decode()
+        self.assertIn(":zonename>myzone.com.</", data)
+
         self.assertEqual(record.id, "353286987")
         self.assertEqual(record.name, "record1")
         self.assertEqual(record.type, "A")
@@ -225,7 +254,7 @@ class DurableDNSTests(LibcloudTestCase):
         )
         extra = ZONE_EXTRA_PARAMS_DEFAULT_VALUES
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, 4000)
         self.assertEqual(zone.extra["ns"], extra["ns"])
         self.assertEqual(zone.extra["mbox"], "mail.myzone.com")
@@ -243,7 +272,7 @@ class DurableDNSTests(LibcloudTestCase):
         zone = self.driver.create_zone(domain="myzone.com.")
         extra = ZONE_EXTRA_PARAMS_DEFAULT_VALUES
         self.assertEqual(zone.id, "myzone.com.")
-        self.assertEqual(zone.domain, "myzone.com.")
+        self.assertEqual(zone.domain, "myzone.com")
         self.assertEqual(zone.ttl, DEFAULT_TTL)
         self.assertEqual(zone.extra["ns"], extra["ns"])
         self.assertEqual(zone.extra["mbox"], extra["mbox"])
@@ -355,8 +384,15 @@ class DurableDNSTests(LibcloudTestCase):
             zone, zone.domain, type=zone.type, ttl=4000, extra=new_extra
         )
 
+        # [0] /services/dns/updateZone.php
+        # [1] /services/dns/getZone.php
+        sent = DurableDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/updateZone.php")
+        self.assertIn(":zonename>deletedzone.com.</", sent.body)
+
         self.assertEqual(updated_zone.id, "myzone.com.")
-        self.assertEqual(updated_zone.domain, "myzone.com.")
+        self.assertEqual(updated_zone.domain, "myzone.com")
         self.assertEqual(updated_zone.ttl, 4000)
         self.assertEqual(updated_zone.extra["ns"], z_extra["ns"])
         self.assertEqual(updated_zone.extra["mbox"], z_extra["mbox"])
@@ -431,6 +467,13 @@ class DurableDNSTests(LibcloudTestCase):
             record, record.name, record.type, record.data, extra=new_extra
         )
 
+        sent = DurableDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/updateRecord.php")
+        self.assertIn(":zonename>myzone.com.</", sent.body)
+        self.assertIn(":name>record1</", sent.body)
+        self.assertIn(":ttl>4500</", sent.body)
+
         self.assertEqual(updated_record.data, "192.168.0.1")
         self.assertEqual(updated_record.id, "353286987")
         self.assertEqual(updated_record.name, "record1")
@@ -496,6 +539,13 @@ class DurableDNSTests(LibcloudTestCase):
             extra=z_extra,
         )
         status = self.driver.delete_zone(zone=zone)
+
+        sent = DurableDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/deleteZone.php")
+        data = sent.body.decode()
+        self.assertIn(":zonename>myzone.com.</", data)
+
         self.assertTrue(status)
 
     def test_delete_zone_zone_does_not_exist(self):
@@ -555,6 +605,14 @@ class DurableDNSTests(LibcloudTestCase):
             extra=extra,
         )
         status = self.driver.delete_record(record=record)
+
+        sent = DurableDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/services/dns/deleteRecord.php")
+        data = sent.body.decode()
+        self.assertIn(":zonename>myzone.com.</", data)
+        self.assertIn(":id>353286987</", data)
+
         self.assertTrue(status)
 
     def test_delete_record_record_does_not_exist(self):
@@ -608,6 +666,7 @@ class DurableDNSTests(LibcloudTestCase):
 
 class DurableDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("durabledns")
+    keep_history = True
 
     def _services_dns_listZones_php(self, method, url, body, headers):
         body = self.fixtures.load("list_zones.xml")

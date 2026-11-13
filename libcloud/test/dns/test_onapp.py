@@ -28,6 +28,7 @@ class OnAppDNSTests(LibcloudTestCase):
     def setUp(self):
         OnAppDNSDriver.connectionCls.conn_class = OnAppDNSMockHttp
         OnAppDNSMockHttp.type = None
+        OnAppDNSMockHttp.history.clear()
         self.driver = OnAppDNSDriver(*DNS_PARAMS_ONAPP)
 
     def assertHasKeys(self, dictionary, keys):
@@ -48,6 +49,11 @@ class OnAppDNSTests(LibcloudTestCase):
 
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
+
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns_zones.json")
+
         self.assertEqual(len(zones), 2)
 
         zone1 = zones[0]
@@ -66,6 +72,11 @@ class OnAppDNSTests(LibcloudTestCase):
 
     def test_get_zone_success(self):
         zone1 = self.driver.get_zone(zone_id="1")
+
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns_zones/1.json")
+
         self.assertEqual(zone1.id, "1")
         self.assertEqual(zone1.type, "master")
         self.assertEqual(zone1.domain, "example.com")
@@ -82,6 +93,12 @@ class OnAppDNSTests(LibcloudTestCase):
     def test_create_zone_success(self):
         OnAppDNSMockHttp.type = "CREATE"
         zone = self.driver.create_zone(domain="example.com")
+
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/dns_zones.json")
+        self.assertEqual(sent.json["dns_zone"]["name"], "example.com")
+
         self.assertEqual(zone.id, "1")
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.ttl, 1200)
@@ -93,9 +110,18 @@ class OnAppDNSTests(LibcloudTestCase):
         OnAppDNSMockHttp.type = "DELETE"
         self.assertTrue(self.driver.delete_zone(zone))
 
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/dns_zones/1.json")
+
     def test_list_records_success(self):
         zone = self.driver.get_zone(zone_id="1")
         records = self.driver.list_records(zone=zone)
+
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns_zones/1/records.json")
+
         self.assertEqual(len(records), 5)
 
         record1 = records[0]
@@ -120,6 +146,13 @@ class OnAppDNSTests(LibcloudTestCase):
 
     def test_get_record_success(self):
         record = self.driver.get_record(zone_id="1", record_id="123")
+
+        # [0] GET /dns_zones/1/records/123.json
+        # [1] GET /dns_zones/1.json
+        sent = OnAppDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns_zones/1/records/123.json")
+
         self.assertEqual(record.id, "123")
         self.assertEqual(record.name, "@")
         self.assertEqual(record.type, RecordType.A)
@@ -129,8 +162,17 @@ class OnAppDNSTests(LibcloudTestCase):
         zone = self.driver.get_zone(zone_id="1")
         OnAppDNSMockHttp.type = "CREATE"
         record = self.driver.create_record(
-            name="blog", zone=zone, type=RecordType.A, data="123.156.189.2"
+            name="blog", zone=zone, type=RecordType.A, data="123.156.189.2", extra={"ttl": 3600}
         )
+
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/dns_zones/1/records.json")
+        self.assertEqual(sent.json["dns_record"]["name"], "blog")
+        self.assertEqual(sent.json["dns_record"]["type"], "A")
+        self.assertEqual(sent.json["dns_record"]["ip"], "123.156.189.2")
+        self.assertEqual(sent.json["dns_record"]["ttl"], 3600)
+
         self.assertEqual(record.id, "111227")
         self.assertEqual(record.name, "blog")
         self.assertEqual(record.type, RecordType.A)
@@ -139,11 +181,25 @@ class OnAppDNSTests(LibcloudTestCase):
 
     def test_update_record_success(self):
         record = self.driver.get_record(zone_id="1", record_id="123")
+        OnAppDNSMockHttp.history.clear()
+
         OnAppDNSMockHttp.type = "UPDATE"
         extra = {"ttl": 4500}
         record1 = self.driver.update_record(
             record=record, name="@", type=record.type, data="123.156.189.2", extra=extra
         )
+
+        # [0] PUT /dns_zones/1/records/123.json
+        # [1] GET /dns_zones/1/records/123.json
+        # [2] GET /dns_zones/1.json
+        sent = OnAppDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/dns_zones/1/records/123.json")
+        self.assertEqual(sent.json["dns_record"]["name"], "@")
+        self.assertEqual(sent.json["dns_record"]["type"], "A")
+        self.assertEqual(sent.json["dns_record"]["ip"], "123.156.189.2")
+        self.assertEqual(sent.json["dns_record"]["ttl"], 4500)
+
         self.assertEqual(record.data["ip"], "123.156.189.1")
         self.assertEqual(record.ttl, 3600)
         self.assertEqual(record1.data["ip"], "123.156.189.2")
@@ -153,11 +209,17 @@ class OnAppDNSTests(LibcloudTestCase):
         record = self.driver.get_record(zone_id="1", record_id="123")
         OnAppDNSMockHttp.type = "DELETE"
         status = self.driver.delete_record(record=record)
+
+        sent = OnAppDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/dns_zones/1/records/123.json")
+
         self.assertTrue(status)
 
 
 class OnAppDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("onapp")
+    keep_history = True
 
     def _dns_zones_json(self, method, url, body, headers):
         body = self.fixtures.load("list_zones.json")

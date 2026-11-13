@@ -24,6 +24,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.dns.drivers.dnsimple import DNSimpleDNSDriver
 
 
+@unittest.skip("v1 API is deprecated")
 class DNSimpleDNSTests(unittest.TestCase):
     def setUp(self):
         DNSimpleDNSDriver.connectionCls.conn_class = DNSimpleDNSMockHttp

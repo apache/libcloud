@@ -54,7 +54,7 @@ class ZonomiDNSDriver(DNSDriver):
         :return: ``list`` of :class:`Zone`
         """
         action = "/app/dns/dyndns.jsp?"
-        params = {"action": "QUERYZONES", "api_key": self.key}
+        params = {"action": "QUERYZONES"}
 
         response = self.connection.request(action=action, params=params)
         zones = self._to_zones(response.objects)
@@ -118,9 +118,10 @@ class ZonomiDNSDriver(DNSDriver):
         record = None
         zone = self.get_zone(zone_id=zone_id)
         records = self.list_records(zone=zone)
+        parts = self.from_default_id(zone, record_id)
 
         for r in records:
-            if r.id == record_id:
+            if r.name == parts.name and r.type == parts.type:
                 record = r
 
         if record is None:
@@ -175,10 +176,7 @@ class ZonomiDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         action = "/app/dns/dyndns.jsp?"
-        if name:
-            record_name = name + "." + zone.domain
-        else:
-            record_name = zone.domain
+        record_name = zone.hostname(name)
         params = {"action": "SET", "name": record_name, "value": data, "type": type}
 
         if type == "MX" and extra is not None:
@@ -236,7 +234,7 @@ class ZonomiDNSDriver(DNSDriver):
         :rtype: Bool
         """
         action = "/app/dns/dyndns.jsp?"
-        params = {"action": "DELETE", "name": record.name, "type": record.type}
+        params = {"action": "DELETE", "name": record.hostname, "type": record.type}
         try:
             response = self.connection.request(action=action, params=params)
         except ZonomiException as e:
@@ -314,17 +312,13 @@ class ZonomiDNSDriver(DNSDriver):
         else:
             ttl = None
         extra = {"ttl": ttl, "prio": item.get("prio")}
-        if len(item["name"]) > len(zone.domain):
-            full_domain = item["name"]
-            index = full_domain.index("." + zone.domain)
-            record_name = full_domain[:index]
-        else:
-            record_name = zone.domain
+        rname = item["name"]
+        rtype = item["type"]
         record = Record(
-            id=record_name,
-            name=record_name,
+            id=self.to_default_id(zone, rname, rtype),
+            name=rname,
             data=item["content"],
-            type=item["type"],
+            type=rtype,
             zone=zone,
             driver=self,
             ttl=ttl,

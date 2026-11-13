@@ -31,18 +31,30 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         DigitalOcean_v2_BaseDriver.connectionCls.conn_class = DigitalOceanDNSMockHttp
         DigitalOceanDNSDriver.connectionCls.conn_class = DigitalOceanDNSMockHttp
         DigitalOceanDNSMockHttp.type = None
+        DigitalOceanDNSMockHttp.history.clear()
         self.driver = DigitalOceanDNSDriver(*DIGITALOCEAN_v2_PARAMS)
 
     def tearDown(self):
         LibcloudConnection.type = None
         DigitalOceanDNSMockHttp.type = None
+        DigitalOceanDNSMockHttp.history.clear()
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains")
+
         self.assertTrue(len(zones) >= 1)
 
     def test_get_zone(self):
         zone = self.driver.get_zone("testdomain")
+
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains/testdomain")
+
         self.assertEqual(zone.id, "testdomain")
 
     def test_get_zone_not_found(self):
@@ -52,12 +64,24 @@ class DigitalOceanDNSTests(LibcloudTestCase):
     def test_list_records(self):
         zone = self.driver.get_zone("testdomain")
         records = self.driver.list_records(zone)
+
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains/testdomain/records")
+
         self.assertTrue(len(records) >= 1)
         self.assertEqual(records[1].ttl, 1800)
         self.assertEqual(records[4].ttl, None)
 
     def test_get_record(self):
         record = self.driver.get_record("testdomain", "1234564")
+
+        # [0] '/v2/domains/testdomain/records/1234564'
+        # [1] '/v2/domains/testdomain'
+        sent = DigitalOceanDNSMockHttp.history[0]
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v2/domains/testdomain/records/1234564")
+
         self.assertEqual(record.id, "1234564")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "123.45.67.89")
@@ -70,6 +94,12 @@ class DigitalOceanDNSTests(LibcloudTestCase):
     def test_create_zone(self):
         DigitalOceanDNSMockHttp.type = "CREATE"
         zone = self.driver.create_zone("testdomain")
+
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/v2/domains")
+        self.assertEqual(sent.json["name"], "testdomain")
+
         self.assertEqual(zone.id, "testdomain")
 
     def test_create_record(self):
@@ -79,6 +109,15 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         record = self.driver.create_record(
             "sub", zone, RecordType.A, "234.56.78.90", extra={"ttl": 60}
         )
+
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, f"/v2/domains/{zone.domain}/records")
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["name"], "sub")
+        self.assertEqual(sent.json["data"], "234.56.78.90")
+        self.assertEqual(sent.json["ttl"], 60)
+
         self.assertEqual(record.id, "1234565")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "234.56.78.90")
@@ -89,6 +128,15 @@ class DigitalOceanDNSTests(LibcloudTestCase):
 
         DigitalOceanDNSMockHttp.type = "UPDATE"
         record = self.driver.update_record(record, data="234.56.78.90", extra={"ttl": 60})
+
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertIn(sent.method, {"PATCH", "PUT"})
+        self.assertEqual(sent.url, f"/v2/domains/testdomain/records/{record.id}")
+        self.assertEqual(sent.json["type"], "A")
+        self.assertEqual(sent.json["name"], "@")
+        self.assertEqual(sent.json["data"], "234.56.78.90")
+        self.assertEqual(sent.json["ttl"], 60)
+
         self.assertEqual(record.id, "1234564")
         self.assertEqual(record.data, "234.56.78.90")
         self.assertEqual(record.ttl, 60)
@@ -99,15 +147,24 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         DigitalOceanDNSMockHttp.type = "DELETE"
         self.assertTrue(self.driver.delete_zone(zone))
 
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/v2/domains/{zone.domain}")
+
     def test_delete_record(self):
         record = self.driver.get_record("testdomain", "1234564")
 
         DigitalOceanDNSMockHttp.type = "DELETE"
         self.assertTrue(self.driver.delete_record(record))
 
+        sent = DigitalOceanDNSMockHttp.history.pop()
+        self.assertIn(sent.method, "DELETE")
+        self.assertEqual(sent.url, f"/v2/domains/testdomain/records/{record.id}")
+
 
 class DigitalOceanDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("digitalocean")
+    keep_history = True
 
     response_map = {
         None: httplib.OK,
