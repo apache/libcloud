@@ -326,13 +326,17 @@ class Route53DNSDriver(DNSDriver):
         return response.status == httplib.OK
 
     def _to_record_value(self, data, extra):
-        # "priority" is parsed out of the value by _to_record, so it needs to
-        # be put back to reconstruct the value Route53 stores.
+        # "priority" (MX and SRV) and "weight" and "port" (SRV) are parsed out
+        # of the value by _to_record, so they need to be put back to
+        # reconstruct the value Route53 stores.
 
-        if extra and "priority" in extra:
-            return "{} {}".format(extra["priority"], data)
+        if not extra or "priority" not in extra:
+            return data
 
-        return data
+        if "weight" in extra and "port" in extra:
+            return "{} {} {} {}".format(extra["priority"], extra["weight"], extra["port"], data)
+
+        return "{} {}".format(extra["priority"], data)
 
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
         """
@@ -440,11 +444,13 @@ class Route53DNSDriver(DNSDriver):
         rrecs = ET.SubElement(rrs, "ResourceRecords")
 
         rrec = ET.SubElement(rrecs, "ResourceRecord")
-        ET.SubElement(rrec, "Value").text = record.data
+        ET.SubElement(rrec, "Value").text = self._to_record_value(record.data, record.extra)
 
         for other_record in other_records:
             rrec = ET.SubElement(rrecs, "ResourceRecord")
-            ET.SubElement(rrec, "Value").text = other_record["data"]
+            ET.SubElement(rrec, "Value").text = self._to_record_value(
+                other_record["data"], other_record.get("extra", {})
+            )
 
         # Re-create new (updated) records. Since we are updating a multi value
         # record, only a single record is updated and others are left as is.
@@ -465,11 +471,13 @@ class Route53DNSDriver(DNSDriver):
         rrecs = ET.SubElement(rrs, "ResourceRecords")
 
         rrec = ET.SubElement(rrecs, "ResourceRecord")
-        ET.SubElement(rrec, "Value").text = data
+        ET.SubElement(rrec, "Value").text = self._to_record_value(data, extra)
 
         for other_record in other_records:
             rrec = ET.SubElement(rrecs, "ResourceRecord")
-            ET.SubElement(rrec, "Value").text = other_record["data"]
+            ET.SubElement(rrec, "Value").text = self._to_record_value(
+                other_record["data"], other_record.get("extra", {})
+            )
         uri = API_ROOT + "hostedzone/" + record.zone.id + "/rrset"
         data = ET.tostring(changeset)
         self.connection.set_context({"zone_id": record.zone.id})
@@ -500,10 +508,7 @@ class Route53DNSDriver(DNSDriver):
 
             rrecs = ET.SubElement(rrs, "ResourceRecords")
             rrec = ET.SubElement(rrecs, "ResourceRecord")
-
-            if "priority" in extra:
-                data = "{} {}".format(extra["priority"], data)
-            ET.SubElement(rrec, "Value").text = data
+            ET.SubElement(rrec, "Value").text = self._to_record_value(data, extra)
 
         uri = API_ROOT + "hostedzone/" + zone.id + "/rrset"
         data = ET.tostring(changeset)
