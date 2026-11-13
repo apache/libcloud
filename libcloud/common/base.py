@@ -410,7 +410,8 @@ class Connection:
     def _tuple_from_url(self, url):
         secure = 1
         port = None
-        scheme, netloc, request_path, param, query, fragment = urlparse.urlparse(url)
+        parsed_url = urlparse.urlparse(url)
+        scheme, netloc, request_path, param, query, fragment = parsed_url
 
         if scheme not in ["http", "https"]:
             raise LibcloudError("Invalid scheme: {} in url {}".format(scheme, url))
@@ -418,7 +419,10 @@ class Connection:
         if scheme == "http":
             secure = 0
 
-        if ":" in netloc:
+        if netloc.startswith("["):
+            port = parsed_url.port
+            netloc = netloc[: netloc.index("]") + 1]
+        elif ":" in netloc:
             netloc, port = netloc.rsplit(":")
             port = int(port)
 
