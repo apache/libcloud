@@ -17,7 +17,6 @@
 Provides storage driver for working with local filesystem
 """
 
-
 import os
 import time
 import errno
@@ -28,9 +27,9 @@ from hashlib import sha256
 
 from libcloud.utils.py3 import u, relpath
 from libcloud.common.base import Connection
-from libcloud.utils.files import read_in_chunks, exhaust_iterator
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.base import CHUNK_SIZE, Object, Container, StorageDriver
 from libcloud.storage.types import (
     ObjectError,
     ObjectDoesNotExistError,
@@ -60,7 +59,7 @@ class NoOpLockLocalStorage:
         return True
 
     def __exit__(self, type, value, traceback):
-        return value
+        return False
 
 
 class LockLocalStorage:
@@ -103,13 +102,17 @@ class LockLocalStorage:
                 "in %s seconds" % (self.path, lock_acquire_timeout)
             )
 
-        success = self.ipc_lock.acquire(blocking=True, timeout=lock_acquire_timeout)
+        try:
+            success = self.ipc_lock.acquire(blocking=True, timeout=lock_acquire_timeout)
 
-        if not success:
-            raise LibcloudError(
-                "Failed to acquire IPC lock (%s) for path %s "
-                "in %s seconds" % (self.ipc_lock_path, self.path, lock_acquire_timeout)
-            )
+            if not success:
+                raise LibcloudError(
+                    "Failed to acquire IPC lock (%s) for path %s "
+                    "in %s seconds" % (self.ipc_lock_path, self.path, lock_acquire_timeout)
+                )
+        except BaseException:
+            self.thread_lock.release()
+            raise
 
     def __exit__(self, type, value, traceback):
         if self.thread_lock.locked():
@@ -452,6 +455,8 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             shutil.copy(obj_path, file_path)
+        except shutil.SameFileError:
+            return False
         except OSError:
             if delete_on_failure:
                 try:
@@ -501,28 +506,36 @@ class LocalStorageDriver(StorageDriver):
         )
 
         with open(file_path, "wb") as fp:
-            fp.write(exhaust_iterator(iterator))
+            for chunk in iterator:
+                fp.write(chunk)
 
         return True
 
     def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None, chunk_size=None):
         self._validate_start_and_end_bytes(start_bytes=start_bytes, end_bytes=end_bytes)
+        chunk_size = chunk_size or CHUNK_SIZE
+        if chunk_size < 0:
+            raise ValueError("chunk_size must be greater than 0")
 
         path = self.get_object_cdn_url(obj)
         with open(path, "rb") as obj_file:
-            file_size = len(obj_file.read())
+            file_size = os.fstat(obj_file.fileno()).st_size
 
             if end_bytes and end_bytes > file_size:
                 raise ValueError("end_bytes is larger than file size")
 
             if end_bytes is None:
-                read_bytes = (file_size - start_bytes) + 1
+                read_bytes = file_size - start_bytes
             else:
                 read_bytes = end_bytes - start_bytes
 
             obj_file.seek(start_bytes)
-            data = obj_file.read(read_bytes)
-            yield data
+            while read_bytes > 0:
+                data = obj_file.read(min(chunk_size, read_bytes))
+                if not data:
+                    break
+                read_bytes -= len(data)
+                yield data
 
     def upload_object(
         self,

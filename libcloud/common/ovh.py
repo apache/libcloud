@@ -119,7 +119,6 @@ class OvhConnection(ConnectionUserAndKey):
     responseCls = OvhResponse
     timestamp = None
     ua = []  # type: List[str]
-    LOCATIONS = LOCATIONS
     _timedelta = None
 
     allow_insecure = True

@@ -327,7 +327,7 @@ class Connection:
     port = 443
     timeout = None  # type: Optional[Union[int, float]]
     secure = 1
-    driver = None  # type:  Type[BaseDriver]
+    driver = None  # type: Type[BaseDriver]
     action = None
     cache_busting = False
     backoff = None
@@ -410,7 +410,7 @@ class Connection:
     def _tuple_from_url(self, url):
         secure = 1
         port = None
-        (scheme, netloc, request_path, param, query, fragment) = urlparse.urlparse(url)
+        scheme, netloc, request_path, param, query, fragment = urlparse.urlparse(url)
 
         if scheme not in ["http", "https"]:
             raise LibcloudError("Invalid scheme: {} in url {}".format(scheme, url))
@@ -450,9 +450,9 @@ class Connection:
         secure = self.secure
 
         if getattr(self, "base_url", None) and base_url is None:
-            (host, port, secure, request_path) = self._tuple_from_url(getattr(self, "base_url"))
+            host, port, secure, request_path = self._tuple_from_url(getattr(self, "base_url"))
         elif base_url is not None:
-            (host, port, secure, request_path) = self._tuple_from_url(base_url)
+            host, port, secure, request_path = self._tuple_from_url(base_url)
         else:
             host = host or self.host
             port = port or self.port

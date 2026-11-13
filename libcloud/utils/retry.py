@@ -107,11 +107,14 @@ class MinimalRetry:
             end = datetime.now() + timedelta(seconds=self.timeout)
             last_exc = None
 
-            while datetime.now() < end:
+            while last_exc is None or datetime.now() < end:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
                 except Exception as exc:
                     last_exc = exc
+
+                    if datetime.now() >= end:
+                        raise
 
                     if isinstance(exc, RateLimitReachedError):
                         _logger.debug("You are being rate limited, backing " "off...")

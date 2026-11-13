@@ -15,6 +15,7 @@
 """
 Dimension Data Common Components
 """
+
 from time import sleep
 from base64 import b64encode
 

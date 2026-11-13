@@ -31,6 +31,8 @@ rate_limit = None
 
 node = driver.create_node(
     name=name,
+    size=None,
+    image=None,
     ex_memory=memory,
     ex_cpus=cpus,
     ex_cpu_shares=cpu_shares,

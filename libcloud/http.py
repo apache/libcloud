@@ -18,14 +18,11 @@ Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
 
-import os
 import warnings
 
 import requests
+from requests.utils import should_bypass_proxies
 from requests.adapters import HTTPAdapter
-
-import libcloud.security
-from libcloud.utils.py3 import urlparse
 
 try:
     # requests no longer vendors urllib3 in newer versions
@@ -34,6 +31,8 @@ try:
 except ImportError:
     from requests.packages.urllib3.poolmanager import PoolManager  # type: ignore
 
+import libcloud.security
+from libcloud.utils.py3 import urlparse
 
 __all__ = ["LibcloudBaseConnection", "LibcloudConnection"]
 
@@ -41,9 +40,6 @@ ALLOW_REDIRECTS = 1
 
 # Default timeout for HTTP requests in seconds
 DEFAULT_REQUEST_TIMEOUT = 60
-
-HTTP_PROXY_ENV_VARIABLE_NAME = "http_proxy"
-HTTPS_PROXY_ENV_VARIABLE_NAME = "https_proxy"
 
 
 class SignedHTTPSAdapter(HTTPAdapter):
@@ -88,6 +84,7 @@ class LibcloudBaseConnection:
     def set_http_proxy(self, proxy_url):
         """
         Set a HTTP proxy which will be used with this connection.
+        This will override any proxy environment variables.
 
         :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
                           authentication and
@@ -114,6 +111,32 @@ class LibcloudBaseConnection:
             "http": proxy_url,
             "https": proxy_url,
         }
+
+    def _proxies_for_url(self, url):
+        """
+        Return the proxy mapping to use for ``url``.
+
+        An explicitly configured proxy is skipped when the target host matches
+        the ``no_proxy`` / ``NO_PROXY`` environment variable, so libcloud
+        behaves consistently with other HTTP clients.
+
+        :param url: Absolute request URL.
+        :type url: ``str``
+
+        :rtype: ``dict`` or ``None``
+        """
+        if not self.session.proxies:
+            return None
+
+        if should_bypass_proxies(url, no_proxy=None):
+            # Explicitly disable the configured schemes. Returning {} is not
+            # enough: requests merges per-request proxies with the session
+            # proxies, so the session-level proxy would be merged back in.
+            # ``None`` values are stripped by requests' merge, leaving an
+            # empty effective mapping.
+            return {"http": None, "https": None}
+
+        return None
 
     def _parse_proxy_url(self, proxy_url):
         """
@@ -197,13 +220,8 @@ class LibcloudConnection(LibcloudBaseConnection):
             ":{}".format(port) if port not in (80, 443) else "",
         )
 
-        # Support for HTTP(s) proxy
-        # NOTE: We always only use a single proxy (either HTTP or HTTPS)
-        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME, None)
-        http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, https_proxy_url_env)
-
-        # Connection argument has precedence over environment variables
-        proxy_url = kwargs.pop("proxy_url", http_proxy_url_env)
+        # Connection argument has precedence over environment variables, which are handled downstream
+        proxy_url = kwargs.pop("proxy_url", None)
 
         self._setup_verify()
         self._setup_ca_cert()
@@ -239,6 +257,7 @@ class LibcloudConnection(LibcloudBaseConnection):
             verify=self.verification,
             timeout=self.session.timeout,
             hooks=hooks,
+            proxies=self._proxies_for_url(url),
         )
 
     def prepared_request(self, method, url, body=None, headers=None, raw=False, stream=False):

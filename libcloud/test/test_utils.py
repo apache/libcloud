@@ -30,7 +30,11 @@ from libcloud.utils.py3 import StringIO, b, bchr, urlquote, hexadigits
 from libcloud.utils.misc import get_driver, set_driver, get_secure_random_string
 from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
-from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint, get_pubkey_openssh_fingerprint
+from libcloud.utils.publickey import (
+    get_pubkey_comment,
+    get_pubkey_ssh2_fingerprint,
+    get_pubkey_openssh_fingerprint,
+)
 from libcloud.utils.decorators import wrap_non_libcloud_exceptions
 from libcloud.utils.networking import (
     is_public_subnet,
@@ -424,6 +428,9 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             "256.256.256.256",
             "0.567.567.567",
             "192.168.0.257",
+            # Embedded null byte makes inet_pton raise ValueError, not OSError
+            "192.168.1.100\x00",
+            "10.0.0.1\x00extra",
         ]
 
         valid_ipv6_addresses = [
@@ -436,6 +443,8 @@ class NetworkingUtilsTestCase(unittest.TestCase):
         invalid_ipv6_addresses = [
             "2607:f0d",
             "2607:f0d0:0004",
+            # Embedded null byte makes inet_pton raise ValueError, not OSError
+            "::1\x00",
         ]
 
         for address in valid_ipv4_addresses:
@@ -495,6 +504,10 @@ class TestPublicKeyUtils(unittest.TestCase):
     def test_pubkey_ssh2_fingerprint(self):
         fp = get_pubkey_ssh2_fingerprint(self.PUBKEY)
         self.assertEqual(fp, "11:ad:5d:4c:5b:99:c9:80:7e:81:03:76:5a:25:9d:8c")
+
+    def test_pubkey_comment_without_comment_uses_default(self):
+        pubkey = self.PUBKEY.rsplit(" ", 1)[0]
+        self.assertEqual(get_pubkey_comment(pubkey, default="unnamed"), "unnamed")
 
 
 def test_decorator():

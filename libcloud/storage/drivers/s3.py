@@ -19,7 +19,7 @@ import time
 import base64
 from typing import Dict, Literal, Optional
 from hashlib import sha1
-from datetime import datetime
+from datetime import datetime, timezone
 
 import libcloud.utils.py3
 from libcloud.utils.py3 import b, httplib, tostring, urlquote, urlencode
@@ -249,6 +249,12 @@ class S3Connection(AWSTokenConnection, BaseS3Connection):
 class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
     service_name = "s3"
     version = API_VERSION
+
+    def morph_action_hook(self, action: str) -> str:
+        """Preserve object key slashes when enabled for this S3 driver."""
+        if getattr(self.driver, "ex_allow_path_double_slashes", False):
+            return self.request_path + action
+        return super().morph_action_hook(action)
 
     def __init__(
         self,
@@ -521,7 +527,7 @@ class BaseS3StorageDriver(StorageDriver):
             callback=read_in_chunks,
             response=response,
             callback_kwargs={
-                "iterator": response.iter_content(CHUNK_SIZE),
+                "iterator": response.iter_content(chunk_size or CHUNK_SIZE),
                 "chunk_size": chunk_size,
             },
             success_status_code=httplib.OK,
@@ -573,7 +579,7 @@ class BaseS3StorageDriver(StorageDriver):
             callback=read_in_chunks,
             response=response,
             callback_kwargs={
-                "iterator": response.iter_content(CHUNK_SIZE),
+                "iterator": response.iter_content(chunk_size or CHUNK_SIZE),
                 "chunk_size": chunk_size,
             },
             success_status_code=httplib.PARTIAL_CONTENT,
@@ -1243,8 +1249,17 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         port=None,
         region=None,
         token=None,
+        ex_allow_path_double_slashes: bool = False,
         **kwargs,
     ):
+        """
+        :param ex_allow_path_double_slashes: Preserve repeated slashes in object
+            request paths for this driver. When False, use the existing global
+            ``ALLOW_PATH_DOUBLE_SLASHES`` setting.
+        :type ex_allow_path_double_slashes: ``bool``
+        """
+        self.ex_allow_path_double_slashes = ex_allow_path_double_slashes
+
         # Here for backward compatibility for old and deprecated driver class
         # per region approach
         if hasattr(self, "region_name") and not region:
@@ -1306,7 +1321,7 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
         # assemble data for the request we want to pre-sign
         # see: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html # noqa
         object_path = self._get_object_path(obj.container, obj.name)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         duration_seconds = int(ex_expiry * 3600)
         credparts = (
             self.key,

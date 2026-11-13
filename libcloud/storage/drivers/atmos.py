@@ -109,6 +109,9 @@ class AtmosConnection(ConnectionUserAndKey):
         signature.extend([k + ":" + collapse(v) for k, v in xhdrs])
         signature = "\n".join(signature)
         key = base64.b64decode(self.key)
+        # The Atmos REST authentication protocol mandates HMAC-SHA1. Using a
+        # different digest would produce signatures the service cannot verify.
+        # codeql[py/weak-sensitive-data-hashing]
         signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
 
         return base64.b64encode(b(signature)).decode("utf-8")

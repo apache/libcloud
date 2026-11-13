@@ -51,6 +51,16 @@ If you also work on documentation, add the docs group:
 
 Commit ``uv.lock`` whenever dependency versions change.
 
+Build the HTML documentation with ``uv run tox -e docs``. To also validate the
+PDF and EPUB formats published on Read the Docs, run ``uv run tox -e docs-formats``.
+PDF builds require ``make``, ``latexmk``, ``xindy``, the recommended and extra
+LaTeX packages, and the recommended and TeX Gyre fonts. On Ubuntu, install these with:
+
+.. sourcecode:: bash
+
+    sudo apt-get install make latexmk xindy texlive-latex-recommended \
+        texlive-latex-extra texlive-fonts-recommended tex-gyre
+
 General contribution guidelines
 -------------------------------
 
@@ -177,10 +187,10 @@ For example:
         def list_nodes(self):
             pass
 
-        def list_images(self):
+        def list_images(self, location=None):
             pass
 
-        def create_node(self):
+        def create_node(self, name, size, image, location=None, auth=None):
             pass
 
         def reboot_node(self):

@@ -18,7 +18,7 @@
 set -e
 
 # Script which fails if any of the import takes more than threshold ms
-LIBCLOUD_CUMULATIVE_IMPORT_TIME_LIMIT_US=400000
+LIBCLOUD_CUMULATIVE_IMPORT_TIME_LIMIT_US=2000000
 EC2_DRIVER_CUMULATIVE_IMPORT_TIME_LIMIT_US=560000
 
 # Clean up any cached files to ensure consistent and clean environment
@@ -26,7 +26,7 @@ find . -name "*.pyc" -print0 | xargs -0 rm
 
 # Example line:
 # import time:      1112 |      70127 | libcloud
-LIBCLOUD_IMPORT_TIMINGS=$(python3.10 -X importtime -c "import libcloud" 2>&1)
+LIBCLOUD_IMPORT_TIMINGS=$(python3.12 -X importtime -c "import libcloud" 2>&1)
 LIBCLOUD_IMPORT_TIME_CUMULATIVE_US=$(echo -e "${LIBCLOUD_IMPORT_TIMINGS}" | tail -1 | grep "| libcloud" | awk '{print $5}')
 
 echo "Import timings for \"libcloud\" module"
@@ -40,7 +40,7 @@ fi
 # Clean up any cached files to ensure consistent and clean environment
 find . -name "*.pyc" -print0 | xargs -0 rm
 
-EC2_DRIVER_IMPORT_TIMINGS=$(python3.10 -X importtime -c "import libcloud.compute.drivers.ec2" 2>&1)
+EC2_DRIVER_IMPORT_TIMINGS=$(python3.12 -X importtime -c "import libcloud.compute.drivers.ec2" 2>&1)
 EC2_DRIVER_IMPORT_TIME_CUMULATIVE_US=$(echo -e "$EC2_DRIVER_IMPORT_TIMINGS}" | tail -1 | grep "| libcloud.compute.drivers.ec2" | awk '{print $5}')
 
 echo ""

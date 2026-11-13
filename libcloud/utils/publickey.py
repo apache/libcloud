@@ -72,9 +72,13 @@ def get_pubkey_ssh2_fingerprint(pubkey):
 def get_pubkey_comment(pubkey, default=None):
     if pubkey.startswith("ssh-"):
         # This is probably an OpenSSH key
+        parts = pubkey.strip().split(" ", 3)
+        if len(parts) > 2:
+            return parts[2]
+        if default is not None:
+            return default
+        raise ValueError("Public key does not contain a comment")
 
-        return pubkey.strip().split(" ", 3)[2]
-
-    if default:
+    if default is not None:
         return default
     raise ValueError("Public key is not in a supported format")

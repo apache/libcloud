@@ -15,6 +15,7 @@
 """
 Gandi driver for compute
 """
+
 from datetime import datetime
 
 from libcloud.common.gandi import (
@@ -229,7 +230,23 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return True
         return False
 
-    def deploy_node(self, **kwargs):
+    def deploy_node(
+        self,
+        deploy,
+        ssh_username="root",
+        ssh_alternate_usernames=None,
+        ssh_port=22,
+        ssh_timeout=10,
+        ssh_key=None,
+        ssh_key_password=None,
+        auth=None,
+        timeout=300,
+        max_tries=3,
+        ssh_interface="public_ips",
+        at_exit_func=None,
+        wait_period=5,
+        **create_node_kwargs,
+    ):
         """
         deploy_node is not implemented for gandi driver
 
@@ -243,6 +260,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         size,
         image,
         location=None,
+        auth=None,
         login=None,
         password=None,
         inet_family=4,
@@ -321,7 +339,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         # Call create_from helper api. Return 3 operations : disk_create,
         # iface_create,vm_create
-        (op_disk, op_iface, op_vm) = self.connection.request(
+        op_disk, op_iface, op_vm = self.connection.request(
             "hosting.vm.create_from", vm_spec, disk_spec, src_disk_id
         ).object
 
@@ -519,7 +537,11 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return True
         return False
 
-    def detach_volume(self, node, volume):
+    def detach_volume(
+        self,
+        volume,
+        node=None,
+    ):
         """
         Detaches a volume from a node.
 

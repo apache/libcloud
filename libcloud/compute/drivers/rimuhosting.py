@@ -15,6 +15,7 @@
 """
 RimuHosting Driver
 """
+
 try:
     import simplejson as json
 except ImportError:
@@ -226,6 +227,7 @@ class RimuHostingNodeDriver(NodeDriver):
         name,
         size,
         image,
+        location=None,
         auth=None,
         ex_billing_oid=None,
         ex_host_server_oid=None,

@@ -15,6 +15,7 @@
 """
 Ovh driver
 """
+
 from libcloud.utils.py3 import httplib
 from libcloud.common.ovh import API_ROOT, OvhConnection
 from libcloud.compute.base import (
@@ -27,6 +28,8 @@ from libcloud.compute.base import (
     VolumeSnapshot,
 )
 from libcloud.compute.types import Provider, StorageVolumeState, VolumeSnapshotState
+from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerprint
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.drivers.openstack import OpenStackKeyPair, OpenStackNodeDriver
 
 class OvhNodeDriver(NodeDriver):
@@ -118,21 +121,15 @@ class OvhNodeDriver(NodeDriver):
 
         return self._to_node(response.object)
 
-    def create_node(self, name, image, size, location, ex_keyname=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_keyname=None):
         """
         Create a new node
 
-        :keyword name: Name of created node
-        :type    name: ``str``
+        @inherits: :class:`NodeDriver.create_node`
 
-        :keyword image: Image used for node
-        :type    image: :class:`NodeImage`
-
-        :keyword size: Size (flavor) used for node
-        :type    size: :class:`NodeSize`
-
-        :keyword location: Location (region) where to create node
-        :type    location: :class:`NodeLocation`
+        :keyword auth: SSH key to use for the new node. If the key is not
+                       already available in the location, it will be imported.
+        :type    auth: :class:`NodeAuthSSHKey`
 
         :keyword ex_keyname: Name of SSH key used
         :type    ex_keyname: ``str``
@@ -147,13 +144,59 @@ class OvhNodeDriver(NodeDriver):
             "flavorId": size.id,
             "region": location.id,
         }
+        if auth and ex_keyname:
+            raise AttributeError("Cannot specify auth and ex_keyname together")
 
-        if ex_keyname:
+        if auth:
+            auth = self._get_and_check_auth(auth)
+            # pylint: disable=no-member
+            key = self.ex_find_or_import_keypair_by_key_material(location, auth.pubkey)
+            data["sshKeyId"] = key["keyId"]
+
+        elif ex_keyname:
             key_id = self.get_key_pair(ex_keyname, location).extra["id"]
             data["sshKeyId"] = key_id
         response = self.connection.request(action, data=data, method="POST")
 
         return self._to_node(response.object)
+
+    def ex_find_or_import_keypair_by_key_material(self, location, pubkey):
+        """
+        Find an SSH key in a location by its public key material, or import it.
+
+        :param location: Location (region) where the key should be searched for
+                         or imported.
+        :type location: :class:`NodeLocation`
+
+        :param pubkey: Public key material, such as an OpenSSH public key.
+        :type pubkey: ``str``
+
+        :return: Key name and ID for the matching or imported key pair.
+        :rtype: ``dict``
+
+        :raises BaseHTTPError: If the OVH API rejects the import request for a
+                               reason other than an existing duplicate key.
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_pairs = self.list_key_pairs(ex_location=location)
+        for key_pair in key_pairs:
+            if get_pubkey_ssh2_fingerprint(key_pair.public_key) == key_fingerprint:
+                return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
+
+        key_comment = get_pubkey_comment(pubkey, default="unnamed")
+        key_name = "{}-{}".format(key_comment, key_fingerprint.replace(":", "-"))
+        try:
+            key_pair = self.import_key_pair_from_string(key_name, pubkey, ex_location=location)
+        except BaseHTTPError as e:
+            if e.code != httplib.CONFLICT:
+                raise
+
+            for key_pair in self.list_key_pairs(ex_location=location):
+                if get_pubkey_ssh2_fingerprint(key_pair.public_key) == key_fingerprint:
+                    return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
+            raise
+
+        return {"keyName": key_pair.name, "keyId": key_pair.extra["id"]}
 
     def destroy_node(self, node):
         action = self._get_project_action("instance/%s" % node.id)
@@ -263,7 +306,12 @@ class OvhNodeDriver(NodeDriver):
 
         return keys[0]
 
-    def import_key_pair_from_string(self, name, key_material, ex_location):
+    def import_key_pair_from_string(
+        self,
+        name,
+        key_material,
+        ex_location=None,
+    ):
         """
         Import a new public key from string.
 
@@ -296,7 +344,7 @@ class OvhNodeDriver(NodeDriver):
         self,
         size,
         name,
-        location,
+        location=None,
         snapshot=None,
         ex_volume_type="classic",
         ex_description=None,

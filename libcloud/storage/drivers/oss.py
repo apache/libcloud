@@ -772,7 +772,7 @@ class OSSStorageDriver(StorageDriver):
             result = self._upload_from_iterator(
                 iterator, object_path, upload_id, calculate_hash, container=container
             )
-            (chunks, data_hash, bytes_transferred) = result
+            chunks, data_hash, bytes_transferred = result
 
             # Commit the chunk info and complete the upload
             etag = self._commit_multipart(object_path, upload_id, chunks, container=container)

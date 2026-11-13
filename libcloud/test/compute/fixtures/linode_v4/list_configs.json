@@ -1,0 +1,22 @@
+{
+    "data": [
+        {
+            "id": 123456,
+            "label": "My CentOS 7 Disk Profile",
+            "root_device": "/dev/sda",
+            "devices": {
+                "sda": {
+                    "disk": 23517413,
+                    "volume": null
+                },
+                "sdb": {
+                    "disk": 66517499,
+                    "volume": null
+                }
+            }
+        }
+    ],
+    "page": 1,
+    "pages": 1,
+    "results": 1
+}
