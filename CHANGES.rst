@@ -195,6 +195,13 @@ DNS
   (GITHUB-2216)
   [Hisernberg - @Hisernberg]
 
+- [Route53] Fix ``update_record`` and ``delete_record`` sending incomplete MX
+  and SRV values. The MX priority was dropped when updating a record which is
+  part of a multi value record set, and the SRV weight and port were dropped on
+  every update and delete, so the values did not match what Route53 stores.
+  (GITHUB-2224)
+  [Anish Mehta - @anishmehta24]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
