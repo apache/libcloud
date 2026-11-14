@@ -427,9 +427,11 @@ class DockerContainerDriver(ContainerDriver):
         :param start: Start the container on deployment
         :type  start: ``bool``
 
+        :param command: Override the image command; None uses the image default.
+        :type  command: ``str`` or ``None``
+
         :rtype: :class:`Container`
         """
-        command = shlex.split(str(command))
         if port_bindings is None:
             port_bindings = {}
         params = {"name": name}
@@ -447,7 +449,6 @@ class DockerContainerDriver(ContainerDriver):
             "AttachStdout": True,
             "AttachStderr": True,
             "Env": environment,
-            "Cmd": command,
             "Dns": dns,
             "Image": image.name,
             "Volumes": volumes,
@@ -462,6 +463,9 @@ class DockerContainerDriver(ContainerDriver):
             "NetworkMode": network_mode,
             "Labels": labels,
         }
+
+        if command is not None:
+            payload["Cmd"] = shlex.split(str(command))
 
         data = json.dumps(payload)
         try:
