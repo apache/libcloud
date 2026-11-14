@@ -579,6 +579,23 @@ class LocalTests(unittest.TestCase):
         self.remove_tmp_file(tmppath)
         os.unlink(destination_path)
 
+    def test_download_object_range_deletes_file_on_failure(self):
+        container = self.driver.create_container("range-failure")
+        obj = self.driver.upload_object_via_stream(iter([b"payload"]), container, "object")
+
+        os.unlink(self.driver.get_object_cdn_url(obj))
+        destination_path = os.path.join(self.key, "download")
+
+        with self.assertRaises(FileNotFoundError):
+            self.driver.download_object_range(
+                obj=obj,
+                destination_path=destination_path,
+                start_bytes=0,
+                delete_on_failure=True,
+            )
+
+        self.assertFalse(os.path.exists(destination_path))
+
     def test_download_object_range_as_stream_success(self):
         content = b"0123456789123456789"
         tmppath = self.make_tmp_file(content=content)

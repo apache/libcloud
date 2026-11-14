@@ -505,9 +505,14 @@ class LocalStorageDriver(StorageDriver):
             obj=obj, start_bytes=start_bytes, end_bytes=end_bytes
         )
 
-        with open(file_path, "wb") as fp:
-            for chunk in iterator:
-                fp.write(chunk)
+        try:
+            with open(file_path, "wb") as fp:
+                for chunk in iterator:
+                    fp.write(chunk)
+        except Exception:
+            if delete_on_failure and os.path.exists(file_path):
+                os.remove(file_path)
+            raise
 
         return True
 
