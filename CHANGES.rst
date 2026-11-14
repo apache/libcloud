@@ -117,6 +117,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [Local Storage] Delete the partially written file when ``download_object_range``
+  fails and ``delete_on_failure`` is set.
+  (GITHUB-2223)
+  [Rahul - @raamrutsagarb25-tech]
+
 - [S3] Add ``ex_allow_path_double_slashes`` to preserve object key slashes
   per driver without changing the global URL normalization setting.
   (GITHUB-1654)
