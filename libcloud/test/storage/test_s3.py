@@ -553,7 +553,9 @@ class S3Tests(unittest.TestCase):
                     "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
                     "X-Amz-Credential": "key/"
                     + dt.date().strftime("%Y%m%d")
-                    + "/us-east-1/s3/aws4_request",
+                    + "/"
+                    + self.driver.region_name
+                    + "/s3/aws4_request",
                     "X-Amz-Date": dt.strftime("%Y%m%dT%H%M%SZ"),
                     "X-Amz-Expires": 43200,
                     "X-Amz-SignedHeaders": "host",
@@ -594,12 +596,14 @@ class S3Tests(unittest.TestCase):
                     "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
                     "X-Amz-Credential": "key/"
                     + dt.date().strftime("%Y%m%d")
-                    + "/us-east-1/s3/aws4_request",
+                    + "/"
+                    + self.driver.region_name
+                    + "/s3/aws4_request",
                     "X-Amz-Date": dt.strftime("%Y%m%dT%H%M%SZ"),
                     "X-Amz-Expires": 43200,
                     "X-Amz-SignedHeaders": "host",
                 },
-                headers={"host": "s3.amazonaws.com"},
+                headers={"host": self.driver.connection.host},
                 dt=dt,
                 method="PUT",
                 path="/test2/test",

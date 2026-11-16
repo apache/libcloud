@@ -78,7 +78,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
     rawResponseCls = S3RawResponse
     PROJECT_ID_HEADER = "x-goog-project-id"
 
-    def __init__(self, user_id, key, secure=True, auth_type=None, credential_file=None, **kwargs):
+    def __init__(self, user_id, key, *args, auth_type=None, credential_file=None, **kwargs):
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if GoogleAuthType.is_oauth2(self.auth_type):
             self.oauth2_credential = GoogleOAuth2Credential(
@@ -86,7 +86,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             )
         else:
             self.oauth2_credential = None
-        super().__init__(user_id, key, secure, **kwargs)
+        super().__init__(user_id, key, *args, **kwargs)
 
     def add_default_headers(self, headers):
         date = email.utils.formatdate(usegmt=True)
