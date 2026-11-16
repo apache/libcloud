@@ -410,6 +410,105 @@ class Route53Tests(unittest.TestCase):
 
         self.assertIn("<Name>%s</Name>" % zone.domain, data)
 
+    def _get_posted_changes(self, operation, **params):
+        # Run the operation and return the (action, values) of each change in
+        # the changeset it posted.
+        sent = {}
+        original_request = self.driver.connection.request
+
+        def record_request(uri, *args, **kwargs):
+            if kwargs.get("method") == "POST":
+                sent["data"] = kwargs.get("data")
+
+            return original_request(uri, *args, **kwargs)
+
+        self.driver.connection.request = record_request
+        operation(**params)
+
+        data = sent["data"]
+
+        if not isinstance(data, str):
+            data = data.decode("utf-8")
+
+        return [
+            (
+                re.search(r"<Action>(.*?)</Action>", change).group(1),
+                re.findall(r"<Value>(.*?)</Value>", change),
+            )
+            for change in re.findall(r"<Change>(.*?)</Change>", data, re.S)
+        ]
+
+    def test_update_multi_value_mx_record_keeps_priorities(self):
+        zone = self.driver.list_zones()[0]
+        record = [r for r in self.driver.list_records(zone=zone) if r.type == RecordType.MX][0]
+
+        changes = self._get_posted_changes(
+            self.driver.update_record,
+            record=record,
+            name=record.name,
+            type=record.type,
+            data="MX.EXAMPLE.COM.",
+        )
+
+        other_values = [
+            "5 ALT1.ASPMX.L.GOOGLE.COM.",
+            "5 ALT2.ASPMX.L.GOOGLE.COM.",
+            "10 ASPMX2.GOOGLEMAIL.COM.",
+            "10 ASPMX3.GOOGLEMAIL.COM.",
+        ]
+        self.assertEqual(
+            changes,
+            [
+                ("DELETE", ["1 ASPMX.L.GOOGLE.COM."] + other_values),
+                ("CREATE", ["1 MX.EXAMPLE.COM."] + other_values),
+            ],
+        )
+
+    def test_delete_multi_value_srv_record_keeps_weight_and_port(self):
+        zone = self.driver.list_zones()[0]
+        record = [r for r in self.driver.list_records(zone=zone) if r.type == RecordType.SRV][0]
+
+        changes = self._get_posted_changes(self.driver.delete_record, record=record)
+
+        self.assertEqual(
+            changes,
+            [
+                (
+                    "DELETE",
+                    ["1 10 5269 xmpp-server.example.com.", "2 12 5060 sip-server.example.com."],
+                ),
+            ],
+        )
+
+    def test_update_single_value_srv_record_keeps_weight_and_port(self):
+        zone = self.driver.list_zones()[0]
+        record = Record(
+            id="SRV:_sip._tcp",
+            name="_sip._tcp",
+            type=RecordType.SRV,
+            data="sip.example.com.",
+            zone=zone,
+            driver=self.driver,
+            extra={"ttl": 300, "priority": 1, "weight": 10, "port": 5060, "_multi_value": False},
+        )
+
+        changes = self._get_posted_changes(
+            self.driver.update_record,
+            record=record,
+            name=record.name,
+            type=record.type,
+            data="sip2.example.com.",
+            extra={"ttl": 300, "priority": 1, "weight": 10, "port": 5061},
+        )
+
+        self.assertEqual(
+            changes,
+            [
+                ("DELETE", ["1 10 5060 sip.example.com."]),
+                ("CREATE", ["1 10 5061 sip2.example.com."]),
+            ],
+        )
+
     def test_record_changes_propagate_list_records_failure(self):
         # A failed lookup must propagate instead of submitting an incomplete
         # update or delete changeset.
@@ -464,6 +563,12 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(
             self.driver._to_record_value("ASPMX.L.GOOGLE.COM.", {"priority": 1}),
             "1 ASPMX.L.GOOGLE.COM.",
+        )
+        self.assertEqual(
+            self.driver._to_record_value(
+                "sip.example.com.", {"priority": 1, "weight": 10, "port": 5060}
+            ),
+            "1 10 5060 sip.example.com.",
         )
 
     def test_delete_record_does_not_exist(self):
