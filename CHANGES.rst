@@ -117,6 +117,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [S3] Fix ``get_object_cdn_url`` computing invalid signatures when using
+  a non-standard port
+  (#2222)
+  [Valentin Lorentz - @progval]
+
 - [S3] Add ``ex_allow_path_double_slashes`` to preserve object key slashes
   per driver without changing the global URL normalization setting.
   (GITHUB-1654)
