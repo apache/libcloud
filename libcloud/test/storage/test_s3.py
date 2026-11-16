@@ -21,7 +21,9 @@ import tempfile
 from io import BytesIO
 from hashlib import sha1
 from unittest import mock
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, call
+
+import pytest
 
 import libcloud.utils.files  # NOQA: F401
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611  # noqa
@@ -46,6 +48,7 @@ from libcloud.storage.drivers.s3 import (
     BaseS3Connection,
     S3USWestStorageDriver,
     S3SignatureV4Connection,
+    UnsignedPayloadSentinel,
 )
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
@@ -514,18 +517,56 @@ class S3Tests(unittest.TestCase):
         self.assertTrue("content_type" not in obj.extra)
 
     def test_get_object_cdn_url(self):
+        for port, secure, expected_host in [
+            (80, False, "s3.example.org"),
+            (443, True, "s3.example.org"),
+            (9000, False, "s3.example.org:9000"),
+            (9443, True, "s3.example.org:9443"),
+        ]:
+            with self.subTest(expected_host):
+                self._test_get_object_cdn_url(port, secure, expected_host)
+
+    def _test_get_object_cdn_url(self, port, secure, expected_host):
+        self.driver = self.driver_type(
+            *self.driver_args, host="s3.example.org", port=port, secure=secure
+        )
+
         self.mock_response_klass.type = "get_object"
         obj = self.driver.get_object(container_name="test2", object_name="test")
 
         # cdn urls can only be generated using a V4 connection
         if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
-            cdn_url = self.driver.get_object_cdn_url(obj, ex_expiry=12)
+            with mock.patch.object(self.driver.connection.signer, "_get_signature") as m:
+                cdn_url = self.driver.get_object_cdn_url(obj, ex_expiry=12)
             url = urlparse.urlparse(cdn_url)
             query = urlparse.parse_qs(url.query)
 
             self.assertEqual(len(query["X-Amz-Signature"]), 1)
             self.assertGreater(len(query["X-Amz-Signature"][0]), 0)
             self.assertEqual(query["X-Amz-Expires"], ["43200"])
+
+            self.assertEqual(m.call_count, 1, repr(m.call_args_list))
+            (call_args,) = m.call_args_list
+            dt = call_args.kwargs["dt"]
+            expected = call(
+                params={
+                    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+                    "X-Amz-Credential": "key/"
+                    + dt.date().strftime("%Y%m%d")
+                    + "/us-east-1/s3/aws4_request",
+                    "X-Amz-Date": dt.strftime("%Y%m%dT%H%M%SZ"),
+                    "X-Amz-Expires": 43200,
+                    "X-Amz-SignedHeaders": "host",
+                },
+                headers={"host": expected_host},
+                dt=dt,
+                method="GET",
+                path="/test2/test",
+                data=UnsignedPayloadSentinel,
+            )
+            self.assertEqual(
+                call_args, expected, "\n" + repr(call_args) + "\n != \n" + repr(expected)
+            )
         else:
             with self.assertRaises(NotImplementedError):
                 self.driver.get_object_cdn_url(obj)
@@ -536,13 +577,37 @@ class S3Tests(unittest.TestCase):
 
         # cdn urls can only be generated using a V4 connection
         if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
-            cdn_url = self.driver.get_object_cdn_url(obj, ex_method="PUT", ex_expiry=12)
+            with mock.patch.object(self.driver.connection.signer, "_get_signature") as m:
+                cdn_url = self.driver.get_object_cdn_url(obj, ex_method="PUT", ex_expiry=12)
             url = urlparse.urlparse(cdn_url)
             query = urlparse.parse_qs(url.query)
 
             self.assertEqual(len(query["X-Amz-Signature"]), 1)
             self.assertGreater(len(query["X-Amz-Signature"][0]), 0)
             self.assertEqual(query["X-Amz-Expires"], ["43200"])
+
+            self.assertEqual(m.call_count, 1, repr(m.call_args_list))
+            (call_args,) = m.call_args_list
+            dt = call_args.kwargs["dt"]
+            expected = call(
+                params={
+                    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+                    "X-Amz-Credential": "key/"
+                    + dt.date().strftime("%Y%m%d")
+                    + "/us-east-1/s3/aws4_request",
+                    "X-Amz-Date": dt.strftime("%Y%m%dT%H%M%SZ"),
+                    "X-Amz-Expires": 43200,
+                    "X-Amz-SignedHeaders": "host",
+                },
+                headers={"host": "s3.amazonaws.com"},
+                dt=dt,
+                method="PUT",
+                path="/test2/test",
+                data=UnsignedPayloadSentinel,
+            )
+            self.assertEqual(
+                call_args, expected, "\n" + repr(call_args) + "\n != \n" + repr(expected)
+            )
         else:
             with self.assertRaises(NotImplementedError):
                 self.driver.get_object_cdn_url(obj)
