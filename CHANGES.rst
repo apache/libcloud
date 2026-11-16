@@ -195,6 +195,15 @@ DNS
   (GITHUB-2216)
   [Hisernberg - @Hisernberg]
 
+Container
+~~~~~~~~~
+
+- [Docker] Fix ``deploy_container()`` overriding the image's default command
+  with ``['None']`` when no command is supplied. Explicit commands retain
+  their existing parsing behavior.
+  (GITHUB-2226, #2228)
+  [@fbccsz]
+
 Changes in Apache Libcloud 3.9.1
 --------------------------------
 
