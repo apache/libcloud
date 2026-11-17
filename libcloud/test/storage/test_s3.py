@@ -23,8 +23,6 @@ from hashlib import sha1
 from unittest import mock
 from unittest.mock import Mock, PropertyMock, call
 
-import pytest
-
 import libcloud.utils.files  # NOQA: F401
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611  # noqa
 from libcloud.test import unittest, make_response, generate_random_data
