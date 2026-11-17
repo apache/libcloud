@@ -583,18 +583,58 @@ class LocalTests(unittest.TestCase):
         container = self.driver.create_container("range-failure")
         obj = self.driver.upload_object_via_stream(iter([b"payload"]), container, "object")
 
-        os.unlink(self.driver.get_object_cdn_url(obj))
         destination_path = os.path.join(self.key, "download")
 
-        with self.assertRaises(FileNotFoundError):
-            self.driver.download_object_range(
-                obj=obj,
-                destination_path=destination_path,
-                start_bytes=0,
-                delete_on_failure=True,
-            )
+        error = OSError("stream failed")
 
+        def failing_iterator(*args, **kwargs):
+            yield b"partial data"
+            raise error
+
+        with mock.patch.object(
+            self.driver, "download_object_range_as_stream", side_effect=failing_iterator
+        ):
+            with self.assertRaises(OSError) as raised:
+                self.driver.download_object_range(
+                    obj=obj,
+                    destination_path=destination_path,
+                    start_bytes=0,
+                    delete_on_failure=True,
+                )
+
+        self.assertIs(raised.exception, error)
         self.assertFalse(os.path.exists(destination_path))
+
+    def test_download_object_range_preserves_partial_file_when_delete_on_failure_is_false(self):
+        container = self.driver.create_container("range-failure-preserve")
+        obj = self.driver.upload_object_via_stream(iter([b"payload"]), container, "object")
+
+        destination_path = os.path.join(self.key, "download")
+
+        error = OSError("stream failed")
+
+        def failing_iterator(*args, **kwargs):
+            yield b"partial data"
+            raise error
+
+        with mock.patch.object(
+            self.driver, "download_object_range_as_stream", side_effect=failing_iterator
+        ):
+            with self.assertRaises(OSError) as raised:
+                self.driver.download_object_range(
+                    obj=obj,
+                    destination_path=destination_path,
+                    start_bytes=0,
+                    delete_on_failure=False,
+                )
+
+        self.assertIs(raised.exception, error)
+        self.assertTrue(os.path.exists(destination_path))
+
+        with open(destination_path, "rb") as fp:
+            self.assertEqual(fp.read(), b"partial data")
+
+        os.unlink(destination_path)
 
     def test_download_object_range_as_stream_success(self):
         content = b"0123456789123456789"

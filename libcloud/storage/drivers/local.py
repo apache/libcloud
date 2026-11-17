@@ -511,7 +511,12 @@ class LocalStorageDriver(StorageDriver):
                     fp.write(chunk)
         except Exception:
             if delete_on_failure and os.path.exists(file_path):
-                os.remove(file_path)
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    # Don't let a failure to clean up the partially
+                    # written file mask the original download exception.
+                    pass
             raise
 
         return True
