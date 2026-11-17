@@ -1337,7 +1337,14 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
             "X-Amz-Expires": duration_seconds,
             "X-Amz-SignedHeaders": "host",
         }
-        headers_to_sign = {"host": self.connection.host}
+        if (self.secure and self.connection.port == 443) or (
+            not self.secure and self.connection.port == 80
+        ):
+            headers_to_sign = {"host": self.connection.host}
+        else:
+            headers_to_sign = {
+                "host": "{host}:{port}".format(host=self.connection.host, port=self.connection.port)
+            }
 
         # generate signature for the pre-signed request
         signature = self.connection.signer._get_signature(

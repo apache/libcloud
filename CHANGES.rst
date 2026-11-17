@@ -36,6 +36,13 @@ Common
   (#2185)
   [Ashish - @Ashishjob]
 
+- [Utils] Fix ``get_pubkey_openssh_fingerprint`` returning a wrong fingerprint
+  for Ed25519 keys and raising ``binascii.Error`` for ECDSA keys. The function
+  assumed a 7 character ``ssh-rsa`` key type prefix. This also affects the
+  ``fingerprint`` attribute of key pairs returned by the Vultr driver.
+  (#2229)
+  [0z5a - @0z5a]
+
 Compute
 ~~~~~~~
 
@@ -122,6 +129,11 @@ Storage
   (GITHUB-2223)
   [Rahul - @raamrutsagarb25-tech]
 
+- [S3] Fix ``get_object_cdn_url`` computing invalid signatures when using
+  a non-standard port
+  (#2222)
+  [Valentin Lorentz - @progval]
+
 - [S3] Add ``ex_allow_path_double_slashes`` to preserve object key slashes
   per driver without changing the global URL normalization setting.
   (GITHUB-1654)
@@ -199,6 +211,15 @@ DNS
   responses and error state no longer leaks between requests.
   (GITHUB-2216)
   [Hisernberg - @Hisernberg]
+
+Container
+~~~~~~~~~
+
+- [Docker] Fix ``deploy_container()`` overriding the image's default command
+  with ``['None']`` when no command is supplied. Explicit commands retain
+  their existing parsing behavior.
+  (GITHUB-2226, #2228)
+  [@fbccsz]
 
 Changes in Apache Libcloud 3.9.1
 --------------------------------
