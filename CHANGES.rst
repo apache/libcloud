@@ -124,6 +124,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [Local Storage] Delete the partially written file when ``download_object_range``
+  fails and ``delete_on_failure`` is set.
+  (GITHUB-2223)
+  [Rahul - @raamrutsagarb25-tech]
+
 - [S3] Fix ``get_object_cdn_url`` computing invalid signatures when using
   a non-standard port
   (#2222)
