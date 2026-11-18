@@ -8,6 +8,11 @@ Changes in Apache Libcloud 4.0.0
 Common
 ~~~~~~
 
+- Remove obsolete drivers.
+
+  (#2231)
+  [Samuel Marks - @SamuelMarks, Miguel Caballer - @micafer]
+
 - Accept bracketed IPv6 endpoint URLs, with default or explicit ports, in the
   shared connection class.
   (GITHUB-2220)
@@ -188,6 +193,7 @@ Storage
   [Sanjay Santhanam - @Sanjays2402]
 
 DNS
+~~~
 
 - [Route53] Fix ``delete_record`` failing with ``RecordDoesNotExistError`` for
   records which are part of a multi value record set (e.g. MX). Route53 only
