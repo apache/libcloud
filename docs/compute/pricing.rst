@@ -99,9 +99,9 @@ Using a custom pricing file
 
 By default Libcloud reads pricing data from ``data/pricing.json`` file which
 is included in the release package. If you want to use a custom pricing file,
-simply move your custom pricing file to ``~/.libcloud.pricing.json``.
+simply move your custom pricing file to ``~/.libcloud/pricing.json``.
 
-If ``~/.libcloud.pricing.json`` file is available, Libcloud will use it instead
+If ``~/.libcloud/pricing.json`` file is available, Libcloud will use it instead
 of the default pricing file which comes bundled with the release.
 
 Updating pricing
@@ -111,9 +111,9 @@ Updating pricing
 
     This functionality is only available in Libcloud 0.14.0 and above.
 
-Currently only way to update pricing is programmatically using
-:func:`libcloud.pricing.download_pricing_file` function. By default this
-function retrieves the latest pricing file from our git repository and saves it
-to ``~/.libcloud.pricing.json``.
+Currently the only way to update pricing is programmatically using
+:func:`libcloud.pricing.download_pricing_file`. By default, this function
+retrieves the latest pricing file from the public S3 bucket and saves it to
+``~/.libcloud/pricing.json``.
 
 .. autofunction:: libcloud.pricing.download_pricing_file
