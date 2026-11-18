@@ -71,7 +71,10 @@ DRIVERS = {
     Provider.OUTSCALE_SAS: ("libcloud.compute.drivers.ec2", "OutscaleSASNodeDriver"),
     Provider.OVH: ("libcloud.compute.drivers.ovh", "OvhNodeDriver"),
     Provider.RACKSPACE: ("libcloud.compute.drivers.rackspace", "RackspaceNodeDriver"),
-    Provider.RACKSPACE_FIRST_GEN: ("libcloud.compute.drivers.rackspace", "RackspaceFirstGenNodeDriver"),
+    Provider.RACKSPACE_FIRST_GEN: (
+        "libcloud.compute.drivers.rackspace",
+        "RackspaceFirstGenNodeDriver",
+    ),
     Provider.RIMUHOSTING: ("libcloud.compute.drivers.rimuhosting", "RimuHostingNodeDriver"),
     Provider.SCALEWAY: ("libcloud.compute.drivers.scaleway", "ScalewayNodeDriver"),
     Provider.TERREMARK: ("libcloud.compute.drivers.vcloud", "TerremarkDriver"),
