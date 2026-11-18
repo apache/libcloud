@@ -8,7 +8,9 @@ Changes in Apache Libcloud 4.0.0
 Common
 ~~~~~~
 
-- Remove obsolete drivers.
+- Remove obsolete Dimension Data (Compute, Backup, and Load Balancer) and
+  Internet Solutions (Compute) drivers, along with their associated documentation
+  and tests.
 
   (#2231)
   [Samuel Marks - @SamuelMarks, Miguel Caballer - @micafer]
