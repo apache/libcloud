@@ -33,6 +33,10 @@ __all__ = ["Provider", "DRIVERS", "get_driver"]
 DRIVERS = {
     Provider.ABIQUO: ("libcloud.compute.drivers.abiquo", "AbiquoNodeDriver"),
     Provider.ALIYUN_ECS: ("libcloud.compute.drivers.ecs", "ECSDriver"),
+    Provider.AURORACOMPUTE: (
+        "libcloud.compute.drivers.auroracompute",
+        "AuroraComputeNodeDriver",
+    ),
     Provider.AZURE: ("libcloud.compute.drivers.azure", "AzureNodeDriver"),
     Provider.AZURE_ARM: ("libcloud.compute.drivers.azure_arm", "AzureNodeDriver"),
     Provider.BRIGHTBOX: ("libcloud.compute.drivers.brightbox", "BrightboxNodeDriver"),
@@ -40,7 +44,6 @@ DRIVERS = {
     Provider.CLOUDSIGMA: ("libcloud.compute.drivers.cloudsigma", "CloudSigmaNodeDriver"),
     Provider.CLOUDSTACK: ("libcloud.compute.drivers.cloudstack", "CloudStackNodeDriver"),
     Provider.DIGITAL_OCEAN: ("libcloud.compute.drivers.digitalocean", "DigitalOceanNodeDriver"),
-    Provider.DIMENSIONDATA: ("libcloud.compute.drivers.dimensiondata", "DimensionDataNodeDriver"),
     Provider.DUMMY: ("libcloud.compute.drivers.dummy", "DummyNodeDriver"),
     Provider.EC2: ("libcloud.compute.drivers.ec2", "EC2NodeDriver"),
     Provider.EQUINIXMETAL: ("libcloud.compute.drivers.equinixmetal", "EquinixMetalNodeDriver"),

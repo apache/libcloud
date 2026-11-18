@@ -29,6 +29,7 @@ __all__ = ["DRIVERS", "get_driver", "set_driver"]
 
 DRIVERS = {
     Provider.DUMMY: ("libcloud.dns.drivers.dummy", "DummyDNSDriver"),
+    Provider.AURORADNS: ("libcloud.dns.drivers.auroradns", "AuroraDNSDriver"),
     Provider.BUDDYNS: ("libcloud.dns.drivers.buddyns", "BuddyNSDNSDriver"),
     Provider.CLOUDFLARE: ("libcloud.dns.drivers.cloudflare", "CloudFlareDNSDriver"),
     Provider.DIGITAL_OCEAN: ("libcloud.dns.drivers.digitalocean", "DigitalOceanDNSDriver"),

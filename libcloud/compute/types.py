@@ -48,12 +48,12 @@ class Provider(Type):
     :cvar DUMMY: Example provider
     :cvar ABIQUO: Abiquo driver
     :cvar ALIYUN_ECS: Aliyun ECS driver.
+    :cvar AURORACOMPUTE: Aurora Compute driver.
     :cvar AZURE: Azure (classic) driver.
     :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar CLOUDSCALE: cloudscale.ch
     :cvar CLOUDSIGMA: CloudSigma
     :cvar CLOUDSTACK: CloudStack
-    :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
     :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
@@ -87,6 +87,7 @@ class Provider(Type):
 
     ABIQUO = "abiquo"
     ALIYUN_ECS = "aliyun_ecs"
+    AURORACOMPUTE = "aurora_compute"
     AZURE = "azure"
     AZURE_ARM = "azure_arm"
     BRIGHTBOX = "brightbox"
@@ -96,7 +97,6 @@ class Provider(Type):
     CLOUDSIGMA = "cloudsigma"
     CLOUDSTACK = "cloudstack"
     DIGITAL_OCEAN = "digitalocean"
-    DIMENSIONDATA = "dimensiondata"
     DUMMY = "dummy"
     EC2 = "ec2"
     EQUINIXMETAL = "equinixmetal"

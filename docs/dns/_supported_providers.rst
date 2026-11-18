@@ -3,6 +3,7 @@
 ================= ========================================= ================= ==================== ======================================== ==============================
 Provider          Documentation                             Provider Constant Supported Regions    Module                                   Class Name                    
 ================= ========================================= ================= ==================== ======================================== ==============================
+`AuroraDNS`_      :doc:`Click </dns/drivers/auroradns>`     AURORADNS         single region driver :mod:`libcloud.dns.drivers.auroradns`    :class:`AuroraDNSDriver`
 `BuddyNS DNS`_    :doc:`Click </dns/drivers/buddyns>`       BUDDYNS           single region driver :mod:`libcloud.dns.drivers.buddyns`      :class:`BuddyNSDNSDriver`
 `CloudFlare DNS`_ :doc:`Click </dns/drivers/cloudflare>`    CLOUDFLARE        single region driver :mod:`libcloud.dns.drivers.cloudflare`   :class:`CloudFlareDNSDriver`  
 `DNSimple`_       :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          single region driver :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`
@@ -53,3 +54,4 @@ Provider          Documentation                             Provider Constant Su
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
 .. _`Zonomi DNS`: https://zonomi.com
+.. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns

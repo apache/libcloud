@@ -38,6 +38,7 @@ class Provider:
 
     :cvar DUMMY: Example provider
     :cvar ALIYUN_OSS: Aliyun OSS storage driver
+    :cvar AURORAOBJECTS: AuroraObjects storage driver
     :cvar AZURE_BLOBS: Azure Blob Storage driver
     :cvar BACKBLAZE_B2: Backblaze B2 Cloud Storage driver
     :cvar CLOUDFILES: CloudFiles
@@ -73,6 +74,7 @@ class Provider:
 
     DUMMY = "dummy"
     ALIYUN_OSS = "aliyun_oss"
+    AURORAOBJECTS = "auroraobjects"
     AZURE_BLOBS = "azure_blobs"
     BACKBLAZE_B2 = "backblaze_b2"
     CLOUDFILES = "cloudfiles"

@@ -19,6 +19,7 @@ Drivers for working with different providers
 
 __all__ = [
     "abiquo",
+    "auroracompute",
     "brightbox",
     "dummy",
     "ec2",

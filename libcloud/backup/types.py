@@ -25,7 +25,6 @@ class Provider:
     """
 
     DUMMY = "dummy"
-    DIMENSIONDATA = "dimensiondata"
     EBS = "ebs"
     GCE = "gce"
 

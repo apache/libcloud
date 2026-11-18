@@ -46,7 +46,6 @@ class Provider:
     ALIYUN_SLB = "aliyun_slb"
     BRIGHTBOX = "brightbox"
     CLOUDSTACK = "cloudstack"
-    DIMENSIONDATA = "dimensiondata"
     ELB = "elb"
     GCE = "gce"
     NINEFOLD = "ninefold"

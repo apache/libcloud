@@ -59,7 +59,6 @@ Provider                       list images get image create image delete image c
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`DigitalOcean`: https://www.digitalocean.com
-.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/

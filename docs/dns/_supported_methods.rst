@@ -3,6 +3,7 @@
 ================= ========== ============ =========== =========== ============= ============= =========== =============
 Provider          list zones list records create zone update zone create record update record delete zone delete record
 ================= ========== ============ =========== =========== ============= ============= =========== =============
+`AuroraDNS`_      yes        yes          yes         no          yes           yes           yes         yes
 `BuddyNS DNS`_    yes        no           yes         no          no            no            yes         no
 `CloudFlare DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
 `DNSimple`_       yes        yes          yes         no          yes           yes           yes         yes
@@ -53,3 +54,4 @@ Provider          list zones list records create zone update zone create record 
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
 .. _`Zonomi DNS`: https://zonomi.com
+.. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns

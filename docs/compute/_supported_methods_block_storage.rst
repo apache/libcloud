@@ -12,7 +12,6 @@ Provider                       list volumes create volume destroy volume attach 
 `CloudStack`_                  yes          yes           yes            yes           yes           no             yes
 `Cloudscale`_                  no           no            no             no            no            no             no
 `DigitalOcean`_                yes          yes           yes            yes           yes           yes            yes
-`DimensionData`_               no           no            no             no            no            no             no
 `EquinixMetal`_                no           no            no             no            no            no             no
 `Eucalyptus`_                  yes          yes           yes            yes           yes           yes            yes
 `Exoscale`_                    yes          yes           yes            yes           yes           no             yes
@@ -60,7 +59,6 @@ Provider                       list volumes create volume destroy volume attach 
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudscale`: https://www.cloudscale.ch
 .. _`DigitalOcean`: https://www.digitalocean.com
-.. _`DimensionData`: http://www.dimensiondata.com/
 .. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.com/
