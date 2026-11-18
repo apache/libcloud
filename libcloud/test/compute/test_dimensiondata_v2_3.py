@@ -44,7 +44,7 @@ from libcloud.compute.drivers.dimensiondata import DimensionDataNic
 from libcloud.compute.drivers.dimensiondata import DimensionDataNodeDriver as DimensionData
 
 
-class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
+class DimensionData_v2_3_TestMixin(TestCaseMixin):
     def setUp(self):
         DimensionData.connectionCls.active_api_version = "2.3"
         DimensionData.connectionCls.conn_class = DimensionDataMockHttp
