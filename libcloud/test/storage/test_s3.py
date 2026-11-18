@@ -21,7 +21,7 @@ import tempfile
 from io import BytesIO
 from hashlib import sha1
 from unittest import mock
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, call
 
 import libcloud.utils.files  # NOQA: F401
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611  # noqa
@@ -46,6 +46,7 @@ from libcloud.storage.drivers.s3 import (
     BaseS3Connection,
     S3USWestStorageDriver,
     S3SignatureV4Connection,
+    UnsignedPayloadSentinel,
 )
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 
@@ -514,18 +515,101 @@ class S3Tests(unittest.TestCase):
         self.assertTrue("content_type" not in obj.extra)
 
     def test_get_object_cdn_url(self):
+        for port, secure, expected_host in [
+            (80, False, "s3.example.org"),
+            (443, True, "s3.example.org"),
+            (9000, False, "s3.example.org:9000"),
+            (9443, True, "s3.example.org:9443"),
+        ]:
+            with self.subTest(expected_host):
+                self._test_get_object_cdn_url(port, secure, expected_host)
+
+    def _test_get_object_cdn_url(self, port, secure, expected_host):
+        self.driver = self.driver_type(
+            *self.driver_args, host="s3.example.org", port=port, secure=secure
+        )
+
         self.mock_response_klass.type = "get_object"
         obj = self.driver.get_object(container_name="test2", object_name="test")
 
         # cdn urls can only be generated using a V4 connection
         if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
-            cdn_url = self.driver.get_object_cdn_url(obj, ex_expiry=12)
+            with mock.patch.object(self.driver.connection.signer, "_get_signature") as m:
+                cdn_url = self.driver.get_object_cdn_url(obj, ex_expiry=12)
             url = urlparse.urlparse(cdn_url)
             query = urlparse.parse_qs(url.query)
 
             self.assertEqual(len(query["X-Amz-Signature"]), 1)
             self.assertGreater(len(query["X-Amz-Signature"][0]), 0)
             self.assertEqual(query["X-Amz-Expires"], ["43200"])
+
+            self.assertEqual(m.call_count, 1, repr(m.call_args_list))
+            (call_args,) = m.call_args_list
+            dt = call_args.kwargs["dt"]
+            expected = call(
+                params={
+                    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+                    "X-Amz-Credential": "key/"
+                    + dt.date().strftime("%Y%m%d")
+                    + "/"
+                    + self.driver.region_name
+                    + "/s3/aws4_request",
+                    "X-Amz-Date": dt.strftime("%Y%m%dT%H%M%SZ"),
+                    "X-Amz-Expires": 43200,
+                    "X-Amz-SignedHeaders": "host",
+                },
+                headers={"host": expected_host},
+                dt=dt,
+                method="GET",
+                path="/test2/test",
+                data=UnsignedPayloadSentinel,
+            )
+            self.assertEqual(
+                call_args, expected, "\n" + repr(call_args) + "\n != \n" + repr(expected)
+            )
+        else:
+            with self.assertRaises(NotImplementedError):
+                self.driver.get_object_cdn_url(obj)
+
+    def test_get_object_cdn_url_put(self):
+        self.mock_response_klass.type = "get_object"
+        obj = self.driver.get_object(container_name="test2", object_name="test")
+
+        # cdn urls can only be generated using a V4 connection
+        if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
+            with mock.patch.object(self.driver.connection.signer, "_get_signature") as m:
+                cdn_url = self.driver.get_object_cdn_url(obj, ex_method="PUT", ex_expiry=12)
+            url = urlparse.urlparse(cdn_url)
+            query = urlparse.parse_qs(url.query)
+
+            self.assertEqual(len(query["X-Amz-Signature"]), 1)
+            self.assertGreater(len(query["X-Amz-Signature"][0]), 0)
+            self.assertEqual(query["X-Amz-Expires"], ["43200"])
+
+            self.assertEqual(m.call_count, 1, repr(m.call_args_list))
+            (call_args,) = m.call_args_list
+            dt = call_args.kwargs["dt"]
+            expected = call(
+                params={
+                    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+                    "X-Amz-Credential": "key/"
+                    + dt.date().strftime("%Y%m%d")
+                    + "/"
+                    + self.driver.region_name
+                    + "/s3/aws4_request",
+                    "X-Amz-Date": dt.strftime("%Y%m%dT%H%M%SZ"),
+                    "X-Amz-Expires": 43200,
+                    "X-Amz-SignedHeaders": "host",
+                },
+                headers={"host": self.driver.connection.host},
+                dt=dt,
+                method="PUT",
+                path="/test2/test",
+                data=UnsignedPayloadSentinel,
+            )
+            self.assertEqual(
+                call_args, expected, "\n" + repr(call_args) + "\n != \n" + repr(expected)
+            )
         else:
             with self.assertRaises(NotImplementedError):
                 self.driver.get_object_cdn_url(obj)
@@ -843,6 +927,59 @@ class S3Tests(unittest.TestCase):
             self.assertTrue(hasattr(stream, "__iter__"))
         finally:
             self.driver_type._get_object = old_func
+
+    def test_download_object_as_stream_uses_chunk_size(self):
+        # Regression test: the chunk_size passed by the caller must be
+        # forwarded to iter_content instead of the hardcoded CHUNK_SIZE.
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+        obj = Object(
+            name="foo_bar_object",
+            size=1000,
+            hash=None,
+            extra={},
+            container=container,
+            meta_data=None,
+            driver=self.driver_type,
+        )
+
+        requested_chunk_size = CHUNK_SIZE * 2
+        mock_response = Mock(name="mock response")
+        mock_response.iter_content.return_value = iter([b"a"])
+
+        with mock.patch.object(self.driver.connection, "request", return_value=mock_response):
+            with mock.patch.object(self.driver, "_get_object", side_effect=lambda **kw: kw):
+                self.driver.download_object_as_stream(obj=obj, chunk_size=requested_chunk_size)
+
+        mock_response.iter_content.assert_called_once_with(requested_chunk_size)
+
+    def test_download_object_range_as_stream_uses_chunk_size(self):
+        # Same regression as above, but for the ranged variant which goes
+        # through the same _get_object() code path.
+        container = Container(name="foo_bar_container", extra={}, driver=self.driver)
+        obj = Object(
+            name="foo_bar_object",
+            size=1000,
+            hash=None,
+            extra={},
+            container=container,
+            meta_data=None,
+            driver=self.driver_type,
+        )
+
+        requested_chunk_size = CHUNK_SIZE * 2
+        mock_response = Mock(name="mock response")
+        mock_response.iter_content.return_value = iter([b"a"])
+
+        with mock.patch.object(self.driver.connection, "request", return_value=mock_response):
+            with mock.patch.object(self.driver, "_get_object", side_effect=lambda **kw: kw):
+                self.driver.download_object_range_as_stream(
+                    obj=obj,
+                    start_bytes=0,
+                    end_bytes=100,
+                    chunk_size=requested_chunk_size,
+                )
+
+        mock_response.iter_content.assert_called_once_with(requested_chunk_size)
 
     def test_upload_object_invalid_ex_storage_class(self):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
@@ -1281,6 +1418,70 @@ class S3Tests(unittest.TestCase):
     def test_deprecated_driver_class_per_region(self):
         driver = S3USWestStorageDriver(*self.driver_args)
         self.assertEqual(driver.region, "us-west-1")
+
+
+class S3PathHandlingTests(unittest.TestCase):
+    def setUp(self) -> None:
+        transport = mock.patch.object(S3StorageDriver.connectionCls, "conn_class", S3MockHttp)
+        transport.start()
+        self.addCleanup(transport.stop)
+
+    def test_delete_object_double_slashes(self) -> None:
+        for name in ("/object", "path//object", "//path///object"):
+            with self.subTest(name=name):
+                driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
+                container = Container(name="test-bucket", extra={}, driver=driver)
+                obj = Object(name, 0, None, {}, {}, container, driver)
+                with mock.patch.object(
+                    S3MockHttp,
+                    "_get_request",
+                    return_value=(httplib.NO_CONTENT, "", {}, "No Content"),
+                ) as request:
+                    self.assertTrue(driver.delete_object(obj))
+                self.assertEqual(request.call_args[0][0], "DELETE")
+                self.assertEqual(
+                    urlparse.urlparse(request.call_args[0][1]).path, "/test-bucket/" + name
+                )
+
+    def test_get_and_put_preserve_signed_request_path(self) -> None:
+        driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
+        connection = driver.connection
+        action = "/test-bucket//path///object"
+        signed_paths = []
+        original_get_request_headers = connection.signer.get_request_headers
+
+        def capture_signed_path(*args, **kwargs):
+            signed_paths.append(kwargs["path"])
+            return original_get_request_headers(*args, **kwargs)
+
+        with (
+            mock.patch.object(
+                driver.connection.signer, "get_request_headers", side_effect=capture_signed_path
+            ),
+            mock.patch.object(
+                S3MockHttp,
+                "_get_request",
+                return_value=(httplib.OK, "", {}, "OK"),
+            ) as request,
+        ):
+            for method in ("GET", "PUT"):
+                with self.subTest(method=method):
+                    driver.connection.request(
+                        action, method=method, data=b"payload" if method == "PUT" else None
+                    )
+                    sent_path = urlparse.urlparse(request.call_args[0][1]).path
+                    self.assertEqual(sent_path, action)
+                    self.assertEqual(signed_paths[-1], sent_path)
+
+    def test_double_slashes_option_is_per_driver(self) -> None:
+        with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", False):
+            driver = S3StorageDriver(*STORAGE_S3_PARAMS, ex_allow_path_double_slashes=True)
+            other = S3StorageDriver(*STORAGE_S3_PARAMS)
+            path = "/test-bucket//object"
+            self.assertEqual(driver.connection.morph_action_hook(path), path)
+            self.assertEqual(other.connection.morph_action_hook(path), "/test-bucket/object")
+        with mock.patch("libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES", True):
+            self.assertEqual(other.connection.morph_action_hook(path), path)
 
 
 if __name__ == "__main__":

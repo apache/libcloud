@@ -178,7 +178,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_create_node_clone(self):
         image = self.driver.list_nodes()[0]
-        node = self.driver.create_node(name="testNode", image=image)
+        node = self.driver.create_node(size=None, name="testNode", image=image)
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(
             "https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a",

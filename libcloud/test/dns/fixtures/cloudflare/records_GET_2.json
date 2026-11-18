@@ -10,8 +10,6 @@
       "ttl": 1,
       "priority": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T20:29:48.532399Z",
       "created_on": "2018-12-22T20:29:48.532399Z",
       "meta": {
@@ -30,8 +28,6 @@
       "ttl": 1,
       "priority": 2,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T20:29:48.540671Z",
       "created_on": "2018-12-22T20:29:48.540671Z",
       "meta": {
@@ -49,8 +45,6 @@
       "proxied": false,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T20:29:48.512931Z",
       "created_on": "2018-12-22T20:29:48.512931Z",
       "meta": {
@@ -68,8 +62,6 @@
       "proxied": false,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T20:29:48.523230Z",
       "created_on": "2018-12-22T20:29:48.523230Z",
       "meta": {
@@ -80,8 +72,6 @@
     },
     {
             "id": "r8",
-            "zone_id": "1234",
-            "zone_name": "foo.bar",
             "name": "test1",
             "type": "CAA",
             "content": "0\tissue\ttest.example.com",

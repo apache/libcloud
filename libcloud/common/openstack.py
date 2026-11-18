@@ -308,7 +308,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         :returns: url of the relevant endpoint for the driver
         """
         service_type = self.service_type
-        service_name = self.service_name
+        service_name = None
         service_region = self.service_region
 
         if self._ex_force_service_type:
@@ -318,9 +318,23 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         if self._ex_force_service_region:
             service_region = self._ex_force_service_region
 
-        endpoint = self.service_catalog.get_endpoint(
-            service_type=service_type, name=service_name, region=service_region
-        )
+        try:
+            endpoint = self.service_catalog.get_endpoint(
+                service_type=service_type, name=service_name, region=service_region
+            )
+        except ValueError:
+            # An explicitly provided service name is a strict filter. When no
+            # name was provided, first allow the service type and region to
+            # identify the endpoint on their own, and only use the driver's
+            # default service name to resolve an ambiguous result.
+            if service_name or not self.service_name:
+                raise
+
+            endpoint = self.service_catalog.get_endpoint(
+                service_type=service_type,
+                name=self.service_name,
+                region=service_region,
+            )
 
         url = endpoint.url
 
@@ -358,7 +372,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def _set_up_connection_info(self, url):
         prev_conn = (self.host, self.port, self.secure)
         result = self._tuple_from_url(url)
-        (self.host, self.port, self.secure, self.request_path) = result
+        self.host, self.port, self.secure, self.request_path = result
         new_conn = (self.host, self.port, self.secure)
         if new_conn != prev_conn:
             # We only call connect in case connection details have changed - this way we correctly

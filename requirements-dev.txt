@@ -1,4 +1,0 @@
--r requirements-tests.txt
--r requirements-lint.txt
--r requirements-docs.txt
--r requirements-mypy.txt

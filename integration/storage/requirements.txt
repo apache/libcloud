@@ -1,6 +1,0 @@
-azure-identity
-azure-mgmt-resource
-azure-mgmt-storage
-boto3
-docker
-requests

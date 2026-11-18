@@ -4,13 +4,20 @@ Supported Python Versions
 Currently Supported Python Versions
 -----------------------------------
 
-Libcloud v3.5.0 and above supports CPython >= 3.6 and PyPy >= 3.6.
+Libcloud supports CPython >= 3.10 and PyPy >= 3.10.
 
 Those are also the versions we continuously run our tests with on Github Actions
 (https://travis-ci.org/apache/libcloud).
 
-Python Python 3.5
------------------
+Python 3.9
+----------
+
+Support for CPython 3.9 and PyPy 3.9 has been dropped. If you still need to use
+Libcloud with one of those versions, you can use Libcloud v3.9.x which is the
+last release series which supports those Python versions.
+
+Python 3.5
+----------
 
 Support for CPython 3.5 was dropped in Libcloud v3.5.0.
 

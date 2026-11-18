@@ -1,0 +1,98 @@
+exclude: |
+  (?x)^(
+    docs/(?:.*/)?_supported_.*\.rst$|
+    libcloud/data/pricing\.json$
+  )
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v5.0.0"
+    hooks:
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: check-json
+        exclude: |
+          (?x)^(
+            libcloud/test/dns/fixtures/pointdns/not_found\.json|
+            libcloud/test/dns/fixtures/godaddy/v1_domains_purchase_schema_com\.json|
+            libcloud/test/dns/fixtures/gandi_live/get_bad_zone\.json
+          )$
+      - id: end-of-file-fixer
+        files: &text_files |
+          (?x)^(
+            libcloud/|
+            docs/|
+            demos/|
+            integration/|
+            scripts/|
+            contrib/|
+            pylint_plugins/|
+            \.github/|
+            [^/]+\.(py|rst|md|yml|yaml|toml|json|xml|txt|csv|ini|cfg|sh)$
+          )
+        exclude: &fixture_exclude |
+          (?x)^(
+            libcloud/test/.*/fixtures/|
+            integration/.*/fixtures/
+          )
+      - id: trailing-whitespace
+        files: *text_files
+        exclude: *fixture_exclude
+
+  - repo: https://github.com/psf/black
+    rev: "25.1.0"
+    hooks:
+      - id: black
+        args: ["--config=pyproject.toml"]
+        files: &fmt_py_files |
+          (?x)^(
+            libcloud/|
+            docs/examples/|
+            docs/|
+            demos/|
+            contrib/|
+            pylint_plugins/|
+            integration/|
+            [^/]+\.py$
+          )
+
+  - repo: https://github.com/pycqa/isort
+    rev: "6.0.1"
+    hooks:
+      - id: isort
+        args: ["--settings-path=pyproject.toml"]
+        files: *fmt_py_files
+
+  - repo: https://github.com/pycqa/flake8
+    rev: "5.0.4"
+    hooks:
+      - id: flake8
+        args: ["--config=./.flake8"]
+        files: &lint_py_files |
+          (?x)^(
+            libcloud/|
+            libcloud/test/|
+            demos/|
+            integration/|
+            scripts/|
+            docs/examples/|
+            contrib/|
+            pylint_plugins/
+          )
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: "v3.3.1"
+    hooks:
+      - id: pyupgrade
+        args: ["--py310-plus", "--py3-only"]
+        files: *lint_py_files
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: "v2.4.1"
+    hooks:
+      - id: codespell
+        additional_dependencies: ["tomli"]
+        args: ["--toml", "pyproject.toml"]
+        files: ^libcloud/

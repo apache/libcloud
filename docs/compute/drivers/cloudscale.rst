@@ -33,8 +33,8 @@ Most of the `cloudscale.ch` API is covered by the simple commands:
 - ``driver.destroy_node(node)``
 - ``driver.create_node(name, size, image, ex_create_attr={})``
 
-In our :ref:`example <cloudscale-examples>` below you can see how you use 
-``ex_create_attr`` when creating servers. Possible dictionary entries in 
+In our :ref:`example <cloudscale-examples>` below you can see how you use
+``ex_create_attr`` when creating servers. Possible dictionary entries in
 ``ex_create_attr`` are:
 
 - ``ssh_keys`` (``list`` of ``str``) - A list of SSH public keys.
@@ -65,10 +65,10 @@ API Docs
 --------
 
 .. autoclass:: libcloud.compute.drivers.cloudscale.CloudscaleNodeDriver
-    :members: create_node, list_images, list_nodes, list_sizes, 
+    :members: create_node, list_images, list_nodes, list_sizes,
               wait_until_running, reboot_node, ex_start_node, ex_stop_node,
               ex_node_by_uuid, destroy_node
-    :undoc-members: 
+    :undoc-members:
 
 .. _`cloudscale.ch`: https://www.cloudscale.ch
 .. _`cloudscale.ch API`: https://www.cloudscale.ch/en/api/v1

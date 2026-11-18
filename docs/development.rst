@@ -17,6 +17,50 @@ assist you.
 Getting started with contributing to Libcloud
 ---------------------------------------------
 
+We use ``uv`` to lock and manage development dependencies. Dependency groups are
+defined under ``[dependency-groups]`` in ``pyproject.toml`` and ``uv.lock`` is
+the source of truth for local development and documentation tooling.
+
+To create or update the lockfile, run:
+
+.. sourcecode:: bash
+
+    uv lock
+
+If ``uv lock`` fails while building ``libvirt-python``, install the system
+dependencies (``pkg-config`` and ``libvirt-dev``).
+
+To set up a local development environment with common tooling (tests, linting,
+type checking, tox):
+
+.. sourcecode:: bash
+
+    uv sync --group dev
+
+If you only need a subset, sync just those groups (for example, tests only):
+
+.. sourcecode:: bash
+
+    uv sync --group test --no-dev
+
+If you also work on documentation, add the docs group:
+
+.. sourcecode:: bash
+
+    uv sync --group dev --group docs
+
+Commit ``uv.lock`` whenever dependency versions change.
+
+Build the HTML documentation with ``uv run tox -e docs``. To also validate the
+PDF and EPUB formats published on Read the Docs, run ``uv run tox -e docs-formats``.
+PDF builds require ``make``, ``latexmk``, ``xindy``, the recommended and extra
+LaTeX packages, and the recommended and TeX Gyre fonts. On Ubuntu, install these with:
+
+.. sourcecode:: bash
+
+    sudo apt-get install make latexmk xindy texlive-latex-recommended \
+        texlive-latex-extra texlive-fonts-recommended tex-gyre
+
 General contribution guidelines
 -------------------------------
 
@@ -51,20 +95,20 @@ And most importantly, follow the existing style in the file you are editing and
 Git pre-commit hook
 -------------------
 
-To make complying with our style guide easier, we provide a git pre-commit hook
-which automatically checks modified Python files for violations of our style
-guide.
-
-You can install it by running following command in the root of the repository
-checkout:
+We use `pre-commit` configuration with `prek` to run formatting and linting
+hooks before commits. Install the tooling (including ``prek``) and register the
+git hook from the repository root:
 
 .. sourcecode:: bash
 
-    ln -s contrib/pre-commit.sh .git/hooks/pre-commit
+    uv sync --extra lint
+    uv run prek install
 
-After you have installed this hook it will automatically check modified Python
-files for violations before a commit. If a violation is found, commit will be
-aborted.
+To run all hooks on all files:
+
+.. sourcecode:: bash
+
+    uv run prek run -a
 
 .. _code-conventions:
 
@@ -143,10 +187,10 @@ For example:
         def list_nodes(self):
             pass
 
-        def list_images(self):
+        def list_images(self, location=None):
             pass
 
-        def create_node(self):
+        def create_node(self, name, size, image, location=None, auth=None):
             pass
 
         def reboot_node(self):
@@ -417,12 +461,12 @@ include extra code to make sure it works in all the supported versions.
 
 Some examples which show how to handle those cases are described below.
 
-Context Managers
+Type annotation for unions
 ~~~~~~~~~~~~~~~~
 
-Context managers aren't available in Python 2.5 by default. If you want to use
-them make sure to put from ``__future__ import with_statement`` on top of the
-file where you use them.
+In Python 3.9 and below, the pipe character (``|``) cannot be used for union
+types in type annotations. Instead, you should use ``Union`` from the ``typing``
+module:
 
 Utility functions for cross-version compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

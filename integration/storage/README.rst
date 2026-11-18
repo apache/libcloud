@@ -8,7 +8,7 @@ Setting up the test suite
 
 .. code-block:: bash
 
-  pip install -r integration/storage/requirements.txt
+  uv sync --group integration-storage
 
 Running the tests
 -----------------

@@ -103,4 +103,3 @@ Example #2 (code):
 
     import libcloud
     libcloud.__version__
-

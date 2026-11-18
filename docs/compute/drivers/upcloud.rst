@@ -19,14 +19,52 @@ UpCloud currently operates globally from eight (8) data centers:
 * San Jose, USA
 * Singapore, Singapore
 
+This driver uses the UpCloud API 1.3 endpoints.
+
+Firewall rules
+--------------
+
+UpCloud manages network access through per-server firewall rules instead of
+reusable security groups. The driver exposes those rules through extension
+methods:
+
+* ``ex_list_firewall_rules(node)``
+* ``ex_get_firewall_rule(node, position)``
+* ``ex_create_firewall_rule(node, rule)``
+* ``ex_create_firewall_rules(node, rules)``
+* ``ex_delete_firewall_rule(node, position)``
+
 Instantiating a driver
 ----------------------
 
-When you instantiate a driver you need to pass the following arguments to the
-driver constructor:
+When you instantiate a driver you can authenticate with an API bearer token:
+
+* ``token`` - Your UpCloud API bearer token
+
+For example:
+
+.. code-block:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.UPCLOUD)
+    driver = cls(token="ucat_...")
+
+You can also use basic authentication with an API enabled user:
 
 * ``username`` - Your API access enabled users username
 * ``password`` - Your API access enabled users password
+
+For example:
+
+.. code-block:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.UPCLOUD)
+    driver = cls("username", "password")
 
 Enabling API access
 -------------------

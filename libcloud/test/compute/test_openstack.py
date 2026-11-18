@@ -1226,6 +1226,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
 
         node = self.driver.create_node(
+            image=None,
             name="racktest",
             size=size,
             ex_blockdevicemappings=[
@@ -1374,6 +1375,32 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         image = self.driver.create_image(self.node, "new_image")
         self.assertEqual(image.name, "new_image")
         self.assertEqual(image.id, "4949f9ee-2421-4c81-8b49-13119446008b")
+
+    def test_create_image_with_description_and_metadata(self):
+        metadata = {"version": "1.0"}
+        response = Mock(
+            headers={
+                "location": (
+                    "http://127.0.0.1/v1.1/68/images/" "4949f9ee-2421-4c81-8b49-13119446008b"
+                )
+            }
+        )
+
+        with mock.patch.object(self.driver, "_node_action", return_value=response) as action:
+            self.driver.create_image(
+                self.node,
+                "new_image",
+                description="Image description",
+                metadata=metadata,
+            )
+
+        action.assert_called_once_with(
+            self.node,
+            "createImage",
+            name="new_image",
+            metadata={"version": "1.0", "description": "Image description"},
+        )
+        self.assertEqual(metadata, {"version": "1.0"})
 
     def test_ex_set_server_name(self):
         old_node = Node(
@@ -2005,6 +2032,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         # normally authentication happens lazily, but we force it here
         self.driver.volumev3_connection._populate_hosts_and_request_paths()
 
+        self.driver_klass.reservation_connectionCls.conn_class = OpenStack_2_0_MockHttp
+        self.driver_klass.reservation_connectionCls.auth_url = "https://auth.api.example.com"
+        # normally authentication happens lazily, but we force it here
+        self.driver.reservation_connection._populate_hosts_and_request_paths()
+
     def test__paginated_request_single_page(self):
         snapshots = self.driver._paginated_request(
             "/snapshots/detail", "snapshots", self.driver._get_volume_connection()
@@ -2546,6 +2578,22 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_delete_floating_ip(self):
         ip = OpenStack_1_1_FloatingIpAddress("foo-bar-id", "42.42.42.42", None)
         self.assertTrue(self.driver.ex_delete_floating_ip(ip))
+
+    def test_ex_list_leases(self):
+        leases = self.driver.ex_list_leases()
+        self.assertEqual(len(leases), 1)
+        self.assertEqual(leases[0].id, "6ee55c78-ac52-41a6-99af-2d2d73bcc466")
+        self.assertEqual(leases[0].name, "lease_foo")
+        self.assertEqual(leases[0].start, "2017-12-26T12:00:00.000000")
+        self.assertEqual(leases[0].end, "2017-12-27T12:00:00.000000")
+        self.assertEqual(leases[0].status, "PENDING")
+
+    def test_ex_list_hosts(self):
+        hosts = self.driver.ex_list_hosts()
+        self.assertEqual(len(hosts), 1)
+        self.assertEqual(hosts[0].id, "1")
+        self.assertEqual(hosts[0].hypervisor_hostname, "compute-1")
+        self.assertEqual(hosts[0].vcpus, 4)
 
     def test_ex_attach_floating_ip_to_node(self):
         image = NodeImage(id=11, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
@@ -3996,6 +4044,28 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_servers_4242_os_interface(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_servers_os_intefaces.json")
+
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v1_leases(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_leases.json")
+
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v1_os_hosts(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_os_hosts.json")
 
             return (
                 httplib.OK,

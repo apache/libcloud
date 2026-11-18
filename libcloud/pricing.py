@@ -17,7 +17,6 @@
 A class which handles loading the pricing files.
 """
 
-
 import re
 import os.path
 from typing import Dict, Union, Optional

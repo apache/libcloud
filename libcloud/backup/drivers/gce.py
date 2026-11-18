@@ -107,7 +107,7 @@ class GCEConnection(GoogleBaseConnection):
                 self.gce_params["pageToken"] = response.object["nextPageToken"]
             elif "pageToken" in self.gce_params:
                 del self.gce_params["pageToken"]
-            self.gce_params = None
+            self.gce_params = {}
 
         return response
 

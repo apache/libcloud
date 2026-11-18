@@ -30,7 +30,11 @@ from libcloud.utils.py3 import StringIO, b, bchr, urlquote, hexadigits
 from libcloud.utils.misc import get_driver, set_driver, get_secure_random_string
 from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
-from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint, get_pubkey_openssh_fingerprint
+from libcloud.utils.publickey import (
+    get_pubkey_comment,
+    get_pubkey_ssh2_fingerprint,
+    get_pubkey_openssh_fingerprint,
+)
 from libcloud.utils.decorators import wrap_non_libcloud_exceptions
 from libcloud.utils.networking import (
     is_public_subnet,
@@ -424,6 +428,9 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             "256.256.256.256",
             "0.567.567.567",
             "192.168.0.257",
+            # Embedded null byte makes inet_pton raise ValueError, not OSError
+            "192.168.1.100\x00",
+            "10.0.0.1\x00extra",
         ]
 
         valid_ipv6_addresses = [
@@ -436,6 +443,8 @@ class NetworkingUtilsTestCase(unittest.TestCase):
         invalid_ipv6_addresses = [
             "2607:f0d",
             "2607:f0d0:0004",
+            # Embedded null byte makes inet_pton raise ValueError, not OSError
+            "::1\x00",
         ]
 
         for address in valid_ipv4_addresses:
@@ -492,9 +501,32 @@ class TestPublicKeyUtils(unittest.TestCase):
         fp = get_pubkey_openssh_fingerprint(self.PUBKEY)
         self.assertEqual(fp, "35:22:13:5b:82:e2:5d:e1:90:8c:73:74:9f:ef:3b:d8")
 
+    def test_pubkey_openssh_fingerprint_ed25519(self):
+        # Expected value matches "ssh-keygen -l -E md5 -f <key>.pub"
+        ed25519_pubkey = (
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIESB9WRpKrsgFV9Gh3GqtfGlBkoXIINmWXv+"
+            "O43qjvQw user@example"
+        )
+        fp = get_pubkey_openssh_fingerprint(ed25519_pubkey)
+        self.assertEqual(fp, "b4:92:d5:74:2f:4f:b4:df:8a:a0:bf:8a:0c:56:ed:e8")
+
+    def test_pubkey_openssh_fingerprint_ecdsa(self):
+        # Expected value matches "ssh-keygen -l -E md5 -f <key>.pub"
+        ecdsa_pubkey = (
+            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABB"
+            "BNLok6q4sdjPLQnmSVoIy4gVTrG+rT9AZJhIinO3ZUIh9AJveRPh8Qx7r9iaWI0cg+3iZeQk"
+            "JxtYiW7WZaOrn4U= user@example"
+        )
+        fp = get_pubkey_openssh_fingerprint(ecdsa_pubkey)
+        self.assertEqual(fp, "b7:9a:b7:be:ed:43:f0:26:e6:d3:6f:36:c2:17:ed:71")
+
     def test_pubkey_ssh2_fingerprint(self):
         fp = get_pubkey_ssh2_fingerprint(self.PUBKEY)
         self.assertEqual(fp, "11:ad:5d:4c:5b:99:c9:80:7e:81:03:76:5a:25:9d:8c")
+
+    def test_pubkey_comment_without_comment_uses_default(self):
+        pubkey = self.PUBKEY.rsplit(" ", 1)[0]
+        self.assertEqual(get_pubkey_comment(pubkey, default="unnamed"), "unnamed")
 
 
 def test_decorator():

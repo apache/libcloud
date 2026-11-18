@@ -24,10 +24,17 @@ API_HOST = "www.buddyns.com"
 
 
 class BuddyNSResponse(JsonResponse):
-    errors = []  # type: List[Dict]
-    objects = []  # type: List[Dict]
+    errors: List[Dict]
+    objects: List[Dict]
 
     def __init__(self, response, connection):
+        # Use fresh per-instance lists: the previous class-level lists were
+        # shared by every response object of the process, so parsed entries
+        # (including errors) leaked between requests and made success()
+        # report stale failures. They must exist before super().__init__(),
+        # which calls success().
+        self.errors = []
+        self.objects = []
         super().__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():

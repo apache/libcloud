@@ -235,7 +235,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         osa.auth_token = None
         osa.auth_token_expires = YESTERDAY
 
-        mocked_auth_method.call_count = 0
+        mocked_auth_method.reset_mock()
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):
@@ -246,7 +246,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         # No force reauth, valid / non-expired token
         osa.auth_token = None
 
-        mocked_auth_method.call_count = 0
+        mocked_auth_method.reset_mock()
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):
@@ -264,7 +264,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         )
         osa.auth_token = None
 
-        mocked_auth_method.call_count = 0
+        mocked_auth_method.reset_mock()
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):
@@ -833,7 +833,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
 
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog, auth_version="2.0")
         entries = catalog.get_entries()
-        self.assertEqual(len(entries), 10)
+        self.assertEqual(len(entries), 11)
 
         entry = [e for e in entries if e.service_name == "cloudServers"][0]
         self.assertEqual(entry.service_type, "compute")
@@ -904,6 +904,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
                 "network",
                 "object-store",
                 "rax:object-cdn",
+                "reservation",
                 "volumev2",
                 "volumev3",
             ],
@@ -923,6 +924,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         self.assertEqual(
             service_names,
             [
+                "blazar",
                 "cinderv2",
                 "cinderv3",
                 "cloudFiles",

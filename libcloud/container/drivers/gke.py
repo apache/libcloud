@@ -85,7 +85,7 @@ class GKEConnection(GoogleBaseConnection):
                 self.gke_params["pageToken"] = response.object["nextPageToken"]
             elif "pageToken" in self.gke_params:
                 del self.gke_params["pageToken"]
-            self.gke_params = None
+            self.gke_params = {}
 
         return response
 

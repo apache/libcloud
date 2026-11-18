@@ -16,7 +16,7 @@ Among many other private clouds, it also powers Rackspace's Public Cloud.
 Selecting the Nova API version
 ------------------------------
 
-Along with your connection criteria, you can specify the Nova version with `api_version`, 
+Along with your connection criteria, you can specify the Nova version with `api_version`,
 currently supported versions of Nova are:
 
 - 1.0
@@ -94,15 +94,15 @@ Available arguments:
   is provided, this step is skipped and the provided value is used directly.
 * ``ex_force_network_url`` - Base URL to the OpenStack neutron API endpoint. By default,
   driver obtains API endpoint URL from the server catalog, but if this argument
-  is provided, this step is skipped and the provided value is used directly. Only valid 
+  is provided, this step is skipped and the provided value is used directly. Only valid
   in case of api_version >= 2.0.
 * ``ex_force_image_url`` - Base URL to the OpenStack glance API endpoint. By default,
   driver obtains API endpoint URL from the server catalog, but if this argument
-  is provided, this step is skipped and the provided value is used directly. Only valid 
+  is provided, this step is skipped and the provided value is used directly. Only valid
   in case of api_version >= 2.0.
 * ``ex_force_volume_url`` - Base URL to the OpenStack cinder API endpoint. By default,
   driver obtains API endpoint URL from the server catalog, but if this argument
-  is provided, this step is skipped and the provided value is used directly. Only valid 
+  is provided, this step is skipped and the provided value is used directly. Only valid
   in case of api_version >= 2.0.
 * ``ex_force_microversion`` - Microversion of the API to interact with OpenStack.
   Only valid in case of api_version >= 2.0.

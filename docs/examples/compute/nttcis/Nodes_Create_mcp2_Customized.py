@@ -17,9 +17,10 @@ vlan_name = "vlan1"
 vlans = driver.ex_list_vlans()
 vlan = [v for v in vlans if v.name == vlan_name][0]
 new_node = driver.create_node(
-    "Suse_12",
-    image,
-    psswd,
+    name="Suse_12",
+    size=None,
+    image=image,
+    auth=psswd,
     ex_description="Customized_Suse server",
     ex_network_domain=net_domain,
     ex_primary_nic_vlan=vlan,

@@ -47,11 +47,12 @@ def get_pubkey_openssh_fingerprint(pubkey):
     pub_openssh = public_key.public_bytes(
         encoding=serialization.Encoding.OpenSSH,
         format=serialization.PublicFormat.OpenSSH,
-    )[
-        7:
-    ]  # strip ssh-rsa prefix
+    )
+    # Strip the key type prefix (e.g. "ssh-rsa", "ssh-ed25519",
+    # "ecdsa-sha2-nistp256") and keep only the base64 encoded key blob
+    key_blob = pub_openssh.split(b" ")[1]
 
-    return _to_md5_fingerprint(base64_decode_string(pub_openssh))
+    return _to_md5_fingerprint(base64_decode_string(key_blob))
 
 
 def get_pubkey_ssh2_fingerprint(pubkey):
@@ -72,9 +73,13 @@ def get_pubkey_ssh2_fingerprint(pubkey):
 def get_pubkey_comment(pubkey, default=None):
     if pubkey.startswith("ssh-"):
         # This is probably an OpenSSH key
+        parts = pubkey.strip().split(" ", 3)
+        if len(parts) > 2:
+            return parts[2]
+        if default is not None:
+            return default
+        raise ValueError("Public key does not contain a comment")
 
-        return pubkey.strip().split(" ", 3)[2]
-
-    if default:
+    if default is not None:
         return default
     raise ValueError("Public key is not in a supported format")

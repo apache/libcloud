@@ -15,7 +15,7 @@
 
 # Docker image used for running tests the under all the supported Python
 # versions
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -29,13 +29,11 @@ RUN set -e && \
     add-apt-repository ppa:pypy/ppa && \
     apt-get update && \
     apt-get -y install \
-      python3.9 \
       python3.10 \
       python3.11 \
       python3.12 \
       python3.13 \
       python3-dev \
-      python3.9-dev \
       python3.10-dev \
       python3.11-dev \
       python3.12-dev \
@@ -44,8 +42,6 @@ RUN set -e && \
       pypy3 \
       pypy3-dev \
       python3-pip \
-      python3-distutils \
-      python3.9-distutils \
       libvirt-dev \
       # Needed by libvirt driver
       pkg-config
@@ -56,8 +52,10 @@ COPY . /libcloud
 RUN if [ ! -f "/libcloud/README.rst" ]; then echo "libcloud/README.rst file not found, you are likely not running docker build from the repository root directory"; exit 1; fi
 
 WORKDIR /libcloud
+ENV PATH="/libcloud/.venv/bin:${PATH}"
 
 RUN set -e && \
-    python3.9 -m pip install --no-cache-dir -r requirements-ci.txt
+    python3.12 -m pip install --break-system-packages uv && \
+    python3.12 -m uv sync --group ci --no-dev
 
-CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.9,py3.10,py3.11,py3.12,py3.13,pypypy3.10"]
+CMD ["tox", "-e", "lint,isort-check,black-check,bandit,py3.12,py3.10,py3.11,py3.13,pypypy3"]

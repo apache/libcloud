@@ -99,7 +99,16 @@ class VCLNodeDriver(NodeDriver):
             raise LibcloudError(res["errormsg"], driver=self)
         return res
 
-    def create_node(self, image, start=None, length="60"):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location=None,
+        auth=None,
+        start=None,
+        length="60",
+    ):
         """Create a new VCL reservation
         size and name ignored, image is the id from list_image
 

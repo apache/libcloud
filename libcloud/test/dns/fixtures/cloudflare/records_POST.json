@@ -8,8 +8,6 @@
     "proxied": true,
     "ttl": 1,
     "locked": false,
-    "zone_id": "1234",
-    "zone_name": "example.com",
     "modified_on": "2018-12-22T21:28:00.801892Z",
     "created_on": "2018-12-22T21:28:00.801892Z",
     "meta": {

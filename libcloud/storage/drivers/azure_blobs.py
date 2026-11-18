@@ -19,9 +19,10 @@ import hmac
 import base64
 import hashlib
 import binascii
-from datetime import datetime, timedelta
+from typing import Literal
+from datetime import datetime, timezone, timedelta
 
-from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode
+from libcloud.utils.py3 import ET, b, httplib, tostring, urlquote, urlencode, urlunquote
 from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.azure import AzureConnection, AzureActiveDirectoryConnection
@@ -603,7 +604,12 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         raise ObjectDoesNotExistError(value=None, driver=self, object_name=object_name)
 
-    def get_object_cdn_url(self, obj, ex_expiry=AZURE_STORAGE_CDN_URL_EXPIRY_HOURS):
+    def get_object_cdn_url(
+        self,
+        obj,
+        ex_expiry=AZURE_STORAGE_CDN_URL_EXPIRY_HOURS,
+        ex_method: Literal["GET", "PUT", "DELETE"] = "GET",
+    ):
         """
         Return a SAS URL that enables reading the given object.
 
@@ -614,19 +620,30 @@ class AzureBlobsStorageDriver(StorageDriver):
                           Defaults to 24 hours.
         :type  ex_expiry: ``float``
 
+        :param ex_method: The HTTP method for which the URL is valid.
+                          Defaults to "GET".
+        :type  ex_method: ``str``
+
         :return: A SAS URL for the object.
         :rtype: ``str``
         """
         object_path = self._get_object_path(obj.container, obj.name)
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         start = now - timedelta(minutes=AZURE_STORAGE_CDN_URL_START_MINUTES)
         expiry = now + timedelta(hours=ex_expiry)
+
+        if ex_method == "PUT":
+            sp = "wc"
+        elif ex_method == "DELETE":
+            sp = "d"
+        else:
+            sp = "r"
 
         params = {
             "st": start.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
             "se": expiry.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
-            "sp": "r",
+            "sp": sp,
             "spr": "https" if self.secure else "http,https",
             "sv": self.connectionCls.API_VERSION,
             "sr": "b",
@@ -637,7 +654,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                 params["sp"],
                 params["st"],
                 params["se"],
-                "/blob/{}{}".format(self.key, object_path),
+                "/blob/{}{}".format(self.key, urlunquote(object_path)),
                 "",  # signedIdentifier
                 "",  # signedIP
                 params["spr"],
@@ -776,7 +793,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, method="GET", stream=True, raw=True)
-        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        iterator = response.iter_content(chunk_size or AZURE_DOWNLOAD_CHUNK_SIZE)
 
         return self._get_object(
             obj=obj,
@@ -831,7 +848,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         response = self.connection.request(
             obj_path, method="GET", headers=headers, stream=True, raw=True
         )
-        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        iterator = response.iter_content(chunk_size or AZURE_DOWNLOAD_CHUNK_SIZE)
         success_status_codes = [httplib.OK, httplib.PARTIAL_CONTENT]
 
         return self._get_object(

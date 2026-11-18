@@ -35,13 +35,19 @@ class MaxihostNodeDriver(NodeDriver):
     name = "Maxihost"
     website = "https://www.maxihost.com/"
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_ssh_key_ids=None):
         """
         Create a node.
+
+        :param location: Location where the node will be created. (required)
+        :type location: :class:`NodeLocation`
 
         :return: The newly created node.
         :rtype: :class:`Node`
         """
+        if location is None:
+            raise ValueError("location is required.")
+
         attr = {
             "hostname": name,
             "plan": size.id,
@@ -156,7 +162,10 @@ class MaxihostNodeDriver(NodeDriver):
         country = data.get("location").get("country", "")
         return NodeLocation(id=data["slug"], name=name, country=country, driver=self)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         List sizes
         """
@@ -185,7 +194,10 @@ class MaxihostNodeDriver(NodeDriver):
             extra=extra,
         )
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List images
         """
@@ -214,7 +226,11 @@ class MaxihostNodeDriver(NodeDriver):
         data = self.connection.request("/account/keys")
         return list(map(self._to_key_pair, data.object["ssh_keys"]))
 
-    def create_key_pair(self, name, public_key):
+    def create_key_pair(
+        self,
+        name,
+        public_key=None,
+    ):
         """
         Create a new SSH key.
 
@@ -224,6 +240,9 @@ class MaxihostNodeDriver(NodeDriver):
         :param      public_key: base64 encoded public key string (required)
         :type       public_key: ``str``
         """
+        if not public_key:
+            raise ValueError("public_key is required.")
+
         attr = {"name": name, "public_key": public_key}
         res = self.connection.request("/account/keys", method="POST", data=json.dumps(attr))
 

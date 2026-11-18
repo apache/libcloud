@@ -65,7 +65,6 @@ Setting up Installed Application authentication:
 Please remember to secure your keys and access tokens.
 """
 
-
 import os
 import sys
 import time
@@ -107,7 +106,7 @@ def _utcnow():
     """
     Mocked in libcloud.test.common.google.GoogleTestCase.
     """
-    return datetime.datetime.utcnow()
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
 
 def _utc_timestamp(datetime_obj):
@@ -126,7 +125,7 @@ def _from_utc_timestamp(timestamp):
 
 def _get_gce_metadata(path="", retry_failed: Optional[bool] = None):
     try:
-        url = "http://metadata/computeMetadata/v1/" + path.lstrip("/")
+        url = "http://metadata.google.internal/computeMetadata/v1/" + path.lstrip("/")
         headers = {"Metadata-Flavor": "Google"}
         response = get_response_object(url, headers=headers, retry_failed=retry_failed)
         return response.status, "", response.body
@@ -262,7 +261,7 @@ class GoogleResponse(JsonResponse):
             if json_error:
                 raise JsonParseError(body, self.status, None)
             elif "error" in body:
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
                 if code == "QUOTA_EXCEEDED":
                     raise QuotaExceededError(message, self.status, code)
                 elif code == "RESOURCE_ALREADY_EXISTS":
@@ -278,7 +277,7 @@ class GoogleResponse(JsonResponse):
 
         elif self.status == httplib.NOT_FOUND:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -286,7 +285,7 @@ class GoogleResponse(JsonResponse):
 
         elif self.status == httplib.BAD_REQUEST:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None
@@ -294,7 +293,7 @@ class GoogleResponse(JsonResponse):
 
         else:
             if (not json_error) and ("error" in body):
-                (code, message) = self._get_error(body)
+                code, message = self._get_error(body)
             else:
                 message = body
                 code = None

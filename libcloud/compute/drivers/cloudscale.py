@@ -94,13 +94,19 @@ class CloudscaleNodeDriver(NodeDriver):
         """
         return self._list_resources("/v1/servers", self._to_node)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Lists all available sizes. On cloudscale these are known as flavors.
         """
         return self._list_resources("/v1/flavors", self._to_size)
 
-    def list_images(self):
+    def list_images(
+        self,
+        location=None,
+    ):
         """
         List all images.
 
@@ -110,7 +116,7 @@ class CloudscaleNodeDriver(NodeDriver):
         """
         return self._list_resources("/v1/images", self._to_image)
 
-    def create_node(self, name, size, image, location=None, ex_create_attr=None):
+    def create_node(self, name, size, image, location=None, auth=None, ex_create_attr=None):
         """
         Create a node.
 

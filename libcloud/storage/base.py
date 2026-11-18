@@ -763,7 +763,7 @@ class StorageDriver(BaseDriver):
             raise LibcloudError(value="Path %s does not exist" % (destination_path), driver=self)
 
         if not base_name:
-            file_path = pjoin(destination_path, obj.name)
+            file_path = pjoin(destination_path, os.path.basename(obj.name))
         else:
             file_path = destination_path
 

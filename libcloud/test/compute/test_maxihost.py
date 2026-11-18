@@ -50,6 +50,10 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(key.name, "test_key")
         self.assertEqual(key.fingerprint, "77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd")
 
+    def test_create_key_pair_requires_public_key(self):
+        with self.assertRaisesRegex(ValueError, "public_key is required"):
+            self.driver.create_key_pair(name="test-key")
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
@@ -63,6 +67,13 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
         node = self.driver.create_node(name="node-name", image=image, size=size, location=location)
         self.assertTrue(isinstance(node, Node))
+
+    def test_create_node_requires_location(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+
+        with self.assertRaisesRegex(ValueError, "location is required"):
+            self.driver.create_node(name="node-name", image=image, size=size)
 
     def test_destroy_node_response(self):
         node = self.driver.list_nodes()[0]

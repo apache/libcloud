@@ -9,8 +9,6 @@
       "proxied": true,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T21:28:00.801892Z",
       "created_on": "2018-12-22T21:28:00.801892Z",
       "meta": {
@@ -28,8 +26,6 @@
       "proxied": true,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T21:28:03.346998Z",
       "created_on": "2018-12-22T21:28:03.346998Z",
       "meta": {
@@ -47,8 +43,6 @@
       "proxied": false,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T20:29:48.453923Z",
       "created_on": "2018-12-22T20:29:48.453923Z",
       "meta": {
@@ -66,8 +60,6 @@
       "proxied": false,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2019-05-30T01:43:01.509188Z",
       "created_on": "2019-05-30T01:43:01.509188Z",
       "meta": {
@@ -85,8 +77,6 @@
       "proxied": true,
       "ttl": 1,
       "locked": false,
-      "zone_id": "1234",
-      "zone_name": "example.com",
       "modified_on": "2018-12-22T21:29:46.874918Z",
       "created_on": "2018-12-22T21:29:46.874918Z",
       "meta": {
@@ -111,9 +101,7 @@
       "proxiable": false,
       "proxied": false,
       "ttl": 1,
-      "type": "MX",
-      "zone_id": "1234",
-      "zone_name": "foo.bar"
+      "type": "MX"
     }
   ],
   "result_info": {

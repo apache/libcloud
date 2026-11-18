@@ -439,10 +439,10 @@ class AzureNodeDriver(NodeDriver):
         """
 
         if image_id.startswith("http"):
-            (storageAccount, blobContainer, blob) = _split_blob_uri(image_id)
+            storageAccount, blobContainer, blob = _split_blob_uri(image_id)
             return AzureVhdImage(storageAccount, blobContainer, blob, self)
         else:
-            (ex_publisher, ex_offer, ex_sku, ex_version) = image_id.split(":")
+            ex_publisher, ex_offer, ex_sku, ex_version = image_id.split(":")
             i = self.list_images(location, ex_publisher, ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
@@ -505,11 +505,11 @@ class AzureNodeDriver(NodeDriver):
         name,
         size,
         image,
-        auth,
-        ex_resource_group,
+        location=None,
+        auth=None,
+        ex_resource_group=None,
         ex_storage_account=None,
         ex_blob_container="vhds",
-        location=None,
         ex_user_name="azureuser",
         ex_network=None,
         ex_subnet=None,
@@ -609,7 +609,7 @@ class AzureNodeDriver(NodeDriver):
             be placed in the file /var/lib/waagent/CustomData
             https://azure.microsoft.com/en-us/documentation/ \
             articles/virtual-machines-how-to-inject-custom-data/
-        :type ex_customdata: ``str``
+        :type ex_customdata: ``str`` or ``bytes``
 
         :param ex_use_managed_disks: Enable this feature to have Azure
             automatically manage the availability of disks to provide data
@@ -741,7 +741,11 @@ class AzureNodeDriver(NodeDriver):
             data["properties"]["storageProfile"]["osDisk"].update({"diskSizeGB": ex_disk_size})
 
         if ex_customdata:
-            data["properties"]["osProfile"]["customData"] = base64.b64encode(ex_customdata)
+            if isinstance(ex_customdata, str):
+                ex_customdata = ex_customdata.encode("utf-8")
+            data["properties"]["osProfile"]["customData"] = base64.b64encode(ex_customdata).decode(
+                "utf-8"
+            )
 
         data["properties"]["osProfile"]["adminUsername"] = ex_user_name
 
@@ -1078,10 +1082,10 @@ class AzureNodeDriver(NodeDriver):
         self,
         node,
         volume,
+        device=None,
         ex_lun=None,
         ex_vhd_uri=None,
         ex_vhd_create=False,
-        **ex_kwargs,
     ):
         """
         Attach a volume to node.
@@ -2315,7 +2319,7 @@ class AzureNodeDriver(NodeDriver):
 
     def _ex_delete_old_vhd(self, resource_group, uri):
         try:
-            (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
+            storageAccount, blobContainer, blob = _split_blob_uri(uri)
             keys = self.ex_get_storage_account_keys(resource_group, storageAccount)
             blobdriver = AzureBlobsStorageDriver(
                 storageAccount,

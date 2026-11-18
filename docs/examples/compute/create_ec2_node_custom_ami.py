@@ -19,6 +19,6 @@ driver = cls(ACCESS_ID, SECRET_KEY, region="us-west-1")
 # Here we select
 sizes = driver.list_sizes()
 size = [s for s in sizes if s.id == "t1.micro"][0]
-image = NodeImage(id=AMI_ID, name=None, driver=driver)
+image = NodeImage(id=AMI_ID, name="Netflix Asgard", driver=driver)
 
 node = driver.create_node(name="test-node", image=image, size=size)

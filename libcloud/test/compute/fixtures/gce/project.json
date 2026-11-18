@@ -15,7 +15,7 @@
    },
    {
     "key": "startup-script",
-    "value": "#!/bin/bash\n\nAUTO_SCRIPT=$(curl -s http://metadata/computeMetadata/v1/instance/attributes/my-auto-script -H \"Metadata-Flavor: Google\")\nCHECK=${AUTO_SCRIPT:-disabled}\n\nif [ \"${CHECK}\" = \"enabled\" -a -f /etc/debian_version ]; then\n    export DEBIAN_FRONTEND=noninteractive\n    apt-get -q -y update\n    apt-get -q -y install git vim tmux\n    fi\nexit 0\n"
+    "value": "#!/bin/bash\n\nAUTO_SCRIPT=$(curl -s http://metadata.google.internal/computeMetadata/v1/instance/attributes/my-auto-script -H \"Metadata-Flavor: Google\")\nCHECK=${AUTO_SCRIPT:-disabled}\n\nif [ \"${CHECK}\" = \"enabled\" -a -f /etc/debian_version ]; then\n    export DEBIAN_FRONTEND=noninteractive\n    apt-get -q -y update\n    apt-get -q -y install git vim tmux\n    fi\nexit 0\n"
    }
   ]
  },

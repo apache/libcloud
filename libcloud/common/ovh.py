@@ -33,37 +33,6 @@ __all__ = ["OvhResponse", "OvhConnection"]
 
 API_HOST = "api.ovh.com"
 API_ROOT = "/1.0"
-# From https://us.ovhcloud.com/about/company/data-centers
-LOCATIONS = {
-    "BHS1": {"id": "BHS1", "name": "Beauharnois, Quebec 1", "country": "CA"},
-    "BHS2": {"id": "BHS2", "name": "Beauharnois, Quebec 2", "country": "CA"},
-    "BHS3": {"id": "BHS3", "name": "Beauharnois, Quebec 3", "country": "CA"},
-    "BHS4": {"id": "BHS4", "name": "Beauharnois, Quebec 4", "country": "CA"},
-    "BHS5": {"id": "BHS5", "name": "Beauharnois, Quebec 5", "country": "CA"},
-    "BHS6": {"id": "BHS6", "name": "Beauharnois, Quebec 6", "country": "CA"},
-    "DC1": {"id": "DC1", "name": "Paris DC1", "country": "FR"},
-    "FRA1": {"id": "FRA1", "name": "Frankfurt 1", "country": "DE"},
-    "GRA1": {"id": "GRA1", "name": "Gravelines 1", "country": "FR"},
-    "GRA2": {"id": "GRA2", "name": "Gravelines 2", "country": "FR"},
-    "GSW": {"id": "GSW", "name": "Paris GSW", "country": "FR"},
-    "HIL1": {"id": "HIL1", "name": "Hillsboro, Oregon 1", "country": "US"},
-    "LON1": {"id": "LON1", "name": "London 1", "country": "UK"},
-    "P19": {"id": "P19", "name": "Paris P19", "country": "FR"},
-    "RBX1": {"id": "RBX1", "name": "Roubaix 1", "country": "FR"},
-    "RBX2": {"id": "RBX2", "name": "Roubaix 2", "country": "FR"},
-    "RBX3": {"id": "RBX3", "name": "Roubaix 3", "country": "FR"},
-    "RBX4": {"id": "RBX4", "name": "Roubaix 4", "country": "FR"},
-    "RBX5": {"id": "RBX5", "name": "Roubaix 5", "country": "FR"},
-    "RBX6": {"id": "RBX6", "name": "Roubaix 6", "country": "FR"},
-    "RBX7": {"id": "RBX7", "name": "Roubaix 7", "country": "FR"},
-    "SBG1": {"id": "SBG1", "name": "Strasbourg 1", "country": "FR"},
-    "SBG2": {"id": "SBG2", "name": "Strasbourg 2", "country": "FR"},
-    "SBG3": {"id": "SBG3", "name": "Strasbourg 3", "country": "FR"},
-    "SGP1": {"id": "SGP1", "name": "Singapore 1", "country": "SG"},
-    "SYD1": {"id": "SYD1", "name": "Sydney 1", "country": "AU"},
-    "VIN1": {"id": "VIN1", "name": "Vint Hill, Virginia 1", "country": "US"},
-    "WAW1": {"id": "WAW1", "name": "Warsaw 1", "country": "PL"},
-}
 DEFAULT_ACCESS_RULES = [
     {"method": "GET", "path": "/*"},
     {"method": "POST", "path": "/*"},
@@ -102,7 +71,6 @@ class OvhConnection(ConnectionUserAndKey):
     responseCls = OvhResponse
     timestamp = None
     ua = []  # type: List[str]
-    LOCATIONS = LOCATIONS
     _timedelta = None
 
     allow_insecure = True

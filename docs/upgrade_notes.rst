@@ -5,13 +5,39 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 4.0.0
+--------------
+
+Compute driver implementations now use the same argument order and optionality
+as the corresponding methods on ``NodeDriver``. Provider-specific arguments
+are optional and appear after the standard arguments. ``list_nodes`` is not
+affected because its ``*args, **kwargs`` contract is intentionally
+unrestricted.
+
+This affects methods including ``create_node``, ``list_sizes``,
+``list_images``, image management, key pair management, and block storage
+operations. Code which passes arguments positionally may need to be updated.
+Using keyword arguments for provider-specific options is recommended.
+
+For example, the standard node creation signature is:
+
+.. sourcecode:: python
+
+  def create_node(self, name, size, image, location=None, auth=None, ...)
+
+The standard volume creation signature is:
+
+.. sourcecode:: python
+
+  def create_volume(self, size, name, location=None, snapshot=None, ...)
+
 Libcloud 3.9.0
 --------------
 
-* Support for Python 3.7 and 3.8 which have been EOL has been removed.
+* Support for Python 3.7, 3.8 and 3.9 which have been EOL has been removed.
 
-  If you still want to use Libcloud with Python 3.7 or 3.8, you should use an older
-  release which still supports Python 3.7 and 3.8.
+  If you still want to use Libcloud with Python 3.7, 3.8 or 3.9, you should
+  use an older release which still supports Python 3.7, 3.8 and 3.9.
 
 * [AZURE ARM] Added a new argument to destroy_node() to also delete node's managed
   OS disk as part of the node's deletion. Defaults to true. This can be reverted by
@@ -29,10 +55,10 @@ Libcloud 3.9.0
   If your code is using those arguments / passing them to the `create_node()`
   method it needs to be updated and those arguments removed.
 
-* [KubeVirt] Changes to the `create_node()` method: 
+* [KubeVirt] Changes to the `create_node()` method:
 
-  - The `ports` argument has been renamed to `ex_ports`. 
-  - The `ex_disks` argument has been redefined to support all volume types. 
+  - The `ports` argument has been renamed to `ex_ports`.
+  - The `ex_disks` argument has been redefined to support all volume types.
 
   The deprecated `ex_disks` format, which only supports `PersistentVolumeClaim`,
   is as follows:
@@ -47,9 +73,9 @@ Libcloud 3.9.0
 
     ex_disks=[{"bus": "", "device": "", "disk_type": "", "name": "", "volume_spec": {...}}]
 
-  Here, `volume_spec` is the `disk_type` specific settings, which aligns with the 
-  KubeVirt user guide on disks and volumes 
-  (https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes). 
+  Here, `volume_spec` is the `disk_type` specific settings, which aligns with the
+  KubeVirt user guide on disks and volumes
+  (https://kubevirt.io/user-guide/virtual_machines/disks_and_volumes).
 
   For example, for PVC:
 

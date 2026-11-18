@@ -17,6 +17,7 @@ Abiquo Utilities Module for the Abiquo Driver.
 
 Common utilities needed by the :class:`AbiquoNodeDriver`.
 """
+
 import base64
 
 from libcloud.utils.py3 import b, httplib, urlparse

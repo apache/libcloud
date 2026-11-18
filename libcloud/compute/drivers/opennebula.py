@@ -339,7 +339,7 @@ class OpenNebulaNodeDriver(NodeDriver):
 
             return super().__new__(cls)
 
-    def create_node(self, name, size, image, networks=None):
+    def create_node(self, name, size, image, location=None, auth=None, networks=None):
         """
         Create a new OpenNebula node.
 
@@ -704,7 +704,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
     name = "OpenNebula (v2.0 - v2.2)"
 
-    def create_node(self, name, size, image, networks=None, context=None):
+    def create_node(self, name, size, image, location=None, auth=None, networks=None, context=None):
         """
         Create a new OpenNebula node.
 
@@ -1207,7 +1207,12 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
 
         return resp.status == httplib.NO_CONTENT
 
-    def attach_volume(self, node, volume, device):
+    def attach_volume(
+        self,
+        node,
+        volume,
+        device=None,
+    ):
         action = ET.Element("ACTION")
 
         perform = ET.SubElement(action, "PERFORM")

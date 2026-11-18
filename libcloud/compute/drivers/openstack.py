@@ -114,6 +114,12 @@ class OpenStackVolumeV3Connection(OpenStackBaseConnection):
     service_region = "RegionOne"
 
 
+class OpenStackReservationConnection(OpenStackBaseConnection):
+    service_type = "reservation"
+    service_name = "blazar"
+    service_region = "RegionOne"
+
+
 class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
@@ -657,6 +663,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         name,
         size,
         image,
+        location=None,
+        auth=None,
         ex_metadata=None,
         ex_files=None,
         ex_shared_ip_group=None,
@@ -1098,7 +1106,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return {"rate": rate, "absolute": absolute}
 
-    def create_image(self, node, name, description=None, reboot=True):
+    def create_image(self, node, name, description=None):
         """Create an image for node.
 
         @inherits: :class:`NodeDriver.create_image`
@@ -1120,16 +1128,20 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images", method="POST", data=ET.tostring(image_elm)).object
         )
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """Delete an image for node.
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: the image to be deleted
-        :type       image: :class:`NodeImage`
+        :param      node_image: the image to be deleted
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
+        image = node_image
         uri = "/images/%s" % image.id
         resp = self.connection.request(uri, method="DELETE")
         return resp.status == httplib.NO_CONTENT
@@ -1253,11 +1265,8 @@ class OpenStackSecurityGroup:
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            "<OpenStackSecurityGroup id=%s tenant_id=%s name=%s \
-        description=%s>"
-            % (self.id, self.tenant_id, self.name, self.description)
-        )
+        return "<OpenStackSecurityGroup id={} tenant_id={} name={} \
+        description={}>".format(self.id, self.tenant_id, self.name, self.description)
 
 
 class OpenStackSecurityGroupRule:
@@ -1422,7 +1431,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         self,
         name,
         size,
-        image=None,
+        image,
+        location=None,
+        auth=None,
         ex_keyname=None,
         ex_userdata=None,
         ex_config_drive=None,
@@ -1775,7 +1786,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, "revertResize")
         return resp.status == httplib.ACCEPTED
 
-    def create_image(self, node, name, metadata=None):
+    def create_image(
+        self,
+        node,
+        name,
+        description=None,
+        metadata=None,
+    ):
         """
         Creates a new image.
 
@@ -1785,14 +1802,22 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :param      name: The name for the new image.
         :type       name: ``str``
 
+        :param      description: A description for the new image. Stored in the
+                                image metadata because the Compute API does not
+                                provide a dedicated description field.
+        :type       description: ``str``
+
         :param      metadata: Key and value pairs for metadata.
         :type       metadata: ``dict``
 
         :rtype: :class:`NodeImage`
         """
         optional_params = {}
-        if metadata:
-            optional_params["metadata"] = metadata
+        image_metadata = dict(metadata) if metadata else {}
+        if description is not None:
+            image_metadata["description"] = description
+        if image_metadata:
+            optional_params["metadata"] = image_metadata
         resp = self._node_action(node, "createImage", name=name, **optional_params)
         image_id = self._extract_image_id_from_url(resp.headers["location"])
         return self.get_image(image_id=image_id)
@@ -2357,17 +2382,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             self.connection.request("/images/{}".format(image_id)).object["image"]
         )
 
-    def delete_image(self, image):
+    def delete_image(
+        self,
+        node_image,
+    ):
         """
         Delete a NodeImage
 
         @inherits: :class:`NodeDriver.delete_image`
 
-        :param      image: image witch should be used
-        :type       image: :class:`NodeImage`
+        :param      node_image: image which should be used
+        :type       node_image: :class:`NodeImage`
 
         :rtype: ``bool``
         """
+        image = node_image
         resp = self.connection.request("/images/{}".format(image.id), method="DELETE")
         return resp.status == httplib.NO_CONTENT
 
@@ -2467,6 +2496,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 power_state=api_node.get("OS-EXT-STS:power_state", None),
                 progress=api_node.get("progress", None),
                 fault=api_node.get("fault"),
+                hypervisor_hostname=api_node.get("OS-EXT-SRV-ATTR:hypervisor_hostname"),
             ),
         )
 
@@ -2813,6 +2843,15 @@ class OpenStack_2_VolumeV3Connection(OpenStackVolumeV3Connection):
         return json.dumps(data)
 
 
+class OpenStack_2_ReservationConnection(OpenStackReservationConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = "application/json"
+    default_content_type = "application/json; charset=UTF-8"
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
 class OpenStack_2_PortInterfaceState(Type):
     """
     Standard states of OpenStack_2_PortInterfaceState
@@ -2873,6 +2912,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     volumev3_connection = None
     volume_connection = None
 
+    # Connection to the Blazar reservation API
+    reservation_connectionCls = OpenStack_2_ReservationConnection
+    reservation_connection = None
+
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
@@ -2928,6 +2971,16 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         self.connectionCls = self.network_connectionCls
         super().__init__(*args, **kwargs)
         self.network_connection = self.connection
+
+        # We run the init once to get the Blazar API connection
+        # and put that on the object under self.reservation_connection.
+        if original_ex_force_base_url or kwargs.get("ex_force_reservation_url"):
+            kwargs["ex_force_base_url"] = str(
+                kwargs.pop("ex_force_reservation_url", original_ex_force_base_url)
+            )
+        self.connectionCls = self.reservation_connectionCls
+        super().__init__(*args, **kwargs)
+        self.reservation_connection = self.connection
 
         # We run the init once again to get the compute API connection
         # and that's put under self.connection as normal.
@@ -4367,6 +4420,100 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             data={"floatingip": {"port_id": None}},
         )
         return resp.status == httplib.OK
+
+    def ex_list_leases(self):
+        """
+        List leases
+
+        :rtype: ``list`` of :class:`OpenStack_2_Lease`
+        """
+        return self._to_leases(self.reservation_connection.request("/leases").object)
+
+    def _to_leases(self, obj):
+        lease_elements = obj["leases"]
+        return [self._to_lease(lease) for lease in lease_elements]
+
+    def _to_lease(self, obj):
+        return OpenStack_2_Lease(
+            id=obj["id"],
+            name=obj["name"],
+            start=obj["start_date"],
+            end=obj["end_date"],
+            status=obj["status"],
+            reservations=obj["reservations"],
+            driver=self.reservation_connection.driver,
+        )
+
+    def ex_list_hosts(self):
+        """
+        List leases
+
+        :rtype: ``list`` of :class:`OpenStack_2_Host`
+        """
+        return self._to_hosts(self.reservation_connection.request("/os-hosts").object)
+
+    def _to_hosts(self, obj):
+        host_elements = obj["hosts"]
+        return [self._to_host(host) for host in host_elements]
+
+    def _to_host(self, obj):
+        return OpenStack_2_Host(
+            id=obj["id"],
+            hypervisor_hostname=obj["hypervisor_hostname"],
+            vcpus=obj["vcpus"],
+            memory_mb=obj["memory_mb"],
+            local_gb=obj["local_gb"],
+            service_name=obj["service_name"],
+        )
+
+
+class OpenStack_2_Host:
+    """
+    Host info.
+    """
+
+    def __init__(self, id, hypervisor_hostname, vcpus, memory_mb, local_gb, service_name):
+        self.id = id
+        self.hypervisor_hostname = hypervisor_hostname
+        self.vcpus = vcpus
+        self.memory_mb = memory_mb
+        self.local_gb = local_gb
+        self.service_name = service_name
+
+    def __repr__(self):
+        return "<OpenStack_2_Host: id={}, hypervisor_hostname={}>".format(
+            self.id,
+            self.hypervisor_hostname,
+        )
+
+
+class OpenStack_2_Lease:
+    """
+    Lease info.
+    """
+
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    TERMINATED = "TERMINATED"
+    DELETED = "DELETED"
+    CREATING = "CREATING"
+    UPDATING = "UPDATING"
+    DELETING = "DELETING"
+    ERROR = "ERROR"
+
+    def __init__(self, id, name, start, end, status, reservations, driver):
+        self.id = id
+        self.name = name
+        self.start = start
+        self.end = end
+        self.status = status
+        self.reservations = reservations
+        self.driver = driver
+
+    def __repr__(self):
+        return "<OpenStack_2_Lease: id={}, name={}, status={}>".format(
+            self.id, self.name, self.status
+        )
 
 
 class OpenStack_1_1_FloatingIpPool:

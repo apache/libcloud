@@ -92,7 +92,7 @@ class VSphereNodeDriver(NodeDriver):
         "suspended": NodeState.SUSPENDED,
     }
 
-    def __init__(self, host, username, password, port=443, ca_cert=None):
+    def __init__(self, host, username, password, port=443, ca_cert=None, verify_ssl=True):
         """Initialize a connection by providing a hostname,
         username and password
         """
@@ -137,7 +137,7 @@ class VSphereNodeDriver(NodeDriver):
             if "name or service not known" in error_message:
                 raise LibcloudError("Check that the vSphere host is accessible", driver=self)
 
-            if "certificate verify failed" in error_message:
+            if "certificate verify failed" in error_message and not verify_ssl:
                 # bypass self signed certificates
                 try:
                     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
@@ -256,7 +256,10 @@ class VSphereNodeDriver(NodeDriver):
 
         return VSphereNetwork(id=data.name, name=data.name, extra=extra)
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         """
         Returns sizes
         """
@@ -978,9 +981,10 @@ class VSphereNodeDriver(NodeDriver):
     def create_node(
         self,
         name,
-        image,
         size,
+        image,
         location=None,
+        auth=None,
         ex_cluster=None,
         ex_network=None,
         ex_datacenter=None,
@@ -1351,7 +1355,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
         self.session_token = result.object["value"]
         self.connection.session_token = self.session_token
 
-    def list_sizes(self):
+    def list_sizes(
+        self,
+        location=None,
+    ):
         return []
 
     def list_nodes(
@@ -1914,7 +1921,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         return result
 
-    def list_images(self, **kwargs):
+    def list_images(
+        self,
+        location=None,
+    ):
         libraries = self.ex_list_content_libraries()
         item_ids = []
 
@@ -1972,9 +1982,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
     def create_node(
         self,
         name,
+        size,
         image,
-        size=None,
         location=None,
+        auth=None,
         ex_datastore=None,
         ex_disks=None,
         ex_folder=None,

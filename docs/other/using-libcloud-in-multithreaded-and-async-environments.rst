@@ -65,5 +65,3 @@ without blocking the whole reactor.
 
 .. literalinclude:: /examples/misc/twisted_create_node.py
    :language: python
-
-

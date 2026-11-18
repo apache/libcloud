@@ -12,13 +12,13 @@ through a unified and easy to use API.
 .. image:: https://img.shields.io/pypi/v/apache-libcloud.svg
         :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://github.com/apache/libcloud/workflows/CI/badge.svg?branch=trunk
+.. image:: https://github.com/apache/libcloud/actions/workflows/main.yml/badge.svg?branch=trunk
         :target: https://github.com/apache/libcloud/actions?query=workflow%3ACI
 
 .. image:: https://github.com/apache/libcloud/actions/workflows/integration-tests.yml/badge.svg?branch=trunk
         :target: https://github.com/apache/libcloud/actions/workflows/integration-tests.yml
 
-.. image:: https://github.com/apache/libcloud/workflows/Publish%20pricing.json%20to%20S3%20bucket/badge.svg?branch=trunk
+.. image:: https://github.com/apache/libcloud/actions/workflows/publish_pricing_to_s3.yml/badge.svg?branch=trunk
         :target: https://github.com/apache/libcloud/actions?query=workflow%3A%22Publish+pricing.json+to+S3+bucket%22
 
 .. image:: https://img.shields.io/codecov/c/github/apache/libcloud/trunk.svg
@@ -59,11 +59,12 @@ through a unified and easy to use API.
 :Issues:        https://issues.apache.org/jira/projects/LIBCLOUD/issues
 :Website:       https://libcloud.apache.org/
 :Documentation: https://libcloud.readthedocs.io
-:Supported Python Versions: Python >= 3.9, PyPy >= 3.9, Python 3.10 + Pyjion
+:Supported Python Versions: Python >= 3.10, PyPy >= 3.10, Python 3.10 + Pyjion
                             (Python 2.7 and Python 3.4 is supported by the
                             v2.8.x release series, last version which supports
                             Python 3.5 is v3.4.0, v3.6.x for Python 3.6, and
-                            v3.8.x for Python 3.7 and 3.8)
+                            v3.9.x for Python 3.9, v3.8.x for Python 3.7 and
+                            3.8)
 
 Resources you can manage with Libcloud are divided into the following categories:
 
@@ -86,8 +87,10 @@ Documentation can be found at <https://libcloud.readthedocs.org>.
 Note on Python Version Compatibility
 ====================================
 
-Libcloud supports Python >= 3.9 and PyPy >= 3.9.
+Libcloud supports Python >= 3.10 and PyPy >= 3.10.
 
+* Support for Python 3.9 has been dropped. Last release series which supports
+  Python 3.9 is v3.9.x.
 * Support for Python 3.7 and 3.8 has been dropped in v3.9.0 release.
   Last release series which supports Python 3.7 and 3.8 is v3.8.x.
 * Support for Python 3.6 has been dropped in v3.7.0 release.

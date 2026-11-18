@@ -314,8 +314,11 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_node(
         self,
+        name: str,
+        size,
         image: NodeImage,
-        name: str = None,
+        location=None,
+        auth=None,
         ex_dry_run: bool = False,
         ex_block_device_mapping: dict = None,
         ex_boot_on_creation: bool = True,
@@ -833,10 +836,10 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_image(
         self,
+        node,
+        name,
+        description=None,
         ex_architecture: str = None,
-        node: Node = None,
-        name: str = None,
-        description: str = None,
         ex_block_device_mapping: dict = None,
         ex_no_reboot: bool = False,
         ex_root_device_name: str = None,
@@ -991,6 +994,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def list_images(
         self,
+        location=None,
         account_aliases: List[str] = None,
         account_ids: List[str] = None,
         architectures: List[str] = None,
@@ -1383,13 +1387,14 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_volume_snapshot(
         self,
+        volume,
+        name=None,
         ex_description: str = None,
         ex_dry_run: bool = False,
         ex_file_location: str = None,
         ex_snapshot_size: int = None,
         ex_source_region_name: str = None,
         ex_source_snapshot: VolumeSnapshot = None,
-        volume: StorageVolume = None,
     ):
         """
         Create a new volume snapshot.
@@ -1675,11 +1680,13 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_volume(
         self,
-        ex_subregion_name: str,
+        size,
+        name,
+        location=None,
+        snapshot=None,
+        ex_subregion_name: str = None,
         ex_dry_run: bool = False,
         ex_iops: int = None,
-        size: int = None,
-        snapshot: VolumeSnapshot = None,
         ex_volume_type: str = None,
     ):
         """
@@ -1697,8 +1704,13 @@ class OutscaleNodeDriver(NodeDriver):
                     the maximum allowed size for a volume is 14,901 GiB
         :type       size: ``int``
 
+        :param      location: The location whose ID identifies the Subregion
+                    in which to create the volume. Required when
+                    ``ex_subregion_name`` is not provided.
+        :type       location: :class:`NodeLocation`
+
         :param      ex_subregion_name: The Subregion in which you want to
-        create the volume.
+                    create the volume. Takes precedence over ``location``.
         :type       ex_subregion_name: ``str``
 
         :param      ex_volume_type: the type of volume you want to create (io1
@@ -1714,6 +1726,12 @@ class OutscaleNodeDriver(NodeDriver):
         :return: the created volume
         :rtype: ``dict``
         """
+        if ex_subregion_name is None:
+            if location is None:
+                raise ValueError("location or ex_subregion_name is required.")
+
+            ex_subregion_name = location.id
+
         data = {"DryRun": ex_dry_run, "SubregionName": ex_subregion_name}
         if ex_iops is not None:
             data.update({"Iops": ex_iops})

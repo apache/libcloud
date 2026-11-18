@@ -150,6 +150,10 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud",
         )
         self.assertTrue(isinstance(key, KeyPair))
 
+    def test_create_key_pair_requires_public_key(self):
+        with self.assertRaisesRegex(ValueError, "public_key is required"):
+            self.driver.create_key_pair(name="sshkey-name")
+
     def test_delete_key_pair(self):
         key = self.driver.list_key_pairs()[0]
         self.driver.delete_key_pair(key)

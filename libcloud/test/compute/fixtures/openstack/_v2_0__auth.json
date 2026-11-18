@@ -167,6 +167,20 @@
             {
                 "endpoints": [
                     {
+                        "region": "RegionOne",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v1",
+                        "versionInfo": "https://test_endpoint.com/v1/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "1"
+                    }
+                ],
+                "name": "blazar",
+                "type": "reservation"
+            },
+            {
+                "endpoints": [
+                    {
                         "region": "DFW",
                         "tenantId": "613469",
                         "publicURL": "https://dfw.servers.api.rackspacecloud.com/v2/1337",

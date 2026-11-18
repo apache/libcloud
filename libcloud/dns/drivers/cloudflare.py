@@ -192,7 +192,7 @@ class CloudFlareDNSDriver(DNSDriver):
         RecordType.SPF: "SPF",
         RecordType.NS: "NS",
         RecordType.SRV: "SRV",
-        RecordType.URL: "LOC",
+        RecordType.LOC: "LOC",
     }
 
     ZONES_PAGE_SIZE = 50
@@ -516,8 +516,6 @@ class CloudFlareDNSDriver(DNSDriver):
 
     def _to_record(self, zone, item):
         name = item["name"]
-        name = name.replace("." + item["zone_name"], "")
-        name = name.replace(item["zone_name"], "")
         name = name or None
 
         ttl = item.get("ttl")

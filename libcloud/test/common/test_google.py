@@ -15,6 +15,7 @@
 """
 Tests for Google Connection classes.
 """
+
 import os
 import sys
 import time
