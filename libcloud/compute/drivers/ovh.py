@@ -32,7 +32,6 @@ from libcloud.utils.publickey import get_pubkey_comment, get_pubkey_ssh2_fingerp
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.drivers.openstack import OpenStackKeyPair, OpenStackNodeDriver
 
-
 class OvhNodeDriver(NodeDriver):
     """
     Libcloud driver for the Ovh API
@@ -585,7 +584,11 @@ class OvhNodeDriver(NodeDriver):
         return [self._to_volume(obj) for obj in objs]
 
     def _to_location(self, obj):
-        return NodeLocation(id=obj, name=obj, country="", driver=self)
+        location = self.connectionCls.LOCATIONS.get(obj)
+        if not location:
+            location = {"id": obj, "name": obj, "country": ""}
+
+        return NodeLocation(driver=self, **location)
 
     def _to_locations(self, objs):
         return [self._to_location(obj) for obj in objs]
