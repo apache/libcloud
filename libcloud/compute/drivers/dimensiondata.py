@@ -103,7 +103,7 @@ class DimensionDataNodeDriver(NodeDriver):
     connectionCls = DimensionDataConnection
     name = "DimensionData"
     website = "http://www.dimensiondata.com/"
-    type = Provider.DIMENSIONDATA
+    type = Provider.NTTA
     features = {"create_node": ["password"]}
     api_version = 1.0
 
@@ -305,7 +305,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = False
-        >>> DimensionData = get_driver(Provider.DIMENSIONDATA)
+        >>> DimensionData = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Password
@@ -340,7 +340,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Password
@@ -1942,7 +1942,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3015,7 +3015,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3055,7 +3055,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3109,7 +3109,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3234,7 +3234,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # IP Address collection
@@ -3327,7 +3327,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
@@ -3370,7 +3370,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3411,7 +3411,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get specific portlist by ID
@@ -3449,7 +3449,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3539,7 +3539,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Port Collection
@@ -3625,7 +3625,7 @@ class DimensionDataNodeDriver(NodeDriver):
         >>>
         >>> # Get dimension data driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Delete Port List

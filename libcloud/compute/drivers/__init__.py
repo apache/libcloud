@@ -19,8 +19,8 @@ Drivers for working with different providers
 
 __all__ = [
     "abiquo",
+    "auroracompute",
     "brightbox",
-    "dimensiondata",
     "dummy",
     "ec2",
     "cloudsigma",

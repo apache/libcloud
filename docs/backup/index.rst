@@ -10,7 +10,7 @@ Backup
     This driver is **experimental** - please use to test functionality and develop new driver instances, not for production use.
 
 Backup API allows you to manage Backup as A Service and services such as EBS Snaps,
-GCE volume snap and dimension data backup.
+GCE volume snapshots and backup.
 
 Terminology
 -----------

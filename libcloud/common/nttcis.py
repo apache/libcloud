@@ -92,41 +92,6 @@ API_ENDPOINTS = {
         "host": "api-canada.dimensiondata.com",
         "vendor": "NTTC-CIS",
     },
-    "is-na": {
-        "name": "North America (NA)",
-        "host": "usapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
-    "is-eu": {
-        "name": "Europe (EU)",
-        "host": "euapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
-    "is-au": {
-        "name": "Australia (AU)",
-        "host": "auapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
-    "is-af": {
-        "name": "Africa (AF)",
-        "host": "meaapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
-    "is-ap": {
-        "name": "Asia Pacific (AP)",
-        "host": "apapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
-    "is-latam": {
-        "name": "South America (LATAM)",
-        "host": "latamapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
-    "is-canada": {
-        "name": "Canada (CA)",
-        "host": "canadaapi.cloud.is.co.za",
-        "vendor": "InternetSolutions",
-    },
     "ntta-na": {
         "name": "North America (NA)",
         "host": "cloudapi.nttamerica.com",

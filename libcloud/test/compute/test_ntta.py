@@ -18,11 +18,11 @@ import unittest
 from libcloud.compute.drivers.ntta import NTTAmericaNodeDriver
 from libcloud.test.compute.test_dimensiondata_v2_3 import (
     DimensionDataMockHttp,
-    DimensionData_v2_3_Tests,
+    DimensionData_v2_3_TestMixin,
 )
 
 
-class NTTAmericaNodeDriverTests(DimensionData_v2_3_Tests, unittest.TestCase):
+class NTTAmericaNodeDriverTests(DimensionData_v2_3_TestMixin, unittest.TestCase):
     def setUp(self):
         NTTAmericaNodeDriver.connectionCls.conn_class = DimensionDataMockHttp
         NTTAmericaNodeDriver.connectionCls.active_api_version = "2.3"
