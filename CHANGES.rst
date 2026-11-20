@@ -8,6 +8,13 @@ Changes in Apache Libcloud 4.0.0
 Common
 ~~~~~~
 
+- Remove obsolete Dimension Data (Compute, Backup, and Load Balancer) and
+  Internet Solutions (Compute) drivers, along with their associated documentation
+  and tests.
+
+  (#2231)
+  [Samuel Marks - @SamuelMarks, Miguel Caballer - @micafer]
+
 - Accept bracketed IPv6 endpoint URLs, with default or explicit ports, in the
   shared connection class.
   (GITHUB-2220)
@@ -188,6 +195,7 @@ Storage
   [Sanjay Santhanam - @Sanjays2402]
 
 DNS
+~~~
 
 - [DNS] Normalize zone and record names consistently across drivers. ``Record.name``
   is now relative to its zone, while ``Record.hostname`` and ``Record.fqdn`` expose

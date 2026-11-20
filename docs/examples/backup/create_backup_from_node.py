@@ -7,8 +7,14 @@ from libcloud.compute.types import Provider as ComputeProvider
 from libcloud.backup.providers import get_driver as get_backup_driver
 from libcloud.compute.providers import get_driver as get_compute_driver
 
-backup_driver = get_backup_driver(BackupProvider.DIMENSIONDATA)("username", "api key")
-compute_driver = get_compute_driver(ComputeProvider.DIMENSIONDATA)("username", "api key")
+CREDENTIALS = ("service-account@example.com", "path/to/private-key.pem")
+PROJECT = "your-gce-project"
+
+compute_driver_cls = get_compute_driver(ComputeProvider.GCE)
+compute_driver = compute_driver_cls(*CREDENTIALS, project=PROJECT)
+
+backup_driver_cls = get_backup_driver(BackupProvider.GCE)
+backup_driver = backup_driver_cls(*CREDENTIALS, project=PROJECT)
 
 nodes = compute_driver.list_nodes()
 
