@@ -292,7 +292,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         # name is "bar.foo.com"
         extra = extra if extra else {}
 
-        name = self._to_full_record_name(domain=zone.domain, name=name)
+        name = zone.hostname(name)
         data = {"name": name, "type": self.RECORD_TYPE_MAP[type], "data": data}
 
         if "ttl" in extra:
@@ -314,8 +314,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         # attribute must always be present.
         extra = extra if extra else {}
 
-        name = self._to_full_record_name(domain=record.zone.domain, name=record.name)
-        payload = {"name": name}
+        payload = {"name": record.hostname}
 
         if data:
             payload["data"] = data
@@ -552,7 +551,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
     def _to_record(self, data, zone):
         id = data["id"]
         fqdn = data["name"]
-        name = self._to_partial_record_name(domain=zone.domain, name=fqdn)
         type = self._string_to_record_type(data["type"])
         record_data = data["data"]
         extra = {"fqdn": fqdn}
@@ -563,7 +561,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         record = Record(
             id=str(id),
-            name=name,
+            name=fqdn,
             type=type,
             data=record_data,
             zone=zone,
@@ -585,42 +583,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         record = RackspacePTRRecord(id=str(id), ip=ip, domain=domain, driver=self, extra=extra)
         return record
-
-    def _to_full_record_name(self, domain, name):
-        """
-        Build a FQDN from a domain and record name.
-
-        :param domain: Domain name.
-        :type domain: ``str``
-
-        :param name: Record name.
-        :type name: ``str``
-        """
-        if name:
-            name = "{}.{}".format(name, domain)
-        else:
-            name = domain
-
-        return name
-
-    def _to_partial_record_name(self, domain, name):
-        """
-        Remove domain portion from the record name.
-
-        :param domain: Domain name.
-        :type domain: ``str``
-
-        :param name: Full record name (fqdn).
-        :type name: ``str``
-        """
-        if name == domain:
-            # Map "root" record names to None to be consistent with other
-            # drivers
-            return None
-
-        # Strip domain portion
-        name = name.replace(".%s" % (domain), "")
-        return name
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()

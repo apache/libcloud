@@ -33,7 +33,6 @@ DRIVERS = {
     Provider.BUDDYNS: ("libcloud.dns.drivers.buddyns", "BuddyNSDNSDriver"),
     Provider.CLOUDFLARE: ("libcloud.dns.drivers.cloudflare", "CloudFlareDNSDriver"),
     Provider.DIGITAL_OCEAN: ("libcloud.dns.drivers.digitalocean", "DigitalOceanDNSDriver"),
-    Provider.DNSIMPLE: ("libcloud.dns.drivers.dnsimple", "DNSimpleDNSDriver"),
     Provider.DURABLEDNS: ("libcloud.dns.drivers.durabledns", "DurableDNSDriver"),
     Provider.GANDI: ("libcloud.dns.drivers.gandi", "GandiDNSDriver"),
     Provider.GANDI_LIVE: ("libcloud.dns.drivers.gandi_live", "GandiLiveDNSDriver"),
@@ -48,15 +47,15 @@ DRIVERS = {
     Provider.POINTDNS: ("libcloud.dns.drivers.pointdns", "PointDNSDriver"),
     Provider.POWERDNS: ("libcloud.dns.drivers.powerdns", "PowerDNSDriver"),
     Provider.RACKSPACE: ("libcloud.dns.drivers.rackspace", "RackspaceDNSDriver"),
-    Provider.RCODEZERO: ("libcloud.dns.drivers.rcodezero", "RcodeZeroDNSDriver"),
     Provider.ROUTE53: ("libcloud.dns.drivers.route53", "Route53DNSDriver"),
     Provider.VULTR: ("libcloud.dns.drivers.vultr", "VultrDNSDriver"),
     Provider.WORLDWIDEDNS: ("libcloud.dns.drivers.worldwidedns", "WorldWideDNSDriver"),
-    Provider.ZERIGO: ("libcloud.dns.drivers.zerigo", "ZerigoDNSDriver"),
     Provider.ZONOMI: ("libcloud.dns.drivers.zonomi", "ZonomiDNSDriver"),
     # Deprecated
+    Provider.DNSIMPLE: ("libcloud.dns.drivers.dnsimple", "DNSimpleDNSDriver"),
     Provider.RACKSPACE_US: ("libcloud.dns.drivers.rackspace", "RackspaceUSDNSDriver"),
     Provider.RACKSPACE_UK: ("libcloud.dns.drivers.rackspace", "RackspaceUKDNSDriver"),
+    Provider.RCODEZERO: ("libcloud.dns.drivers.rcodezero", "RcodeZeroDNSDriver"),
 }
 
 

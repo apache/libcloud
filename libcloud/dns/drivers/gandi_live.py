@@ -146,15 +146,16 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
 
     def get_record(self, zone_id, record_id):
-        record_type, name = record_id.split(":", 1)
-        action = "{}/domains/{}/records/{}/{}".format(API_BASE, zone_id, name, record_type)
+        zone = self.get_zone(zone_id)
+        rparts = self.from_default_id(zone, record_id)
+        action = "{}/domains/{}/records/{}/{}".format(API_BASE, zone_id, rparts.name, rparts.type)
         try:
             record = self.connection.request(action=action, method="GET")
         except ResourceNotFoundError:
             raise RecordDoesNotExistError(
                 value="", driver=self.connection.driver, record_id=record_id
             )
-        return self._to_record(record.object, self.get_zone(zone_id))[0]
+        return self._to_record(record.object, zone)[0]
 
     def create_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
@@ -420,7 +421,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             priority, value = value.split()
             extra["priority"] = priority
         return Record(
-            id="{}:{}".format(data["rrset_type"], data["rrset_name"]),
+            id=self.to_default_id(zone, data["rrset_name"], data["rrset_type"]),
             name=data["rrset_name"],
             type=self._string_to_record_type(data["rrset_type"]),
             data=value,

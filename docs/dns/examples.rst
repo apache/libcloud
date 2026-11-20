@@ -6,7 +6,7 @@ DNS Examples
 Create an 'A' record for all your compute nodes
 -----------------------------------------------
 
-This example creates a new ``mydomain2.com`` zone at Zerigo and an A record
+This example creates a new ``mydomain2.com`` zone at Cloudflare and an A record
 for all your Rackspace nodes. Value for the A record is the Node's first
 public IP address.
 

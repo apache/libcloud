@@ -21,6 +21,7 @@ __all__ = [
     "ZoneError",
     "ZoneDoesNotExistError",
     "ZoneAlreadyExistsError",
+    "ZoneNotRelatedError",
     "RecordError",
     "RecordDoesNotExistError",
     "RecordAlreadyExistsError",
@@ -60,7 +61,6 @@ class Provider:
     ROUTE53 = "route53"
     VULTR = "vultr"
     WORLDWIDEDNS = "worldwidedns"
-    ZERIGO = "zerigo"
     ZONOMI = "zonomi"
     DNSPOD = "dnspod"
     # Deprecated
@@ -138,6 +138,10 @@ class ZoneDoesNotExistError(ZoneError):
 
 class ZoneAlreadyExistsError(ZoneError):
     error_type = "ZoneAlreadyExistsError"
+
+
+class ZoneNotRelatedError(ZoneError):
+    error_type = "ZoneNotRelatedError"
 
 
 class RecordError(LibcloudError):

@@ -16,6 +16,8 @@
 DNSimple DNS Driver
 """
 
+# FIXME: v1 API was deprecated on May 31, 2018
+
 __all__ = ["DNSimpleDNSDriver"]
 
 try:

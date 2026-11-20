@@ -1,7 +1,7 @@
 [
   {
     "id": 6683,
-    "name": "example.org.",
+    "name": "example.com.",
     "type": "NS",
     "content": "b.ns.luadns.net.",
     "ttl": 86400,
@@ -11,7 +11,7 @@
   },
   {
     "id": 6684,
-    "name": "example.org.",
+    "name": "example.com.",
     "type": "NS",
     "content": "a.ns.luadns.net.",
     "ttl": 86400,

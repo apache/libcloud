@@ -333,6 +333,7 @@ class AuroraDNSDriver(DNSDriver):
         if name is None:
             name = ""
 
+        name = zone.prefix(name)
         rdata = {"name": name, "type": self.RECORD_TYPE_MAP[type], "content": data}
 
         rdata = self.__merge_extra_data(rdata, extra)
@@ -371,7 +372,7 @@ class AuroraDNSDriver(DNSDriver):
         rdata = {}
 
         if name is not None:
-            rdata["name"] = name
+            rdata["name"] = record.zone.prefix(name)
 
         if type is not None:
             rdata["type"] = self.RECORD_TYPE_MAP[type]
