@@ -129,6 +129,11 @@ class AuroraDNSDriverTests(LibcloudTestCase):
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.extra["ttl"], 900)
 
+    def test_create_record_normalizes_name(self):
+        zone = self.driver.get_zone("example.com")
+        zone.create_record(name="www.example.com.", type=RecordType.A, data="127.0.0.1")
+        self.assertEqual(json.loads(AuroraDNSDriverMockHttp.last_request_body)["name"], "www")
+
     def test_get_record(self):
         zone = self.driver.get_zone("example.com")
         record = self.driver.get_record(zone.id, "5592f1ff")
@@ -145,6 +150,17 @@ class AuroraDNSDriverTests(LibcloudTestCase):
         record = self.driver.get_record(zone.id, "5592f1ff")
         record = record.update(extra={"ttl": ttl})
         self.assertEqual(record.extra["ttl"], ttl)
+
+    def test_update_record_normalizes_name(self):
+        zone = self.driver.get_zone("example.com")
+        record = self.driver.get_record(zone.id, "5592f1ff")
+        self.driver.update_record(
+            record=record,
+            name="www.example.com.",
+            type=None,
+            data=None,
+        )
+        self.assertEqual(json.loads(AuroraDNSDriverMockHttp.last_request_body)["name"], "www")
 
     def test_delete_record(self):
         zone = self.driver.get_zone("example.com")
@@ -290,6 +306,8 @@ class AuroraDNSDriverMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _zones_ffb62570_8414_4578_a346_526b44e320b7_records(self, method, url, body, headers):
+        if method in ("POST", "PUT"):
+            AuroraDNSDriverMockHttp.last_request_body = body
         if method == "POST":
             body = self.fixtures.load("zone_example_com_record_localhost.json")
         else:
