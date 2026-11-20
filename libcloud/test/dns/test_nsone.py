@@ -232,7 +232,7 @@ class NsOneTests(unittest.TestCase):
         self.assertEqual(sent.json["type"], "A")
         self.assertIn({"answer": ["127.0.0.1"]}, sent.json["answers"])
 
-        self.assertEqual(arecord.id, "A")
+        self.assertEqual(arecord.id, "A:")
         self.assertEqual(arecord.hostname, "test.com")
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, ["127.0.0.1"])

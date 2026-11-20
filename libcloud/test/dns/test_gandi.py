@@ -72,7 +72,7 @@ class GandiTests(unittest.TestCase):
 
         record = records[3]
         self.assertEqual(record.name, "")
-        self.assertEqual(record.id, "MX")
+        self.assertEqual(record.id, "MX:")
         self.assertEqual(record.type, RecordType.MX)
         self.assertEqual(record.data, "aspmx.l.google.com")
         self.assertEqual(record.extra["priority"], 15)
