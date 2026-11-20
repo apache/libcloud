@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import sys
+import json
+from unittest.mock import patch
 
 from libcloud.test import MockHttp, unittest
 from libcloud.utils.py3 import httplib
@@ -76,6 +78,30 @@ class DockerContainerDriverTestCase(unittest.TestCase):
                 "a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303",
             )
             self.assertEqual(container.name, "gigantic_goldberg")
+
+    def test_deploy_container_command_payload(self):
+        cases = (
+            ({}, None),
+            ({"command": None}, None),
+            ({"command": ""}, []),
+            ({"command": "  "}, []),
+            ({"command": 'echo "hello world"'}, ["echo", "hello world"]),
+            ({"command": "None"}, ["None"]),
+        )
+        for driver in self.drivers:
+            image = driver.list_images()[0]
+            for kwargs, expected in cases:
+                with self.subTest(version=driver.version, kwargs=kwargs):
+                    with patch.object(
+                        driver.connection, "request", wraps=driver.connection.request
+                    ) as request:
+                        driver.deploy_container(image=image, name="test", start=False, **kwargs)
+                    payload = json.loads(request.call_args_list[0][1]["data"])
+                    self.assertEqual(payload["Image"], image.name)
+                    if expected is None:
+                        self.assertNotIn("Cmd", payload)
+                    else:
+                        self.assertEqual(payload["Cmd"], expected)
 
     def test_get_container(self):
         for driver in self.drivers:

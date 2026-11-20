@@ -505,9 +505,19 @@ class LocalStorageDriver(StorageDriver):
             obj=obj, start_bytes=start_bytes, end_bytes=end_bytes
         )
 
-        with open(file_path, "wb") as fp:
-            for chunk in iterator:
-                fp.write(chunk)
+        try:
+            with open(file_path, "wb") as fp:
+                for chunk in iterator:
+                    fp.write(chunk)
+        except Exception:
+            if delete_on_failure and os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    # Don't let a failure to clean up the partially
+                    # written file mask the original download exception.
+                    pass
+            raise
 
         return True
 
