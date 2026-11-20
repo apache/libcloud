@@ -269,7 +269,7 @@ class WorldWideDNSDriver(DNSDriver):
         """
 
         record_id = record.id
-        if "entry" in extra and str(extra["entry"]) != record_id:
+        if extra and "entry" in extra and str(extra["entry"]) != record_id:
             raise WorldWideDNSError(value="Inconsistent 'entry' parameter", driver=self)
 
         if name == "":
