@@ -136,8 +136,8 @@ class Zone:
         if self.domain is None:
             return subname.rstrip(".")
 
-        is_fqdn = subname.endswith(".")
-        zbase = self.rooted(self.domain) if is_fqdn else self.domain
+        is_fqdn = subname.endswith(".") or "." in subname
+        zbase = self.rooted(self.domain) if subname.endswith(".") else self.domain
         if subname == zbase:
             return ""
 
