@@ -7,13 +7,13 @@ from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.compute.providers import get_driver as get_compute_driver
 
 CREDENTIALS_RACKSPACE = ("username", "api key")
-CREDENTIALS_ZERIGO = ("email", "api key")
+CREDENTIALS_CLOUDFLARE = ("api token",)
 
 cls = get_compute_driver(ComputeProvider.RACKSPACE)
 compute_driver = cls(*CREDENTIALS_RACKSPACE)
 
-cls = get_dns_driver(DNSProvider.ZERIGO)
-dns_driver = cls(*CREDENTIALS_ZERIGO)
+cls = get_dns_driver(DNSProvider.CLOUDFLARE)
+dns_driver = cls(*CREDENTIALS_CLOUDFLARE)
 
 # Retrieve all the nodes
 nodes = compute_driver.list_nodes()

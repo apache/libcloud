@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Type, Union, Iterator, Optional
 from collections import namedtuple
 
 from libcloud import __version__
-from libcloud.dns.types import RecordType, RecordDoesNotExistError, ZoneNotRelatedError
+from libcloud.dns.types import RecordType, ZoneNotRelatedError, RecordDoesNotExistError
 from libcloud.common.base import BaseDriver, Connection, ConnectionUserAndKey
 
 __all__ = ["Zone", "Record", "DNSDriver"]
