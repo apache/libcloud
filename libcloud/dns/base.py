@@ -704,7 +704,7 @@ class DNSDriver(BaseDriver):
     @staticmethod
     def to_default_id(zone, name, type):
         prefix = zone.prefix(name)
-        return f"{type}:{prefix}"
+        return "{}:{}".format(type, prefix)
 
     @classmethod
     def from_default_id(cls, zone, record_id):
