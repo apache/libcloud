@@ -21,7 +21,7 @@ from unittest.mock import Mock
 from libcloud import __version__
 from libcloud.test import unittest
 from libcloud.dns.base import Zone, Record, DNSDriver
-from libcloud.dns.types import RecordType, ZoneNotRelatedError
+from libcloud.dns.types import RecordType, ZoneNotRelatedError, RecordDoesNotExistError
 from libcloud.utils.py3 import assertRegex
 
 MOCK_RECORDS_VALUES = [
@@ -239,7 +239,6 @@ class BaseTestCase(unittest.TestCase):
         data = [
             # id, name (expected), type (expected)
             ("A", "", "A"),  # without trailing colon
-            ("A:", "", "A"),  # with trailing colon
             ("A:example.com", "", "A"),
             ("A:example.com.", "", "A"),
             ("MX:mail", "mail", "MX"),
@@ -250,6 +249,9 @@ class BaseTestCase(unittest.TestCase):
             rparts = self.driver.from_default_id(self.master_zone, rid)
             self.assertEqual(rparts.name, rname)
             self.assertEqual(rparts.type, rtype)
+
+        with self.assertRaises(RecordDoesNotExistError):
+            self.driver.from_default_id(self.master_zone, "A:")
 
 
 def zero_pad(value: int) -> str:

@@ -702,7 +702,7 @@ class DNSDriver(BaseDriver):
 
     @classmethod
     def from_default_id(cls, zone, record_id):
-        match = cls.DEFAULT_ID_RE.match(record_id)
+        match = cls.DEFAULT_ID_RE.fullmatch(record_id)
         if match is None:
             raise RecordDoesNotExistError(
                 value="malformed record ID", driver=cls, record_id=record_id
