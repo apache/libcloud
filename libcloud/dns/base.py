@@ -118,13 +118,19 @@ class Zone:
         """
         Accept subordinate (or identity) names in multiple convenience formats.
 
-        In the following examples, "www" is returned:
+        In the following examples, "www" is returned for the first three rows,
+        and "www.name" for the relative multi-label name:
 
         |     Format      |       subname      |  self.domain  |
         |-----------------|--------------------|---------------|
         |  Bare host name | "www"              | "example.com" |
+        | Relative name   | "www.name"         | "example.com" |
         | FQDN (unrooted) | "www.example.com"  | "example.com" |
         |   FQDN (rooted) | "www.example.com." | "example.com" |
+
+        Relative names may contain multiple labels. An unrooted name which
+        does not match the zone is treated as relative; a rooted name outside
+        the zone raises :class:`ZoneNotRelatedError`.
 
         :param subname: Hostname or FQDN.
         :type subname: ``str``
@@ -136,17 +142,24 @@ class Zone:
         if self.domain is None:
             return subname.rstrip(".")
 
-        is_fqdn = subname.endswith(".") or "." in subname
-        zbase = self.rooted(self.domain) if subname.endswith(".") else self.domain
-        if subname == zbase:
+        domain = self.domain.rstrip(".")
+        rooted_subname = subname.endswith(".")
+        name = subname.rstrip(".")
+
+        if name == domain:
             return ""
 
-        if is_fqdn and not subname.endswith(f".{zbase}"):
+        if name.endswith(f".{domain}"):
+            return name[: -(len(domain) + 1)]
+
+        if rooted_subname:
             raise ZoneNotRelatedError(
                 value=self.rooted(self.domain), driver=self.driver, zone_id=self.id
             )
 
-        return subname.removesuffix(f".{zbase}")
+        # An unrooted name which does not match the zone is ambiguous: it may
+        # be a relative name with multiple labels, so preserve it as-is.
+        return name
 
     def hostname(self, subname):
         """

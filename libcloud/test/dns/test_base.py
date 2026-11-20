@@ -99,13 +99,12 @@ class BaseTestCase(unittest.TestCase):
             self.assertEqual(zone.hostname(subname), f"{subname}.{zone.domain}")
             self.assertEqual(zone.fqdn(subname), f"{subname}.{zone.domain}.")
 
+        self.assertEqual(zone.prefix("foo.bar"), "foo.bar")
+        self.assertEqual(zone.hostname("foo.bar"), "foo.bar.example.com")
+        self.assertEqual(zone.fqdn("foo.bar"), "foo.bar.example.com.")
+
         for func in (zone.prefix, zone.hostname, zone.fqdn):
-            for subname in (
-                "notexample.com",
-                "sub.notexample.com",
-                "notexample.com.",
-                "sub.notexample.com.",
-            ):
+            for subname in ("notexample.com.", "sub.notexample.com."):
                 with self.assertRaises(ZoneNotRelatedError) as ctx:
                     func(subname)
 
