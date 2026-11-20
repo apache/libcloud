@@ -84,6 +84,13 @@ class BaseTestCase(unittest.TestCase):
             self.assertEqual(zone.hostname(sub), "sub.example.com")
             self.assertEqual(zone.fqdn(sub), "sub.example.com.")
 
+    def test_zone_helpers_without_domain(self):
+        zone = Zone(id="zone-id", domain=None, type=None, ttl=None, driver=self.driver)
+        self.assertIsNone(zone.domain)
+        self.assertEqual(zone.prefix("www"), "www")
+        self.assertEqual(zone.hostname("www"), "www")
+        self.assertEqual(zone.fqdn("www"), "www.")
+
     def test_zone_helpers_unrelated(self):
         zone = self.master_zone
 
@@ -224,9 +231,9 @@ class BaseTestCase(unittest.TestCase):
     def test_driver_to_default_id(self):
         data = [
             # name, type, id (expected)
-            ("", "A", "A"),
-            ("example.com", "A", "A"),
-            ("example.com.", "A", "A"),
+            ("", "A", "A:"),
+            ("example.com", "A", "A:"),
+            ("example.com.", "A", "A:"),
             ("mail", "MX", "MX:mail"),
             ("mail.example.com", "MX", "MX:mail"),
             ("mail.example.com.", "MX", "MX:mail"),
@@ -238,7 +245,8 @@ class BaseTestCase(unittest.TestCase):
     def test_driver_from_default_id(self):
         data = [
             # id, name (expected), type (expected)
-            ("A", "", "A"),  # without trailing colon
+            ("A", "", "A"),
+            ("A:", "", "A"),
             ("A:example.com", "", "A"),
             ("A:example.com.", "", "A"),
             ("MX:mail", "mail", "MX"),
@@ -250,8 +258,9 @@ class BaseTestCase(unittest.TestCase):
             self.assertEqual(rparts.name, rname)
             self.assertEqual(rparts.type, rtype)
 
-        with self.assertRaises(RecordDoesNotExistError):
-            self.driver.from_default_id(self.master_zone, "A:")
+        for malformed_id in ("A::", "A:mail:extra"):
+            with self.assertRaises(RecordDoesNotExistError):
+                self.driver.from_default_id(self.master_zone, malformed_id)
 
 
 def zero_pad(value: int) -> str:

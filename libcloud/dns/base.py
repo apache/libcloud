@@ -107,7 +107,7 @@ class Zone:
     @staticmethod
     def unrooted(domain):
         """Return the provided domain as an unrooted domain"""
-        return domain.rstrip(".")
+        return domain.rstrip(".") if domain is not None else None
 
     @staticmethod
     def rooted(domain):
@@ -132,6 +132,9 @@ class Zone:
         :return: Bare record name, without domain part.
         :rtype: ``str``
         """
+
+        if self.domain is None:
+            return subname.rstrip(".")
 
         is_fqdn = subname.endswith(".")
         zbase = self.rooted(self.domain) if is_fqdn else self.domain
@@ -165,6 +168,8 @@ class Zone:
         """
 
         prefix = self.prefix(subname)
+        if self.domain is None:
+            return prefix
         return f"{prefix}.{self.domain}" if prefix else self.domain
 
     def fqdn(self, subname):
@@ -186,7 +191,8 @@ class Zone:
         :rtype: ``str``
         """
 
-        return f"{self.hostname(subname)}."
+        hostname = self.hostname(subname)
+        return f"{hostname}." if hostname else hostname
 
 
 class Record:
@@ -324,7 +330,7 @@ class DNSDriver(BaseDriver):
 
     # "A"     -> type: "A", prefix: None
     # "A:www" -> type: "A", prefix: "www"
-    DEFAULT_ID_RE = re.compile(r"(?P<type>[A-Z]+)(\:(?P<name>.+))?")
+    DEFAULT_ID_RE = re.compile(r"(?P<type>[A-Z]+)(?::(?P<name>[^:]*))?")
     DefaultID = namedtuple("DefaultID", "type,name")
 
     def __init__(
@@ -698,7 +704,7 @@ class DNSDriver(BaseDriver):
     @staticmethod
     def to_default_id(zone, name, type):
         prefix = zone.prefix(name)
-        return f"{type}:{prefix}" if prefix else str(type)
+        return f"{type}:{prefix}"
 
     @classmethod
     def from_default_id(cls, zone, record_id):
