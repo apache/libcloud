@@ -94,7 +94,7 @@ REGION_DETAILS = {
         "signature_version": "2",
     },
     # Africa
-    "af-south-1": {
+    "Africa (Cape Town)": {
         "id": "af-south-1",
         "endpoint": "ec2.af-south-1.amazonaws.com",
         "api_name": "ec2_af_south",
@@ -187,7 +187,7 @@ REGION_DETAILS = {
         "country": "South Korea",
         "signature_version": "4",
     },
-    "Asia Pacific (Osaka-Local)": {
+    "Asia Pacific (Osaka)": {
         "id": "ap-northeast-3",
         "endpoint": "ec2.ap-northeast-3.amazonaws.com",
         "api_name": "ec2_ap_northeast",
