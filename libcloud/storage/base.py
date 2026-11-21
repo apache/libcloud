@@ -19,6 +19,7 @@ Provides base classes for working with storage
 
 # Backward compatibility for Python 2.5
 
+import io
 import errno
 import hashlib
 import os.path  # pylint: disable-msg=W0404
@@ -826,7 +827,7 @@ class StorageDriver(BaseDriver):
             response = self.connection.request(
                 request_path,
                 method=request_method,
-                data=stream,
+                data=self._get_stream_request_data(stream),
                 headers=headers,
                 raw=True,
             )
@@ -867,6 +868,34 @@ class StorageDriver(BaseDriver):
             )
 
         return content_type or DEFAULT_CONTENT_TYPE
+
+    def _get_stream_request_data(self, stream):
+        """
+        Return an object which is used as a request body when uploading the
+        provided stream.
+
+        Text (``str``) chunks are encoded as UTF-8, which is the same encoding
+        that is used when calculating the hash of the uploaded data. Left to
+        the HTTP client, text is either encoded as latin-1 or sent with a
+        content length which doesn't match the encoded data.
+
+        :param stream: Stream passed to :meth:`_upload_object`.
+        :type stream: :class:`object`
+
+        :return: Provided stream or a generator which yields ``bytes``.
+        :rtype: :class:`object`
+        """
+        if isinstance(stream, io.TextIOBase):
+            # File-like object opened in text mode. It's read in chunks so the
+            # whole stream is never buffered in memory.
+            chunks = iter(lambda: stream.read(CHUNK_SIZE), "")
+        elif hasattr(stream, "read"):
+            # Binary file-like object, it's sent as-is
+            return stream
+        else:
+            chunks = stream
+
+        return (b(chunk) if isinstance(chunk, str) else chunk for chunk in chunks)
 
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
         total_len = 0

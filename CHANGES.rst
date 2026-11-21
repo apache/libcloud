@@ -131,6 +131,15 @@ Compute
 Storage
 ~~~~~~~
 
+- [Storage] Fix ``upload_object_via_stream`` failing with ``UnicodeEncodeError``
+  or uploading truncated data when the stream yields text (e.g. a file opened
+  in text mode) which contains non-ASCII characters. Text is now encoded as
+  UTF-8 before it's sent, which matches how the object hash is calculated.
+  This affects drivers which upload a stream in a single request, such as
+  Google Storage and CloudFiles.
+  (GITHUB-1802)
+  [Shayn Hornik - @shaynhornik]
+
 - [Local Storage] Delete the partially written file when ``download_object_range``
   fails and ``delete_on_failure`` is set.
   (GITHUB-2223)
