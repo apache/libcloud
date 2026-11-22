@@ -202,10 +202,6 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         )
 
     def test_get_canonical_headers_trims_header_values(self):
-        # TODO: according to AWS spec (and RFC 2616 Section 4.2.) excess whitespace
-        # from inside non-quoted strings should be stripped. Now we only strip the
-        # start and end of the string. See
-        # http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
         headers = {
             "accept-encoding": "   gzip,deflate",
             "user-agent": "libcloud/0.17.0 ",
@@ -213,6 +209,19 @@ class AWSRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
         self.assertEqual(
             self.signer._get_canonical_headers(headers),
             "accept-encoding:gzip,deflate\n" "user-agent:libcloud/0.17.0\n",
+        )
+
+    def test_get_canonical_headers_collapses_sequential_whitespace(self):
+        # SigV4 "Trimall": sequential spaces inside a value become one space.
+        # Expected values match botocore's SigV4Auth canonical headers.
+        headers = {
+            "x-amz-meta-a": "a  b",
+            "x-amz-meta-b": " a \t b ",
+            "x-amz-meta-c": "a   b   c",
+        }
+        self.assertEqual(
+            self.signer._get_canonical_headers(headers),
+            "x-amz-meta-a:a b\n" "x-amz-meta-b:a b\n" "x-amz-meta-c:a b c\n",
         )
 
     def test_get_request_params_joins_params_sorted_lexically(self):

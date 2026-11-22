@@ -50,6 +50,13 @@ Common
   (#2229)
   [0z5a - @0z5a]
 
+- [AWS] Collapse sequential whitespace inside header values when building the
+  SigV4 canonical request, as the AWS spec and SDKs do. Before, uploading an S3
+  object with user metadata that contains two spaces or a tab in a value failed
+  with ``SignatureDoesNotMatch``.
+  (#2236)
+  [0z5a - @0z5a]
+
 Compute
 ~~~~~~~
 
