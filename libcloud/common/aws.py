@@ -349,7 +349,9 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         return (
             "\n".join(
                 [
-                    ":".join([k.lower(), str(v).strip()])
+                    # SigV4 "Trimall": strip the value and collapse sequential
+                    # whitespace into a single space, as AWS and other SDKs do.
+                    ":".join([k.lower(), " ".join(str(v).split())])
                     for k, v in sorted(headers.items(), key=lambda k: k[0].lower())
                 ]
             )
