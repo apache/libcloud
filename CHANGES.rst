@@ -53,6 +53,13 @@ Common
 Compute
 ~~~~~~~
 
+- [EC2] Fix ``list_sizes()`` returning no sizes for the ``af-south-1`` and
+  ``ap-northeast-3`` regions. The sizing data scraper did not recognize the
+  location names AWS uses for those two regions, so no instance types were
+  assigned to them.
+  (GITHUB-1984)
+  [Shayn Hornik - @shaynhornik]
+
 - [OVH] Remove the static location mapping and use the location code returned
   by the API as both the location ID and name, avoiding failures for codes not
   known to Libcloud.

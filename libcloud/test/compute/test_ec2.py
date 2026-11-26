@@ -96,6 +96,15 @@ class BaseEC2Tests(LibcloudTestCase):
         if unsupported_regions:
             self.fail("Cannot list sizes from ec2 regions: %s" % unsupported_regions)
 
+    def test_list_sizes_af_south_1_and_ap_northeast_3(self):
+        # Those two regions used to have no instance types assigned
+        for region in ["af-south-1", "ap-northeast-3"]:
+            driver = EC2NodeDriver(*EC2_PARAMS, **{"region": region})
+            size_ids = [size.id for size in driver.list_sizes()]
+
+            self.assertNotEqual(len(size_ids), 0, "No sizes available in region %s" % region)
+            self.assertIn("m6i.xlarge", size_ids)
+
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
     image_name = "ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml"
