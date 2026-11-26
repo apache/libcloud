@@ -272,6 +272,68 @@ class BaseStorageTests(unittest.TestCase):
             stream=iterator,
         )
 
+    def _upload_object_and_capture_sent_chunks(self, stream):
+        sent_chunks = []
+
+        def mock_request(*args, **kwargs):
+            sent_chunks.extend(kwargs["data"])
+            return Mock()
+
+        self.driver1.connection = Mock()
+        self.driver1.connection.request.side_effect = mock_request
+
+        result = self.driver1._upload_object(
+            object_name="test.csv", content_type=None, request_path="/", stream=stream
+        )
+
+        return result, sent_chunks
+
+    def test_upload_object_via_stream_text_file_like_object_is_sent_as_utf8(self):
+        # Text needs to be sent as UTF-8, same as it's hashed, instead of
+        # leaving the encoding to the HTTP client
+        content = "id,value\n1,\u201cfoo\u201d\n2,bar\u2019s \u00e9\n" * 1000
+        expected_data = content.encode("utf-8")
+        self.assertNotEqual(len(expected_data), len(content))
+
+        hasher = hashlib.md5()  # nosec
+        hasher.update(expected_data)
+        expected_hash = hasher.hexdigest()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file_path = os.path.join(temp_dir, "test.csv")
+
+            with open(file_path, "w", encoding="utf-8") as fp:
+                fp.write(content)
+
+            with open(file_path, encoding="utf-8") as text_file:
+                for stream in [StringIO(content), text_file]:
+                    result, sent_chunks = self._upload_object_and_capture_sent_chunks(stream)
+
+                    # Stream is read in chunks and not buffered in memory
+                    self.assertGreater(len(sent_chunks), 1)
+                    self.assertTrue(all(isinstance(chunk, bytes) for chunk in sent_chunks))
+                    self.assertEqual(b"".join(sent_chunks), expected_data)
+                    self.assertEqual(result["data_hash"], expected_hash)
+                    self.assertEqual(result["bytes_transferred"], len(expected_data))
+
+    def test_upload_object_via_stream_text_iterator_is_sent_as_utf8(self):
+        chunks = ["id,value\n", "1,\u201cfoo\u201d\n", "2,bar\u2019s \u00e9\n"]
+        expected_chunks = [chunk.encode("utf-8") for chunk in chunks]
+
+        _, sent_chunks = self._upload_object_and_capture_sent_chunks(iter(chunks))
+        self.assertEqual(sent_chunks, expected_chunks)
+
+    def test_upload_object_via_stream_binary_stream_is_sent_as_is(self):
+        # Binary file-like objects are not wrapped so the HTTP client can
+        # still determine the content length
+        stream = BytesIO(b"\xe2\x80\x9cfoo\xe2\x80\x9d")
+        self._upload_object_and_capture_sent_chunks(stream)
+        self.assertIs(self.driver1.connection.request.call_args[-1]["data"], stream)
+
+        chunks = [b"\xe2\x80\x9cfoo", b"\xe2\x80\x9d"]
+        _, sent_chunks = self._upload_object_and_capture_sent_chunks(iter(chunks))
+        self.assertEqual(sent_chunks, chunks)
+
     def test_get_standard_range_str(self):
         result = self.driver1._get_standard_range_str(0, 5)
         self.assertEqual(result, "bytes=0-4")
