@@ -21,6 +21,8 @@ Compute
 +----------------+---------------------------------+---------------------------------+
 | `Snooze`_      |                                 | `msimonin/snooze-libcloud`_     |
 +----------------+---------------------------------+---------------------------------+
+| `NodeRings`_   | `libcloud-noderings`_           | `noderings/libcloud-noderings`_ |
++----------------+---------------------------------+---------------------------------+
 
 DNS
 ----
@@ -29,6 +31,8 @@ DNS
 | Provider        | PyPi package             | Source code                           |
 +=================+==========================+=======================================+
 | `DNSMadeEasy`_  | `libcloud-dnsmadeeasy`_  | `moses-palmer/libcloud-dnsmadeeasy`_  |
++-----------------+--------------------------+---------------------------------------+
+| `NodeRings`_    | `libcloud-noderings`_    | `noderings/libcloud-noderings`_       |
 +-----------------+--------------------------+---------------------------------------+
 
 .. _`StratusLab`: http://stratuslab.eu/
@@ -41,3 +45,7 @@ DNS
 .. _`DNSMadeEasy`: http://www.dnsmadeeasy.com/
 .. _`libcloud-dnsmadeeasy`: https://pypi.python.org/pypi/libcloud-dnsmadeeasy
 .. _`moses-palmer/libcloud-dnsmadeeasy`: https://github.com/moses-palmer/libcloud-dnsmadeeasy
+
+.. _`NodeRings`: https://noderings.com
+.. _`libcloud-noderings`: https://pypi.org/project/libcloud-noderings/
+.. _`noderings/libcloud-noderings`: https://github.com/noderings/libcloud-noderings
