@@ -121,7 +121,7 @@ jobs:
         run: tox -e coverage-ci
 
       - name: Upload Coverage to codecov.io
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           use_oidc: true
           fail_ci_if_error: true
