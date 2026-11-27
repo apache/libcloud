@@ -115,6 +115,10 @@ class CloudSigmaAPI10BaseTestCase:
         result = str2dicts(string)
         self.assertEqual(len(result), 2)
 
+    def test_str2dicts_skips_lines_without_value(self):
+        result = str2dicts("cpu 1100\nvnc\nmem 640")
+        self.assertEqual(result, [{"cpu": "1100", "mem": "640"}])
+
     def test_str2list(self):
         string = "ip 1.2.3.4\nip 1.2.3.5\nip 1.2.3.6"
         result = str2list(string)
