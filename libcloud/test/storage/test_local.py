@@ -181,6 +181,55 @@ class LocalTests(unittest.TestCase):
         for container in containers:
             self.driver.delete_container(container)
 
+    def test_prefix_listing_constructs_only_matching_objects(self):
+        container = self.driver.create_container("prefix-filter")
+        names = [
+            "foo1",
+            "foo-bar",
+            "foobar/child",
+            "foo/child",
+            "foo/deep/file",
+            "other/child",
+            "Afoo",
+            ".lock/ignored",
+            ".hash/ignored",
+        ]
+        for name in names:
+            path = os.path.join(self.key, container.name, *name.split("/"))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as output:
+                output.write(b"data")
+
+        valid_names = [
+            os.path.join(*name.split("/"))
+            for name in names
+            if not name.startswith((".lock/", ".hash/"))
+        ]
+        prefixes = [
+            None,
+            "",
+            "foo",
+            "foo1",
+            "foob",
+            "foo-",
+            "missing",
+            os.path.join("foo", ""),
+            os.path.join("foo", "de"),
+        ]
+        for prefix in prefixes:
+            with self.subTest(prefix=prefix):
+                expected = sorted(
+                    name for name in valid_names if prefix is None or name.startswith(prefix)
+                )
+                with mock.patch.object(
+                    self.driver, "_make_object", wraps=self.driver._make_object
+                ) as make_object:
+                    result = list(self.driver.iterate_container_objects(container, prefix=prefix))
+                self.assertEqual([obj.name for obj in result], expected)
+                self.assertEqual(
+                    sorted(call.args[1] for call in make_object.call_args_list), expected
+                )
+
     def test_objects_success(self):
         tmppath = self.make_tmp_file()
 
