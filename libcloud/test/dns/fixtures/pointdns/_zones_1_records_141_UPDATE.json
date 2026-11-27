@@ -1,6 +1,6 @@
 {
     "zone_record": {
-        "name": "updated.com",
+        "name": "updated.example.com",
         "data": "1.2.3.5",
         "id": 141,
         "aux": null,

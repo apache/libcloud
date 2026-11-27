@@ -233,7 +233,7 @@ class LuadnsDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         action = "/v1/zones/%s/records" % zone.id
-        to_post = {"name": name, "content": data, "type": type, "zone_id": int(zone.id)}
+        to_post = {"name": zone.fqdn(name), "content": data, "type": type, "zone_id": int(zone.id)}
         # ttl is required to create a record for luadns
         # pass it through extra like this: extra={'ttl':ttl}
         if extra is not None:

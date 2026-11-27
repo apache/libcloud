@@ -197,6 +197,15 @@ Storage
 DNS
 ~~~
 
+- [DNS] Normalize zone and record names consistently across drivers. ``Record.name``
+  is now relative to its zone, while ``Record.hostname`` and ``Record.fqdn`` expose
+  the complete hostname without and with a trailing dot, respectively. DNS drivers
+  accept apex and fully qualified names consistently, with request tests covering
+  the names sent to providers.
+  (GITHUB-2065)
+
+  [Aaron Sierra - @aaron-sierra]
+
 - [Route53] Fix ``delete_record`` failing with ``RecordDoesNotExistError`` for
   records which are part of a multi value record set (e.g. MX). Route53 only
   accepts a DELETE changeset which lists every value in the record set, so the

@@ -26,7 +26,6 @@ Provider          list zones list records create zone update zone create record 
 `Route53 DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
 `Vultr DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
 `World Wide DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
-`Zerigo DNS`_     yes        yes          yes         yes         yes           yes           yes         yes          
 `Zonomi DNS`_     yes        yes          yes         no          yes           no            yes         yes          
 ================= ========== ============ =========== =========== ============= ============= =========== =============
 
@@ -52,6 +51,5 @@ Provider          list zones list records create zone update zone create record 
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
 .. _`Vultr DNS`: https://www.vultr.com
 .. _`World Wide DNS`: https://www.worldwidedns.net/
-.. _`Zerigo DNS`: http://www.zerigo.com/
 .. _`Zonomi DNS`: https://zonomi.com
 .. _`AuroraDNS`: https://www.pcextreme.nl/en/aurora/dns

@@ -18,7 +18,7 @@ import unittest
 from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.dns.base import Zone, Record
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError, RecordDoesNotExistError
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, urlparse
 from libcloud.dns.drivers.nfsn import NFSNDNSDriver
 from libcloud.test.file_fixtures import DNSFileFixtures
 
@@ -27,6 +27,7 @@ class NFSNTestCase(LibcloudTestCase):
     def setUp(self):
         NFSNDNSDriver.connectionCls.conn_class = NFSNMockHttp
         NFSNMockHttp.type = None
+        NFSNMockHttp.history.clear()
         self.driver = NFSNDNSDriver("testid", "testsecret")
 
         self.test_zone = Zone(
@@ -57,6 +58,11 @@ class NFSNTestCase(LibcloudTestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone("example.com")
+
+        sent = NFSNMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/dns/example.com/serial")
+
         self.assertEqual(zone.id, None)
         self.assertEqual(zone.domain, "example.com")
 
@@ -69,6 +75,18 @@ class NFSNTestCase(LibcloudTestCase):
         record = self.test_zone.create_record(
             name="newrecord", type=RecordType.A, data="127.0.0.1", extra={"ttl": 900}
         )
+
+        # [0] /dns/example.com/addRR
+        # [1] /dns/example.com/listRRs
+        sent = NFSNMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/dns/example.com/addRR")
+        query = urlparse.parse_qs(sent.body)
+        self.assertIn("newrecord", query["name"])
+        self.assertIn("A", query["type"])
+        self.assertIn("127.0.0.1", query["data"])
+        self.assertIn("900", query["ttl"])
+
         self.assertEqual(record.id, None)
         self.assertEqual(record.name, "newrecord")
         self.assertEqual(record.data, "127.0.0.1")
@@ -82,8 +100,20 @@ class NFSNTestCase(LibcloudTestCase):
     def test_delete_record(self):
         self.assertTrue(self.test_record.delete())
 
+        sent = NFSNMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/dns/example.com/removeRR")
+        query = urlparse.parse_qs(sent.body)
+        self.assertIn("A", query["type"])
+        self.assertIn("192.0.2.1", query["data"])
+
     def test_list_records(self):
         records = self.driver.list_records(self.test_zone)
+
+        sent = NFSNMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/dns/example.com/listRRs")
+
         self.assertEqual(len(records), 2)
 
     def test_ex_get_records_by(self):
@@ -109,6 +139,7 @@ class NFSNTestCase(LibcloudTestCase):
 
 class NFSNMockHttp(MockHttp):
     fixtures = DNSFileFixtures("nfsn")
+    keep_history = True
     base_headers = {"content-type": "application/x-nfsn-api"}
 
     def _dns_example_com_addRR_CREATED(self, method, url, body, headers):

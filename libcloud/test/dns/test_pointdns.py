@@ -27,6 +27,7 @@ class PointDNSTests(unittest.TestCase):
     def setUp(self):
         PointDNSDriver.connectionCls.conn_class = PointDNSMockHttp
         PointDNSMockHttp.type = None
+        PointDNSMockHttp.history.clear()
         self.driver = PointDNSDriver(*DNS_PARAMS_POINTDNS)
 
     def assertHasKeys(self, dictionary, keys):
@@ -50,6 +51,11 @@ class PointDNSTests(unittest.TestCase):
     def test_list_zones_success(self):
         PointDNSMockHttp.type = "GET"
         zones = self.driver.list_zones()
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/zones")
+
         self.assertEqual(len(zones), 2)
 
         zone1 = zones[0]
@@ -70,18 +76,23 @@ class PointDNSTests(unittest.TestCase):
         PointDNSMockHttp.type = "GET"
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/zones/1/records")
+
         self.assertEqual(len(records), 2)
 
         record1 = records[0]
         self.assertEqual(record1.id, "141")
-        self.assertEqual(record1.name, "site.example.com")
+        self.assertEqual(record1.hostname, "site.example.com")
         self.assertEqual(record1.type, RecordType.A)
         self.assertEqual(record1.data, "1.2.3.4")
         self.assertHasKeys(record1.extra, ["ttl", "zone_id", "aux"])
 
         record2 = records[1]
         self.assertEqual(record2.id, "150")
-        self.assertEqual(record2.name, "site.example1.com")
+        self.assertEqual(record2.hostname, "site1.example.com")
         self.assertEqual(record2.type, RecordType.A)
         self.assertEqual(record2.data, "1.2.3.6")
         self.assertHasKeys(record2.extra, ["ttl", "zone_id", "aux"])
@@ -89,6 +100,11 @@ class PointDNSTests(unittest.TestCase):
     def test_get_zone_success(self):
         PointDNSMockHttp.type = "GET"
         zone1 = self.driver.get_zone(zone_id="1")
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/zones/1")
+
         self.assertEqual(zone1.id, "1")
         self.assertEqual(zone1.type, "master")
         self.assertEqual(zone1.domain, "example.com")
@@ -107,8 +123,15 @@ class PointDNSTests(unittest.TestCase):
     def test_get_record_success(self):
         PointDNSMockHttp.type = "GET"
         record = self.driver.get_record(zone_id="1", record_id="141")
+
+        # [0] GET /zones/1/records/141
+        # [1] GET /zones/1
+        sent = PointDNSMockHttp.history.pop(0)
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/zones/1/records/141")
+
         self.assertEqual(record.id, "141")
-        self.assertEqual(record.name, "site.example.com")
+        self.assertEqual(record.hostname, "site.example.com")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "1.2.3.4")
         self.assertHasKeys(record.extra, ["ttl", "zone_id", "aux"])
@@ -125,6 +148,12 @@ class PointDNSTests(unittest.TestCase):
     def test_create_zone_success(self):
         PointDNSMockHttp.type = "CREATE"
         zone = self.driver.create_zone(domain="example.com")
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/zones")
+        self.assertEqual(sent.json["zone"]["name"], "example.com")
+
         self.assertEqual(zone.id, "2")
         self.assertEqual(zone.domain, "example.com")
         self.assertEqual(zone.ttl, 3600)
@@ -147,8 +176,16 @@ class PointDNSTests(unittest.TestCase):
         record = self.driver.create_record(
             name="site.example.com", zone=zone, type=RecordType.A, data="1.2.3.4"
         )
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "POST")
+        self.assertEqual(sent.url, "/zones/1/records")
+        self.assertEqual(sent.json["zone_record"]["name"], "site.example.com")
+        self.assertEqual(sent.json["zone_record"]["record_type"], "A")
+        self.assertEqual(sent.json["zone_record"]["data"], "1.2.3.4")
+
         self.assertEqual(record.id, "143")
-        self.assertEqual(record.name, "site.example.com")
+        self.assertEqual(record.hostname, "site.example.com")
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, "1.2.3.4")
         self.assertHasKeys(record.extra, ["ttl", "zone_id", "aux"])
@@ -172,6 +209,13 @@ class PointDNSTests(unittest.TestCase):
         PointDNSMockHttp.type = "ZONE_UPDATE"
         extra = {"user-id": 6}
         _zone = self.driver.update_zone(zone, zone.domain, zone.ttl, extra=extra)
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/zones/1")
+        self.assertEqual(sent.json["zone"]["name"], "example.com")
+        self.assertEqual(sent.json["zone"]["user-id"], 6)
+
         self.assertEqual(_zone.extra.get("user-id"), 6)
 
     def test_update_zone_with_error(self):
@@ -193,13 +237,24 @@ class PointDNSTests(unittest.TestCase):
         extra = {"ttl": 4500}
         record1 = self.driver.update_record(
             record=record,
-            name="updated.com",
+            name="updated.example.com",
             type=RecordType.A,
             data="1.2.3.5",
             extra=extra,
         )
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/zones/1/records/141")
+        self.assertEqual(sent.json["zone_record"]["name"], "updated.example.com")
+        self.assertEqual(sent.json["zone_record"]["record_type"], "A")
+        self.assertEqual(sent.json["zone_record"]["data"], "1.2.3.5")
+        self.assertEqual(sent.json["zone_record"]["ttl"], 4500)
+
+        self.assertEqual(record.hostname, "site.example.com")
         self.assertEqual(record.data, "1.2.3.4")
         self.assertEqual(record.extra.get("ttl"), 3600)
+        self.assertEqual(record1.hostname, "updated.example.com")
         self.assertEqual(record1.data, "1.2.3.5")
         self.assertEqual(record1.extra.get("ttl"), 4500)
 
@@ -226,6 +281,11 @@ class PointDNSTests(unittest.TestCase):
         zone = self.driver.list_zones()[0]
         PointDNSMockHttp.type = "DELETE"
         status = self.driver.delete_zone(zone=zone)
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/zones/1")
+
         self.assertTrue(status)
 
     def test_delete_zone_zone_not_exists(self):
@@ -247,6 +307,11 @@ class PointDNSTests(unittest.TestCase):
         record = records[1]
         PointDNSMockHttp.type = "DELETE"
         status = self.driver.delete_record(record=record)
+
+        sent = PointDNSMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/zones/1/records/150")
+
         self.assertTrue(status)
 
     def test_delete_record_record_not_exists(self):
@@ -556,6 +621,7 @@ class PointDNSTests(unittest.TestCase):
 
 class PointDNSMockHttp(MockHttp):
     fixtures = DNSFileFixtures("pointdns")
+    keep_history = True
 
     def _zones_GET(self, method, url, body, headers):
         body = self.fixtures.load("_zones_GET.json")

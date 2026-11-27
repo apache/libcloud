@@ -1,10 +1,10 @@
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.providers import get_driver
 
-CREDENTIALS_ZERIGO = ("email", "api key")
+CREDENTIALS_CLOUDFLARE = ("api token",)
 
-cls = get_driver(Provider.ZERIGO)
-driver = cls(*CREDENTIALS_ZERIGO)
+cls = get_driver(Provider.CLOUDFLARE)
+driver = cls(*CREDENTIALS_CLOUDFLARE)
 
 zone = [z for z in driver.list_zones() if z.domain == "example.com"][0]
 

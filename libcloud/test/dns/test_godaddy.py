@@ -27,6 +27,7 @@ from libcloud.dns.drivers.godaddy import GoDaddyDNSDriver
 class GoDaddyTests(unittest.TestCase):
     def setUp(self):
         GoDaddyMockHttp.type = None
+        GoDaddyMockHttp.history.clear()
         GoDaddyDNSDriver.connectionCls.conn_class = GoDaddyMockHttp
         self.driver = GoDaddyDNSDriver(*DNS_PARAMS_GODADDY)
 
@@ -36,6 +37,11 @@ class GoDaddyTests(unittest.TestCase):
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
+
+        sent = GoDaddyMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/domains/")
+
         self.assertEqual(len(zones), 5)
         self.assertEqual(zones[0].id, "177184419")
         self.assertEqual(zones[0].domain, "aperture-platform.com")
@@ -75,6 +81,11 @@ class GoDaddyTests(unittest.TestCase):
             driver=self.driver,
         )
         records = self.driver.list_records(zone)
+
+        sent = GoDaddyMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/domains/aperture-platform.com/records")
+
         self.assertEqual(len(records), 14)
         self.assertEqual(records[0].type, RecordType.A)
         self.assertEqual(records[0].name, "@")
@@ -83,6 +94,13 @@ class GoDaddyTests(unittest.TestCase):
 
     def test_get_record(self):
         record = self.driver.get_record("aperture-platform.com", "www:A")
+
+        # [0] /v1/domains/aperture-platform.com/records/A/www
+        # [1] /v1/domains/aperture-platform.com/
+        sent = GoDaddyMockHttp.history[0]
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/domains/aperture-platform.com/records/A/www")
+
         self.assertEqual(record.id, "www:A")
         self.assertEqual(record.name, "www")
         self.assertEqual(record.type, RecordType.A)
@@ -99,6 +117,15 @@ class GoDaddyTests(unittest.TestCase):
         record = self.driver.create_record(
             zone=zone, name="www", type=RecordType.A, data="50.63.202.42"
         )
+
+        sent = GoDaddyMockHttp.history.pop()
+        self.assertEqual(sent.method, "PATCH")
+        self.assertEqual(sent.url, "/v1/domains/aperture-platform.com/records")
+        data = sent.json[0]
+        self.assertEqual(data["name"], "www")
+        self.assertEqual(data["type"], "A")
+        self.assertEqual(data["data"], "50.63.202.42")
+
         self.assertEqual(record.id, "www:A")
         self.assertEqual(record.name, "www")
         self.assertEqual(record.type, RecordType.A)
@@ -109,6 +136,15 @@ class GoDaddyTests(unittest.TestCase):
         record = self.driver.update_record(
             record=record, name="www", type=RecordType.A, data="50.63.202.22"
         )
+
+        sent = GoDaddyMockHttp.history.pop()
+        self.assertEqual(sent.method, "PUT")
+        self.assertEqual(sent.url, "/v1/domains/aperture-platform.com/records/A/www")
+        data = sent.json[0]
+        self.assertEqual(data["name"], "www")
+        self.assertEqual(data["type"], "A")
+        self.assertEqual(data["data"], "50.63.202.22")
+
         self.assertEqual(record.id, "www:A")
         self.assertEqual(record.name, "www")
         self.assertEqual(record.type, RecordType.A)
@@ -116,6 +152,11 @@ class GoDaddyTests(unittest.TestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone("aperture-platform.com")
+
+        sent = GoDaddyMockHttp.history.pop()
+        self.assertEqual(sent.method, "GET")
+        self.assertEqual(sent.url, "/v1/domains/aperture-platform.com/")
+
         self.assertEqual(zone.id, "177184419")
         self.assertEqual(zone.domain, "aperture-platform.com")
 
@@ -129,9 +170,14 @@ class GoDaddyTests(unittest.TestCase):
         )
         self.driver.delete_zone(zone)
 
+        sent = GoDaddyMockHttp.history.pop()
+        self.assertEqual(sent.method, "DELETE")
+        self.assertEqual(sent.url, "/v1/domains/aperture-platform.com")
+
 
 class GoDaddyMockHttp(MockHttp):
     fixtures = DNSFileFixtures("godaddy")
+    keep_history = True
 
     def _v1_domains(self, method, url, body, headers):
         body = self.fixtures.load("v1_domains.json")

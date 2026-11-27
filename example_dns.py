@@ -18,9 +18,9 @@ from pprint import pprint
 from libcloud.dns.types import Provider
 from libcloud.dns.providers import get_driver
 
-Zerigo = get_driver(Provider.ZERIGO)
+CloudFlare = get_driver(Provider.CLOUDFLARE)
 
-driver = Zerigo("email", "key")
+driver = CloudFlare("api token")
 
 zones = driver.list_zones()
 pprint(zones)
