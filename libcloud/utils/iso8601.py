@@ -131,11 +131,13 @@ def parse_date(datestring, default_timezone=UTC, allow_empty=False):
         groups["fraction"] = int(float("0.%s" % groups["fraction"]) * 1e6)
     return datetime(
         int(groups["year"]),
-        int(groups["month"]),
-        int(groups["day"]),
-        int(groups["hour"]),
-        int(groups["minute"]),
-        int(groups["second"]),
+        # Everything after the year is optional in the regex, so default the
+        # missing parts like upstream pyiso8601 does (e.g. "2020-01-01")
+        int(groups["month"] or 1),
+        int(groups["day"] or 1),
+        int(groups["hour"] or 0),
+        int(groups["minute"] or 0),
+        int(groups["second"] or 0),
         int(groups["fraction"]),
         tz,
     )
