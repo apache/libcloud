@@ -140,7 +140,7 @@ def str2dicts(data):
 
         whitespace = line.find(" ")
 
-        if not whitespace:
+        if whitespace == -1:
             continue
 
         key = line[0:whitespace]

@@ -36,6 +36,13 @@ Common
   (#2152)
   [Miguel Caballer - @micafer]
 
+- [Utils] Fix ``str2dicts`` turning a line without a value, such as ``vnc``,
+  into a bogus ``{"vn": "vnc"}`` entry. The check for a missing space compared
+  the ``str.find`` result against 0 instead of -1. Such lines are now skipped
+  as intended. This affects responses parsed by the CloudSigma 1.0 driver.
+  (#2246)
+  [@aad1tyaaaaa]
+
 - [Utils] Fix ``is_valid_ip_address`` raising ``ValueError`` instead of
   returning ``False`` for an address containing an embedded null byte
   (e.g. ``"1.2.3.4\x00"``). ``socket.inet_pton`` raises ``ValueError`` rather
