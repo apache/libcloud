@@ -280,9 +280,14 @@ class LocalStorageDriver(StorageDriver):
                 continue
             yield self._make_container(container_name)
 
-    def _get_objects(self, container):
+    def _get_objects(self, container, prefix=None):
         """
-        Recursively iterate through the file-system and return the object names
+        Recursively iterate through the file-system and return matching objects.
+
+        :param container: Container instance.
+        :type container: :class:`Container`
+        :param prefix: Filter objects starting with this object-name prefix.
+        :type prefix: ``str``
         """
 
         cpath = self.get_container_cdn_url(container, check=True)
@@ -296,7 +301,9 @@ class LocalStorageDriver(StorageDriver):
             for name in files:
                 full_path = os.path.join(folder, name)
                 object_name = relpath(full_path, start=cpath)
-                yield self._make_object(container, object_name)
+                # Filter names before reading metadata and constructing objects.
+                if prefix is None or object_name.startswith(prefix):
+                    yield self._make_object(container, object_name)
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
@@ -316,10 +323,8 @@ class LocalStorageDriver(StorageDriver):
         """
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
-        objects = self._get_objects(container)
-        objects = sorted(objects, key=lambda o: o.name)
-
-        return self._filter_listed_container_objects(objects, prefix)
+        objects = self._get_objects(container, prefix=prefix)
+        return iter(sorted(objects, key=lambda o: o.name))
 
     def get_container(self, container_name):
         """
