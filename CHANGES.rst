@@ -54,6 +54,7 @@ Common
   without a time or without seconds, such as ``2020-01-01`` or
   ``2020-01-01T10:20Z``. Missing time fields now default to zero (and a
   missing month or day to 1), as in upstream pyiso8601.
+  (#2245)
   [@aad1tyaaaaa]
 
 Compute
