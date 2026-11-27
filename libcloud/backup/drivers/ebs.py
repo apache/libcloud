@@ -26,10 +26,11 @@ from libcloud.backup.base import (
 )
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
 from libcloud.utils.iso8601 import parse_date
+from libcloud.compute.constants.ec2_region_details_partial import REGION_DETAILS
 
-VERSION = "2015-10-01"
+VERSION = "2016-11-15"
 HOST = "ec2.amazonaws.com"
-ROOT = "/%s/" % (VERSION)
+ROOT = "/"
 NS = "http://ec2.amazonaws.com/doc/{}/".format(VERSION)
 
 
@@ -47,7 +48,7 @@ class EBSConnection(SignedAWSConnection):
     version = VERSION
     host = HOST
     responseCls = EBSResponse
-    service_name = "backup"
+    service_name = "ec2"
 
 
 class EBSBackupDriver(BackupDriver):
@@ -56,9 +57,12 @@ class EBSBackupDriver(BackupDriver):
     connectionCls = EBSConnection
 
     def __init__(self, access_id, secret, region):
-        super().__init__(access_id, secret)
         self.region = region
-        self.connection.host = HOST % (region)
+        self.region_name = region
+        super().__init__(access_id, secret, host=REGION_DETAILS[region]["endpoint"])
+
+    def _ex_connection_class_kwargs(self):
+        return {"signature_version": "4"}
 
     def get_supported_target_types(self):
         """
@@ -189,7 +193,7 @@ class EBSBackupDriver(BackupDriver):
         params = {
             "Action": "DescribeSnapshots",
             "Filter.1.Name": "volume-id",
-            "Filter.1.Value": target.extra["volume-id"],
+            "Filter.1.Value.1": target.extra["volume-id"],
         }
         data = self.connection.request(ROOT, params=params).object
         return self._to_recovery_points(data, target)
@@ -258,9 +262,9 @@ class EBSBackupDriver(BackupDriver):
         params = {
             "Action": "DescribeSnapshots",
             "Filter.1.Name": "volume-id",
-            "Filter.1.Value": target.extra["volume-id"],
+            "Filter.1.Value.1": target.extra["volume-id"],
             "Filter.2.Name": "status",
-            "Filter.2.Value": "pending",
+            "Filter.2.Value.1": "pending",
         }
         data = self.connection.request(ROOT, params=params).object
         return self._to_jobs(data)
@@ -316,7 +320,7 @@ class EBSBackupDriver(BackupDriver):
         raise NotImplementedError("cancel_target_job not supported for this driver")
 
     def _to_recovery_points(self, data, target):
-        xpath = "DescribeSnapshotsResponse/snapshotSet/item"
+        xpath = "snapshotSet/item"
         return [
             self._to_recovery_point(el, target)
             for el in findall(element=data, xpath=xpath, namespace=NS)
@@ -336,7 +340,7 @@ class EBSBackupDriver(BackupDriver):
         return point
 
     def _to_jobs(self, data):
-        xpath = "DescribeSnapshotsResponse/snapshotSet/item"
+        xpath = "snapshotSet/item"
         return [self._to_job(el) for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_job(self, el):
