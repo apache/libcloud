@@ -56,6 +56,7 @@ Compute
 - [CloudSigma] Report the IPv6 address of a NIC instead of its IPv4 address
   a second time, and stop raising ``TypeError`` for a NIC with only an IPv6
   address. IPv6 unique local addresses are reported as private.
+  (#2244)
   [@aad1tyaaaaa]
 
 - [OVH] Remove the static location mapping and use the location code returned
