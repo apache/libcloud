@@ -21,6 +21,7 @@ import os.path
 import platform
 import unittest
 import warnings
+from datetime import datetime, timezone
 from itertools import chain
 
 import pytest
@@ -30,6 +31,7 @@ from libcloud.utils.py3 import StringIO, b, bchr, urlquote, hexadigits
 from libcloud.utils.misc import get_driver, set_driver, get_secure_random_string
 from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
+from libcloud.utils.iso8601 import parse_date
 from libcloud.utils.publickey import (
     get_pubkey_comment,
     get_pubkey_ssh2_fingerprint,
@@ -536,6 +538,18 @@ def test_decorator():
 
     with pytest.raises(LibcloudError):
         foo()
+
+
+@pytest.mark.parametrize(
+    "datestring, expected",
+    [
+        ("2020-01-01", datetime(2020, 1, 1, tzinfo=timezone.utc)),
+        ("2020-01-01T10:20Z", datetime(2020, 1, 1, 10, 20, tzinfo=timezone.utc)),
+        ("2020-01-01T10:20+02:00", datetime(2020, 1, 1, 8, 20, tzinfo=timezone.utc)),
+    ],
+)
+def test_parse_date_without_time_or_seconds(datestring, expected):
+    assert parse_date(datestring) == expected
 
 
 if __name__ == "__main__":
