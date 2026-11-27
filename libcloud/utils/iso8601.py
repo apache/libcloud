@@ -128,7 +128,9 @@ def parse_date(datestring, default_timezone=UTC, allow_empty=False):
     if groups["fraction"] is None:
         groups["fraction"] = 0
     else:
-        groups["fraction"] = int(float("0.%s" % groups["fraction"]) * 1e6)
+        # Take the microseconds from the digits: going through a float, e.g.
+        # int(0.000249 * 1e6), can come out one microsecond short
+        groups["fraction"] = int(groups["fraction"][:6].ljust(6, "0"))
     return datetime(
         int(groups["year"]),
         int(groups["month"]),

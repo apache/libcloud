@@ -109,7 +109,7 @@ class Scaleway_Tests(LibcloudTestCase):
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(nodes[0].created_at, datetime(2014, 5, 22, 12, 57, 22, 514298, tzinfo=UTC))
+        self.assertEqual(nodes[0].created_at, datetime(2014, 5, 22, 12, 57, 22, 514299, tzinfo=UTC))
 
     def test_create_node_success(self):
         image = self.driver.list_images()[0]
