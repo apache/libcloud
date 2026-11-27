@@ -43,6 +43,12 @@ Common
   (#2185)
   [Ashish - @Ashishjob]
 
+- [Utils] Fix ``parse_date`` returning a timestamp one microsecond short for
+  some fractional seconds (e.g. ``.000249`` was parsed as 248 microseconds),
+  because the fraction went through a float.
+  (#2243)
+  [@aad1tyaaaaa]
+
 - [Utils] Fix ``get_pubkey_openssh_fingerprint`` returning a wrong fingerprint
   for Ed25519 keys and raising ``binascii.Error`` for ECDSA keys. The function
   assumed a 7 character ``ssh-rsa`` key type prefix. This also affects the

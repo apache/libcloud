@@ -30,6 +30,7 @@ from libcloud.utils.py3 import StringIO, b, bchr, urlquote, hexadigits
 from libcloud.utils.misc import get_driver, set_driver, get_secure_random_string
 from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
+from libcloud.utils.iso8601 import parse_date
 from libcloud.utils.publickey import (
     get_pubkey_comment,
     get_pubkey_ssh2_fingerprint,
@@ -485,6 +486,23 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             result = increment_ipv4_segments(segments=segments)
             result = join_ipv4_segments(segments=result)
             self.assertEqual(result, incremented_ip)
+
+
+@pytest.mark.parametrize(
+    "fraction, microsecond",
+    [
+        ("5", 500000),
+        ("123456", 123456),
+        ("1234567", 123456),
+        # These used to come out one microsecond short through float rounding
+        ("000249", 249),
+        ("000251", 251),
+        ("000493", 493),
+    ],
+)
+def test_parse_date_fraction(fraction, microsecond):
+    parsed = parse_date("2020-01-01T00:00:00.%sZ" % fraction)
+    assert parsed.microsecond == microsecond
 
 
 class TestPublicKeyUtils(unittest.TestCase):
