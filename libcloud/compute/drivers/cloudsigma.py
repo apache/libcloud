@@ -22,6 +22,7 @@ import copy
 import time
 import base64
 import hashlib
+import ipaddress
 
 from libcloud.utils.py3 import b, httplib
 from libcloud.utils.misc import dict2str, str2list, str2dicts, get_secure_random_string
@@ -2269,7 +2270,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         ip_v6 = ipv6_conf["ip"] if ipv6_conf else None
 
         ipv4 = ip_v4["uuid"] if ip_v4 else None
-        ipv6 = ip_v4["uuid"] if ip_v6 else None
+        ipv6 = ip_v6["uuid"] if ip_v6 else None
 
         ips = []
 
@@ -2285,7 +2286,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         ip_v6 = runtime["ip_v6"] if nic["runtime"] else None
 
         ipv4 = ip_v4["uuid"] if ip_v4 else None
-        ipv6 = ip_v4["uuid"] if ip_v6 else None
+        ipv6 = ip_v6["uuid"] if ip_v6 else None
 
         if ipv4:
             ips.append(ipv4)
@@ -2296,7 +2297,14 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         ips = set(ips)
 
         for ip in ips:
-            if is_private_subnet(ip):
+            if ":" in ip:
+                # is_private_subnet only handles IPv4; unique local addresses
+                # (RFC 4193) are the IPv6 counterpart of the private ranges
+                is_private = ipaddress.ip_address(ip) in ipaddress.ip_network("fc00::/7")
+            else:
+                is_private = is_private_subnet(ip)
+
+            if is_private:
                 private_ips.append(ip)
             else:
                 public_ips.append(ip)
