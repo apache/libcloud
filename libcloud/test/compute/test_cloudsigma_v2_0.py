@@ -514,6 +514,25 @@ class CloudSigmaAPI20BaseTestCase:
         response = self.driver.delete_key_pair(key)
         self.assertTrue(response)
 
+    def test_parse_ips_from_nic_ipv6(self):
+        def nic(ipv4, ipv6):
+            return {
+                "ip_v4_conf": {"conf": "static", "ip": {"uuid": ipv4}} if ipv4 else None,
+                "ip_v6_conf": {"conf": "static", "ip": {"uuid": ipv6}} if ipv6 else None,
+                "runtime": None,
+            }
+
+        public_ips, private_ips = self.driver._parse_ips_from_nic(
+            nic("185.12.5.10", "2a00:c31:1:2::10")
+        )
+        self.assertEqual(sorted(public_ips), ["185.12.5.10", "2a00:c31:1:2::10"])
+        self.assertEqual(private_ips, [])
+
+        # An IPv6-only NIC
+        public_ips, private_ips = self.driver._parse_ips_from_nic(nic(None, "fd00::10"))
+        self.assertEqual(public_ips, [])
+        self.assertEqual(private_ips, ["fd00::10"])
+
 
 class CloudSigmaAPI20DirectTestCase(CloudSigmaAPI20BaseTestCase, unittest.TestCase):
     driver_klass = CloudSigma_2_0_NodeDriver
