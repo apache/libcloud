@@ -1353,7 +1353,6 @@ class NttCisNodeDriver(NodeDriver):
 
         update_node = ET.Element("enableSnapshotService", {"xmlns": TYPES_URN})
         window_id = window
-        plan = plan
         update_node.set("serverId", node)
         ET.SubElement(update_node, "servicePlan").text = plan
         ET.SubElement(update_node, "windowId").text = window_id

@@ -986,7 +986,6 @@ class BaseS3StorageDriver(StorageDriver):
         response = result_dict["response"]
         bytes_transferred = result_dict["bytes_transferred"]
         headers = response.headers
-        response = response
         server_hash = headers.get("etag", "").replace('"', "")
         server_side_encryption = headers.get("x-amz-server-side-encryption", None)
         aws_kms_encryption = server_side_encryption == "aws:kms"

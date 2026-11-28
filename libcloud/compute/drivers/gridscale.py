@@ -364,7 +364,6 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: newly created StorageVolume
         :rtype: :class:`.GridscaleVolumeStorage`
         """
-        template = template
         self.connection.async_request(
             "objects/storages/",
             data={

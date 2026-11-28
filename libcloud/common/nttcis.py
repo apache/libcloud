@@ -2037,7 +2037,6 @@ def processor(mapping, name=None):
     :type: ``str``
     :return: Nothing
     """
-    mapping = mapping
     # the map_copy will have keys deleted after the key and value are processed
     map_copy = deepcopy(mapping)
 
